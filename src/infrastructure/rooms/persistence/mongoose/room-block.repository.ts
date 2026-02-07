@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import {
   type IRoomBlockRepository,
   type RoomBlockCreateInput,
-} from '../../../../domain/repositories/room-block.repository';
+} from '../../../../domain/rooms/repositories/room-block.repository';
 import {
   RoomBlock,
   RoomBlockStatus,
@@ -29,10 +29,7 @@ export class RoomBlockRepository implements IRoomBlockRepository {
     return document ? this.toDomainEntity(document) : null;
   }
 
-  async findByDateRange(
-    startDate: Date,
-    endDate: Date,
-  ): Promise<RoomBlock[]> {
+  async findByDateRange(startDate: Date, endDate: Date): Promise<RoomBlock[]> {
     const documents = await this.roomBlockModel
       .find({
         $or: [
@@ -98,11 +95,7 @@ export class RoomBlockRepository implements IRoomBlockRepository {
 
     return documents.map((doc) => this.toDomainEntity(doc));
   }
-
-  async updateStatus(
-    id: string,
-    status: RoomBlockStatus,
-  ): Promise<RoomBlock> {
+  async updateStatus(id: string, status: RoomBlockStatus): Promise<RoomBlock> {
     const document = await this.roomBlockModel
       .findByIdAndUpdate(id, { status }, { new: true })
       .exec();

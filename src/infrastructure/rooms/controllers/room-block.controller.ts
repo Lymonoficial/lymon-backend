@@ -1,10 +1,18 @@
-import { Controller, Get, Post, Patch, Body, Query, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateRoomBlockUseCase } from '../../../application/use-cases/create-room-block.use-case';
-import { GetRoomBlocksByDateRangeUseCase } from '../../../application/use-cases/get-room-blocks-by-date-range.use-case';
-import { ReleaseRoomBlockUseCase } from '../../../application/use-cases/release-room-block.use-case';
+import { CreateRoomBlockUseCase } from 'src/application/rooms/use-cases/create-room-block.use-case';
+import { GetRoomBlocksByDateRangeUseCase } from 'src/application/rooms/use-cases/get-room-blocks-by-date-range.use-case';
+import { ReleaseRoomBlockUseCase } from 'src/application/rooms/use-cases/release-room-block.use-case';
 import { CreateRoomBlockDto } from '../dtos/create-room-block.dto';
-import { GetRoomBlocksDto } from '../../dtos/get-room-blocks.dto';
+import { GetRoomBlocksDto } from 'src/infrastructure/rooms/dtos/get-room-blocks.dto';
 
 @ApiTags('Room Blocks')
 @Controller('room-blocks')

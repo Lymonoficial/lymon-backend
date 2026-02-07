@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { type IRoomBlockRepository } from '../../domain/repositories/room-block.repository';
-import { RoomBlock } from '../../domain/entities/room-block.entity';
-import { GetRoomBlocksDto } from 'src/infrastructure/dtos/get-room-blocks.dto';
+import { RoomBlock } from 'src/domain/rooms/entities/room-block.entity';
+import { type IRoomBlockRepository } from 'src/domain/rooms/repositories/room-block.repository';
+import { GetRoomBlocksDto } from 'src/infrastructure/rooms/dtos/get-room-blocks.dto';
 
 @Injectable()
 export class GetRoomBlocksByDateRangeUseCase {

@@ -1,8 +1,16 @@
-import { RoomBlock, RoomBlockStatus } from '../entities/room-block.entity';
+import {
+  RoomBlock,
+  RoomBlockStatus,
+} from 'src/domain/rooms/entities/room-block.entity';
 
 export type RoomBlockCreateInput = Omit<
   RoomBlock,
-  'id' | 'createdAt' | 'updatedAt' | 'isActiveForDate' | 'overlapsWithRange' | 'includesRoom'
+  | 'id'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'isActiveForDate'
+  | 'overlapsWithRange'
+  | 'includesRoom'
 >;
 
 export interface IRoomBlockRepository {
