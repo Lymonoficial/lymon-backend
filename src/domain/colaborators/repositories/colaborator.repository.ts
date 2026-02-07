@@ -1,4 +1,4 @@
-import { Colaborator } from '../entities/colaborator.entity';
+import { Colaborator } from '../colaborators/entities/colaborator.entity';
 
 export interface IColaboratorRepository {
   save(

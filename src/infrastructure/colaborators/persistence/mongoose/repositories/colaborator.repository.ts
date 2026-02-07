@@ -1,6 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { IColaboratorRepository } from 'src/domain/repositories/colaborator.repository';
-import { ColaboratorDocument } from '../colaborator.schema';
+import { ColaboratorDocument } from '../../../colaborator.schema';
+import { IColaboratorRepository } from 'src/domain/colaborators/repositories/colaborator.repository';
 import { Model } from 'mongoose';
 
 export class ColaboratorRepository implements IColaboratorRepository {

@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { type IColaboratorRepository } from 'src/domain/repositories/colaborator.repository';
-import { RegisterColaboratorDto } from 'src/infrastructure/dtos/register-colaborator.dto';
+import { RegisterColaboratorDto } from 'src/infrastructure/colaborators/dtos/register-colaborator.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
