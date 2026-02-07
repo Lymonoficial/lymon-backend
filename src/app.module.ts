@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseConfigModule } from './infrastructure/persistence/mongoose/mongoose-config.module';
-import { ColaboratorsModule } from './infrastructure/modules/colaborators/colaborators.module';
-import { ReservationsModule } from './infrastructure/modules/reservations/reservations.module';
-import { RoomBlocksModule } from './infrastructure/modules/room-blocks/room-blocks.module';
+import { MongooseConfigModule } from './infrastructure/common/persistence/mongoose/mongoose-config.module';
+import { ColaboratorsModule } from './infrastructure/colaborators/colaborators.module';
+import { ReservationsModule } from './infrastructure/reservations/reservations.module';
+import { RoomBlocksModule } from './infrastructure/rooms/room-blocks.module';
 
 @Module({
   imports: [
