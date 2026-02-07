@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetReservationsByDateRangeUseCase } from '../../../application/use-cases/get-reservations-by-date-range.use-case';
-import { GetReservationsDto } from '../../dtos/get-reservations.dto';
+import { GetReservationsByDateRangeUseCase } from 'src/application/reservations/use-cases/get-reservations-by-date-range.use-case';
+import { GetReservationsDto } from 'src/infrastructure/reservations/dtos/get-reservations.dto';
 
 @ApiTags('Reservations')
 @Controller('reservations')

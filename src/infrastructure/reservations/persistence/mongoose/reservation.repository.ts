@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { IReservationRepository } from '../../../../domain/repositories/reservation.repository';
-import { Reservation, ReservationStatus } from '../../../../domain/reservations/entities/reservation.entity';
+import { IReservationRepository } from '../../../../domain/reservations/repositories/reservation.repository';
+import {
+  Reservation,
+  ReservationStatus,
+} from '../../../../domain/reservations/entities/reservation.entity';
 import { ReservationDocument } from './reservation.schema';
 
 @Injectable()
@@ -10,7 +13,7 @@ export class ReservationRepository implements IReservationRepository {
   constructor(
     @InjectModel('Reservation')
     private readonly reservationModel: Model<ReservationDocument>,
-  ) {}
+  ) { }
 
   async findByDateRange(
     startDate: Date,

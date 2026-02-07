@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEnum, IsOptional } from 'class-validator';
-import { ReservationStatus } from '../../domain/reservations/entities/reservation.entity';
+import { ReservationStatus } from 'src/domain/reservations/entities/reservation.entity';
 
 export class GetReservationsDto {
   @ApiProperty({
