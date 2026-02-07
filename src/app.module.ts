@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseConfigModule } from './infrastructure/persistence/mongoose/mongoose-config.module';
 import { ColaboratorsModule } from './infrastructure/modules/colaborators/colaborators.module';
+import { ReservationsModule } from './infrastructure/modules/reservations/reservations.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ColaboratorsModule } from './infrastructure/modules/colaborators/colabo
     }),
     MongooseConfigModule,
     ColaboratorsModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
