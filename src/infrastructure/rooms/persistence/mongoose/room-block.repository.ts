@@ -8,8 +8,8 @@ import {
 import {
   RoomBlock,
   RoomBlockStatus,
-} from '../../../../domain/entities/room-block.entity';
-import { RoomBlockDocument } from '../room-block.schema';
+} from '../../../../domain/rooms/entities/room-block.entity';
+import { RoomBlockDocument } from './room-block.schema';
 
 @Injectable()
 export class RoomBlockRepository implements IRoomBlockRepository {

@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateRoomBlockUseCase } from '../../../application/use-cases/create-room-block.use-case';
 import { GetRoomBlocksByDateRangeUseCase } from '../../../application/use-cases/get-room-blocks-by-date-range.use-case';
 import { ReleaseRoomBlockUseCase } from '../../../application/use-cases/release-room-block.use-case';
-import { CreateRoomBlockDto } from '../../dtos/create-room-block.dto';
+import { CreateRoomBlockDto } from '../dtos/create-room-block.dto';
 import { GetRoomBlocksDto } from '../../dtos/get-room-blocks.dto';
 
 @ApiTags('Room Blocks')
