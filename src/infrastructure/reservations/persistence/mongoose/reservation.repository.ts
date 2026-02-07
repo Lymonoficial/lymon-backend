@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IReservationRepository } from '../../../../domain/repositories/reservation.repository';
-import { Reservation, ReservationStatus } from '../../../../domain/entities/reservation.entity';
-import { ReservationDocument } from '../reservation.schema';
+import { Reservation, ReservationStatus } from '../../../../domain/reservations/entities/reservation.entity';
+import { ReservationDocument } from './reservation.schema';
 
 @Injectable()
 export class ReservationRepository implements IReservationRepository {
