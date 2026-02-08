@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import type { UserRepository } from 'src/domain/repositories/user.repository';
-import { User } from 'src/domain/entities/user.entity';
-import { RegisterUserDto } from 'src/infrastructure/dtos/register-user.dto';
-import { LoginDto } from 'src/infrastructure/dtos/login.dto';
+import type { UserRepository } from '@/domain/users/repositories/user.repository';
+import { User } from '@/domain/users/entities/user.entity';
+import { RegisterUserDto } from '@/infrastructure/users/dtos/register-user.dto';
+import { LoginDto } from '@/infrastructure/auth/dtos/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +12,7 @@ export class AuthService {
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(dto: RegisterUserDto) {
     // Verificar si el usuario ya existe
@@ -49,13 +49,13 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.userRepository.findByEmail(dto.email);
-    
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-    
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }

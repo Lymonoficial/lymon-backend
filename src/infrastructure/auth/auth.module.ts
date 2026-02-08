@@ -1,13 +1,16 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuthController } from '../../controllers/auth/auth.controller';
-import { AuthService } from '../../../application/use-cases/auth.service';
-import { JwtStrategy } from '../../auth/jwt.strategy';
-import { UserDocument, UserSchema } from '../../persistence/mongoose/user.schema';
-import { MongooseUserRepository } from '../../persistence/mongoose/repositories/user.repository';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthController } from '@/infrastructure/auth/controllers/auth.controller';
+import {
+  UserDocument,
+  UserSchema,
+} from '../users/persistence/mongoose/schemas/user.schema';
+import { AuthService } from '@/application/colaborators/use-cases/auth.service';
+import { JwtStrategy } from './jwt.strategy';
+import { MongooseUserRepository } from '../users/persistence/mongoose/repositories/user.repository';
 
 @Module({
   imports: [
@@ -18,7 +21,6 @@ import { MongooseUserRepository } from '../../persistence/mongoose/repositories/
       useFactory: async (configService: ConfigService) => {
         const secret = configService.get<string>('JWT_SECRET');
         const expiresIn = configService.get<string>('JWT_EXPIRES_IN') || '7d';
-        
         if (!secret) {
           throw new Error('JWT_SECRET is not defined');
         }
@@ -51,4 +53,4 @@ import { MongooseUserRepository } from '../../persistence/mongoose/repositories/
   ],
   exports: [AuthService, JwtStrategy, PassportModule],
 })
-export class AuthModule {}
+export class AuthModule { }
