@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ReservationSchema } from './persistence/mongoose/reservation.schema';
+import { ReservationSchema } from './persistence/mongoose/schemas/reservation.schema';
 import { ReservationController } from './controllers/reservation.controller';
-import { GetReservationsByDateRangeUseCase } from 'src/application/reservations/use-cases/get-reservations-by-date-range.use-case';
-import { ReservationRepository } from './persistence/mongoose/reservation.repository';
+import { GetReservationsByDateRangeUseCase } from '@/application/reservations/use-cases/get-reservations-by-date-range.use-case';
+import { ReservationRepository } from './persistence/mongoose/repositories/reservation.repository';
 
 @Module({
   imports: [

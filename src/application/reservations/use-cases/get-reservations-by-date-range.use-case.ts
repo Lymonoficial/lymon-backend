@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { Reservation } from 'src/domain/reservations/entities/reservation.entity';
-import { type IReservationRepository } from 'src/domain/reservations/repositories/reservation.repository';
-import { GetReservationsDto } from 'src/infrastructure/reservations/dtos/get-reservations.dto';
+import { Reservation } from '@/domain/reservations/entities/reservation.entity';
+import { type IReservationRepository } from '@/domain/reservations/repositories/reservation.repository';
+import { GetReservationsDto } from '@/infrastructure/reservations/dtos/get-reservations.dto';
 
 @Injectable()
 export class GetReservationsByDateRangeUseCase {
@@ -15,9 +15,7 @@ export class GetReservationsByDateRangeUseCase {
     const endDate = new Date(dto.endDate);
 
     if (startDate >= endDate) {
-      throw new BadRequestException(
-        'Start date must be before end date',
-      );
+      throw new BadRequestException('Start date must be before end date');
     }
 
     return await this.repository.findByDateRange(startDate, endDate);
