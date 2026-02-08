@@ -6,6 +6,10 @@ import { MongooseConfigModule } from './infrastructure/common/persistence/mongoo
 import { ColaboratorsModule } from './infrastructure/colaborators/colaborators.module';
 import { ReservationsModule } from './infrastructure/reservations/reservations.module';
 import { RoomBlocksModule } from './infrastructure/rooms/room-blocks.module';
+import { AuthModule } from './infrastructure/modules/auth/auth.module';
+import { HotelsModule } from './infrastructure/modules/hotels/hotels.module';
+import { RoomsModule } from './infrastructure/modules/rooms/rooms.module';
+import { EmailModule } from './infrastructure/modules/email/email.module';
 
 @Module({
   imports: [
@@ -17,8 +21,12 @@ import { RoomBlocksModule } from './infrastructure/rooms/room-blocks.module';
     ColaboratorsModule,
     ReservationsModule,
     RoomBlocksModule,
+    AuthModule,
+    HotelsModule,
+    RoomsModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
