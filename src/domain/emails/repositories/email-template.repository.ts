@@ -1,4 +1,7 @@
-import { EmailTemplate, EmailTemplateType } from '../entities/email-template.entity';
+import {
+  EmailTemplate,
+  EmailTemplateType,
+} from '../entities/email-template.entity';
 
 export interface EmailTemplateRepository {
   findById(id: string): Promise<EmailTemplate | null>;

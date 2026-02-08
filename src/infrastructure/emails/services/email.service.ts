@@ -15,7 +15,6 @@ export class EmailService {
 
   constructor() {
     const emailProvider = process.env.EMAIL_PROVIDER || 'gmail'; // gmail o outlook
-    
     if (emailProvider === 'gmail') {
       // Configuración para Gmail (más simple)
       this.transporter = nodemailer.createTransport({
@@ -60,13 +59,12 @@ export class EmailService {
     try {
       await this.transporter.verify();
       this.logger.log('✅ Email service is ready to send emails');
-      this.logger.log(`📧 Using provider: ${process.env.EMAIL_PROVIDER || 'gmail'}`);
-    } catch (error) {
-      this.logger.error(
-        '❌ Error connecting to email service:',
-        error.message,
+      this.logger.log(
+        `📧 Using provider: ${process.env.EMAIL_PROVIDER || 'gmail'}`,
       );
-      
+    } catch (error) {
+      this.logger.error('❌ Error connecting to email service:', error.message);
+
       const provider = process.env.EMAIL_PROVIDER || 'gmail';
       if (provider === 'gmail') {
         this.logger.warn('📧 Gmail Setup:');

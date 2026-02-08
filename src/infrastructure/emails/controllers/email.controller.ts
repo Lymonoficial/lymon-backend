@@ -8,16 +8,21 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { CreateEmailTemplateDto } from 'src/infrastructure/dtos/create-email-template.dto';
-import { UpdateEmailTemplateDto } from 'src/infrastructure/dtos/update-email-template.dto';
-import { SendEmailDto } from 'src/infrastructure/dtos/send-email.dto';
-import { CreateEmailTemplateUseCase } from 'src/application/use-cases/create-email-template.use-case';
-import { UpdateEmailTemplateUseCase } from 'src/application/use-cases/update-email-template.use-case';
-import { SendEmailUseCase } from 'src/application/use-cases/send-email.use-case';
-import { GetEmailTemplatesUseCase } from 'src/application/use-cases/get-email-templates.use-case';
-import { JwtAuthGuard } from 'src/infrastructure/auth/jwt-auth.guard';
-import { EmailService } from 'src/application/services/email.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { CreateEmailTemplateDto } from '@/infrastructure/emails/dtos/create-email-template.dto';
+import { UpdateEmailTemplateDto } from '@/infrastructure/emails/dtos/update-email-template.dto';
+import { SendEmailDto } from '@/infrastructure/emails/dtos/send-email.dto';
+import { CreateEmailTemplateUseCase } from '@/application/emails/use-cases/create-email-template.use-case';
+import { UpdateEmailTemplateUseCase } from '@/application/emails/use-cases/update-email-template.use-case';
+import { SendEmailUseCase } from '@/application/emails/use-cases/send-email.use-case';
+import { GetEmailTemplatesUseCase } from '@/application/emails/use-cases/get-email-templates.use-case';
+import { JwtAuthGuard } from '@/infrastructure/auth/jwt-auth.guard';
+import { EmailService } from '@/infrastructure/emails/services/email.service';
 
 @ApiTags('Email Templates')
 @ApiBearerAuth()
@@ -30,7 +35,7 @@ export class EmailController {
     private readonly sendEmailUseCase: SendEmailUseCase,
     private readonly getEmailTemplatesUseCase: GetEmailTemplatesUseCase,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   @Post()
   @ApiOperation({ summary: 'Crear una nueva plantilla de correo' })

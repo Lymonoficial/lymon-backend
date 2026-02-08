@@ -1,6 +1,6 @@
 import { IsString, IsEnum, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { EmailTemplateType } from 'src/domain/entities/email-template.entity';
+import { EmailTemplateType } from '@/domain/emails/entities/email-template.entity';
 
 export class CreateEmailTemplateDto {
   @ApiProperty({

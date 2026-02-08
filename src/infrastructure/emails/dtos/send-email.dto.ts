@@ -6,7 +6,7 @@ import {
   IsEnum,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { EmailTemplateType } from 'src/domain/entities/email-template.entity';
+import { EmailTemplateType } from '@/domain/emails/entities/email-template.entity';
 
 export class SendEmailDto {
   @ApiProperty({

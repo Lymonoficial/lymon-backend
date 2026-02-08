@@ -4,9 +4,9 @@ import { Model } from 'mongoose';
 import {
   EmailTemplate,
   EmailTemplateType,
-} from 'src/domain/entities/email-template.entity';
-import { EmailTemplateRepository } from 'src/domain/repositories/email-template.repository';
-import { EmailTemplateDocument } from '../email-template.schema';
+} from '@/domain/emails/entities/email-template.entity';
+import { EmailTemplateRepository } from '@/domain/emails/repositories/email-template.repository';
+import { EmailTemplateDocument } from '../schemas/email-template.schema';
 
 @Injectable()
 export class MongooseEmailTemplateRepository

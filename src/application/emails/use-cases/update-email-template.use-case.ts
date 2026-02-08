@@ -1,7 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import type { EmailTemplateRepository } from 'src/domain/repositories/email-template.repository';
-import { UpdateEmailTemplateDto } from 'src/infrastructure/dtos/update-email-template.dto';
-import { EmailTemplate } from 'src/domain/entities/email-template.entity';
+import type { EmailTemplateRepository } from '@/domain/emails/repositories/email-template.repository';
+import { UpdateEmailTemplateDto } from '@/infrastructure/emails/dtos/update-email-template.dto';
+import { EmailTemplate } from '@/domain/emails/entities/email-template.entity';
 
 @Injectable()
 export class UpdateEmailTemplateUseCase {
