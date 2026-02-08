@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { RegisterColaboratorUseCase } from 'src/application/colaborators/use-cases/register-colaborator.use-case';
-import { RegisterColaboratorDto } from 'src/infrastructure/colaborators/dtos/register-colaborator.dto';
+import { RegisterColaboratorUseCase } from '@/application/colaborators/use-cases/register-colaborator.use-case';
+import { RegisterColaboratorDto } from '@/infrastructure/colaborators/dtos/register-colaborator.dto';
 
 @ApiTags('Colaborator')
 @Controller('colaborator')
