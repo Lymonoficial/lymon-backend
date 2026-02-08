@@ -8,8 +8,8 @@ export class Hotel {
     public image?: string,
     public primaryColor?: string,
     public description?: string,
-    public createdAt?: Date
-  ) {}
+    public createdAt?: Date,
+  ) { }
 
   static create(params: {
     id: string;
@@ -34,7 +34,7 @@ export class Hotel {
       params.image,
       params.primaryColor,
       params.description,
-      new Date()
+      new Date(),
     );
   }
 }

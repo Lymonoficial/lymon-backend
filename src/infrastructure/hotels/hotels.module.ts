@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { RegisterHotelUseCase } from 'src/application/use-cases/register-hotel.use-case';
-import { HotelController } from 'src/infrastructure/controllers/hotel/hotel.controller';
-import { HotelSchema } from 'src/infrastructure/persistence/mongoose/hotel.schema';
-import { MongooseHotelRepository } from 'src/infrastructure/persistence/mongoose/repositories/hotel.repository';
+import { RegisterHotelUseCase } from '@/application/hotels/use-cases/register-hotel.use-case';
+import { HotelController } from '@/infrastructure/hotels/controllers/hotel.controller';
+import { HotelSchema } from '@/infrastructure/hotels/persistence/mongoose/schemas/hotel.schema';
+import { MongooseHotelRepository } from '@/infrastructure/hotels/persistence/mongoose/repositories/hotel.repository';
 
 @Module({
   imports: [

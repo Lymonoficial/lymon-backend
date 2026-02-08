@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Hotel } from 'src/domain/entities/hotel.entity';
-import { HotelRepository } from 'src/domain/repositories/hotel.repository';
-import { HotelDocument } from '../hotel.schema';
+import { Hotel } from '@/domain/hotels/entities/hotel.entity';
+import { HotelRepository } from '@/domain/hotels/repositories/hotel.repository';
+import { HotelDocument } from '../schemas/hotel.schema';
 
 @Injectable()
 export class MongooseHotelRepository implements HotelRepository {

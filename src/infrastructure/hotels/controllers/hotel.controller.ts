@@ -1,8 +1,8 @@
 import { Body, Controller, Post, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { RegisterHotelUseCase } from 'src/application/use-cases/register-hotel.use-case';
-import { RegisterHotelDto } from 'src/infrastructure/dtos/register-hotel.dto';
-import { JwtAuthGuard } from 'src/infrastructure/auth/jwt-auth.guard';
+import { RegisterHotelUseCase } from '@/application/hotels/use-cases/register-hotel.use-case';
+import { RegisterHotelDto } from '@/infrastructure/hotels/dtos/register-hotel.dto';
+import { JwtAuthGuard } from '@/infrastructure/auth/jwt-auth.guard';
 
 @ApiTags('Hotels')
 @Controller('hotels')

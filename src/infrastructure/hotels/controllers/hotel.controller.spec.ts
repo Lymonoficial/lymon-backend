@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HotelController } from './hotel.controller';
-import { RegisterHotelUseCase } from 'src/application/use-cases/register-hotel.use-case';
-import { RegisterHotelDto } from 'src/infrastructure/dtos/register-hotel.dto';
-import { Hotel } from 'src/domain/entities/hotel.entity';
+import { HotelController } from '../../hotels/controllers/hotel.controller';
+import { RegisterHotelUseCase } from '@/application/hotels/use-cases/register-hotel.use-case';
+import { RegisterHotelDto } from '@/infrastructure/hotels/dtos/register-hotel.dto';
+import { Hotel } from '@/domain/hotels/entities/hotel.entity';
 
 describe('HotelController', () => {
   let controller: HotelController;

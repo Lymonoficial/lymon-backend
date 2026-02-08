@@ -1,4 +1,4 @@
-import { Hotel } from '../entities/hotel.entity';
+import { Hotel } from '../../hotels/entities/hotel.entity';
 
 export interface HotelRepository {
   findBySubdomain(subdomain: string): Promise<Hotel | null>;
