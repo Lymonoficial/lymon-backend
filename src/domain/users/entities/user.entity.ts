@@ -4,7 +4,7 @@ export class User {
     public email: string,
     public password: string,
     public name: string,
-    public createdAt: Date
+    public createdAt: Date,
   ) {}
 
   static create(params: {
@@ -28,7 +28,7 @@ export class User {
       params.email.toLowerCase(),
       params.password,
       params.name,
-      new Date()
+      new Date(),
     );
   }
 }
