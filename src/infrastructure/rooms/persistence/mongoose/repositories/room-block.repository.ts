@@ -4,19 +4,19 @@ import { Model } from 'mongoose';
 import {
   type IRoomBlockRepository,
   type RoomBlockCreateInput,
-} from '../../../../domain/rooms/repositories/room-block.repository';
+} from '@/domain/rooms/repositories/room-block.repository';
 import {
   RoomBlock,
   RoomBlockStatus,
-} from '../../../../domain/rooms/entities/room-block.entity';
-import { RoomBlockDocument } from './room-block.schema';
+} from '@/domain/rooms/entities/room-block.entity';
+import { RoomBlockDocument } from '../schemas/room-block.schema';
 
 @Injectable()
 export class RoomBlockRepository implements IRoomBlockRepository {
   constructor(
     @InjectModel('RoomBlock')
     private readonly roomBlockModel: Model<RoomBlockDocument>,
-  ) {}
+  ) { }
 
   async save(roomBlock: RoomBlockCreateInput | RoomBlock): Promise<RoomBlock> {
     const createdBlock = new this.roomBlockModel(roomBlock);

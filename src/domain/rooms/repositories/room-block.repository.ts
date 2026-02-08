@@ -1,7 +1,7 @@
 import {
   RoomBlock,
   RoomBlockStatus,
-} from 'src/domain/rooms/entities/room-block.entity';
+} from '@/domain/rooms/entities/room-block.entity';
 
 export type RoomBlockCreateInput = Omit<
   RoomBlock,

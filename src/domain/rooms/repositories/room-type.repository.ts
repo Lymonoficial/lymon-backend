@@ -1,4 +1,4 @@
-import type { RoomType } from '../entities/room-type.entity';
+import type { RoomType } from '../../rooms/entities/room-type.entity';
 
 export interface RoomTypeRepository {
   findById(id: string): Promise<RoomType | null>;

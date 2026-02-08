@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEnum, IsOptional } from 'class-validator';
-import { RoomBlockStatus } from 'src/domain/rooms/entities/room-block.entity';
+import { RoomBlockStatus } from '@/domain/rooms/entities/room-block.entity';
 
 export class GetRoomBlocksDto {
   @ApiProperty({

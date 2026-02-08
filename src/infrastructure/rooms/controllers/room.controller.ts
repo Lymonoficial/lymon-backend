@@ -10,17 +10,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
-import { CreateRoomTypeUseCase } from 'src/application/use-cases/create-room-type.use-case';
-import { AssignRoomUnitsUseCase } from 'src/application/use-cases/assign-room-units.use-case';
-import { CreateRoomUseCase } from 'src/application/use-cases/create-room.use-case';
-import { UpdateRoomPriceUseCase } from 'src/application/use-cases/update-room-price.use-case';
-import { CreateSpecialPriceUseCase } from 'src/application/use-cases/create-special-price.use-case';
-import { CreateRoomTypeDto } from 'src/infrastructure/dtos/create-room-type.dto';
-import { AssignRoomUnitsDto } from 'src/infrastructure/dtos/assign-room-units.dto';
-import { CreateRoomDto } from 'src/infrastructure/dtos/create-room.dto';
-import { UpdateRoomPriceDto } from 'src/infrastructure/dtos/update-room-price.dto';
-import { CreateSpecialPriceDto } from 'src/infrastructure/dtos/create-special-price.dto';
-import { JwtAuthGuard } from 'src/infrastructure/auth/jwt-auth.guard';
+import { CreateRoomTypeUseCase } from '@/application/rooms/use-cases/create-room-type.use-case';
+import { AssignRoomUnitsUseCase } from '@/application/rooms/use-cases/assign-room-units.use-case';
+import { CreateRoomUseCase } from '@/application/rooms/use-cases/create-room.use-case';
+import { UpdateRoomPriceUseCase } from '@/application/rooms/use-cases/update-room-price.use-case';
+import { CreateSpecialPriceUseCase } from '@/application/rooms/use-cases/create-special-price.use-case';
+import { CreateRoomTypeDto } from '@/infrastructure/rooms/dtos/create-room-type.dto';
+import { AssignRoomUnitsDto } from '@/infrastructure/rooms/dtos/assign-room-units.dto';
+import { CreateRoomDto } from '@/infrastructure/rooms/dtos/create-room.dto';
+import { UpdateRoomPriceDto } from '@/infrastructure/rooms/dtos/update-room-price.dto';
+import { CreateSpecialPriceDto } from '@/infrastructure/rooms/dtos/create-special-price.dto';
+import { JwtAuthGuard } from '@/infrastructure/auth/jwt-auth.guard';
 
 @ApiTags('Rooms')
 @Controller('rooms')

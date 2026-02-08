@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SpecialPrice } from 'src/domain/entities/special-price.entity';
-import { SpecialPriceRepository } from 'src/domain/repositories/special-price.repository';
-import { SpecialPriceDocument } from '../special-price.schema';
+import { SpecialPrice } from '@/domain/rooms/entities/special-price.entity';
+import { SpecialPriceRepository } from '@/domain/rooms/repositories/special-price.repository';
+import { SpecialPriceDocument } from '../schemas/special-price.schema';
 
 @Injectable()
 export class MongooseSpecialPriceRepository implements SpecialPriceRepository {

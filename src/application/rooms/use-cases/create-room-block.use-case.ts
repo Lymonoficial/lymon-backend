@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { RoomBlock, RoomBlockStatus } from 'src/domain/rooms/entities/room-block.entity';
-import { type IRoomBlockRepository } from 'src/domain/rooms/repositories/room-block.repository';
-import { CreateRoomBlockDto } from 'src/infrastructure/rooms/dtos/create-room-block.dto';
+import { RoomBlock, RoomBlockStatus } from '@/domain/rooms/entities/room-block.entity';
+import { type IRoomBlockRepository } from '@/domain/rooms/repositories/room-block.repository';
+import { CreateRoomBlockDto } from '@/infrastructure/rooms/dtos/create-room-block.dto';
 
 @Injectable()
 export class CreateRoomBlockUseCase {

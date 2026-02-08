@@ -1,4 +1,4 @@
-import { SpecialPrice } from '../entities/special-price.entity';
+import { SpecialPrice } from '../../rooms/entities/special-price.entity';
 
 export interface SpecialPriceRepository {
   create(specialPrice: SpecialPrice): Promise<SpecialPrice>;

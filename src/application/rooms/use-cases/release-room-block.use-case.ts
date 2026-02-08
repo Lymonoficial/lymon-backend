@@ -4,8 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { RoomBlock, RoomBlockStatus } from 'src/domain/rooms/entities/room-block.entity';
-import { type IRoomBlockRepository } from 'src/domain/rooms/repositories/room-block.repository';
+import { RoomBlock, RoomBlockStatus } from '@/domain/rooms/entities/room-block.entity';
+import { type IRoomBlockRepository } from '@/domain/rooms/repositories/room-block.repository';
 
 @Injectable()
 export class ReleaseRoomBlockUseCase {

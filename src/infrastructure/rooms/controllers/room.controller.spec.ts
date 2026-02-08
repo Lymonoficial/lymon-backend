@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RoomController } from './room.controller';
-import { CreateRoomTypeUseCase } from 'src/application/use-cases/create-room-type.use-case';
-import { AssignRoomUnitsUseCase } from 'src/application/use-cases/assign-room-units.use-case';
-import { CreateRoomTypeDto } from 'src/infrastructure/dtos/create-room-type.dto';
-import { AssignRoomUnitsDto } from 'src/infrastructure/dtos/assign-room-units.dto';
-import { RoomType } from 'src/domain/entities/room-type.entity';
-import { Room, RoomStatus } from 'src/domain/entities/room.entity';
+import { RoomController } from '../../rooms/controllers/room.controller';
+import { CreateRoomTypeUseCase } from '@/application/rooms/use-cases/create-room-type.use-case';
+import { AssignRoomUnitsUseCase } from '@/application/rooms/use-cases/assign-room-units.use-case';
+import { CreateRoomTypeDto } from '@/infrastructure/rooms/dtos/create-room-type.dto';
+import { AssignRoomUnitsDto } from '@/infrastructure/rooms/dtos/assign-room-units.dto';
+import { RoomType } from '@/domain/rooms/entities/room-type.entity';
+import { Room, RoomStatus } from '@/domain/rooms/entities/room.entity';
 
 describe('RoomController', () => {
   let controller: RoomController;

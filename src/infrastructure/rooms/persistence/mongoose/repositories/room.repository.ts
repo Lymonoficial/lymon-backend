@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Room, RoomStatus } from 'src/domain/entities/room.entity';
-import { RoomRepository } from 'src/domain/repositories/room.repository';
-import { RoomDocument } from '../room.schema';
+import { Room, RoomStatus } from '@/domain/rooms/entities/room.entity';
+import { RoomRepository } from '@/domain/rooms/repositories/room.repository';
+import { RoomDocument } from '../schemas/room.schema';
 
 @Injectable()
 export class MongooseRoomRepository implements RoomRepository {

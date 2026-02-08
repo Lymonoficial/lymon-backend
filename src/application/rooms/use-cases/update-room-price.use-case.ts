@@ -1,13 +1,13 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import type { RoomRepository } from 'src/domain/repositories/room.repository';
-import { UpdateRoomPriceDto } from 'src/infrastructure/dtos/update-room-price.dto';
+import type { RoomRepository } from '@/domain/rooms/repositories/room.repository';
+import { UpdateRoomPriceDto } from '@/infrastructure/rooms/dtos/update-room-price.dto';
 
 @Injectable()
 export class UpdateRoomPriceUseCase {
   constructor(
     @Inject('RoomRepository')
     private readonly roomRepository: RoomRepository,
-  ) {}
+  ) { }
 
   async execute(roomId: string, dto: UpdateRoomPriceDto) {
     const room = await this.roomRepository.findById(roomId);
