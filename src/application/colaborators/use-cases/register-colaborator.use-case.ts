@@ -18,8 +18,7 @@ export class RegisterColaboratorUseCase {
       );
     }
 
-    const salt = await bcrypt.genSalt(20);
-    const hashedPassword = await bcrypt.hash(dto.password, salt);
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     const newColaborator = {
       ...dto,

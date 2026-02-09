@@ -22,9 +22,8 @@ describe('HotelController', () => {
     }).compile();
 
     controller = module.get<HotelController>(HotelController);
-    registerHotelUseCase = module.get<RegisterHotelUseCase>(
-      RegisterHotelUseCase,
-    );
+    registerHotelUseCase =
+      module.get<RegisterHotelUseCase>(RegisterHotelUseCase);
   });
 
   it('should be defined', () => {
@@ -48,9 +47,9 @@ describe('HotelController', () => {
         new Date(),
       );
 
-      jest.spyOn(registerHotelUseCase, 'execute').mockResolvedValue(
-        expectedHotel,
-      );
+      jest
+        .spyOn(registerHotelUseCase, 'execute')
+        .mockResolvedValue(expectedHotel);
 
       const result = await controller.registerHotel(dto);
 
