@@ -1,8 +1,8 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { HotelRepository } from '@/domain/hotels/repositories/hotel.repository';
-import { RegisterHotelDto } from '@/infrastructure/hotels/dtos/register-hotel.dto';
 import { Hotel } from '@/domain/hotels/entities/hotel.entity';
 import { randomUUID } from 'crypto';
+import { RegisterHotelDto } from '@/presentation/dtos/hotels/register-hotel.dto';
 
 @Injectable()
 export class RegisterHotelUseCase {

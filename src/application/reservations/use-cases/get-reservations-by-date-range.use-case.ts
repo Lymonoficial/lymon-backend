@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Reservation } from '@/domain/reservations/entities/reservation.entity';
 import { type IReservationRepository } from '@/domain/reservations/repositories/reservation.repository';
-import { GetReservationsDto } from '@/infrastructure/reservations/dtos/get-reservations.dto';
+import { GetReservationsDto } from '@/presentation/dtos/reservations/get-reservations.dto';
 
 @Injectable()
 export class GetReservationsByDateRangeUseCase {

@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { SpecialPriceRepository } from '@/domain/rooms/repositories/special-price.repository';
 import { SpecialPrice } from '@/domain/rooms/entities/special-price.entity';
-import { CreateSpecialPriceDto } from '@/infrastructure/rooms/dtos/create-special-price.dto';
+import { CreateSpecialPriceDto } from '@/presentation/dtos/rooms/create-special-price.dto';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -9,7 +9,7 @@ export class CreateSpecialPriceUseCase {
   constructor(
     @Inject('SpecialPriceRepository')
     private readonly specialPriceRepository: SpecialPriceRepository,
-  ) { }
+  ) {}
 
   async execute(dto: CreateSpecialPriceDto) {
     const startDate = new Date(dto.startDate);

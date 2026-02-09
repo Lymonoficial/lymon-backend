@@ -1,7 +1,7 @@
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import type { RoomRepository } from '@/domain/rooms/repositories/room.repository';
 import type { RoomTypeRepository } from '@/domain/rooms/repositories/room-type.repository';
-import { AssignRoomUnitsDto } from '@/infrastructure/rooms/dtos/assign-room-units.dto';
+import { AssignRoomUnitsDto } from '@/presentation/dtos/rooms/assign-room-units.dto';
 import { Room } from '@/domain/rooms/entities/room.entity';
 import { randomUUID } from 'crypto';
 

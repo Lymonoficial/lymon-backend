@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { RoomRepository } from '@/domain/rooms/repositories/room.repository';
-import { CreateRoomDto } from '@/infrastructure/rooms/dtos/create-room.dto';
+import { CreateRoomDto } from '@/presentation/dtos/rooms/create-room.dto';
 import { Room } from '@/domain/rooms/entities/room.entity';
 import { randomUUID } from 'crypto';
 
@@ -9,7 +9,7 @@ export class CreateRoomUseCase {
   constructor(
     @Inject('RoomRepository')
     private readonly roomRepository: RoomRepository,
-  ) { }
+  ) {}
 
   async execute(dto: CreateRoomDto): Promise<Room> {
     // Generate room ID

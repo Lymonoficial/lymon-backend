@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { EmailTemplateRepository } from '@/domain/emails/repositories/email-template.repository';
-import { CreateEmailTemplateDto } from '@/infrastructure/emails/dtos/create-email-template.dto';
+import { CreateEmailTemplateDto } from '@/presentation/dtos/emails/create-email-template.dto';
 import { EmailTemplate } from '@/domain/emails/entities/email-template.entity';
 import { randomUUID } from 'crypto';
 
@@ -9,7 +9,7 @@ export class CreateEmailTemplateUseCase {
   constructor(
     @Inject('EmailTemplateRepository')
     private readonly emailTemplateRepository: EmailTemplateRepository,
-  ) { }
+  ) {}
 
   async execute(dto: CreateEmailTemplateDto): Promise<EmailTemplate> {
     const templateId = randomUUID();

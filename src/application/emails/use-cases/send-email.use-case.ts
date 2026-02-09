@@ -1,7 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import type { EmailTemplateRepository } from '@/domain/emails/repositories/email-template.repository';
-import { SendEmailDto } from '@/infrastructure/emails/dtos/send-email.dto';
-import { EmailService } from '@/infrastructure/emails/services/email.service';
+import { SendEmailDto } from '@/presentation/dtos/emails/send-email.dto';
+import { EmailService } from '@/infrastructure/services/emails/email.service';
 
 @Injectable()
 export class SendEmailUseCase {
@@ -9,7 +9,7 @@ export class SendEmailUseCase {
     @Inject('EmailTemplateRepository')
     private readonly emailTemplateRepository: EmailTemplateRepository,
     private readonly emailService: EmailService,
-  ) { }
+  ) {}
 
   async execute(dto: SendEmailDto): Promise<boolean> {
     // Buscar la plantilla activa

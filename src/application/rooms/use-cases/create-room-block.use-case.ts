@@ -1,7 +1,10 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { RoomBlock, RoomBlockStatus } from '@/domain/rooms/entities/room-block.entity';
+import {
+  RoomBlock,
+  RoomBlockStatus,
+} from '@/domain/rooms/entities/room-block.entity';
 import { type IRoomBlockRepository } from '@/domain/rooms/repositories/room-block.repository';
-import { CreateRoomBlockDto } from '@/infrastructure/rooms/dtos/create-room-block.dto';
+import { CreateRoomBlockDto } from '@/presentation/dtos/rooms/create-room-block.dto';
 
 @Injectable()
 export class CreateRoomBlockUseCase {
@@ -21,9 +24,7 @@ export class CreateRoomBlockUseCase {
     }
 
     if (cutoffDate && cutoffDate >= startDate) {
-      throw new BadRequestException(
-        'Cutoff date must be before start date',
-      );
+      throw new BadRequestException('Cutoff date must be before start date');
     }
 
     // Check for duplicate room numbers in the array
