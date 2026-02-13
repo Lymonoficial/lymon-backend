@@ -24,5 +24,3 @@ export class TenantDocument extends Document {
 }
 
 export const TenantSchema = SchemaFactory.createForClass(TenantDocument);
-
-TenantSchema.index({ ownerEmail: 1 });

@@ -1,12 +1,14 @@
-import { EMAIL_SERVICE } from '@/application/tenant/commands/register-tenant.handler';
+import { EMAIL_SERVICE } from '@/application/shared/services/email.service';
 import { Module } from '@nestjs/common';
-import { EmailService } from '@/infrastructure/email/email.service';
+import { ConfigModule } from '@nestjs/config';
+import { BrevoEmailService } from './services/brevo-email.service';
 
 @Module({
+  imports: [ConfigModule],
   providers: [
     {
       provide: EMAIL_SERVICE,
-      useClass: EmailService,
+      useClass: BrevoEmailService,
     },
   ],
   exports: [EMAIL_SERVICE],

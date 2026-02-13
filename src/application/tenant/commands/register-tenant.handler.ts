@@ -7,6 +7,10 @@ import {
   type IPasswordHasher,
   PASSWORD_HASHER,
 } from '@/application/auth/services/password-hasher.service';
+import {
+  EMAIL_SERVICE,
+  type IEmailService,
+} from '@/application/shared/services/email.service';
 import { RegisterTenantCommand } from '@/application/tenant/commands/register-tenant.command';
 import { Tenant } from '@/domain/tenant/entities/tenant.entity';
 import {
@@ -22,12 +26,6 @@ import {
 } from '@/domain/user/repositories/user.repository';
 import { ConflictException, Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-
-export interface IEmailService {
-  sendVerificationEmail(email: string, token: string): Promise<void>;
-}
-
-export const EMAIL_SERVICE = Symbol('EMAIL_SERVICE');
 
 export class RegisterTenantResult {
   constructor(
@@ -50,6 +48,8 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
     private readonly passwordHasher: IPasswordHasher,
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,
+    @Inject(EMAIL_SERVICE)
+    private readonly emailService: IEmailService,
   ) {}
 
   async execute(command: RegisterTenantCommand): Promise<RegisterTenantResult> {
@@ -86,7 +86,21 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
     const accessToken = this.tokenService.generateAccesToken(payload);
     const refreshToken = this.tokenService.generateRefreshToken(payload);
 
-    // TODO ENVIAR EMAIL ED VERIFICACION
+    const verificationPayload: JwtPayload = {
+      userId: savedUser.getId()!.toString(),
+      email: savedUser.getEmail().toString(),
+      tenantId: savedUser.getTenantId().toString(),
+      role: savedUser.getRole(),
+      emailVerified: false,
+    };
+
+    const verificationToken =
+      this.tokenService.generateAccesToken(verificationPayload);
+
+    await this.emailService.sendVerificationEmail(
+      email.toString(),
+      verificationToken,
+    );
 
     return new RegisterTenantResult(
       savedTenant.getId()!.toString(),
