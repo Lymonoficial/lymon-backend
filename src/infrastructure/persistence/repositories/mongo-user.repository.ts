@@ -1,0 +1,55 @@
+import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { User, UserId, UserRoleEnum } from '@/domain/user/entities/user.entity';
+import { UserRepository } from '@/domain/user/repositories/user.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { UserDocument } from '@/infrastructure/persistence/schemas/user.schema';
+import { Model, Types } from 'mongoose';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+
+export class MongoUserRepository implements UserRepository {
+  constructor(
+    @InjectModel(UserDocument.name)
+    private readonly userModel: Model<UserDocument>,
+  ) {}
+
+  async save(user: User): Promise<void> {
+    const id = user.getId()?.toString();
+
+    const document = {
+      email: user.getEmail().toString(),
+      passwordHash: user.getPasswordHash(),
+      tenantId: user.getTenantId().toString(),
+      role: user.getRole(),
+      emailVerified: user.isEmailVerified(),
+      updatedAt: new Date(),
+    };
+
+    if (id) {
+      await this.userModel.findByIdAndUpdate(id, document, { new: true });
+    } else {
+      await this.userModel.create({ ...document, createdAt: new Date() });
+    }
+  }
+
+  async findById(id: UserId): Promise<User | null> {
+    const doc = await this.userModel.findById(id.toString());
+    return doc ? this.toDomainEntity(doc) : null;
+  }
+  async findByEmail(email: Email): Promise<User | null> {
+    const doc = await this.userModel.findOne({ email: email.toString() });
+    return doc ? this.toDomainEntity(doc) : null;
+  }
+
+  private toDomainEntity(doc: UserDocument & { _id: Types.ObjectId }): User {
+    return User.reconstitute(
+      UserId.createFromString(doc._id.toString()),
+      Email.create(doc.email),
+      doc.passwordHash,
+      TenantId.createFromString(doc.tenantId),
+      doc.role as UserRoleEnum,
+      doc.emailVerified,
+      doc.createdAt,
+      doc.updatedAt,
+    );
+  }
+}

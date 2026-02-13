@@ -8,7 +8,7 @@ async function bootstrap() {
 
   // Habilitar CORS
   app.enableCors({
-    origin: '*', // En producción, especifica los orígenes permitidos
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -25,7 +25,9 @@ async function bootstrap() {
   // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('Lymon Hotel API')
-    .setDescription('API para la gestión hotelera - Autenticación, Hoteles y Habitaciones')
+    .setDescription(
+      'API para la gestión hotelera - Autenticación, Hoteles y Habitaciones',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {

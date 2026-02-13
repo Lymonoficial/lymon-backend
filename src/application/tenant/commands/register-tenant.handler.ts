@@ -1,0 +1,99 @@
+import {
+  type ITokenService,
+  JwtPayload,
+  TOKEN_SERVICE,
+} from '@/application/auth/services/jwt.service';
+import {
+  type IPasswordHasher,
+  PASSWORD_HASHER,
+} from '@/application/auth/services/password-hasher.service';
+import { RegisterTenantCommand } from '@/application/tenant/commands/register-tenant.command';
+import { Tenant } from '@/domain/tenant/entities/tenant.entity';
+import {
+  TENANT_REPOSITORY,
+  type TenantRepository,
+} from '@/domain/tenant/repositories/tenant.repository';
+import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { PlanType } from '@/domain/tenant/value-objects/plan-type.vo';
+import { User } from '@/domain/user/entities/user.entity';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '@/domain/user/repositories/user.repository';
+import { ConflictException, Inject } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+
+export interface IEmailService {
+  sendVerificationEmail(email: string, token: string): Promise<void>;
+}
+
+export const EMAIL_SERVICE = Symbol('EMAIL_SERVICE');
+
+export class RegisterTenantResult {
+  constructor(
+    public readonly tenantId: string,
+    public readonly userId: string,
+    public readonly email: string,
+    public readonly accessToken: string,
+    public readonly refreshToken: string,
+  ) {}
+}
+
+@CommandHandler(RegisterTenantCommand)
+export class RegisterTenantHandler implements ICommandHandler<RegisterTenantCommand> {
+  constructor(
+    @Inject(TENANT_REPOSITORY)
+    private readonly tenantRepository: TenantRepository,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
+    @Inject(PASSWORD_HASHER)
+    private readonly passwordHasher: IPasswordHasher,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
+  ) {}
+
+  async execute(command: RegisterTenantCommand): Promise<RegisterTenantResult> {
+    const email = Email.create(command.email);
+
+    const existingTenant = await this.tenantRepository.exists(email);
+    if (existingTenant) {
+      throw new ConflictException('A tenant with this email already exists');
+    }
+
+    const plan = PlanType.create(command.planType);
+    const tenant = Tenant.create(command.tenantName, email, plan);
+    await this.tenantRepository.save(tenant);
+
+    const savedTenant = await this.tenantRepository.findByOwnerEmail(email);
+    if (!savedTenant) throw new Error('Failed to create a tenant');
+
+    const passwordHash = await this.passwordHasher.hash(command.password);
+
+    const user = User.createOwner(email, passwordHash, savedTenant.getId()!); // Afirmo que siempre habrá un valor para este punto pq si lo guardo exitosamente tien
+    await this.userRepository.save(user);
+
+    const savedUser = await this.userRepository.findByEmail(email);
+    if (!savedUser) throw new Error('Failed to create user');
+
+    const payload: JwtPayload = {
+      userId: savedUser.getId.toString(),
+      email: savedUser.getEmail().toString(),
+      tenantId: savedUser.getTenantId().toString(),
+      role: savedUser.getRole(),
+      emailVerified: savedUser.isEmailVerified(),
+    };
+
+    const accessToken = this.tokenService.generateAccesToken(payload);
+    const refreshToken = this.tokenService.generateRefreshToken(payload);
+
+    // TODO ENVIAR EMAIL ED VERIFICACION
+
+    return new RegisterTenantResult(
+      savedTenant.getId()!.toString(),
+      savedUser.getId()!.toString(),
+      email.toString(),
+      accessToken,
+      refreshToken,
+    );
+  }
+}
