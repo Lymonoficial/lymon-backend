@@ -34,17 +34,3 @@ export class RegisterTenantDto {
   @IsEnum(PlanTypeDto, { message: 'Invalid plan type' })
   planType: string;
 }
-
-// export class RegisterTenantResponseDto {
-//   @ApiProperty()
-//   tenantId: string;
-
-//   @ApiProperty()
-//   userId: string;
-
-//   @ApiProperty()
-//   email: string;
-
-//   @ApiProperty()
-//   message: string;
-// }

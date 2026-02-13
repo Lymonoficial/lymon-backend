@@ -5,6 +5,7 @@ import { RegisterTenantHandler } from '@/application/tenant/commands/register-te
 import { VerifyEmailHandler } from '@/application/user/commands/verify-email.handler';
 import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { LoginHandler } from './auth/commands/login.handler';
+import { EmailModule } from '@/infrastructure/email/email.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -12,7 +13,7 @@ const CommandHandlers = [
   VerifyEmailHandler,
 ];
 @Module({
-  imports: [CqrsModule, PersistenceModule, AuthModule],
+  imports: [CqrsModule, PersistenceModule, AuthModule, EmailModule],
   providers: [...CommandHandlers],
   exports: [...CommandHandlers],
 })
