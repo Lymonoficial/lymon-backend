@@ -7,6 +7,8 @@ import { ChangePasswordHandler } from '@/application/user/commands/change-passwo
 import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { LoginHandler } from './auth/commands/login.handler';
 import { EmailModule } from '@/infrastructure/email/email.module';
+import { PropertyApplicationModule } from '@/application/property/property-application.module';
+import { UnitApplicationModule } from '@/application/unit/unit-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -15,7 +17,14 @@ const CommandHandlers = [
   ChangePasswordHandler,
 ];
 @Module({
-  imports: [CqrsModule, PersistenceModule, AuthModule, EmailModule],
+  imports: [
+    CqrsModule,
+    PersistenceModule,
+    AuthModule,
+    EmailModule,
+    PropertyApplicationModule,
+    UnitApplicationModule,
+  ],
   providers: [...CommandHandlers],
   exports: [...CommandHandlers],
 })

@@ -30,4 +30,19 @@ export class PlanType {
   isTrial(): boolean {
     return this.value === PlanTypeEnum.TRIAL;
   }
+
+  getSiteLimit(): number {
+    switch (this.value) {
+      case PlanTypeEnum.TRIAL:
+        return 2;
+      case PlanTypeEnum.LYMON_ONE:
+        return 5;
+      case PlanTypeEnum.LYMON_PLUS:
+        return 20;
+      case PlanTypeEnum.LYMON_PRIME:
+        return Number.MAX_SAFE_INTEGER;
+      default:
+        return 0;
+    }
+  }
 }

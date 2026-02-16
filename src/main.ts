@@ -34,8 +34,7 @@ async function bootstrap() {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Ingresa tu token JWT',
+        description: 'Ingresa tu token JWT (sin la palabra Bearer)',
         in: 'header',
       },
       'JWT-auth',
@@ -43,7 +42,11 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true, // Recordar el token entre recargas
+    },
+  });
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

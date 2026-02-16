@@ -1,0 +1,129 @@
+import { CreatePropertyCommand } from '@/application/property/commands/create-property.command';
+import { CreatePropertyResult } from '@/application/property/commands/create-property.result';
+import { Property } from '@/domain/property/entities/property.entity';
+import {
+  PROPERTY_REPOSITORY,
+  type PropertyRepository,
+} from '@/domain/property/repositories/property.repository';
+import { CancellationPolicy } from '@/domain/property/value-objects/cancellation-policy.vo';
+import { Location } from '@/domain/property/value-objects/location.vo';
+import { PropertyType } from '@/domain/property/value-objects/property-type.vo';
+import {
+  TENANT_REPOSITORY,
+  type TenantRepository,
+} from '@/domain/tenant/repositories/tenant.repository';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+import { Unit } from '@/domain/unit/entities/unit.entity';
+import {
+  UNIT_REPOSITORY,
+  type UnitRepository,
+} from '@/domain/unit/repositories/unit.repository';
+import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
+import {
+  TRANSACTION_MANAGER,
+  type TransactionManager,
+} from '@/domain/shared/transaction-manager.interface';
+import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+
+@CommandHandler(CreatePropertyCommand)
+export class CreatePropertyHandler implements ICommandHandler<CreatePropertyCommand> {
+  constructor(
+    @Inject(PROPERTY_REPOSITORY)
+    private readonly propertyRepository: PropertyRepository,
+    @Inject(UNIT_REPOSITORY)
+    private readonly unitRepository: UnitRepository,
+    @Inject(TENANT_REPOSITORY)
+    private readonly tenantRepository: TenantRepository,
+    @Inject(TRANSACTION_MANAGER)
+    private readonly transactionManager: TransactionManager,
+  ) {}
+
+  async execute(command: CreatePropertyCommand): Promise<CreatePropertyResult> {
+    const tenantId = TenantId.createFromString(command.tenantId);
+
+    const tenant = await this.tenantRepository.findById(tenantId);
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
+
+    await this.validatePlanLimits(tenantId, tenant.getPlan().getSiteLimit());
+
+    const propertyType = PropertyType.create(command.propertyType);
+    const property = Property.create(
+      tenantId,
+      command.name,
+      command.description,
+      propertyType,
+      command.address,
+      command.city,
+      command.state,
+      command.country,
+      command.zipCode,
+      Location.create(command.location.lat, command.location.lng),
+      command.checkInTime,
+      command.checkOutTime,
+      CancellationPolicy.create(command.cancellationPolicy),
+      command.hostPhone,
+      command.hostEmail,
+    );
+
+    const shouldAutoCreate =
+      command.autoCreateUnit && propertyType.shouldAutoCreateUnit();
+
+    if (!shouldAutoCreate) {
+      const propertyId = await this.propertyRepository.save(property);
+      return new CreatePropertyResult(propertyId);
+    }
+
+    return await this.transactionManager.executeInTransaction(
+      async (context) => {
+        const propertyIdString = await this.propertyRepository.save(
+          property,
+          context.getContext(),
+        );
+        const propertyId = PropertyId.create(propertyIdString);
+
+        const unit = Unit.create(
+          tenantId,
+          propertyId,
+          command.name,
+          command.description,
+          1,
+          4,
+          2,
+          [],
+          1,
+          false,
+          [],
+          0,
+          ExternalIds.create(),
+        );
+
+        const unitIdString = await this.unitRepository.save(
+          unit,
+          context.getContext(),
+        );
+
+        return new CreatePropertyResult(propertyIdString, unitIdString);
+      },
+    );
+  }
+
+  private async validatePlanLimits(
+    tenantId: TenantId,
+    siteLimit: number,
+  ): Promise<void> {
+    const propertyCount =
+      await this.propertyRepository.countByTenantId(tenantId);
+    const unitCount = await this.unitRepository.countByTenantId(tenantId);
+    const totalSites = propertyCount + unitCount;
+
+    if (totalSites >= siteLimit) {
+      throw new ForbiddenException(
+        `Plan limit reached. Your current plan allows ${siteLimit} sites (properties + units). Please upgrade your plan.`,
+      );
+    }
+  }
+}

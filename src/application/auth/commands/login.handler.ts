@@ -6,6 +6,10 @@ import {
   USER_REPOSITORY,
 } from '@/domain/user/repositories/user.repository';
 import {
+  type TenantRepository,
+  TENANT_REPOSITORY,
+} from '@/domain/tenant/repositories/tenant.repository';
+import {
   type IPasswordHasher,
   PASSWORD_HASHER,
 } from '@/application/auth/services/password-hasher.service';
@@ -33,6 +37,8 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
+    @Inject(TENANT_REPOSITORY)
+    private readonly tenantRepository: TenantRepository,
     @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: IPasswordHasher,
     @Inject(TOKEN_SERVICE)
@@ -55,10 +61,16 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const tenant = await this.tenantRepository.findById(user.getTenantId());
+    if (!tenant) {
+      throw new UnauthorizedException('Tenant not found');
+    }
+
     const payload: JwtPayload = {
       userId: user.getId()!.toString(),
       email: user.getEmail().toString(),
       tenantId: user.getTenantId().toString(),
+      activePlan: tenant.getPlan().toString(),
       role: user.getRole(),
       emailVerified: user.isEmailVerified(),
     };
