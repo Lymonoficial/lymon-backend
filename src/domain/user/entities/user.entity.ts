@@ -98,6 +98,11 @@ export class User {
     return this.passwordHash;
   }
 
+  changePassword(newPasswordHash: string): void {
+    this.passwordHash = newPasswordHash;
+    this.updatedAt = new Date();
+  }
+
   getTenantId(): TenantId {
     return this.tenantId;
   }

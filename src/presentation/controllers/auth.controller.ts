@@ -93,7 +93,7 @@ export class AuthController {
   // TODO: Prueba naada más por ahora
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get current user info' })
   @ApiResponse({ status: 200, description: 'User info retrieved' })
   getMe(@CurrentUser() user: JwtPayload) {
