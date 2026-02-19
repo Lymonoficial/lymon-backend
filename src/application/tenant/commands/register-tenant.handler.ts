@@ -79,6 +79,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
       userId: savedUser.getId.toString(),
       email: savedUser.getEmail().toString(),
       tenantId: savedUser.getTenantId().toString(),
+      activePlan: savedTenant.getPlan().toString(),
       role: savedUser.getRole(),
       emailVerified: savedUser.isEmailVerified(),
     };
@@ -90,6 +91,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
       userId: savedUser.getId()!.toString(),
       email: savedUser.getEmail().toString(),
       tenantId: savedUser.getTenantId().toString(),
+      activePlan: savedTenant.getPlan().toString(),
       role: savedUser.getRole(),
       emailVerified: false,
     };

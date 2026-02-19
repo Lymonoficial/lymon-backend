@@ -5,6 +5,7 @@ export interface JwtPayload {
   userId: string;
   email: string;
   tenantId: string;
+  activePlan: string;
   role: string;
   emailVerified: boolean;
 }
