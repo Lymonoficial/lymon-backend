@@ -16,6 +16,10 @@ import {
   UnitDocument,
   UnitSchema,
 } from '@/infrastructure/persistence/schemas/unit.schema';
+import {
+  GuestDocument,
+  GuestSchema,
+} from '@/infrastructure/persistence/schemas/guest.schema';
 import { TENANT_REPOSITORY } from '@/domain/tenant/repositories/tenant.repository';
 import { MongoTenantRepository } from '@/infrastructure/persistence/repositories/mongo-tenant.repository';
 import { USER_REPOSITORY } from '@/domain/user/repositories/user.repository';
@@ -24,6 +28,8 @@ import { PROPERTY_REPOSITORY } from '@/domain/property/repositories/property.rep
 import { MongoPropertyRepository } from '@/infrastructure/persistence/repositories/mongo-property.repository';
 import { UNIT_REPOSITORY } from '@/domain/unit/repositories/unit.repository';
 import { MongoUnitRepository } from '@/infrastructure/persistence/repositories/mongo-unit.repository';
+import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
+import { MongoGuestRepository } from '@/infrastructure/persistence/repositories/mongo-guest.repository';
 import { TRANSACTION_MANAGER } from '@/domain/shared/transaction-manager.interface';
 import { MongoTransactionManager } from '@/infrastructure/persistence/transaction/mongo-transaction-manager';
 
@@ -34,6 +40,7 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
       { name: UserDocument.name, schema: UserSchema },
       { name: PropertyDocument.name, schema: PropertySchema },
       { name: UnitDocument.name, schema: UnitSchema },
+      { name: GuestDocument.name, schema: GuestSchema },
     ]),
   ],
   providers: [
@@ -54,6 +61,10 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
       useClass: MongoUnitRepository,
     },
     {
+      provide: GUEST_REPOSITORY,
+      useClass: MongoGuestRepository,
+    },
+    {
       provide: TRANSACTION_MANAGER,
       useClass: MongoTransactionManager,
     },
@@ -63,6 +74,7 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
     USER_REPOSITORY,
     PROPERTY_REPOSITORY,
     UNIT_REPOSITORY,
+    GUEST_REPOSITORY,
     TRANSACTION_MANAGER,
   ],
 })
