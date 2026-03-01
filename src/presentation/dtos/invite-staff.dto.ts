@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEmail,
   IsEnum,
   IsString,
@@ -12,7 +13,6 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { UserRoleEnum } from '@/domain/user/entities/user.entity';
 
 export enum ScopeTypeDto {
   TENANT = 'TENANT',
@@ -63,6 +63,17 @@ export class ScopeDto {
   resourceIds?: string[];
 }
 
+export class RoleAssignmentDto {
+  @ApiProperty({ example: '64a1b2c3d4e5f6a7b8c9d0e1', description: 'ID of the role to assign' })
+  @IsString()
+  roleId: string;
+
+  @ApiProperty({ type: ScopeDto, description: 'Scope at which this role applies' })
+  @ValidateNested()
+  @Type(() => ScopeDto)
+  scope: ScopeDto;
+}
+
 export class InviteStaffDto {
   @ApiProperty({ example: 'staff@hotel.com' })
   @IsEmail({}, { message: 'Invalid email format' })
@@ -73,12 +84,12 @@ export class InviteStaffDto {
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
 
-  @ApiProperty({ enum: UserRoleEnum, example: UserRoleEnum.ADMIN })
-  @IsEnum(UserRoleEnum)
-  role: UserRoleEnum;
-
-  @ApiProperty({ type: ScopeDto })
-  @ValidateNested()
-  @Type(() => ScopeDto)
-  scope: ScopeDto;
+  @ApiProperty({
+    type: [RoleAssignmentDto],
+    description: 'One or more role assignments for the staff member',
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RoleAssignmentDto)
+  roleAssignments: RoleAssignmentDto[];
 }

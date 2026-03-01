@@ -14,7 +14,7 @@ import { ChangePasswordResult } from '@/application/user/commands/change-passwor
 import { ChangePasswordDto } from '@/presentation/dtos/change-password.dto';
 import { InviteStaffDto } from '@/presentation/dtos/invite-staff.dto';
 import { InviteStaffCommand } from '@/application/user/commands/invite-staff/invite-staff.command';
-import { UserScope } from '@/domain/user/entities/user.entity';
+import { RoleAssignment } from '@/domain/user/entities/user.entity';
 
 @ApiTags('user')
 @Controller('user')
@@ -65,8 +65,7 @@ export class UserController {
       dto.email,
       dto.password,
       jwtPayload.tenantId,
-      dto.role,
-      dto.scope as unknown as UserScope,
+      dto.roleAssignments as unknown as RoleAssignment[],
     );
 
     await this.commandBus.execute(command);

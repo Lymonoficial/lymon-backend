@@ -25,10 +25,15 @@ import {
   type UnitRepository,
 } from '@/domain/unit/repositories/unit.repository';
 import {
+  ROLE_REPOSITORY,
+  type RoleRepository,
+} from '@/domain/role/repositories/role.repository';
+import { RoleId } from '@/domain/role/entities/role.entity';
+import {
   type IPasswordHasher,
   PASSWORD_HASHER,
 } from '@/application/auth/services/password-hasher.service';
-import { User, UserRoleEnum } from '@/domain/user/entities/user.entity';
+import { RoleAssignment, User } from '@/domain/user/entities/user.entity';
 
 @CommandHandler(InviteStaffCommand)
 export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
@@ -41,13 +46,13 @@ export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
     private readonly propertyRepository: PropertyRepository,
     @Inject(UNIT_REPOSITORY)
     private readonly unitRepository: UnitRepository,
+    @Inject(ROLE_REPOSITORY)
+    private readonly roleRepository: RoleRepository,
     @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: IPasswordHasher,
   ) {}
 
-  async execute(command: InviteStaffCommand): Promise<any> {
-    //     Verify the executor is OWNER or ADMIN (guard their tenantId matches).
-    // Check the user doesn't already exist in this tenant (findByEmailAndTenantId).
+  async execute(command: InviteStaffCommand): Promise<void> {
     const tenantId = TenantId.createFromString(command.tenantId);
 
     const tenant = await this.tenantRepository.findById(tenantId);
@@ -55,81 +60,100 @@ export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
       throw new NotFoundException('Tenant not found');
     }
 
-    if (command.role === UserRoleEnum.OWNER) {
-      throw new BadRequestException('Cannot assign OWNER role to a staff member');
+    if (!command.roleAssignments || command.roleAssignments.length === 0) {
+      throw new BadRequestException('At least one role assignment is required');
     }
 
     const existingUser = await this.userRepository.findByEmailAndTenantId(
       Email.create(command.email),
       tenantId,
     );
-
-    if (existingUser)
-      throw new BadRequestException('User is already member of this tenant.');
-
-    // Check the tenant hasn't exceeded the plan's user limit (LymonOne = 2, LymonPlus = 10, LymonPrime = unlimited) — query findByTenantId and count.
-    await this.validatePlanLimits(tenantId, tenant.getPlan().getStaffLimit());
-    // If scope is PROPERTY or UNIT, validate that the given resourceIds actually belong to this tenant.
-    if (command.scope.type !== 'TENANT') {
-      await this.validateScopeResources(
-        tenantId,
-        command.scope.type,
-        command.scope.resourceIds,
-      );
+    if (existingUser) {
+      throw new BadRequestException('User is already a member of this tenant.');
     }
-    // Generate a temporary password (or send an invite link via email).
+
+    await this.validatePlanLimits(tenantId, tenant.getPlan().getStaffLimit());
+    await this.validateRoleAssignments(
+      command.roleAssignments,
+      tenantId.toString(),
+    );
+
     const passwordHash = await this.passwordHasher.hash(command.password);
-    // User.createStaff(...) and save.
     const staffUser = User.createStaff(
       Email.create(command.email),
       passwordHash,
       tenantId,
-      command.role,
-      command.scope,
+      command.roleAssignments,
     );
     await this.userRepository.save(staffUser);
   }
 
-  private async validateScopeResources(
-    tenantId: TenantId,
-    scopeType: 'PROPERTY' | 'UNIT',
-    resourceIds: string[],
+  /**
+   * Validates that every roleId exists (system or tenant) and
+   * every resourceId in each scope actually belongs to this tenant.
+   */
+  private async validateRoleAssignments(
+    assignments: RoleAssignment[],
+    tenantId: string,
   ): Promise<void> {
-    if (scopeType === 'PROPERTY') {
-      const properties = await this.propertyRepository.findByTenantId(tenantId);
-      const validIds = new Set(
-        properties.map((property) => property.getId()!.toString()),
-      );
-      const invalid = resourceIds.filter((id) => !validIds.has(id));
-      if (invalid.length > 0) {
+    // Cache property and unit IDs per tenant
+    let validPropertyIds: Set<string> | null = null;
+    let validUnitIds: Set<string> | null = null;
+
+    for (const assignment of assignments) {
+      // Validate roleId exists (system roles only)
+      const roleId = RoleId.createFromString(assignment.roleId);
+      const role = await this.roleRepository.findById(roleId);
+      if (!role) {
         throw new BadRequestException(
-          `The following property IDs do not belong to this tenant: ${invalid.join(', ')}`,
+          `Role '${assignment.roleId}' does not exist`,
         );
       }
-    }
 
-    if (scopeType === 'UNIT') {
-      const units = await this.unitRepository.findByTenantId(tenantId);
-      const validIds = new Set(units.map((unit) => unit.getId()!.toString()));
-      const invalid = resourceIds.filter((id) => !validIds.has(id));
-      if (invalid.length > 0) {
-        throw new BadRequestException(
-          `The following unit IDs do not belong to this tenant: ${invalid.join(', ')}`,
+      // Validate scope resources
+      if (assignment.scope.type === 'PROPERTY') {
+        if (!validPropertyIds) {
+          const tid = TenantId.createFromString(tenantId);
+          const properties = await this.propertyRepository.findByTenantId(tid);
+          validPropertyIds = new Set(
+            properties.map((property) => property.getId()!.toString()),
+          );
+        }
+        const invalid = assignment.scope.resourceIds.filter(
+          (id) => !validPropertyIds!.has(id),
         );
+        if (invalid.length > 0) {
+          throw new BadRequestException(
+            `Property IDs not found in this tenant: ${invalid.join(', ')}`,
+          );
+        }
+      }
+
+      if (assignment.scope.type === 'UNIT') {
+        if (!validUnitIds) {
+          const tid = TenantId.createFromString(tenantId);
+          const units = await this.unitRepository.findByTenantId(tid);
+          validUnitIds = new Set(units.map((unit) => unit.getId()!.toString()));
+        }
+        const invalid = assignment.scope.resourceIds.filter(
+          (id) => !validUnitIds!.has(id),
+        );
+        if (invalid.length > 0) {
+          throw new BadRequestException(
+            `Unit IDs not found in this tenant: ${invalid.join(', ')}`,
+          );
+        }
       }
     }
   }
 
   private async validatePlanLimits(tenantId: TenantId, staffLimit: number) {
-    const existingUsersInTenant =
-      await this.userRepository.findByTenantId(tenantId);
-    const staffCount = existingUsersInTenant.filter(
-      (user) => !user.isOwner(),
-    ).length;
-
-    if (staffCount >= staffLimit)
+    const existingUsers = await this.userRepository.findByTenantId(tenantId);
+    const staffCount = existingUsers.filter((u) => !u.isOwner()).length;
+    if (staffCount >= staffLimit) {
       throw new ForbiddenException(
-        `Plan limit reached. Your current plan allows ${staffLimit} members. Please upgrade your plan`,
+        `Plan limit reached. Your current plan allows ${staffLimit} staff members. Please upgrade your plan`,
       );
+    }
   }
 }

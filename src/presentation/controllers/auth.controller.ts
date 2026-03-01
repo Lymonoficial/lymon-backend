@@ -69,7 +69,7 @@ export class AuthController {
         userId: result.userId,
         email: result.email,
         tenantId: result.tenantId,
-        role: result.role,
+        isOwner: result.isOwner,
         emailVerified: result.emailVerified,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,

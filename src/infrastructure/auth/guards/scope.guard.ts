@@ -32,24 +32,15 @@ export class ScopeGuard implements CanActivate {
       >();
 
     const user = request.user;
-
-    if (!user?.scope) {
-      throw new ForbiddenException('Access denied: missing scope');
+    if (!user) {
+      throw new ForbiddenException('Access denied: missing user context');
     }
 
-    // TENANT scope = full access to everything under that tenant
-    if (user.scope.type === 'TENANT') {
+    // OWNER has full implicit access to everything within their tenant
+    if (user.isOwner) {
       return true;
     }
 
-    // Scoped user must match the exact resource type being accessed
-    if (user.scope.type !== metadata.scopeType) {
-      throw new ForbiddenException(
-        `Access denied: your scope (${user.scope.type}) does not allow access to ${metadata.scopeType} resources`,
-      );
-    }
-
-    // Extract the resource ID from the route params
     const resourceId = request.params[metadata.paramName];
     if (!resourceId) {
       throw new ForbiddenException(
@@ -57,11 +48,30 @@ export class ScopeGuard implements CanActivate {
       );
     }
 
-    // Check the specific resource is in the user's allowed list
-    const hasAccess = user.scope.resourceIds.includes(resourceId);
-    if (!hasAccess) {
+    // Find any assignment that grants access to the requested resource
+    const matchingAssignment = user.roleAssignments.find((assignment) => {
+      if (assignment.scope.type === 'TENANT') {
+        return true; // tenant-scoped staff can access any resource under the tenant
+      }
+      if (assignment.scope.type !== metadata.scopeType) {
+        return false;
+      }
+      return assignment.scope.resourceIds.includes(resourceId);
+    });
+
+    if (!matchingAssignment) {
       throw new ForbiddenException(
         `Access denied: you do not have access to this ${metadata.scopeType.toLowerCase()}`,
+      );
+    }
+
+    // If a specific permission is required, verify it is present on the matched assignment
+    if (
+      metadata.permission &&
+      !matchingAssignment.permissions.includes(metadata.permission)
+    ) {
+      throw new ForbiddenException(
+        `Access denied: missing permission '${metadata.permission}'`,
       );
     }
 
