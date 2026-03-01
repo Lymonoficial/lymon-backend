@@ -7,6 +7,11 @@ export enum UserRoleEnum {
   USER = 'USER',
 }
 
+export type UserScope =
+  | { type: 'TENANT' }
+  | { type: 'PROPERTY'; resourceIds: string[] }
+  | { type: 'UNIT'; resourceIds: string[] };
+
 export class UserId {
   private readonly value: string;
 
@@ -34,6 +39,7 @@ export class User {
     private readonly tenantId: TenantId,
     private readonly role: UserRoleEnum,
     private emailVerified: boolean,
+    private scope: UserScope,
     private readonly createdAt: Date,
     private updatedAt: Date,
   ) {}
@@ -50,6 +56,27 @@ export class User {
       tenantId,
       UserRoleEnum.OWNER,
       false,
+      { type: 'TENANT' },
+      new Date(),
+      new Date(),
+    );
+  }
+
+  static createStaff(
+    email: Email,
+    passwordHash: string,
+    tenantId: TenantId,
+    role: UserRoleEnum,
+    scope: UserScope,
+  ): User {
+    return new User(
+      null,
+      email,
+      passwordHash,
+      tenantId,
+      role,
+      false,
+      scope,
       new Date(),
       new Date(),
     );
@@ -62,6 +89,7 @@ export class User {
     tenantId: TenantId,
     role: UserRoleEnum,
     emailVerified: boolean,
+    scope: UserScope,
     createdAt: Date,
     updatedAt: Date,
   ): User {
@@ -72,6 +100,7 @@ export class User {
       tenantId,
       role,
       emailVerified,
+      scope,
       createdAt,
       updatedAt,
     );
@@ -109,6 +138,10 @@ export class User {
 
   getRole(): UserRoleEnum {
     return this.role;
+  }
+
+  getScope(): UserScope {
+    return this.scope;
   }
 
   isOwner(): boolean {

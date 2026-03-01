@@ -1,5 +1,10 @@
 import { Email } from '@/domain/tenant/value-objects/email.vo';
-import { User, UserId, UserRoleEnum } from '@/domain/user/entities/user.entity';
+import {
+  User,
+  UserId,
+  UserRoleEnum,
+  UserScope,
+} from '@/domain/user/entities/user.entity';
 import { UserRepository } from '@/domain/user/repositories/user.repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserDocument } from '@/infrastructure/persistence/schemas/user.schema';
@@ -21,6 +26,7 @@ export class MongoUserRepository implements UserRepository {
       tenantId: user.getTenantId().toString(),
       role: user.getRole(),
       emailVerified: user.isEmailVerified(),
+      scope: user.getScope(),
       updatedAt: new Date(),
     };
 
@@ -40,6 +46,24 @@ export class MongoUserRepository implements UserRepository {
     return doc ? this.toDomainEntity(doc) : null;
   }
 
+  async findByTenantId(tenantId: TenantId): Promise<User[]> {
+    const docList = await this.userModel.find({
+      tenantId: tenantId.toString(),
+    });
+    return docList.map((doc) => this.toDomainEntity(doc));
+  }
+
+  async findByEmailAndTenantId(
+    email: Email,
+    tenantId: TenantId,
+  ): Promise<User | null> {
+    const doc = await this.userModel.findOne({
+      email: email.toString(),
+      tenantId: tenantId.toString(),
+    });
+    return doc ? this.toDomainEntity(doc) : null;
+  }
+
   private toDomainEntity(doc: UserDocument & { _id: Types.ObjectId }): User {
     return User.reconstitute(
       UserId.createFromString(doc._id.toString()),
@@ -48,6 +72,7 @@ export class MongoUserRepository implements UserRepository {
       TenantId.createFromString(doc.tenantId),
       doc.role as UserRoleEnum,
       doc.emailVerified,
+      doc.scope as UserScope,
       doc.createdAt,
       doc.updatedAt,
     );

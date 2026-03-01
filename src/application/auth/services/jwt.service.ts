@@ -1,3 +1,4 @@
+import { UserScope } from '@/domain/user/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { JwtService as NestJwtService } from '@nestjs/jwt';
 
@@ -8,6 +9,7 @@ export interface JwtPayload {
   activePlan: string;
   role: string;
   emailVerified: boolean;
+  scope: UserScope;
 }
 
 export interface ITokenService {

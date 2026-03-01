@@ -6,7 +6,7 @@ export type UserDocumentType = HydratedDocument<UserDocument>;
 
 @Schema({ collection: 'users', timestamps: true })
 export class UserDocument extends Document {
-  @Prop({ required: true, unique: true, lowercase: true })
+  @Prop({ required: true, lowercase: true })
   email: string;
 
   @Prop({ required: true })
@@ -15,6 +15,8 @@ export class UserDocument extends Document {
   @Prop({ required: true })
   tenantId: string;
 
+  @Prop({ type: Object, required: true })
+  scope: { type: string; resourceIds?: string[] };
   @Prop({ required: true, enum: UserRoleEnum })
   role: string;
 
@@ -30,4 +32,4 @@ export class UserDocument extends Document {
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);
 
-UserSchema.index({ tenantId: 1 });
+UserSchema.index({ email: 1, tenantId: 1 }, { unique: true });
