@@ -9,8 +9,8 @@ import {
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
-import { ChangePasswordCommand } from '@/application/user/commands/change-password.command';
-import { ChangePasswordResult } from '@/application/user/commands/change-password.handler';
+import { ChangePasswordCommand } from '@/application/user/commands/change-password/change-password.command';
+import { ChangePasswordResult } from '@/application/user/commands/change-password/change-password.handler';
 import { ChangePasswordDto } from '@/presentation/dtos/change-password.dto';
 import { InviteStaffDto } from '@/presentation/dtos/invite-staff.dto';
 import { InviteStaffCommand } from '@/application/user/commands/invite-staff/invite-staff.command';

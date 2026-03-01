@@ -3,7 +3,7 @@ import { LoginResult } from '@/application/auth/commands/login.handler';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { RegisterTenantCommand } from '@/application/tenant/commands/register-tenant.command';
 import { RegisterTenantResult } from '@/application/tenant/commands/register-tenant.handler';
-import { VerifyEmailCommand } from '@/application/user/commands/verify-email.command';
+import { VerifyEmailCommand } from '@/application/user/commands/verify-email/verify-email.command';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';

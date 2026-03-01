@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ChangePasswordCommand } from '@/application/user/commands/change-password.command';
+import { ChangePasswordCommand } from '@/application/user/commands/change-password/change-password.command';
 import {
   BadRequestException,
   Inject,

@@ -1,6 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { VerifyEmailHandler } from '@/application/user/commands/verify-email.handler';
-import { VerifyEmailCommand } from '@/application/user/commands/verify-email.command';
+import { VerifyEmailHandler } from '@/application/user/commands/verify-email/verify-email.handler';
+import { VerifyEmailCommand } from '@/application/user/commands/verify-email/verify-email.command';
 import { UserRepository } from '@/domain/user/repositories/user.repository';
 import { TenantRepository } from '@/domain/tenant/repositories/tenant.repository';
 import { ITokenService } from '@/application/auth/services/jwt.service';

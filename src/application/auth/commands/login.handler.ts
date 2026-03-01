@@ -73,6 +73,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       activePlan: tenant.getPlan().toString(),
       role: user.getRole(),
       emailVerified: user.isEmailVerified(),
+      scope: user.getScope(),
     };
 
     const accessToken = this.tokenService.generateAccesToken(payload);

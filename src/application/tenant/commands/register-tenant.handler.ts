@@ -82,6 +82,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
       activePlan: savedTenant.getPlan().toString(),
       role: savedUser.getRole(),
       emailVerified: savedUser.isEmailVerified(),
+      scope: savedUser.getScope(),
     };
 
     const accessToken = this.tokenService.generateAccesToken(payload);
@@ -94,6 +95,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
       activePlan: savedTenant.getPlan().toString(),
       role: savedUser.getRole(),
       emailVerified: false,
+      scope: savedUser.getScope(),
     };
 
     const verificationToken =

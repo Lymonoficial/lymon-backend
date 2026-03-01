@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { VerifyEmailCommand } from '@/application/user/commands/verify-email.command';
+import { VerifyEmailCommand } from '@/application/user/commands/verify-email/verify-email.command';
 import { Inject, UnauthorizedException } from '@nestjs/common';
 import {
   USER_REPOSITORY,
