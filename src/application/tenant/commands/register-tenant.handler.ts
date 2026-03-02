@@ -76,12 +76,13 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
     if (!savedUser) throw new Error('Failed to create user');
 
     const payload: JwtPayload = {
-      userId: savedUser.getId.toString(),
+      userId: savedUser.getId()!.toString(),
       email: savedUser.getEmail().toString(),
       tenantId: savedUser.getTenantId().toString(),
       activePlan: savedTenant.getPlan().toString(),
-      role: savedUser.getRole(),
+      isOwner: savedUser.isOwner(),
       emailVerified: savedUser.isEmailVerified(),
+      roleAssignments: [],
     };
 
     const accessToken = this.tokenService.generateAccesToken(payload);
@@ -92,8 +93,9 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
       email: savedUser.getEmail().toString(),
       tenantId: savedUser.getTenantId().toString(),
       activePlan: savedTenant.getPlan().toString(),
-      role: savedUser.getRole(),
+      isOwner: savedUser.isOwner(),
       emailVerified: false,
+      roleAssignments: [],
     };
 
     const verificationToken =

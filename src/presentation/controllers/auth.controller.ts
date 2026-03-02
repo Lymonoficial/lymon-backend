@@ -3,7 +3,7 @@ import { LoginResult } from '@/application/auth/commands/login.handler';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { RegisterTenantCommand } from '@/application/tenant/commands/register-tenant.command';
 import { RegisterTenantResult } from '@/application/tenant/commands/register-tenant.handler';
-import { VerifyEmailCommand } from '@/application/user/commands/verify-email.command';
+import { VerifyEmailCommand } from '@/application/user/commands/verify-email/verify-email.command';
 import { RecoverPasswordCommand } from '@/application/auth/commands/recover-password.command';
 import { RecoverPasswordResult } from '@/application/auth/commands/recover-password.handler';
 import { ConfirmRecoverPasswordCommand } from '@/application/auth/commands/confirm-recover-password.command';
@@ -75,7 +75,7 @@ export class AuthController {
         userId: result.userId,
         email: result.email,
         tenantId: result.tenantId,
-        role: result.role,
+        isOwner: result.isOwner,
         emailVerified: result.emailVerified,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,

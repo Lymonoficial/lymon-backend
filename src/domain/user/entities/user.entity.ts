@@ -1,10 +1,24 @@
 import { Email } from '@/domain/tenant/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
+export type UserScope =
+  | { type: 'TENANT' }
+  | { type: 'PROPERTY'; resourceIds: string[] }
+  | { type: 'UNIT'; resourceIds: string[] };
+
+/**
+ * A single role+resource assignment.
+ * One user can have multiple of these — e.g. ADMIN on Property X, VIEWER on Property Y.
+ */
+export interface RoleAssignment {
+  roleId: string;
+  scope: UserScope;
+}
+
+/** Kept for OWNER identity checks only. Staff roles are managed via RoleAssignment. */
 export enum UserRoleEnum {
   OWNER = 'OWNER',
-  ADMIN = 'ADMIN',
-  USER = 'USER',
+  STAFF = 'STAFF',
 }
 
 export class UserId {
@@ -36,7 +50,8 @@ export class User {
     private readonly email: Email,
     private passwordHash: string,
     private readonly tenantId: TenantId,
-    private readonly role: UserRoleEnum,
+    private readonly isOwnerFlag: boolean,
+    private roleAssignments: RoleAssignment[],
     private emailVerified: boolean,
     private readonly createdAt: Date,
     private updatedAt: Date,
@@ -55,7 +70,27 @@ export class User {
       email,
       passwordHash,
       tenantId,
-      UserRoleEnum.OWNER,
+      true,
+      [],
+      false,
+      new Date(),
+      new Date(),
+    );
+  }
+
+  static createStaff(
+    email: Email,
+    passwordHash: string,
+    tenantId: TenantId,
+    roleAssignments: RoleAssignment[],
+  ): User {
+    return new User(
+      null,
+      email,
+      passwordHash,
+      tenantId,
+      false,
+      roleAssignments,
       false,
       new Date(),
       new Date(),
@@ -67,7 +102,8 @@ export class User {
     email: Email,
     passwordHash: string,
     tenantId: TenantId,
-    role: UserRoleEnum,
+    isOwnerFlag: boolean,
+    roleAssignments: RoleAssignment[],
     emailVerified: boolean,
     createdAt: Date,
     updatedAt: Date,
@@ -80,7 +116,8 @@ export class User {
       email,
       passwordHash,
       tenantId,
-      role,
+      isOwnerFlag,
+      roleAssignments,
       emailVerified,
       createdAt,
       updatedAt,
@@ -92,6 +129,11 @@ export class User {
 
   verifyEmail(): void {
     this.emailVerified = true;
+    this.updatedAt = new Date();
+  }
+
+  updateRoleAssignments(roleAssignments: RoleAssignment[]): void {
+    this.roleAssignments = roleAssignments;
     this.updatedAt = new Date();
   }
 
@@ -174,11 +216,17 @@ export class User {
     return this.tenantId;
   }
 
+  /** @deprecated Use isOwner() for identity checks; use roleAssignments for permission checks */
   getRole(): UserRoleEnum {
-    return this.role;
+    return this.isOwnerFlag ? UserRoleEnum.OWNER : UserRoleEnum.STAFF;
+  }
+
+  getRoleAssignments(): RoleAssignment[] {
+    return [...this.roleAssignments];
   }
 
   isOwner(): boolean {
-    return this.role === UserRoleEnum.OWNER;
+    return this.isOwnerFlag;
   }
 }
+
