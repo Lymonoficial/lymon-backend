@@ -34,6 +34,9 @@ import {
   PASSWORD_HASHER,
 } from '@/application/auth/services/password-hasher.service';
 import { RoleAssignment, User } from '@/domain/user/entities/user.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuditLoggedEvent, AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
+import { AuditAction, AuditEntityType } from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(InviteStaffCommand)
 export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
@@ -50,6 +53,7 @@ export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
     private readonly roleRepository: RoleRepository,
     @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: IPasswordHasher,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: InviteStaffCommand): Promise<void> {
@@ -86,6 +90,23 @@ export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
       command.roleAssignments,
     );
     await this.userRepository.save(staffUser);
+
+    const savedStaff = await this.userRepository.findByEmailAndTenantId(
+      Email.create(command.email),
+      tenantId,
+    );
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId,
+        command.actorEmail,
+        AuditAction.USER_INVITED,
+        AuditEntityType.USER,
+        savedStaff?.getId()?.toString(),
+        { invitedEmail: command.email },
+      ),
+    );
   }
 
   /**

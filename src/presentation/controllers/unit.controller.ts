@@ -56,6 +56,8 @@ export class UnitController {
       dto.amenities,
       dto.pricePerNight,
       dto.externalIds,
+      user.userId,
+      user.email,
     );
 
     const result = await this.commandBus.execute<

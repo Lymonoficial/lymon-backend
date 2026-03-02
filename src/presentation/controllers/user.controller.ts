@@ -1,4 +1,11 @@
-import { Body, Controller, HttpStatus, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
@@ -66,6 +73,8 @@ export class UserController {
       dto.password,
       jwtPayload.tenantId,
       dto.roleAssignments as unknown as RoleAssignment[],
+      jwtPayload.userId,
+      jwtPayload.email,
     );
 
     await this.commandBus.execute(command);

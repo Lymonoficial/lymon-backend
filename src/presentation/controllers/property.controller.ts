@@ -66,6 +66,8 @@ export class PropertyController {
       dto.hostPhone,
       dto.hostEmail,
       autoCreateUnit,
+      user.userId,
+      user.email,
     );
 
     const result = await this.commandBus.execute<

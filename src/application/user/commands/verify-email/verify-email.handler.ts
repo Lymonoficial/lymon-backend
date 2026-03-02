@@ -14,6 +14,9 @@ import {
   TOKEN_SERVICE,
 } from '@/application/auth/services/jwt.service';
 import { UserId } from '@/domain/user/entities/user.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuditLoggedEvent, AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
+import { AuditAction, AuditEntityType } from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(VerifyEmailCommand)
 export class VerifyEmailHandler implements ICommandHandler<VerifyEmailCommand> {
@@ -24,6 +27,7 @@ export class VerifyEmailHandler implements ICommandHandler<VerifyEmailCommand> {
     private readonly tenantRepository: TenantRepository,
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
   async execute(command: VerifyEmailCommand): Promise<void> {
     try {
@@ -39,6 +43,18 @@ export class VerifyEmailHandler implements ICommandHandler<VerifyEmailCommand> {
 
       user.verifyEmail();
       await this.userRepository.save(user);
+
+      this.eventEmitter.emit(
+        AUDIT_LOG_EVENT,
+        new AuditLoggedEvent(
+          user.getTenantId().toString(),
+          user.getId()!.toString(),
+          user.getEmail().toString(),
+          AuditAction.USER_EMAIL_VERIFIED,
+          AuditEntityType.USER,
+          user.getId()!.toString(),
+        ),
+      );
 
       const tenant = await this.tenantRepository.findById(user.getTenantId());
       if (tenant && !tenant.isEmailVerified()) {

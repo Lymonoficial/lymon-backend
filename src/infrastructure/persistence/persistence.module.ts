@@ -24,6 +24,10 @@ import {
   RoleDocument,
   RoleSchema,
 } from '@/infrastructure/persistence/schemas/role.schema';
+import {
+  AuditLogDocument,
+  AuditLogSchema,
+} from '@/infrastructure/persistence/schemas/audit-log.schema';
 import { TENANT_REPOSITORY } from '@/domain/tenant/repositories/tenant.repository';
 import { MongoTenantRepository } from '@/infrastructure/persistence/repositories/mongo-tenant.repository';
 import { USER_REPOSITORY } from '@/domain/user/repositories/user.repository';
@@ -36,6 +40,8 @@ import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import { MongoGuestRepository } from '@/infrastructure/persistence/repositories/mongo-guest.repository';
 import { ROLE_REPOSITORY } from '@/domain/role/repositories/role.repository';
 import { MongoRoleRepository } from '@/infrastructure/persistence/repositories/mongo-role.repository';
+import { AUDIT_LOG_REPOSITORY } from '@/domain/audit/repositories/audit-log.repository';
+import { MongoAuditLogRepository } from '@/infrastructure/persistence/repositories/mongo-audit-log.repository';
 import { RoleSeedService } from '@/infrastructure/persistence/seeds/role-seed.service';
 import { TRANSACTION_MANAGER } from '@/domain/shared/transaction-manager.interface';
 import { MongoTransactionManager } from '@/infrastructure/persistence/transaction/mongo-transaction-manager';
@@ -49,6 +55,7 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
       { name: UnitDocument.name, schema: UnitSchema },
       { name: GuestDocument.name, schema: GuestSchema },
       { name: RoleDocument.name, schema: RoleSchema },
+      { name: AuditLogDocument.name, schema: AuditLogSchema },
     ]),
   ],
   providers: [
@@ -77,6 +84,10 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
       useClass: MongoRoleRepository,
     },
     {
+      provide: AUDIT_LOG_REPOSITORY,
+      useClass: MongoAuditLogRepository,
+    },
+    {
       provide: TRANSACTION_MANAGER,
       useClass: MongoTransactionManager,
     },
@@ -89,6 +100,7 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
     UNIT_REPOSITORY,
     GUEST_REPOSITORY,
     ROLE_REPOSITORY,
+    AUDIT_LOG_REPOSITORY,
     TRANSACTION_MANAGER,
   ],
 })

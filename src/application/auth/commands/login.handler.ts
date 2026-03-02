@@ -25,6 +25,9 @@ import {
 } from '@/domain/role/repositories/role.repository';
 import { RoleId } from '@/domain/role/entities/role.entity';
 import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuditLoggedEvent, AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
+import { AuditAction, AuditEntityType } from '@/domain/audit/value-objects/audit-action.vo';
 
 export class LoginResult {
   constructor(
@@ -51,6 +54,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
     private readonly tokenService: ITokenService,
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: LoginCommand): Promise<LoginResult> {
@@ -103,6 +107,18 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
     const accessToken = this.tokenService.generateAccesToken(payload);
     const refreshToken = this.tokenService.generateRefreshToken(payload);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        user.getTenantId().toString(),
+        user.getId()!.toString(),
+        user.getEmail().toString(),
+        AuditAction.AUTH_LOGIN,
+        AuditEntityType.AUTH,
+        user.getId()!.toString(),
+      ),
+    );
 
     return new LoginResult(
       user.getId()!.toString(),

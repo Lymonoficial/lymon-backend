@@ -5,6 +5,7 @@ import { AuthController } from '@/presentation/controllers/auth.controller';
 import { UserController } from '@/presentation/controllers/user.controller';
 import { PropertyController } from '@/presentation/controllers/property.controller';
 import { UnitController } from '@/presentation/controllers/unit.controller';
+import { AuditController } from '@/presentation/controllers/audit.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -13,6 +14,7 @@ import { UnitController } from '@/presentation/controllers/unit.controller';
     UserController,
     PropertyController,
     UnitController,
+    AuditController,
   ],
 })
 export class PresentationModule {}

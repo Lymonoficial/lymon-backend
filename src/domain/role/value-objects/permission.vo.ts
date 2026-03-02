@@ -39,6 +39,9 @@ export enum Permission {
   // --- Integrations ---
   INTEGRATION_VIEW = 'INTEGRATION_VIEW',
   INTEGRATION_MANAGE = 'INTEGRATION_MANAGE',
+
+  // --- Audit ---
+  AUDIT_VIEW = 'AUDIT_VIEW',
 }
 
 /** All permissions — assigned to OWNER */
@@ -62,6 +65,7 @@ export const ADMIN_PERMISSIONS: Permission[] = [
   Permission.CRM_MANAGE,
   Permission.INTEGRATION_VIEW,
   Permission.TENANT_USERS_MANAGE,
+  Permission.AUDIT_VIEW,
 ];
 
 /** Permissions for the built-in STAFF system role */

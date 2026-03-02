@@ -6,5 +6,7 @@ export class InviteStaffCommand {
     public readonly password: string,
     public readonly tenantId: string,
     public readonly roleAssignments: RoleAssignment[],
+    public readonly actorId: string,
+    public readonly actorEmail: string,
   ) {}
 }
