@@ -22,6 +22,15 @@ export class UserDocument extends Document {
   emailVerified: boolean;
 
   @Prop()
+  resetPasswordToken?: string;
+
+  @Prop()
+  resetPasswordExpires?: Date;
+
+  @Prop()
+  passwordChangedAt?: Date;
+
+  @Prop()
   createdAt: Date;
 
   @Prop()

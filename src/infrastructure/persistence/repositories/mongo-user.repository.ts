@@ -15,7 +15,7 @@ export class MongoUserRepository implements UserRepository {
   async save(user: User): Promise<void> {
     const id = user.getId()?.toString();
 
-    const document = {
+    const document: Partial<UserDocument> = {
       email: user.getEmail().toString(),
       passwordHash: user.getPasswordHash(),
       tenantId: user.getTenantId().toString(),
@@ -24,8 +24,42 @@ export class MongoUserRepository implements UserRepository {
       updatedAt: new Date(),
     };
 
+    const resetPasswordToken = user.getResetPasswordToken();
+    const resetPasswordExpires = user.getResetPasswordExpires();
+    const passwordChangedAt = user.getPasswordChangedAt();
+
+    // Set or unset optional fields
+    if (resetPasswordToken !== undefined) {
+      document.resetPasswordToken = resetPasswordToken;
+    }
+    if (resetPasswordExpires !== undefined) {
+      document.resetPasswordExpires = resetPasswordExpires;
+    }
+    if (passwordChangedAt !== undefined) {
+      document.passwordChangedAt = passwordChangedAt;
+    }
+
     if (id) {
-      await this.userModel.findByIdAndUpdate(id, document, { new: true });
+      const updateOperation: {
+        $set: Partial<UserDocument>;
+        $unset?: Record<string, string>;
+      } = { $set: document };
+
+      const unsetFields: Record<string, string> = {};
+      if (resetPasswordToken === undefined) {
+        unsetFields.resetPasswordToken = '';
+      }
+      if (resetPasswordExpires === undefined) {
+        unsetFields.resetPasswordExpires = '';
+      }
+
+      if (Object.keys(unsetFields).length > 0) {
+        updateOperation.$unset = unsetFields;
+      }
+
+      await this.userModel.findByIdAndUpdate(id, updateOperation, {
+        new: true,
+      });
     } else {
       await this.userModel.create({ ...document, createdAt: new Date() });
     }
@@ -40,6 +74,13 @@ export class MongoUserRepository implements UserRepository {
     return doc ? this.toDomainEntity(doc) : null;
   }
 
+  async findByResetToken(hashedToken: string): Promise<User | null> {
+    const doc = await this.userModel.findOne({
+      resetPasswordToken: hashedToken,
+    });
+    return doc ? this.toDomainEntity(doc) : null;
+  }
+
   private toDomainEntity(doc: UserDocument & { _id: Types.ObjectId }): User {
     return User.reconstitute(
       UserId.createFromString(doc._id.toString()),
@@ -50,6 +91,9 @@ export class MongoUserRepository implements UserRepository {
       doc.emailVerified,
       doc.createdAt,
       doc.updatedAt,
+      doc.resetPasswordToken,
+      doc.resetPasswordExpires,
+      doc.passwordChangedAt,
     );
   }
 }

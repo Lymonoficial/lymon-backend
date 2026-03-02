@@ -6,6 +6,8 @@ import { VerifyEmailHandler } from '@/application/user/commands/verify-email.han
 import { ChangePasswordHandler } from '@/application/user/commands/change-password.handler';
 import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { LoginHandler } from './auth/commands/login.handler';
+import { RecoverPasswordHandler } from './auth/commands/recover-password.handler';
+import { ConfirmRecoverPasswordHandler } from './auth/commands/confirm-recover-password.handler';
 import { EmailModule } from '@/infrastructure/email/email.module';
 import { PropertyApplicationModule } from '@/application/property/property-application.module';
 import { UnitApplicationModule } from '@/application/unit/unit-application.module';
@@ -13,6 +15,8 @@ import { UnitApplicationModule } from '@/application/unit/unit-application.modul
 const CommandHandlers = [
   RegisterTenantHandler,
   LoginHandler,
+  RecoverPasswordHandler,
+  ConfirmRecoverPasswordHandler,
   VerifyEmailHandler,
   ChangePasswordHandler,
 ];

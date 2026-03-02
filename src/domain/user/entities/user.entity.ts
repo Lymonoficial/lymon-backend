@@ -24,6 +24,10 @@ export class UserId {
   toString(): string {
     return this.value;
   }
+
+  equals(other: UserId): boolean {
+    return this.value === other.value;
+  }
 }
 
 export class User {
@@ -36,6 +40,9 @@ export class User {
     private emailVerified: boolean,
     private readonly createdAt: Date,
     private updatedAt: Date,
+    private resetPasswordToken?: string,
+    private resetPasswordExpires?: Date,
+    private passwordChangedAt?: Date,
   ) {}
 
   static createOwner(
@@ -64,6 +71,9 @@ export class User {
     emailVerified: boolean,
     createdAt: Date,
     updatedAt: Date,
+    resetPasswordToken?: string,
+    resetPasswordExpires?: Date,
+    passwordChangedAt?: Date,
   ): User {
     return new User(
       id,
@@ -74,6 +84,9 @@ export class User {
       emailVerified,
       createdAt,
       updatedAt,
+      resetPasswordToken,
+      resetPasswordExpires,
+      passwordChangedAt,
     );
   }
 
@@ -99,8 +112,62 @@ export class User {
   }
 
   changePassword(newPasswordHash: string): void {
+    if (!newPasswordHash || newPasswordHash.trim() === '') {
+      throw new Error('Password hash cannot be empty');
+    }
+
     this.passwordHash = newPasswordHash;
+    this.passwordChangedAt = new Date();
     this.updatedAt = new Date();
+  }
+
+  setResetToken(hashedToken: string, expiresAt: Date): void {
+    if (!hashedToken || hashedToken.trim() === '') {
+      throw new Error('Reset token cannot be empty');
+    }
+
+    const now = new Date();
+    if (expiresAt <= now) {
+      throw new Error('Reset token expiration must be in the future');
+    }
+
+    this.resetPasswordToken = hashedToken;
+    this.resetPasswordExpires = expiresAt;
+    this.updatedAt = new Date();
+  }
+
+  getResetPasswordToken(): string | undefined {
+    return this.resetPasswordToken;
+  }
+
+  getResetPasswordExpires(): Date | undefined {
+    return this.resetPasswordExpires;
+  }
+
+  resetPasswordWithToken(newPasswordHash: string, currentDate: Date): void {
+    if (!this.isResetTokenValid(currentDate)) {
+      throw new Error('Reset token is invalid or expired');
+    }
+
+    this.changePassword(newPasswordHash);
+    this.clearResetToken();
+  }
+
+  clearResetToken(): void {
+    this.resetPasswordToken = undefined;
+    this.resetPasswordExpires = undefined;
+    this.updatedAt = new Date();
+  }
+
+  isResetTokenValid(currentDate: Date): boolean {
+    if (!this.resetPasswordToken || !this.resetPasswordExpires) {
+      return false;
+    }
+    return currentDate <= this.resetPasswordExpires;
+  }
+
+  getPasswordChangedAt(): Date | undefined {
+    return this.passwordChangedAt;
   }
 
   getTenantId(): TenantId {

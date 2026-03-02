@@ -5,6 +5,7 @@ export interface UserRepository {
   save(user: User): Promise<void>;
   findById(id: UserId): Promise<User | null>;
   findByEmail(email: Email): Promise<User | null>;
+  findByResetToken(hashedToken: string): Promise<User | null>;
 }
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
