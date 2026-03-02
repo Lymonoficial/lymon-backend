@@ -54,10 +54,11 @@
    
    El archivo \`.env\` ya está configurado con:
    \`\`\`env
-   MONGO_URI=mongodb+srv://lymonoficial:Dicudtc5@cluster0.oxzyff3.mongodb.net/lymon?retryWrites=true&w=majority&appName=Cluster0
-   JWT_SECRET=lymon_jwt_secret_key_change_in_production
-   JWT_EXPIRES_IN=7d
-   PORT=3000
+   MONGO_URI=yourMongoUrl
+   appName=yourClusterName
+   JWT_SECRET=yourJwt-Secret
+   JWT_EXPIRES_IN=yourJwtExpiration
+   PORT=yourPort
    NODE_ENV=development
    \`\`\`
 
@@ -238,8 +239,6 @@ La aplicación crea automáticamente las siguientes colecciones:
 
 2. **MongoDB Atlas:**
    - Si hay problemas de conexión, verifica la configuración de Network Access en MongoDB Atlas
-   - La contraseña actual es: `Dicudtc5`
-   - Usuario: `lymonoficial`
 
 3. **Desarrollo:**
    - La aplicación usa hot-reload en modo desarrollo
