@@ -1,5 +1,6 @@
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import {
   CreateGuestParams,
   GuestIdentity,
@@ -12,6 +13,7 @@ export class Guest {
   private constructor(
     private readonly id: GuestId | null,
     private readonly tenantId: TenantId,
+    private guestAccountId: GuestAccountId | null,
     private identity: GuestIdentity,
     private firstName: string | null,
     private lastName: string | null,
@@ -40,6 +42,7 @@ export class Guest {
     return new Guest(
       null,
       params.tenantId,
+      params.guestAccountId ?? null,
       params.identity,
       Guest.normalizeOptionalString(params.firstName),
       Guest.normalizeOptionalString(params.lastName),
@@ -66,6 +69,7 @@ export class Guest {
   static reconstitute(
     id: GuestId,
     tenantId: TenantId,
+    guestAccountId: GuestAccountId | null,
     identity: GuestIdentity,
     firstName: string | null,
     lastName: string | null,
@@ -83,6 +87,7 @@ export class Guest {
     return new Guest(
       id,
       tenantId,
+      guestAccountId,
       identity,
       firstName,
       lastName,
@@ -170,6 +175,10 @@ export class Guest {
 
   getTenantId(): TenantId {
     return this.tenantId;
+  }
+
+  getGuestAccountId(): GuestAccountId | null {
+    return this.guestAccountId;
   }
 
   getIdentity(): GuestIdentity {

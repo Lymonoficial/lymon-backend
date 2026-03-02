@@ -4,6 +4,7 @@ import { ClientSession, Model, Types } from 'mongoose';
 import { Guest } from '@/domain/guest/entities/guest.entity';
 import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
@@ -23,6 +24,9 @@ export class MongoGuestRepository implements GuestRepository {
 
     const document = {
       tenantId: new Types.ObjectId(guest.getTenantId().toString()),
+      guestAccountId: guest.getGuestAccountId()
+        ? new Types.ObjectId(guest.getGuestAccountId()!.toString())
+        : null,
       identity: guest.getIdentity(),
       firstName: guest.getFirstName(),
       lastName: guest.getLastName(),
@@ -96,6 +100,17 @@ export class MongoGuestRepository implements GuestRepository {
     return document ? this.toDomain(document) : null;
   }
 
+  async findByGuestAccountId(
+    tenantId: TenantId,
+    guestAccountId: GuestAccountId,
+  ): Promise<Guest | null> {
+    const document = await this.guestModel.findOne({
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      guestAccountId: new Types.ObjectId(guestAccountId.toString()),
+    });
+    return document ? this.toDomain(document) : null;
+  }
+
   async countByTenantId(tenantId: TenantId): Promise<number> {
     return this.guestModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),
@@ -110,6 +125,9 @@ export class MongoGuestRepository implements GuestRepository {
     return Guest.reconstitute(
       GuestId.createFromString(document._id.toString()),
       TenantId.createFromString(document.tenantId.toString()),
+      document.guestAccountId
+        ? GuestAccountId.createFromString(document.guestAccountId.toString())
+        : null,
       {
         documentType: document.identity?.documentType,
         documentNumber: document.identity?.documentNumber,
