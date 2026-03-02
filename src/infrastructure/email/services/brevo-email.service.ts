@@ -5,6 +5,7 @@ import {
 import { Injectable, Logger } from '@nestjs/common';
 import { BrevoClient } from '@getbrevo/brevo';
 import { ConfigService } from '@nestjs/config';
+import { EmailTemplateService } from '@/infrastructure/common/email-template.service';
 
 @Injectable()
 export class BrevoEmailService implements IEmailService {
@@ -15,7 +16,10 @@ export class BrevoEmailService implements IEmailService {
     name: 'Lymon',
   };
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly emailTemplateService: EmailTemplateService,
+  ) {
     const apiKey = this.configService.get<string>('BREVO_API_KEY');
     if (!apiKey) throw new Error('BREVO_API_KEY is not configured');
     this.client = new BrevoClient({ apiKey });
@@ -43,56 +47,26 @@ export class BrevoEmailService implements IEmailService {
     const appUrl = this.configService.get<string>('APP_URL');
     const verificationUrl = `${appUrl}/auth/verify-email?token=${token}`;
 
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; background-color: #f9f9f9; }
-            .button { 
-              display: inline-block; 
-              padding: 12px 30px; 
-              background-color: #4CAF50; 
-              color: white; 
-              text-decoration: none; 
-              border-radius: 5px;
-              margin: 20px 0;
-            }
-            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>¡Bienvenido a Lymon!</h1>
-            </div>
-            <div class="content">
-              <h2>Verifica tu correo electrónico</h2>
-              <p>Gracias por registrarte en Lymon, tu plataforma de gestión de alojamientos turísticos.</p>
-              <p>Para completar tu registro y acceder a todas las funcionalidades, por favor verifica tu correo electrónico haciendo clic en el siguiente botón:</p>
-              <div style="text-align: center;">
-                <a href="${verificationUrl}" class="button">Verificar mi correo</a>
-              </div>
-              <p>O copia y pega este enlace en tu navegador:</p>
-              <p style="word-break: break-all; color: #666;">${verificationUrl}</p>
-              <p><strong>Este enlace expirará en 24 horas.</strong></p>
-            </div>
-            <div class="footer">
-              <p>Si no creaste una cuenta en Lymon, puedes ignorar este correo.</p>
-              <p>&copy; 2026 Lymon. Todos los derechos reservados.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+    const htmlContent =
+      this.emailTemplateService.renderVerifyEmailTemplate(verificationUrl);
 
     await this.sendEmail({
       to: [{ email, name: email }],
       subject: 'Verifica tu correo electrónico - Lymon',
+      htmlContent,
+    });
+  }
+
+  async sendRecoveryEmail(email: string, plainToken: string): Promise<void> {
+    const appUrl = this.configService.get<string>('APP_URL');
+    const recoveryUrl = `${appUrl}/recover-password?token=${plainToken}`;
+
+    const htmlContent =
+      this.emailTemplateService.renderRecoverPasswordTemplate(recoveryUrl);
+
+    await this.sendEmail({
+      to: [{ email, name: email }],
+      subject: 'Recuperación de contraseña - Lymon',
       htmlContent,
     });
   }
