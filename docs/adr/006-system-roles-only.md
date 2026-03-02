@@ -1,7 +1,7 @@
 # ADR-006: Solo Roles del Sistema — Sin Roles Personalizados
 
 **Fecha:** 2026-02-01  
-**Estado:** Aceptado  
+**Estado:** Aceptado — actualizado 2026-03-02  
 **Reemplaza:** diseño de la era ADR-005 donde `Role` tenía `tenantId` y factory `createCustom()`
 
 ---
@@ -17,9 +17,17 @@ Se eliminan los roles personalizados. El sistema tiene exactamente dos roles: `A
 La entidad `Role` ya no tiene `tenantId`, `isSystem`, `createCustom()`, `updatePermissions()`, ni `rename()`. La interfaz del repositorio se reduce a tres métodos: `save`, `findById`, `findSystemRoles`.
 
 ```
-Permisos ADMIN: CRUD de propiedades, CRUD de unidades, reservas, finanzas, CRM, integraciones, gestión de usuarios
+Permisos ADMIN: CRUD de propiedades, CRUD de unidades, reservas, finanzas, CRM, integraciones, gestión de usuarios, auditoría
+               + CRUD completo de incident reports (sobre cualquier reporte del tenant)
+
 Permisos STAFF: lectura de propiedades/unidades, crear/editar/eliminar reservas
+               + crear incident reports, leer incident reports
+               + editar y eliminar ÚNICAMENTE sus propios incident reports (createdBy === actorId)
 ```
+
+La restricción de ownership en edit/delete de incident reports se aplica a nivel de handler de aplicación: si el actor no es OWNER ni ADMIN (`canManageAll = false`), solo puede modificar reportes donde `createdBy === actorId`.
+
+El borrado de incident reports es un **soft delete**: el campo `deletedAt` se establece con timestamp y el documento permanece en MongoDB. Ninguna consulta retorna documentos con `deletedAt != null`.
 
 El nivel de acceso real de un miembro del personal resulta de combinar su rol (qué permisos otorga) con su scope (a qué recursos aplican esos permisos).
 
