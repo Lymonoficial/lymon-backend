@@ -1,6 +1,6 @@
 import { Tenant } from '@/domain/tenant/entities/tenant.entity';
 import { TenantRepository } from '@/domain/tenant/repositories/tenant.repository';
-import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';

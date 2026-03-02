@@ -17,7 +17,7 @@ import {
   TENANT_REPOSITORY,
   type TenantRepository,
 } from '@/domain/tenant/repositories/tenant.repository';
-import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { Email } from '@/domain/shared/value-objects/email.vo';
 import { PlanType } from '@/domain/tenant/value-objects/plan-type.vo';
 import { User } from '@/domain/user/entities/user.entity';
 import {

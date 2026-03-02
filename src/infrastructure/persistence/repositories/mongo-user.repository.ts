@@ -1,4 +1,4 @@
-import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { Email } from '@/domain/shared/value-objects/email.vo';
 import {
   RoleAssignment,
   User,
