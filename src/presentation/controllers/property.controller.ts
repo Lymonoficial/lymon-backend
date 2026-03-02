@@ -9,8 +9,10 @@ import {
   Query,
   ParseBoolPipe,
   DefaultValuePipe,
+  ParseIntPipe,
+  Get,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -19,12 +21,17 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { CreatePropertyDto } from '@/presentation/dtos/create-property.dto';
+import { GetPropertiesByTenantQuery } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.query';
+import { GetPropertiesByTenantResult } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.result';
 
 @ApiTags('properties')
 @ApiBearerAuth('JWT-auth')
 @Controller('properties')
 export class PropertyController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new property' })
@@ -73,6 +80,48 @@ export class PropertyController {
       data: {
         propertyId: result.propertyId,
         unitId: result.unitId,
+      },
+    };
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'List all the properties for the current tenant' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Properties retrieved successfully',
+  })
+  async getProperties(
+    @CurrentUser() user: JwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const query = new GetPropertiesByTenantQuery(user.tenantId, page, limit);
+
+    const result = await this.queryBus.execute<
+      GetPropertiesByTenantQuery,
+      GetPropertiesByTenantResult
+    >(query);
+
+    return {
+      message: 'Properties retrieved successfully',
+      data: result.properties,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: Math.ceil(result.total / result.limit),
       },
     };
   }
