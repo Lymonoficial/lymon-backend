@@ -1,0 +1,209 @@
+import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
+import { GuestAccountStatusEnum } from '@/domain/guest-account/value-objects/guest-account-status.vo';
+import { CreateGuestAccountParams } from '@/domain/guest-account/entities/guest-account.types';
+import { Email } from '@/domain/shared/value-objects/email.vo';
+
+export class GuestAccount {
+  private constructor(
+    private readonly id: GuestAccountId | null,
+    private email: Email,
+    private passwordHash: string,
+    private fullName: string,
+    private firstName: string | null,
+    private lastName: string | null,
+    private status: GuestAccountStatusEnum,
+    private emailVerified: boolean,
+    private emailVerificationToken: string | null,
+    private emailVerificationExpiry: Date | null,
+    private passwordResetToken: string | null,
+    private passwordResetExpiry: Date | null,
+    private passwordChangedAt: Date | null,
+    private readonly createdAt: Date,
+    private updatedAt: Date,
+  ) {}
+
+  static create(params: CreateGuestAccountParams): GuestAccount {
+    const fullName = params.fullName?.trim();
+    if (!fullName) {
+      throw new Error('GuestAccount fullName is required');
+    }
+
+    return new GuestAccount(
+      null,
+      params.email,
+      params.passwordHash,
+      fullName,
+      params.firstName?.trim() ?? null,
+      params.lastName?.trim() ?? null,
+      GuestAccountStatusEnum.PENDING_VERIFICATION,
+      false,
+      null,
+      null,
+      null,
+      null,
+      null,
+      new Date(),
+      new Date(),
+    );
+  }
+
+  static reconstitute(
+    id: GuestAccountId,
+    email: Email,
+    passwordHash: string,
+    fullName: string,
+    firstName: string | null,
+    lastName: string | null,
+    status: GuestAccountStatusEnum,
+    emailVerified: boolean,
+    emailVerificationToken: string | null,
+    emailVerificationExpiry: Date | null,
+    passwordResetToken: string | null,
+    passwordResetExpiry: Date | null,
+    passwordChangedAt: Date | null,
+    createdAt: Date,
+    updatedAt: Date,
+  ): GuestAccount {
+    return new GuestAccount(
+      id,
+      email,
+      passwordHash,
+      fullName,
+      firstName,
+      lastName,
+      status,
+      emailVerified,
+      emailVerificationToken,
+      emailVerificationExpiry,
+      passwordResetToken,
+      passwordResetExpiry,
+      passwordChangedAt,
+      createdAt,
+      updatedAt,
+    );
+  }
+
+  setEmailVerificationToken(token: string, expiry: Date): void {
+    this.emailVerificationToken = token;
+    this.emailVerificationExpiry = expiry;
+    this.touch();
+  }
+
+  verifyEmail(): void {
+    this.emailVerified = true;
+    this.emailVerificationToken = null;
+    this.emailVerificationExpiry = null;
+    this.status = GuestAccountStatusEnum.ACTIVE;
+    this.touch();
+  }
+
+  isEmailVerificationTokenValid(now: Date): boolean {
+    if (!this.emailVerificationExpiry) return false;
+    return this.emailVerificationExpiry > now;
+  }
+
+  setResetToken(hashedToken: string, expiry: Date): void {
+    this.passwordResetToken = hashedToken;
+    this.passwordResetExpiry = expiry;
+    this.touch();
+  }
+
+  clearResetToken(): void {
+    this.passwordResetToken = null;
+    this.passwordResetExpiry = null;
+    this.touch();
+  }
+
+  isResetTokenValid(now: Date): boolean {
+    if (!this.passwordResetExpiry) return false;
+    return this.passwordResetExpiry > now;
+  }
+
+  resetPassword(newHash: string, changedAt: Date): void {
+    this.passwordHash = newHash;
+    this.passwordChangedAt = changedAt;
+    this.clearResetToken();
+  }
+
+  updateProfile(
+    fullName: string,
+    firstName?: string | null,
+    lastName?: string | null,
+  ): void {
+    const normalized = fullName.trim();
+    if (!normalized) throw new Error('GuestAccount fullName is required');
+    this.fullName = normalized;
+    this.firstName = firstName?.trim() ?? null;
+    this.lastName = lastName?.trim() ?? null;
+    this.touch();
+  }
+
+  suspend(): void {
+    this.status = GuestAccountStatusEnum.SUSPENDED;
+    this.touch();
+  }
+
+  getId(): GuestAccountId | null {
+    return this.id;
+  }
+
+  getEmail(): Email {
+    return this.email;
+  }
+
+  getPasswordHash(): string {
+    return this.passwordHash;
+  }
+
+  getFullName(): string {
+    return this.fullName;
+  }
+
+  getFirstName(): string | null {
+    return this.firstName;
+  }
+
+  getLastName(): string | null {
+    return this.lastName;
+  }
+
+  getStatus(): GuestAccountStatusEnum {
+    return this.status;
+  }
+
+  isEmailVerified(): boolean {
+    return this.emailVerified;
+  }
+
+  getEmailVerificationToken(): string | null {
+    return this.emailVerificationToken;
+  }
+
+  getEmailVerificationExpiry(): Date | null {
+    return this.emailVerificationExpiry;
+  }
+
+  getPasswordResetToken(): string | null {
+    return this.passwordResetToken;
+  }
+
+  getPasswordResetExpiry(): Date | null {
+    return this.passwordResetExpiry;
+  }
+
+  getPasswordChangedAt(): Date | null {
+    return this.passwordChangedAt;
+  }
+
+  getCreatedAt(): Date {
+    return this.createdAt;
+  }
+
+  getUpdatedAt(): Date {
+    return this.updatedAt;
+  }
+
+  private touch(): void {
+    this.updatedAt = new Date();
+  }
+}
