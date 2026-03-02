@@ -42,6 +42,12 @@ export enum Permission {
 
   // --- Audit ---
   AUDIT_VIEW = 'AUDIT_VIEW',
+
+  // --- Incident Reports ---
+  INCIDENT_REPORT_CREATE = 'INCIDENT_REPORT_CREATE',
+  INCIDENT_REPORT_READ = 'INCIDENT_REPORT_READ',
+  INCIDENT_REPORT_EDIT = 'INCIDENT_REPORT_EDIT',
+  INCIDENT_REPORT_DELETE = 'INCIDENT_REPORT_DELETE',
 }
 
 /** All permissions — assigned to OWNER */
@@ -66,6 +72,10 @@ export const ADMIN_PERMISSIONS: Permission[] = [
   Permission.INTEGRATION_VIEW,
   Permission.TENANT_USERS_MANAGE,
   Permission.AUDIT_VIEW,
+  Permission.INCIDENT_REPORT_CREATE,
+  Permission.INCIDENT_REPORT_READ,
+  Permission.INCIDENT_REPORT_EDIT,
+  Permission.INCIDENT_REPORT_DELETE,
 ];
 
 /** Permissions for the built-in STAFF system role */
@@ -76,4 +86,8 @@ export const STAFF_PERMISSIONS: Permission[] = [
   Permission.RESERVATION_CREATE,
   Permission.RESERVATION_EDIT,
   Permission.RESERVATION_DELETE,
+  Permission.INCIDENT_REPORT_CREATE,
+  Permission.INCIDENT_REPORT_READ,
+  Permission.INCIDENT_REPORT_EDIT,
+  Permission.INCIDENT_REPORT_DELETE,
 ];
