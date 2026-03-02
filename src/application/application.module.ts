@@ -13,6 +13,7 @@ import { PropertyApplicationModule } from '@/application/property/property-appli
 import { UnitApplicationModule } from '@/application/unit/unit-application.module';
 import { InviteStaffHandler } from '@/application/user/commands/invite-staff/invite-staff.handler';
 import { AuditApplicationModule } from '@/application/audit/audit-application.module';
+import { GuestAuthApplicationModule } from '@/application/guest-auth/guest-auth-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -32,6 +33,7 @@ const CommandHandlers = [
     PropertyApplicationModule,
     UnitApplicationModule,
     AuditApplicationModule,
+    GuestAuthApplicationModule,
   ],
   providers: [...CommandHandlers],
   exports: [...CommandHandlers],
