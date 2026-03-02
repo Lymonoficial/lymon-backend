@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Patch, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
@@ -19,7 +19,7 @@ export class UserController {
   constructor(private readonly commandBus: CommandBus) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post('change-password')
+  @Patch('change-password')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Change password' })
   @ApiResponse({
