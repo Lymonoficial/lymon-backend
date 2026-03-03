@@ -16,6 +16,7 @@ import { AuditApplicationModule } from '@/application/audit/audit-application.mo
 import { IncidentReportApplicationModule } from '@/application/incident-report/incident-report-application.module';
 import { TenantApplicationModule } from '@/application/tenant/tenant-application.module';
 import { GuestAuthApplicationModule } from '@/application/guest-auth/guest-auth-application.module';
+import { RoleApplicationModule } from '@/application/role/role-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -38,6 +39,7 @@ const CommandHandlers = [
     IncidentReportApplicationModule,
     TenantApplicationModule,
     GuestAuthApplicationModule,
+    RoleApplicationModule,
   ],
   providers: [...CommandHandlers],
   exports: [...CommandHandlers],

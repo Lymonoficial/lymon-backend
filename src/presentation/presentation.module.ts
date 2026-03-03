@@ -9,6 +9,7 @@ import { AuditController } from '@/presentation/controllers/audit.controller';
 import { IncidentReportController } from '@/presentation/controllers/incident-report.controller';
 import { TenantController } from '@/presentation/controllers/tenant.controller';
 import { GuestAuthController } from '@/presentation/controllers/guest-auth.controller';
+import { RoleController } from '@/presentation/controllers/role.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -21,6 +22,7 @@ import { GuestAuthController } from '@/presentation/controllers/guest-auth.contr
     IncidentReportController,
     TenantController,
     GuestAuthController,
+    RoleController,
   ],
 })
 export class PresentationModule {}
