@@ -16,6 +16,18 @@ export class TenantDocument extends Document {
   @Prop({ required: true, default: false })
   emailVerified: boolean;
 
+  @Prop({ type: String, default: null })
+  contactPhone: string | null;
+
+  @Prop({ type: String, default: null })
+  address: string | null;
+
+  @Prop({ type: String, default: null })
+  website: string | null;
+
+  @Prop({ type: String, default: null })
+  logoUrl: string | null;
+
   @Prop()
   createdAt: Date;
 

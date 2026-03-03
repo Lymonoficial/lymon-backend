@@ -9,6 +9,10 @@ export class Tenant {
     private readonly ownerEmail: Email,
     private plan: PlanType,
     private emailVerified: boolean,
+    private contactPhone: string | null,
+    private address: string | null,
+    private website: string | null,
+    private logoUrl: string | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
   ) {}
@@ -24,6 +28,10 @@ export class Tenant {
       ownerEmail,
       plan,
       false,
+      null,
+      null,
+      null,
+      null,
       new Date(),
       new Date(),
     );
@@ -35,6 +43,10 @@ export class Tenant {
     ownerEmail: Email,
     plan: PlanType,
     emailVerified: boolean,
+    contactPhone: string | null,
+    address: string | null,
+    website: string | null,
+    logoUrl: string | null,
     createdAt: Date,
     updatedAt: Date,
   ): Tenant {
@@ -44,6 +56,10 @@ export class Tenant {
       ownerEmail,
       plan,
       emailVerified,
+      contactPhone,
+      address,
+      website,
+      logoUrl,
       createdAt,
       updatedAt,
     );
@@ -63,12 +79,48 @@ export class Tenant {
     this.updatedAt = new Date();
   }
 
+  updateProfile(
+    name?: string,
+    contactPhone?: string | null,
+    address?: string | null,
+    website?: string | null,
+    logoUrl?: string | null,
+  ): void {
+    if (name !== undefined) {
+      if (!name || name.trim() === '') {
+        throw new Error('Tenant name cannot be empty');
+      }
+      this.name = name.trim();
+    }
+    if (contactPhone !== undefined) this.contactPhone = contactPhone;
+    if (address !== undefined) this.address = address;
+    if (website !== undefined) this.website = website;
+    if (logoUrl !== undefined) this.logoUrl = logoUrl;
+    this.updatedAt = new Date();
+  }
+
   getId(): TenantId | null {
     return this.id;
   }
 
   getName(): string {
     return this.name;
+  }
+
+  getContactPhone(): string | null {
+    return this.contactPhone;
+  }
+
+  getAddress(): string | null {
+    return this.address;
+  }
+
+  getWebsite(): string | null {
+    return this.website;
+  }
+
+  getLogoUrl(): string | null {
+    return this.logoUrl;
   }
 
   getOwnerEmail(): Email {

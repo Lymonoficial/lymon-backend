@@ -23,6 +23,10 @@ export class MongoTenantRepository implements TenantRepository {
       ownerEmail: tenant.getOwnerEmail().toString(),
       plan: tenant.getPlan().toString(),
       emailVerified: tenant.isEmailVerified(),
+      contactPhone: tenant.getContactPhone(),
+      address: tenant.getAddress(),
+      website: tenant.getWebsite(),
+      logoUrl: tenant.getLogoUrl(),
       updatedAt: tenant.getUpdatedAt(),
     };
 
@@ -62,6 +66,10 @@ export class MongoTenantRepository implements TenantRepository {
       Email.create(doc.ownerEmail),
       PlanType.create(doc.plan),
       doc.emailVerified,
+      doc.contactPhone ?? null,
+      doc.address ?? null,
+      doc.website ?? null,
+      doc.logoUrl ?? null,
       doc.createdAt,
       doc.updatedAt,
     );
