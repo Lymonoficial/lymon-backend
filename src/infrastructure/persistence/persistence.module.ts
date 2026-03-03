@@ -28,6 +28,10 @@ import {
   AuditLogDocument,
   AuditLogSchema,
 } from '@/infrastructure/persistence/schemas/audit-log.schema';
+import {
+  IncidentReportDocument,
+  IncidentReportSchema,
+} from '@/infrastructure/persistence/schemas/incident-report.schema';
 import { TENANT_REPOSITORY } from '@/domain/tenant/repositories/tenant.repository';
 import { MongoTenantRepository } from '@/infrastructure/persistence/repositories/mongo-tenant.repository';
 import { USER_REPOSITORY } from '@/domain/user/repositories/user.repository';
@@ -45,6 +49,8 @@ import { MongoAuditLogRepository } from '@/infrastructure/persistence/repositori
 import { RoleSeedService } from '@/infrastructure/persistence/seeds/role-seed.service';
 import { TRANSACTION_MANAGER } from '@/domain/shared/transaction-manager.interface';
 import { MongoTransactionManager } from '@/infrastructure/persistence/transaction/mongo-transaction-manager';
+import { INCIDENT_REPORT_REPOSITORY } from '@/domain/incident-report/repositories/incident-report.repository';
+import { MongoIncidentReportRepository } from './repositories/mongo-incident-report.repository';
 
 @Module({
   imports: [
@@ -56,6 +62,7 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
       { name: GuestDocument.name, schema: GuestSchema },
       { name: RoleDocument.name, schema: RoleSchema },
       { name: AuditLogDocument.name, schema: AuditLogSchema },
+      { name: IncidentReportDocument.name, schema: IncidentReportSchema },
     ]),
   ],
   providers: [
@@ -91,6 +98,10 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
       provide: TRANSACTION_MANAGER,
       useClass: MongoTransactionManager,
     },
+    {
+      provide: INCIDENT_REPORT_REPOSITORY,
+      useClass: MongoIncidentReportRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -102,6 +113,7 @@ import { MongoTransactionManager } from '@/infrastructure/persistence/transactio
     ROLE_REPOSITORY,
     AUDIT_LOG_REPOSITORY,
     TRANSACTION_MANAGER,
+    INCIDENT_REPORT_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
