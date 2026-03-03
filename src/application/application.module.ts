@@ -15,6 +15,7 @@ import { InviteStaffHandler } from '@/application/user/commands/invite-staff/inv
 import { AuditApplicationModule } from '@/application/audit/audit-application.module';
 import { IncidentReportApplicationModule } from '@/application/incident-report/incident-report-application.module';
 import { TenantApplicationModule } from '@/application/tenant/tenant-application.module';
+import { GuestAuthApplicationModule } from '@/application/guest-auth/guest-auth-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -36,6 +37,7 @@ const CommandHandlers = [
     AuditApplicationModule,
     IncidentReportApplicationModule,
     TenantApplicationModule,
+    GuestAuthApplicationModule,
   ],
   providers: [...CommandHandlers],
   exports: [...CommandHandlers],

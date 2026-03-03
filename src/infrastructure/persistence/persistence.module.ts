@@ -21,6 +21,10 @@ import {
   GuestSchema,
 } from '@/infrastructure/persistence/schemas/guest.schema';
 import {
+  GuestAccountDocument,
+  GuestAccountSchema,
+} from '@/infrastructure/persistence/schemas/guest-account.schema';
+import {
   RoleDocument,
   RoleSchema,
 } from '@/infrastructure/persistence/schemas/role.schema';
@@ -42,6 +46,8 @@ import { UNIT_REPOSITORY } from '@/domain/unit/repositories/unit.repository';
 import { MongoUnitRepository } from '@/infrastructure/persistence/repositories/mongo-unit.repository';
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import { MongoGuestRepository } from '@/infrastructure/persistence/repositories/mongo-guest.repository';
+import { GUEST_ACCOUNT_REPOSITORY } from '@/domain/guest-account/repositories/guest-account.repository';
+import { MongoGuestAccountRepository } from '@/infrastructure/persistence/repositories/mongo-guest-account.repository';
 import { ROLE_REPOSITORY } from '@/domain/role/repositories/role.repository';
 import { MongoRoleRepository } from '@/infrastructure/persistence/repositories/mongo-role.repository';
 import { AUDIT_LOG_REPOSITORY } from '@/domain/audit/repositories/audit-log.repository';
@@ -60,6 +66,7 @@ import { MongoIncidentReportRepository } from './repositories/mongo-incident-rep
       { name: PropertyDocument.name, schema: PropertySchema },
       { name: UnitDocument.name, schema: UnitSchema },
       { name: GuestDocument.name, schema: GuestSchema },
+      { name: GuestAccountDocument.name, schema: GuestAccountSchema },
       { name: RoleDocument.name, schema: RoleSchema },
       { name: AuditLogDocument.name, schema: AuditLogSchema },
       { name: IncidentReportDocument.name, schema: IncidentReportSchema },
@@ -87,6 +94,10 @@ import { MongoIncidentReportRepository } from './repositories/mongo-incident-rep
       useClass: MongoGuestRepository,
     },
     {
+      provide: GUEST_ACCOUNT_REPOSITORY,
+      useClass: MongoGuestAccountRepository,
+    },
+    {
       provide: ROLE_REPOSITORY,
       useClass: MongoRoleRepository,
     },
@@ -110,6 +121,7 @@ import { MongoIncidentReportRepository } from './repositories/mongo-incident-rep
     PROPERTY_REPOSITORY,
     UNIT_REPOSITORY,
     GUEST_REPOSITORY,
+    GUEST_ACCOUNT_REPOSITORY,
     ROLE_REPOSITORY,
     AUDIT_LOG_REPOSITORY,
     TRANSACTION_MANAGER,

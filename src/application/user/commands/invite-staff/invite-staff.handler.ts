@@ -11,7 +11,7 @@ import {
   type UserRepository,
 } from '@/domain/user/repositories/user.repository';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { Email } from '@/domain/shared/value-objects/email.vo';
 import {
   TENANT_REPOSITORY,
   type TenantRepository,

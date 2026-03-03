@@ -13,6 +13,14 @@ export class GuestDocument extends Document {
   tenantId: Types.ObjectId;
 
   @Prop({
+    type: Types.ObjectId,
+    ref: 'GuestAccountDocument',
+    required: false,
+    default: null,
+  })
+  guestAccountId: Types.ObjectId | null;
+
+  @Prop({
     type: {
       documentType: { type: String },
       documentNumber: { type: String },
@@ -107,5 +115,9 @@ GuestSchema.index({ tenantId: 1, createdAt: -1 });
 GuestSchema.index({ tenantId: 1, primaryEmail: 1 });
 GuestSchema.index(
   { tenantId: 1, 'identity.documentNumber': 1 },
+  { sparse: true },
+);
+GuestSchema.index(
+  { tenantId: 1, guestAccountId: 1 },
   { sparse: true },
 );
