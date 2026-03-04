@@ -13,12 +13,14 @@ import { ConfirmRecoverGuestPasswordCommand } from '@/application/guest-auth/com
 import { ConfirmRecoverGuestPasswordResult } from '@/application/guest-auth/commands/confirm-recover-guest-password/confirm-recover-guest-password.handler';
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { GuestPublic } from '@/infrastructure/guest-auth/decorators/guest-public.decorator';
+import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { RegisterGuestAccountDto } from '@/presentation/dtos/register-guest-account.dto';
 import { GuestLoginDto } from '@/presentation/dtos/guest-login.dto';
 import { RecoverGuestPasswordDto } from '@/presentation/dtos/recover-guest-password.dto';
 import { ConfirmRecoverGuestPasswordDto } from '@/presentation/dtos/confirm-recover-guest-password.dto';
 
 @ApiTags('guest-auth')
+@Public()
 @UseGuards(GuestJwtAuthGuard)
 @Controller('guest/auth')
 export class GuestAuthController {
