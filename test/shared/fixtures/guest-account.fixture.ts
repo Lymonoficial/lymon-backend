@@ -12,6 +12,8 @@ export const GUEST_ACCOUNT_FIXTURE_DEFAULTS = {
   lastName: 'Doe',
   status: GuestAccountStatusEnum.PENDING_VERIFICATION,
   emailVerified: false,
+  emailVerificationToken: null as string | null,
+  emailVerificationExpiry: null as Date | null,
 };
 
 export function makeGuestAccount(
@@ -24,6 +26,8 @@ export function makeGuestAccount(
     lastName: string | null;
     status: GuestAccountStatusEnum;
     emailVerified: boolean;
+    emailVerificationToken: string | null;
+    emailVerificationExpiry: Date | null;
   }>,
 ): GuestAccount {
   const merged = { ...GUEST_ACCOUNT_FIXTURE_DEFAULTS, ...overrides };
@@ -36,8 +40,8 @@ export function makeGuestAccount(
     merged.lastName,
     merged.status,
     merged.emailVerified,
-    null,
-    null,
+    merged.emailVerificationToken,
+    merged.emailVerificationExpiry,
     null,
     null,
     null,
