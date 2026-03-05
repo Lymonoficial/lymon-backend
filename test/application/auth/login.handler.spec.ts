@@ -20,6 +20,9 @@ import {
   USER_FIXTURE_DEFAULTS,
 } from '@test/shared/fixtures/user.fixture';
 import { makeTenant } from '@test/shared/fixtures/tenant.fixture';
+import { Role, RoleId } from '@/domain/role/entities/role.entity';
+import { Permission } from '@/domain/role/value-objects/permission.vo';
+import type { RoleAssignment } from '@/domain/user/entities/user.entity';
 
 describe('LoginHandler', () => {
   let handler: LoginHandler;
@@ -105,6 +108,120 @@ describe('LoginHandler', () => {
           new LoginCommand(USER_FIXTURE_DEFAULTS.email, 'plain-password'),
         ),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('when login is successful with no role assignments', () => {
+    it('returns LoginResult with empty roleAssignments in token', async () => {
+      userRepository.findByEmail.mockResolvedValue(
+        makeUser({ roleAssignments: [] }),
+      );
+      passwordHasher.compare.mockResolvedValue(true);
+      tenantRepository.findById.mockResolvedValue(makeTenant());
+
+      const result = await handler.execute(
+        new LoginCommand(USER_FIXTURE_DEFAULTS.email, 'plain-password'),
+      );
+
+      expect(result).toBeInstanceOf(LoginResult);
+      // Token was generated — verify the payload had empty roleAssignments
+      expect(tokenService.generateAccesToken).toHaveBeenCalledWith(
+        expect.objectContaining({ roleAssignments: [] }),
+      );
+    });
+  });
+
+  describe('when login is successful with one valid role', () => {
+    it('returns LoginResult with resolved role in token payload', async () => {
+      const assignment: RoleAssignment = {
+        roleId: 'role-admin',
+        scope: { type: 'TENANT' },
+      };
+      userRepository.findByEmail.mockResolvedValue(
+        makeUser({ isOwner: false, roleAssignments: [assignment] }),
+      );
+      passwordHasher.compare.mockResolvedValue(true);
+      tenantRepository.findById.mockResolvedValue(makeTenant());
+      roleRepository.findById.mockResolvedValue(
+        Role.reconstitute(
+          RoleId.createFromString('role-admin'),
+          'ADMIN',
+          [Permission.PROPERTY_VIEW, Permission.PROPERTY_CREATE],
+          new Date(),
+          new Date(),
+        ),
+      );
+
+      const result = await handler.execute(
+        new LoginCommand(USER_FIXTURE_DEFAULTS.email, 'plain-password'),
+      );
+
+      expect(result).toBeInstanceOf(LoginResult);
+      expect(tokenService.generateAccesToken).toHaveBeenCalledWith(
+        expect.objectContaining({
+          roleAssignments: [
+            expect.objectContaining({
+              roleId: 'role-admin',
+              roleName: 'ADMIN',
+              permissions: [Permission.PROPERTY_VIEW, Permission.PROPERTY_CREATE],
+            }),
+          ],
+        }),
+      );
+    });
+  });
+
+  describe('when login is successful with multiple roles', () => {
+    it('returns LoginResult with all resolved roles', async () => {
+      const assignments: RoleAssignment[] = [
+        { roleId: 'role-admin', scope: { type: 'TENANT' } },
+        { roleId: 'role-staff', scope: { type: 'PROPERTY', resourceIds: ['prop-1'] } },
+        { roleId: 'role-deleted', scope: { type: 'TENANT' } },
+      ];
+      userRepository.findByEmail.mockResolvedValue(
+        makeUser({ isOwner: false, roleAssignments: assignments }),
+      );
+      passwordHasher.compare.mockResolvedValue(true);
+      tenantRepository.findById.mockResolvedValue(makeTenant());
+
+      roleRepository.findById
+        .mockResolvedValueOnce(
+          Role.reconstitute(
+            RoleId.createFromString('role-admin'),
+            'ADMIN',
+            [Permission.PROPERTY_VIEW],
+            new Date(),
+            new Date(),
+          ),
+        )
+        .mockResolvedValueOnce(
+          Role.reconstitute(
+            RoleId.createFromString('role-staff'),
+            'STAFF',
+            [Permission.RESERVATION_VIEW],
+            new Date(),
+            new Date(),
+          ),
+        )
+        .mockResolvedValueOnce(null); // role-deleted not found
+
+      const result = await handler.execute(
+        new LoginCommand(USER_FIXTURE_DEFAULTS.email, 'plain-password'),
+      );
+
+      expect(result).toBeInstanceOf(LoginResult);
+      // Only 2 valid roles resolved (role-deleted was null)
+      expect(tokenService.generateAccesToken).toHaveBeenCalledWith(
+        expect.objectContaining({
+          roleAssignments: expect.arrayContaining([
+            expect.objectContaining({ roleId: 'role-admin' }),
+            expect.objectContaining({ roleId: 'role-staff' }),
+          ]),
+        }),
+      );
+      // Verify the deleted role is NOT in the payload
+      const payload = tokenService.generateAccesToken.mock.calls[0][0];
+      expect(payload.roleAssignments).toHaveLength(2);
     });
   });
 });

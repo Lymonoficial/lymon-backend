@@ -39,6 +39,8 @@ function makeCommand(
     '+573001234567',
     'host@example.com',
     overrides?.autoCreateUnit ?? false,
+    'user-456',
+    'owner@example.com',
   );
 }
 
@@ -106,6 +108,20 @@ describe('CreatePropertyHandler', () => {
       expect(result.propertyId).toBe(PROPERTY_ID);
       expect(result.unitId).toBeUndefined();
     });
+
+    it('emits PROPERTY_CREATED audit event', async () => {
+      tenantRepository.findById.mockResolvedValue(makeTenant());
+      propertyRepository.countByTenantId.mockResolvedValue(0);
+      unitRepository.countByTenantId.mockResolvedValue(0);
+      propertyRepository.save.mockResolvedValue(PROPERTY_ID);
+
+      await handler.execute(makeCommand({ autoCreateUnit: false }));
+
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ entityType: 'PROPERTY' }),
+      );
+    });
   });
 
   describe('when autoCreateUnit is true and property type supports it', () => {
@@ -126,6 +142,23 @@ describe('CreatePropertyHandler', () => {
       expect(result).toBeInstanceOf(CreatePropertyResult);
       expect(result.propertyId).toBe(PROPERTY_ID);
       expect(result.unitId).toBe(UNIT_ID);
+    });
+
+    it('emits PROPERTY_CREATED and UNIT_CREATED audit events', async () => {
+      tenantRepository.findById.mockResolvedValue(makeTenant());
+      propertyRepository.countByTenantId.mockResolvedValue(0);
+      unitRepository.countByTenantId.mockResolvedValue(0);
+      propertyRepository.save.mockResolvedValue(PROPERTY_ID);
+      unitRepository.save.mockResolvedValue(UNIT_ID);
+
+      await handler.execute(
+        makeCommand({
+          autoCreateUnit: true,
+          propertyType: PropertyTypeEnum.CASA,
+        }),
+      );
+
+      expect(eventEmitter.emit).toHaveBeenCalledTimes(2);
     });
   });
 
