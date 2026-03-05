@@ -15,6 +15,7 @@ import { createUserRepositoryMock } from '@test/shared/mocks/repositories/user-r
 import { createPasswordHasherMock } from '@test/shared/mocks/services/password-hasher.mock';
 import { createTokenServiceMock } from '@test/shared/mocks/services/token-service.mock';
 import { createEmailServiceMock } from '@test/shared/mocks/services/email-service.mock';
+import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitter.mock';
 import {
   makeTenant,
   TENANT_FIXTURE_DEFAULTS,
@@ -46,6 +47,7 @@ describe('RegisterTenantHandler', () => {
   let passwordHasher: jest.Mocked<IPasswordHasher>;
   let tokenService: jest.Mocked<ITokenService>;
   let emailService: jest.Mocked<IEmailService>;
+  let eventEmitter: ReturnType<typeof createEventEmitterMock>;
 
   beforeEach(() => {
     tenantRepository = createTenantRepositoryMock();
@@ -53,6 +55,7 @@ describe('RegisterTenantHandler', () => {
     passwordHasher = createPasswordHasherMock();
     tokenService = createTokenServiceMock();
     emailService = createEmailServiceMock();
+    eventEmitter = createEventEmitterMock();
 
     handler = new RegisterTenantHandler(
       tenantRepository,
@@ -60,6 +63,7 @@ describe('RegisterTenantHandler', () => {
       passwordHasher,
       tokenService,
       emailService,
+      eventEmitter as any,
     );
   });
 

@@ -11,6 +11,7 @@ import { createPropertyRepositoryMock } from '@test/shared/mocks/repositories/pr
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
 import { createTenantRepositoryMock } from '@test/shared/mocks/repositories/tenant-repository.mock';
 import { createTransactionManagerMock } from '@test/shared/mocks/services/transaction-manager.mock';
+import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitter.mock';
 import { makeTenant } from '@test/shared/fixtures/tenant.fixture';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -49,18 +50,21 @@ describe('CreatePropertyHandler', () => {
   let unitRepository: jest.Mocked<UnitRepository>;
   let tenantRepository: jest.Mocked<TenantRepository>;
   let transactionManager: jest.Mocked<TransactionManager>;
+  let eventEmitter: ReturnType<typeof createEventEmitterMock>;
 
   beforeEach(() => {
     propertyRepository = createPropertyRepositoryMock();
     unitRepository = createUnitRepositoryMock();
     tenantRepository = createTenantRepositoryMock();
     transactionManager = createTransactionManagerMock();
+    eventEmitter = createEventEmitterMock();
 
     handler = new CreatePropertyHandler(
       propertyRepository,
       unitRepository,
       tenantRepository,
       transactionManager,
+      eventEmitter as any,
     );
   });
 

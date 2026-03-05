@@ -7,13 +7,13 @@ import { ITokenService } from '@/application/auth/services/jwt.service';
 import { createUserRepositoryMock } from '@test/shared/mocks/repositories/user-repository.mock';
 import { createTenantRepositoryMock } from '@test/shared/mocks/repositories/tenant-repository.mock';
 import { createTokenServiceMock } from '@test/shared/mocks/services/token-service.mock';
+import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitter.mock';
 import {
   makeUser,
   USER_FIXTURE_DEFAULTS,
 } from '@test/shared/fixtures/user.fixture';
 import { makeTenant } from '@test/shared/fixtures/tenant.fixture';
 import { JwtPayload } from '@/application/auth/services/jwt.service';
-import { UserRoleEnum } from '@/domain/user/entities/user.entity';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -22,8 +22,9 @@ const VALID_PAYLOAD: JwtPayload = {
   email: USER_FIXTURE_DEFAULTS.email,
   tenantId: USER_FIXTURE_DEFAULTS.tenantId,
   activePlan: 'TRIAL',
-  role: UserRoleEnum.OWNER,
+  isOwner: true,
   emailVerified: false,
+  roleAssignments: [],
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -33,16 +34,19 @@ describe('VerifyEmailHandler', () => {
   let userRepository: jest.Mocked<UserRepository>;
   let tenantRepository: jest.Mocked<TenantRepository>;
   let tokenService: jest.Mocked<ITokenService>;
+  let eventEmitter: ReturnType<typeof createEventEmitterMock>;
 
   beforeEach(() => {
     userRepository = createUserRepositoryMock();
     tenantRepository = createTenantRepositoryMock();
     tokenService = createTokenServiceMock();
+    eventEmitter = createEventEmitterMock();
 
     handler = new VerifyEmailHandler(
       userRepository,
       tenantRepository,
       tokenService,
+      eventEmitter as any,
     );
   });
 
