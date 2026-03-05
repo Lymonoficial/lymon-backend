@@ -9,6 +9,10 @@ export const TENANT_FIXTURE_DEFAULTS = {
   ownerEmail: 'owner@example.com',
   plan: PlanTypeEnum.TRIAL,
   emailVerified: true,
+  contactPhone: null as string | null,
+  address: null as string | null,
+  website: null as string | null,
+  logoUrl: null as string | null,
 };
 
 export function makeTenant(
@@ -18,6 +22,10 @@ export function makeTenant(
     ownerEmail: string;
     plan: PlanTypeEnum;
     emailVerified: boolean;
+    contactPhone: string | null;
+    address: string | null;
+    website: string | null;
+    logoUrl: string | null;
   }>,
 ): Tenant {
   const merged = { ...TENANT_FIXTURE_DEFAULTS, ...overrides };
@@ -27,6 +35,10 @@ export function makeTenant(
     Email.create(merged.ownerEmail),
     PlanType.create(merged.plan),
     merged.emailVerified,
+    merged.contactPhone,
+    merged.address,
+    merged.website,
+    merged.logoUrl,
     new Date(),
     new Date(),
   );
