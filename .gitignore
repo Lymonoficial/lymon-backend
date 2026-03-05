@@ -56,3 +56,8 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 .vscode
+Lymon - User Stories (1).md
+docs/add-staff-endpoint-frontend-guide.md
+docs/audit-log-frontend-guide.md
+docs/guest-auth-frontend-guide.md
+docs/user-stories.feature
