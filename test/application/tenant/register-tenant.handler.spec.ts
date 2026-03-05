@@ -133,5 +133,69 @@ describe('RegisterTenantHandler', () => {
         expect.any(String),
       );
     });
+
+    it('emits TENANT_REGISTERED audit event', async () => {
+      await handler.execute(makeCommand());
+
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ entityType: 'TENANT' }),
+      );
+    });
+  });
+
+  describe('when registering with LYMON_ONE plan', () => {
+    it('returns a RegisterTenantResult', async () => {
+      tenantRepository.exists.mockResolvedValue(false);
+      tenantRepository.save.mockResolvedValue(undefined);
+      tenantRepository.findByOwnerEmail.mockResolvedValue(
+        makeTenant({ plan: PlanTypeEnum.LYMON_ONE }),
+      );
+      passwordHasher.hash.mockResolvedValue(USER_FIXTURE_DEFAULTS.passwordHash);
+      userRepository.save.mockResolvedValue(undefined);
+      userRepository.findByEmail.mockResolvedValue(makeUser());
+
+      const result = await handler.execute(
+        makeCommand({ planType: PlanTypeEnum.LYMON_ONE }),
+      );
+
+      expect(result).toBeInstanceOf(RegisterTenantResult);
+    });
+  });
+
+  describe('when registering with LYMON_PLUS plan', () => {
+    it('returns a RegisterTenantResult', async () => {
+      tenantRepository.exists.mockResolvedValue(false);
+      tenantRepository.save.mockResolvedValue(undefined);
+      tenantRepository.findByOwnerEmail.mockResolvedValue(
+        makeTenant({ plan: PlanTypeEnum.LYMON_PLUS }),
+      );
+      passwordHasher.hash.mockResolvedValue(USER_FIXTURE_DEFAULTS.passwordHash);
+      userRepository.save.mockResolvedValue(undefined);
+      userRepository.findByEmail.mockResolvedValue(makeUser());
+
+      const result = await handler.execute(
+        makeCommand({ planType: PlanTypeEnum.LYMON_PLUS }),
+      );
+
+      expect(result).toBeInstanceOf(RegisterTenantResult);
+    });
+  });
+
+  describe('initial entity state', () => {
+    it('creates user with emailVerified = false', async () => {
+      tenantRepository.exists.mockResolvedValue(false);
+      tenantRepository.save.mockResolvedValue(undefined);
+      tenantRepository.findByOwnerEmail.mockResolvedValue(makeTenant());
+      passwordHasher.hash.mockResolvedValue(USER_FIXTURE_DEFAULTS.passwordHash);
+      userRepository.save.mockResolvedValue(undefined);
+      userRepository.findByEmail.mockResolvedValue(
+        makeUser({ emailVerified: false }),
+      );
+
+      const result = await handler.execute(makeCommand());
+
+      expect(result).toBeInstanceOf(RegisterTenantResult);
+    });
   });
 });
