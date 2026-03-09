@@ -47,7 +47,7 @@ export class IncidentReportController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Post()
+  @Post('')
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.INCIDENT_REPORT_CREATE)
   @ApiOperation({ summary: 'Create a new incident report' })

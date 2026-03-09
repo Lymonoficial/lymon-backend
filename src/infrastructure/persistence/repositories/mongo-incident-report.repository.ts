@@ -11,7 +11,7 @@ export class MongoIncidentReportRepository implements IncidentReportRepository {
   constructor(
     @InjectModel(IncidentReportDocument.name)
     private readonly reportModel: Model<IncidentReportDocument>,
-  ) { }
+  ) {}
 
   async save(report: IncidentReport): Promise<string> {
     const id = report.getId()?.toString();
