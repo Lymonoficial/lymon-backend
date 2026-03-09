@@ -19,4 +19,5 @@ export interface GuestRepository {
   ): Promise<Guest | null>;
   countByTenantId(tenantId: TenantId): Promise<number>;
   delete(id: GuestId): Promise<void>;
+  search(tenantId: TenantId, term: string): Promise<Guest[]>;
 }
