@@ -59,7 +59,7 @@ export class BrevoEmailService implements IEmailService {
 
   async sendRecoveryEmail(email: string, plainToken: string): Promise<void> {
     const appUrl = this.configService.get<string>('APP_URL');
-    const recoveryUrl = `${appUrl}/recover-password?token=${plainToken}`;
+    const recoveryUrl = `${appUrl}/recover-password/confirm?token=${plainToken}`;
 
     const htmlContent =
       this.emailTemplateService.renderRecoverPasswordTemplate(recoveryUrl);
