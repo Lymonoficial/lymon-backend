@@ -1,0 +1,115 @@
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
+
+export class AuditLogId {
+  private constructor(private readonly value: string) {}
+
+  static createFromString(id: string): AuditLogId {
+    return new AuditLogId(id);
+  }
+
+  toString(): string {
+    return this.value;
+  }
+}
+
+/**
+ * Immutable audit log entry.
+ */
+export class AuditLog {
+  private constructor(
+    private readonly id: AuditLogId | null,
+    private readonly tenantId: string,
+    private readonly userId: string,
+    private readonly userEmail: string,
+    private readonly action: AuditAction,
+    private readonly entityType: AuditEntityType,
+    private readonly entityId: string | undefined,
+    private readonly metadata: Record<string, unknown> | undefined,
+    private readonly createdAt: Date,
+  ) {}
+
+  static create(
+    tenantId: string,
+    userId: string,
+    userEmail: string,
+    action: AuditAction,
+    entityType: AuditEntityType,
+    entityId?: string,
+    metadata?: Record<string, unknown>,
+  ): AuditLog {
+    return new AuditLog(
+      null,
+      tenantId,
+      userId,
+      userEmail,
+      action,
+      entityType,
+      entityId,
+      metadata,
+      new Date(),
+    );
+  }
+
+  static reconstitute(
+    id: AuditLogId,
+    tenantId: string,
+    userId: string,
+    userEmail: string,
+    action: AuditAction,
+    entityType: AuditEntityType,
+    entityId: string | undefined,
+    metadata: Record<string, unknown> | undefined,
+    createdAt: Date,
+  ): AuditLog {
+    return new AuditLog(
+      id,
+      tenantId,
+      userId,
+      userEmail,
+      action,
+      entityType,
+      entityId,
+      metadata,
+      createdAt,
+    );
+  }
+
+  getId(): AuditLogId | null {
+    return this.id;
+  }
+
+  getTenantId(): string {
+    return this.tenantId;
+  }
+
+  getUserId(): string {
+    return this.userId;
+  }
+
+  getUserEmail(): string {
+    return this.userEmail;
+  }
+
+  getAction(): AuditAction {
+    return this.action;
+  }
+
+  getEntityType(): AuditEntityType {
+    return this.entityType;
+  }
+
+  getEntityId(): string | undefined {
+    return this.entityId;
+  }
+
+  getMetadata(): Record<string, unknown> | undefined {
+    return this.metadata;
+  }
+
+  getCreatedAt(): Date {
+    return this.createdAt;
+  }
+}

@@ -45,4 +45,19 @@ export class PlanType {
         return 0;
     }
   }
+
+  getStaffLimit(): number {
+    switch (this.value) {
+      case PlanTypeEnum.TRIAL:
+        return 0;
+      case PlanTypeEnum.LYMON_ONE:
+        return 2;
+      case PlanTypeEnum.LYMON_PLUS:
+        return 10;
+      case PlanTypeEnum.LYMON_PRIME:
+        return Number.MAX_SAFE_INTEGER;
+      default:
+        return 0;
+    }
+  }
 }

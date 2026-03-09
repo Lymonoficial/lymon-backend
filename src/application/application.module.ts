@@ -2,19 +2,30 @@ import { PersistenceModule } from '@/infrastructure/persistence/persistence.modu
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { RegisterTenantHandler } from '@/application/tenant/commands/register-tenant.handler';
-import { VerifyEmailHandler } from '@/application/user/commands/verify-email.handler';
-import { ChangePasswordHandler } from '@/application/user/commands/change-password.handler';
+import { VerifyEmailHandler } from '@/application/user/commands/verify-email/verify-email.handler';
+import { ChangePasswordHandler } from '@/application/user/commands/change-password/change-password.handler';
 import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { LoginHandler } from './auth/commands/login.handler';
+import { RecoverPasswordHandler } from './auth/commands/recover-password.handler';
+import { ConfirmRecoverPasswordHandler } from './auth/commands/confirm-recover-password.handler';
 import { EmailModule } from '@/infrastructure/email/email.module';
 import { PropertyApplicationModule } from '@/application/property/property-application.module';
 import { UnitApplicationModule } from '@/application/unit/unit-application.module';
+import { InviteStaffHandler } from '@/application/user/commands/invite-staff/invite-staff.handler';
+import { AuditApplicationModule } from '@/application/audit/audit-application.module';
+import { IncidentReportApplicationModule } from '@/application/incident-report/incident-report-application.module';
+import { TenantApplicationModule } from '@/application/tenant/tenant-application.module';
+import { GuestAuthApplicationModule } from '@/application/guest-auth/guest-auth-application.module';
+import { RoleApplicationModule } from '@/application/role/role-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
   LoginHandler,
+  RecoverPasswordHandler,
+  ConfirmRecoverPasswordHandler,
   VerifyEmailHandler,
   ChangePasswordHandler,
+  InviteStaffHandler,
 ];
 @Module({
   imports: [
@@ -24,6 +35,11 @@ const CommandHandlers = [
     EmailModule,
     PropertyApplicationModule,
     UnitApplicationModule,
+    AuditApplicationModule,
+    IncidentReportApplicationModule,
+    TenantApplicationModule,
+    GuestAuthApplicationModule,
+    RoleApplicationModule,
   ],
   providers: [...CommandHandlers],
   exports: [...CommandHandlers],

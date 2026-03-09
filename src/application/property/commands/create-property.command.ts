@@ -16,5 +16,7 @@ export class CreatePropertyCommand {
     public readonly hostPhone: string,
     public readonly hostEmail: string,
     public readonly autoCreateUnit: boolean,
+    public readonly actorId: string,
+    public readonly actorEmail: string,
   ) {}
 }

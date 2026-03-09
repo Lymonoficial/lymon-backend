@@ -15,6 +15,7 @@ export interface SendEmailParams {
 export interface IEmailService {
   sendEmail(params: SendEmailParams): Promise<void>;
   sendVerificationEmail(email: string, token: string): Promise<void>;
+  sendRecoveryEmail(email: string, plainToken: string): Promise<void>;
 }
 
 export const EMAIL_SERVICE = Symbol('EMAIL_SERVICE');

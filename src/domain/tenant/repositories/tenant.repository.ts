@@ -1,5 +1,5 @@
 import { Tenant } from '@/domain/tenant/entities/tenant.entity';
-import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 export interface TenantRepository {
