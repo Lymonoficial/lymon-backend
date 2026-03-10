@@ -10,6 +10,7 @@ import { IncidentReportController } from '@/presentation/controllers/incident-re
 import { TenantController } from '@/presentation/controllers/tenant.controller';
 import { GuestAuthController } from '@/presentation/controllers/guest-auth.controller';
 import { RoleController } from '@/presentation/controllers/role.controller';
+import { GuestController } from '@/presentation/controllers/guest.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -22,6 +23,7 @@ import { RoleController } from '@/presentation/controllers/role.controller';
     IncidentReportController,
     TenantController,
     GuestAuthController,
+    GuestController,
     RoleController,
   ],
 })
