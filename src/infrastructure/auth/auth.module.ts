@@ -11,9 +11,11 @@ import {
   BcryptPasswordHasher,
   PASSWORD_HASHER,
 } from '@/application/auth/services/password-hasher.service';
+import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 
 @Module({
   imports: [
+    PersistenceModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

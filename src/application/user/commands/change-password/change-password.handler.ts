@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ChangePasswordCommand } from '@/application/user/commands/change-password.command';
+import { ChangePasswordCommand } from '@/application/user/commands/change-password/change-password.command';
 import {
   BadRequestException,
   Inject,
@@ -14,6 +14,15 @@ import {
   PASSWORD_HASHER,
 } from '@/application/auth/services/password-hasher.service';
 import { UserId } from '@/domain/user/entities/user.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  AuditLoggedEvent,
+  AUDIT_LOG_EVENT,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 export class ChangePasswordResult {
   constructor(public readonly message: string) {}
@@ -26,6 +35,7 @@ export class ChangePasswordHandler implements ICommandHandler<ChangePasswordComm
     private readonly userRepository: UserRepository,
     @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: IPasswordHasher,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
   async execute(command: ChangePasswordCommand): Promise<ChangePasswordResult> {
     const user = await this.userRepository.findById(
@@ -60,6 +70,18 @@ export class ChangePasswordHandler implements ICommandHandler<ChangePasswordComm
     const newPasswordHash = await this.passwordHasher.hash(command.newPassword);
     user.changePassword(newPasswordHash);
     await this.userRepository.save(user);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        user.getTenantId().toString(),
+        user.getId()!.toString(),
+        user.getEmail().toString(),
+        AuditAction.USER_PASSWORD_CHANGED,
+        AuditEntityType.USER,
+        user.getId()!.toString(),
+      ),
+    );
 
     return new ChangePasswordResult('Password changed successfully');
   }

@@ -16,16 +16,25 @@ import {
 import {
   type ITokenService,
   JwtPayload,
+  ResolvedRoleAssignment,
   TOKEN_SERVICE,
 } from '@/application/auth/services/jwt.service';
-import { Email } from '@/domain/tenant/value-objects/email.vo';
+import {
+  type RoleRepository,
+  ROLE_REPOSITORY,
+} from '@/domain/role/repositories/role.repository';
+import { RoleId } from '@/domain/role/entities/role.entity';
+import { Email } from '@/domain/shared/value-objects/email.vo';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuditLoggedEvent, AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
+import { AuditAction, AuditEntityType } from '@/domain/audit/value-objects/audit-action.vo';
 
 export class LoginResult {
   constructor(
     public readonly userId: string,
     public readonly email: string,
     public readonly tenantId: string,
-    public readonly role: string,
+    public readonly isOwner: boolean,
     public readonly emailVerified: boolean,
     public readonly accessToken: string,
     public readonly refreshToken: string,
@@ -43,7 +52,11 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
     private readonly passwordHasher: IPasswordHasher,
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,
+    @Inject(ROLE_REPOSITORY)
+    private readonly roleRepository: RoleRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
+
   async execute(command: LoginCommand): Promise<LoginResult> {
     const email = Email.create(command.email);
     const user = await this.userRepository.findByEmail(email);
@@ -66,23 +79,52 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       throw new UnauthorizedException('Tenant not found');
     }
 
+    // Resolve role permissions for staff users
+    const resolvedAssignments: ResolvedRoleAssignment[] = [];
+    for (const assignment of user.getRoleAssignments()) {
+      const role = await this.roleRepository.findById(
+        RoleId.createFromString(assignment.roleId),
+      );
+      if (role) {
+        resolvedAssignments.push({
+          roleId: role.getId()!.toString(),
+          roleName: role.getName(),
+          permissions: role.getPermissions(),
+          scope: assignment.scope,
+        });
+      }
+    }
+
     const payload: JwtPayload = {
       userId: user.getId()!.toString(),
       email: user.getEmail().toString(),
       tenantId: user.getTenantId().toString(),
       activePlan: tenant.getPlan().toString(),
-      role: user.getRole(),
+      isOwner: user.isOwner(),
       emailVerified: user.isEmailVerified(),
+      roleAssignments: resolvedAssignments,
     };
 
     const accessToken = this.tokenService.generateAccesToken(payload);
     const refreshToken = this.tokenService.generateRefreshToken(payload);
 
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        user.getTenantId().toString(),
+        user.getId()!.toString(),
+        user.getEmail().toString(),
+        AuditAction.AUTH_LOGIN,
+        AuditEntityType.AUTH,
+        user.getId()!.toString(),
+      ),
+    );
+
     return new LoginResult(
       user.getId()!.toString(),
       user.getEmail().toString(),
       user.getTenantId().toString(),
-      user.getRole(),
+      user.isOwner(),
       user.isEmailVerified(),
       accessToken,
       refreshToken,

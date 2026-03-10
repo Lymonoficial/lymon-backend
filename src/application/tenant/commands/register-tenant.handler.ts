@@ -17,7 +17,7 @@ import {
   TENANT_REPOSITORY,
   type TenantRepository,
 } from '@/domain/tenant/repositories/tenant.repository';
-import { Email } from '@/domain/tenant/value-objects/email.vo';
+import { Email } from '@/domain/shared/value-objects/email.vo';
 import { PlanType } from '@/domain/tenant/value-objects/plan-type.vo';
 import { User } from '@/domain/user/entities/user.entity';
 import {
@@ -26,6 +26,9 @@ import {
 } from '@/domain/user/repositories/user.repository';
 import { ConflictException, Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuditLoggedEvent, AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
+import { AuditAction, AuditEntityType } from '@/domain/audit/value-objects/audit-action.vo';
 
 export class RegisterTenantResult {
   constructor(
@@ -50,6 +53,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
     private readonly tokenService: ITokenService,
     @Inject(EMAIL_SERVICE)
     private readonly emailService: IEmailService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: RegisterTenantCommand): Promise<RegisterTenantResult> {
@@ -76,12 +80,13 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
     if (!savedUser) throw new Error('Failed to create user');
 
     const payload: JwtPayload = {
-      userId: savedUser.getId.toString(),
+      userId: savedUser.getId()!.toString(),
       email: savedUser.getEmail().toString(),
       tenantId: savedUser.getTenantId().toString(),
       activePlan: savedTenant.getPlan().toString(),
-      role: savedUser.getRole(),
+      isOwner: savedUser.isOwner(),
       emailVerified: savedUser.isEmailVerified(),
+      roleAssignments: [],
     };
 
     const accessToken = this.tokenService.generateAccesToken(payload);
@@ -92,8 +97,9 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
       email: savedUser.getEmail().toString(),
       tenantId: savedUser.getTenantId().toString(),
       activePlan: savedTenant.getPlan().toString(),
-      role: savedUser.getRole(),
+      isOwner: savedUser.isOwner(),
       emailVerified: false,
+      roleAssignments: [],
     };
 
     const verificationToken =
@@ -102,6 +108,18 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
     await this.emailService.sendVerificationEmail(
       email.toString(),
       verificationToken,
+    );
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        savedTenant.getId()!.toString(),
+        savedUser.getId()!.toString(),
+        email.toString(),
+        AuditAction.TENANT_REGISTERED,
+        AuditEntityType.TENANT,
+        savedTenant.getId()!.toString(),
+      ),
     );
 
     return new RegisterTenantResult(

@@ -26,6 +26,15 @@ import {
 } from '@/domain/shared/transaction-manager.interface';
 import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  AuditLoggedEvent,
+  AUDIT_LOG_EVENT,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(CreatePropertyCommand)
 export class CreatePropertyHandler implements ICommandHandler<CreatePropertyCommand> {
@@ -38,6 +47,7 @@ export class CreatePropertyHandler implements ICommandHandler<CreatePropertyComm
     private readonly tenantRepository: TenantRepository,
     @Inject(TRANSACTION_MANAGER)
     private readonly transactionManager: TransactionManager,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: CreatePropertyCommand): Promise<CreatePropertyResult> {
@@ -74,10 +84,21 @@ export class CreatePropertyHandler implements ICommandHandler<CreatePropertyComm
 
     if (!shouldAutoCreate) {
       const propertyId = await this.propertyRepository.save(property);
+      this.eventEmitter.emit(
+        AUDIT_LOG_EVENT,
+        new AuditLoggedEvent(
+          command.tenantId,
+          command.actorId,
+          command.actorEmail,
+          AuditAction.PROPERTY_CREATED,
+          AuditEntityType.PROPERTY,
+          propertyId,
+        ),
+      );
       return new CreatePropertyResult(propertyId);
     }
 
-    return await this.transactionManager.executeInTransaction(
+    const result = await this.transactionManager.executeInTransaction(
       async (context) => {
         const propertyIdString = await this.propertyRepository.save(
           property,
@@ -109,6 +130,32 @@ export class CreatePropertyHandler implements ICommandHandler<CreatePropertyComm
         return new CreatePropertyResult(propertyIdString, unitIdString);
       },
     );
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId,
+        command.actorEmail,
+        AuditAction.PROPERTY_CREATED,
+        AuditEntityType.PROPERTY,
+        result.propertyId,
+      ),
+    );
+    if (result.unitId) {
+      this.eventEmitter.emit(
+        AUDIT_LOG_EVENT,
+        new AuditLoggedEvent(
+          command.tenantId,
+          command.actorId,
+          command.actorEmail,
+          AuditAction.UNIT_CREATED,
+          AuditEntityType.UNIT,
+          result.unitId,
+        ),
+      );
+    }
+    return result;
   }
 
   private async validatePlanLimits(

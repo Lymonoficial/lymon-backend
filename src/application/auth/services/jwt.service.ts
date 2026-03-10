@@ -1,13 +1,28 @@
+import { Permission } from '@/domain/role/value-objects/permission.vo';
+import { UserScope } from '@/domain/user/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { JwtService as NestJwtService } from '@nestjs/jwt';
+
+/**
+ * Resolved at login time — permissions are embedded in the token
+ * so guards never need a DB hit per request.
+ */
+export interface ResolvedRoleAssignment {
+  roleId: string;
+  roleName: string;
+  permissions: Permission[];
+  scope: UserScope;
+}
 
 export interface JwtPayload {
   userId: string;
   email: string;
   tenantId: string;
   activePlan: string;
-  role: string;
+  isOwner: boolean;
   emailVerified: boolean;
+  /** Empty array for owners — full access is implied by isOwner flag */
+  roleAssignments: ResolvedRoleAssignment[];
 }
 
 export interface ITokenService {

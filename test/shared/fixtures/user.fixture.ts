@@ -1,5 +1,10 @@
-import { User, UserId, UserRoleEnum } from '@/domain/user/entities/user.entity';
-import { Email } from '@/domain/tenant/value-objects/email.vo';
+import {
+  User,
+  UserId,
+  UserRoleEnum,
+  type RoleAssignment,
+} from '@/domain/user/entities/user.entity';
+import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 export const USER_FIXTURE_DEFAULTS = {
@@ -7,7 +12,8 @@ export const USER_FIXTURE_DEFAULTS = {
   email: 'owner@example.com',
   passwordHash: 'hashed-password',
   tenantId: 'tenant-123',
-  role: UserRoleEnum.OWNER,
+  isOwner: true,
+  roleAssignments: [] as RoleAssignment[],
   emailVerified: true,
 };
 
@@ -17,7 +23,8 @@ export function makeUser(
     email: string;
     passwordHash: string;
     tenantId: string;
-    role: UserRoleEnum;
+    isOwner: boolean;
+    roleAssignments: RoleAssignment[];
     emailVerified: boolean;
   }>,
 ): User {
@@ -27,7 +34,8 @@ export function makeUser(
     Email.create(merged.email),
     merged.passwordHash,
     TenantId.createFromString(merged.tenantId),
-    merged.role,
+    merged.isOwner,
+    merged.roleAssignments,
     merged.emailVerified,
     new Date(),
     new Date(),

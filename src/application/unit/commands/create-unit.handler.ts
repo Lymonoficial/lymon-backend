@@ -19,6 +19,9 @@ import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
 import { BedTypeEnum } from '@/domain/unit/value-objects/bed-type.vo';
 import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuditLoggedEvent, AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
+import { AuditAction, AuditEntityType } from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(CreateUnitCommand)
 export class CreateUnitHandler implements ICommandHandler<CreateUnitCommand> {
@@ -29,6 +32,7 @@ export class CreateUnitHandler implements ICommandHandler<CreateUnitCommand> {
     private readonly propertyRepository: PropertyRepository,
     @Inject(TENANT_REPOSITORY)
     private readonly tenantRepository: TenantRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: CreateUnitCommand): Promise<CreateUnitResult> {
@@ -79,6 +83,20 @@ export class CreateUnitHandler implements ICommandHandler<CreateUnitCommand> {
     );
 
     const unitId = await this.unitRepository.save(unit);
+
+    if (command.actorId && command.actorEmail) {
+      this.eventEmitter.emit(
+        AUDIT_LOG_EVENT,
+        new AuditLoggedEvent(
+          command.tenantId,
+          command.actorId,
+          command.actorEmail,
+          AuditAction.UNIT_CREATED,
+          AuditEntityType.UNIT,
+          unitId,
+        ),
+      );
+    }
 
     return new CreateUnitResult(unitId);
   }

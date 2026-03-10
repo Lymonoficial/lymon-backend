@@ -20,5 +20,7 @@ export class CreateUnitCommand {
       bookingId?: string;
       vrboId?: string;
     },
+    public readonly actorId?: string,
+    public readonly actorEmail?: string,
   ) {}
 }
