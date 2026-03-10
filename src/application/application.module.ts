@@ -44,6 +44,6 @@ const CommandHandlers = [
     GuestApplicationModule,
   ],
   providers: [...CommandHandlers],
-  exports: [...CommandHandlers],
+  exports: [...CommandHandlers, GuestApplicationModule],
 })
 export class ApplicationModule {}
