@@ -2,7 +2,8 @@ import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CreateGuestCommand } from '@/application/guest/commands/create-guest.command';
 import { CreateGuestResult } from '@/application/guest/commands/create-guest.result';
 import { SearchGuestsQuery } from '@/application/guest/queries/search-guests.query';
-import { SearchGuestByIdQuery } from '@/application/guest/queries/search-guests-by-id.query';
+import { GetGuestByIdQuery } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.query';
+import type { GetGuestByIdResult } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.result';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
@@ -12,7 +13,7 @@ import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CreateGuestDto } from '@/presentation/dtos/create-guest.dto';
 import { Body, Controller, Get, Param, Post, Query, UseGuards, NotFoundException } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -27,8 +28,8 @@ import {
 export class GuestController {
   constructor(
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
     private readonly searchGuestsQuery: SearchGuestsQuery,
-    private readonly searchGuestByIdQuery: SearchGuestByIdQuery,
   ) {}
 
   @Post()
@@ -108,32 +109,17 @@ export class GuestController {
   @ApiResponse({ status: 200, description: 'Guest profile retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Guest not found' })
   async getById(@CurrentUser() user: JwtPayload, @Param('guestId') guestId: string) {
-    const guest = await this.searchGuestByIdQuery.execute(
-      TenantId.createFromString(user.tenantId),
-      guestId,
+    const result = await this.queryBus.execute<GetGuestByIdQuery, GetGuestByIdResult>(
+      new GetGuestByIdQuery(user.tenantId, guestId)
     );
 
-    if (!guest) {
+    if (!result.item) {
       throw new NotFoundException('Guest not found');
     }
 
     return {
       message: 'Guest profile retrieved successfully',
-      data: {
-        id: guest.getId()?.toString() ?? '',
-        fullName: guest.getFullName(),
-        firstName: guest.getFirstName(),
-        lastName: guest.getLastName(),
-        primaryEmail: guest.getPrimaryEmail(),
-        emails: guest.getEmails(),
-        phones: guest.getPhones(),
-        status: guest.getStatus(),
-        tags: guest.getTags(),
-        preferencesNotes: guest.getPreferencesNotes(),
-        summary: guest.getSummary(),
-        createdAt: guest.getCreatedAt(),
-        updatedAt: guest.getUpdatedAt(),
-      },
+      data: result.item,
     };
   }
 }
