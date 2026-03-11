@@ -12,6 +12,7 @@ import { GuestAuthController } from '@/presentation/controllers/guest-auth.contr
 import { RoleController } from '@/presentation/controllers/role.controller';
 import { GuestController } from '@/presentation/controllers/guest.controller';
 import { CrmController } from '@/presentation/controllers/crm.controller';
+import { ReservationController } from '@/presentation/controllers/reservation.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -27,6 +28,7 @@ import { CrmController } from '@/presentation/controllers/crm.controller';
     GuestController,
     RoleController,
     CrmController,
+    ReservationController,
   ],
 })
 export class PresentationModule {}
