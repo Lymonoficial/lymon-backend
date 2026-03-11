@@ -117,6 +117,26 @@ export class MongoGuestRepository implements GuestRepository {
     });
   }
 
+  async search(tenantId: TenantId, term: string): Promise<Guest[]> {
+    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(escapedTerm, 'i');
+
+    const documents = await this.guestModel
+      .find({
+        tenantId: new Types.ObjectId(tenantId.toString()),
+        $or: [
+          { fullName: pattern },
+          { primaryEmail: pattern },
+          { emails: pattern },
+          { 'identity.documentNumber': pattern },
+          { 'phones.number': pattern },
+        ],
+      })
+      .sort({ createdAt: -1 });
+
+    return documents.map((doc) => this.toDomain(doc));
+  }
+
   async delete(id: GuestId): Promise<void> {
     await this.guestModel.findByIdAndDelete(id.toString());
   }

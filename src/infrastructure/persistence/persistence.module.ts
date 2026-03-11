@@ -57,6 +57,12 @@ import { TRANSACTION_MANAGER } from '@/domain/shared/transaction-manager.interfa
 import { MongoTransactionManager } from '@/infrastructure/persistence/transaction/mongo-transaction-manager';
 import { INCIDENT_REPORT_REPOSITORY } from '@/domain/incident-report/repositories/incident-report.repository';
 import { MongoIncidentReportRepository } from './repositories/mongo-incident-report.repository';
+import {
+  ReservationDocument,
+  ReservationSchema,
+} from '@/infrastructure/persistence/schemas/reservation.schema';
+import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
+import { MongoReservationRepository } from './repositories/mongo-reservation.repository';
 
 @Module({
   imports: [
@@ -70,6 +76,7 @@ import { MongoIncidentReportRepository } from './repositories/mongo-incident-rep
       { name: RoleDocument.name, schema: RoleSchema },
       { name: AuditLogDocument.name, schema: AuditLogSchema },
       { name: IncidentReportDocument.name, schema: IncidentReportSchema },
+      { name: ReservationDocument.name, schema: ReservationSchema },
     ]),
   ],
   providers: [
@@ -113,6 +120,10 @@ import { MongoIncidentReportRepository } from './repositories/mongo-incident-rep
       provide: INCIDENT_REPORT_REPOSITORY,
       useClass: MongoIncidentReportRepository,
     },
+    {
+      provide: RESERVATION_REPOSITORY,
+      useClass: MongoReservationRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -126,6 +137,7 @@ import { MongoIncidentReportRepository } from './repositories/mongo-incident-rep
     AUDIT_LOG_REPOSITORY,
     TRANSACTION_MANAGER,
     INCIDENT_REPORT_REPOSITORY,
+    RESERVATION_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
