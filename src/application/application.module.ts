@@ -5,8 +5,9 @@ import { RegisterTenantHandler } from '@/application/tenant/commands/register-te
 import { VerifyEmailHandler } from '@/application/user/commands/verify-email/verify-email.handler';
 import { ChangePasswordHandler } from '@/application/user/commands/change-password/change-password.handler';
 import { AuthModule } from '@/infrastructure/auth/auth.module';
-import { LoginHandler } from './auth/commands/login.handler';
-import { RecoverPasswordHandler } from './auth/commands/recover-password.handler';
+import { LoginHandler } from '@/application/auth/commands/login.handler';
+import { RefreshTokenHandler } from '@/application/auth/commands/refresh-token.handler';
+import { RecoverPasswordHandler } from '@/application/auth/commands/recover-password.handler';
 import { ConfirmRecoverPasswordHandler } from './auth/commands/confirm-recover-password.handler';
 import { EmailModule } from '@/infrastructure/email/email.module';
 import { PropertyApplicationModule } from '@/application/property/property-application.module';
@@ -23,6 +24,7 @@ import { ReservationApplicationModule } from '@/application/reservation/reservat
 const CommandHandlers = [
   RegisterTenantHandler,
   LoginHandler,
+  RefreshTokenHandler,
   RecoverPasswordHandler,
   ConfirmRecoverPasswordHandler,
   VerifyEmailHandler,
