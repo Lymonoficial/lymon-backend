@@ -18,6 +18,7 @@ import { TenantApplicationModule } from '@/application/tenant/tenant-application
 import { GuestAuthApplicationModule } from '@/application/guest-auth/guest-auth-application.module';
 import { RoleApplicationModule } from '@/application/role/role-application.module';
 import { GuestApplicationModule } from '@/application/guest/guest-application.module';
+import { ReservationApplicationModule } from '@/application/reservation/reservation-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -42,6 +43,7 @@ const CommandHandlers = [
     GuestAuthApplicationModule,
     RoleApplicationModule,
     GuestApplicationModule,
+    ReservationApplicationModule,
   ],
   providers: [...CommandHandlers],
   exports: [...CommandHandlers, GuestApplicationModule],
