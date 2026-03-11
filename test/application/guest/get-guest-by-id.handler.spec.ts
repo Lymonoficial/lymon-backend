@@ -1,150 +1,120 @@
-import 'dotenv/config';
 import { GetGuestByIdHandler } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.handler';
 import { GetGuestByIdQuery } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.query';
-import { Guest } from '@/domain/guest/entities/guest.entity';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { MongoGuestRepository } from '@/infrastructure/persistence/repositories/mongo-guest.repository';
-import {
-  GuestDocument,
-  GuestSchema,
-} from '@/infrastructure/persistence/schemas/guest.schema';
-import mongoose, { Connection, Model, Types } from 'mongoose';
+import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
+import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
+import { makeGuest, GUEST_FIXTURE_DEFAULTS } from '@test/shared/fixtures/guest.fixture';
 import { GuestStatusEnum } from '@/domain/guest/entities/guest.types';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const maybeDescribe = MONGODB_URI ? describe : describe.skip;
-
-maybeDescribe('GetGuestByIdHandler (Detailed Integration Tests)', () => {
-  let connection: Connection;
-  let guestModel: Model<GuestDocument>;
-  let repository: MongoGuestRepository;
+describe('GetGuestByIdHandler', () => {
   let handler: GetGuestByIdHandler;
+  let guestRepository: jest.Mocked<GuestRepository>;
 
-  beforeAll(async () => {
-    connection = await mongoose
-      .createConnection(MONGODB_URI as string, {
-        dbName: 'lymon_backend_get_guest_detailed_test',
-      })
-      .asPromise();
-
-    guestModel = connection.model(GuestDocument.name, GuestSchema);
-    repository = new MongoGuestRepository(guestModel);
-    handler = new GetGuestByIdHandler(repository);
+  beforeEach(() => {
+    guestRepository = createGuestRepositoryMock();
+    handler = new GetGuestByIdHandler(guestRepository);
   });
 
-  beforeEach(async () => {
-    await guestModel.deleteMany({});
+  describe('when the guest exists and belongs to the tenant', () => {
+    it('returns the guest DTO (TC-01 & TC-03)', async () => {
+      const guest = makeGuest({
+        fullName: 'John Doe',
+        primaryEmail: 'user@example.com',
+      });
+      guestRepository.findById.mockResolvedValue(guest);
+
+      const query = new GetGuestByIdQuery(
+        GUEST_FIXTURE_DEFAULTS.tenantId,
+        GUEST_FIXTURE_DEFAULTS.id,
+      );
+      
+      const result = await handler.execute(query);
+
+      expect(result.item).not.toBeNull();
+      expect(result.item?.id).toBe(GUEST_FIXTURE_DEFAULTS.id);
+      expect(result.item?.fullName).toBe('John Doe');
+      expect(result.item?.primaryEmail).toBe('user@example.com');
+      expect(guestRepository.findById).toHaveBeenCalled();
+    });
   });
 
-  afterAll(async () => {
-    await connection.dropDatabase();
-    await connection.close();
+  describe('when the guest exists but belongs to a different tenant', () => {
+    it('returns null for security (TC-02)', async () => {
+      const guest = makeGuest({ tenantId: 'other-tenant' });
+      guestRepository.findById.mockResolvedValue(guest);
+
+      const query = new GetGuestByIdQuery(
+        GUEST_FIXTURE_DEFAULTS.tenantId,
+        GUEST_FIXTURE_DEFAULTS.id,
+      );
+
+      const result = await handler.execute(query);
+
+      expect(result.item).toBeNull();
+    });
   });
 
-  // TC-01 & TC-03
-  it('TC-01 & TC-03: Debería recuperar un huésped con email válido', async () => {
-    const tenantId = TenantId.createFromString(new Types.ObjectId().toString());
-    const email = 'user@example.com';
-    const guest = Guest.create({
-      tenantId,
-      identity: { documentType: 'passport', documentNumber: 'TC01', countryCode: 'US' },
-      fullName: 'John Doe',
-      primaryEmail: email,
+  describe('when the guest does not exist', () => {
+    it('returns null (TC-01.1)', async () => {
+      guestRepository.findById.mockResolvedValue(null);
+
+      const query = new GetGuestByIdQuery(
+        GUEST_FIXTURE_DEFAULTS.tenantId,
+        GUEST_FIXTURE_DEFAULTS.id,
+      );
+
+      const result = await handler.execute(query);
+
+      expect(result.item).toBeNull();
+    });
+  });
+
+  describe('when data has specific formats', () => {
+    it('should return phone number correctly (TC-04)', async () => {
+      const phone = '+573001234567';
+      const guest = makeGuest({
+        identity: { documentType: 'passport', documentNumber: 'TC04', countryCode: 'CO' },
+      });
+
+      jest.spyOn(guest, 'getPhones').mockReturnValue([{ number: phone, type: 'mobile', isPrimary: true }]);
+
+      guestRepository.findById.mockResolvedValue(guest);
+
+      const query = new GetGuestByIdQuery(GUEST_FIXTURE_DEFAULTS.tenantId, GUEST_FIXTURE_DEFAULTS.id);
+      const result = await handler.execute(query);
+
+      expect(result.item?.phones[0].number).toBe(phone);
     });
 
-    const savedId = await repository.save(guest);
-    const query = new GetGuestByIdQuery(tenantId.toString(), savedId);
-    const result = await handler.execute(query);
+    it('should handle Blocked status (TC-05)', async () => {
+      const guest = makeGuest({ status: GuestStatusEnum.BLOCKED });
+      guestRepository.findById.mockResolvedValue(guest);
 
-    expect(result.item).not.toBeNull();
-    expect(result.item?.primaryEmail).toBe(email);
-    expect(result.item?.id).toBe(savedId);
-  });
+      const query = new GetGuestByIdQuery(GUEST_FIXTURE_DEFAULTS.tenantId, GUEST_FIXTURE_DEFAULTS.id);
+      const result = await handler.execute(query);
 
-  // TC-01.1
-  it('TC-01.1: Debería retornar null para un ID inexistente', async () => {
-    const tenantId = new Types.ObjectId().toString();
-    const query = new GetGuestByIdQuery(tenantId, new Types.ObjectId().toString());
-    const result = await handler.execute(query);
-
-    expect(result.item).toBeNull();
-  });
-
-  // TC-02
-  it('TC-02: Multi-tenant - Debería denegar acceso si el tenant es diferente', async () => {
-    const tenantA = TenantId.createFromString(new Types.ObjectId().toString());
-    const tenantB = new Types.ObjectId().toString();
-
-    const guest = Guest.create({
-      tenantId: tenantA,
-      identity: { documentType: 'passport', documentNumber: 'TC02', countryCode: 'US' },
-      fullName: 'Tenant A Guest',
-      primaryEmail: 'guestA@hotel.com',
+      expect(result.item?.status).toBe(GuestStatusEnum.BLOCKED);
     });
 
-    const savedId = await repository.save(guest);
-    const query = new GetGuestByIdQuery(tenantB, savedId);
-    const result = await handler.execute(query);
+    it('should handle optional fields as null (TC-06)', async () => {
+      const guest = makeGuest();
+      guestRepository.findById.mockResolvedValue(guest);
 
-    expect(result.item).toBeNull();
+      const query = new GetGuestByIdQuery(GUEST_FIXTURE_DEFAULTS.tenantId, GUEST_FIXTURE_DEFAULTS.id);
+      const result = await handler.execute(query);
+
+      expect(result.item?.firstName).toBeNull();
+      expect(result.item?.lastName).toBeNull();
+      expect(result.item?.preferencesNotes).toBeNull();
+    });
   });
 
-  // TC-04
-  it('TC-04: Teléfono - Debería persistir y mostrar formato internacional +57300...', async () => {
-    const tenantId = TenantId.createFromString(new Types.ObjectId().toString());
-    const phone = '+573001234567';
-    const guest = Guest.create({
-      tenantId,
-      identity: { documentType: 'passport', documentNumber: 'TC04', countryCode: 'CO' },
-      fullName: 'Colombian Guest',
-      primaryEmail: 'col@example.com',
-      phones: [{ number: phone, type: 'mobile', isPrimary: true }]
+  describe('when the guest ID format is invalid', () => {
+    it('returns null and does not call repository', async () => {
+      const query = new GetGuestByIdQuery(GUEST_FIXTURE_DEFAULTS.tenantId, '');
+      const result = await handler.execute(query);
+
+      expect(result.item).toBeNull();
+      expect(guestRepository.findById).not.toHaveBeenCalled();
     });
-
-    const savedId = await repository.save(guest);
-    const query = new GetGuestByIdQuery(tenantId.toString(), savedId);
-    const result = await handler.execute(query);
-
-    expect(result.item?.phones[0].number).toBe(phone);
-  });
-
-  // TC-05
-  it('TC-05: Status - Debería validar estados Active / Blocked', async () => {
-    const tenantId = TenantId.createFromString(new Types.ObjectId().toString());
-    
-    const guest = Guest.create({
-      tenantId,
-      identity: { documentType: 'passport', documentNumber: 'TC05', countryCode: 'US' },
-      fullName: 'Blocked Guest',
-      primaryEmail: 'blocked@example.com',
-      status: GuestStatusEnum.BLOCKED,
-    });
-
-    const savedId = await repository.save(guest);
-    const query = new GetGuestByIdQuery(tenantId.toString(), savedId);
-    const result = await handler.execute(query);
-
-    expect(result.item?.status).toBe(GuestStatusEnum.BLOCKED);
-  });
-
-  // TC-06
-  it('TC-06: Nulidad - Debería manejar campos opcionales vacíos sin errores', async () => {
-    const tenantId = TenantId.createFromString(new Types.ObjectId().toString());
-    const guest = Guest.create({
-      tenantId,
-      identity: { documentType: 'passport', documentNumber: 'TC06', countryCode: 'US' },
-      fullName: 'Minimal Guest',
-      primaryEmail: 'minimal@example.com',
-    });
-
-    const savedId = await repository.save(guest);
-    const query = new GetGuestByIdQuery(tenantId.toString(), savedId);
-    
-    const result = await handler.execute(query);
-
-    expect(result.item).not.toBeNull();
-    expect(result.item?.firstName).toBeNull();
-    expect(result.item?.lastName).toBeNull();
-    expect(result.item?.preferencesNotes).toBeNull();
   });
 });
