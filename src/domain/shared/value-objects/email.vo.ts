@@ -1,3 +1,5 @@
+import { DomainException } from '@/domain/shared/exceptions/domain.exception';
+
 export class Email {
   private readonly value: string;
 
@@ -7,7 +9,7 @@ export class Email {
 
   static create(email: string): Email {
     if (!this.isValid(email)) {
-      throw new Error('Invalid email format');
+      throw new DomainException('Invalid email format');
     }
     return new Email(email.toLowerCase().trim());
   }
