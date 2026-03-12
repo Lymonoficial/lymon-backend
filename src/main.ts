@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationError } from 'class-validator';
 import { DomainExceptionFilter } from './presentation/common/filters/domain-exception.filter';
@@ -84,7 +85,8 @@ async function bootstrap() {
     },
   });
 
-  const port = 3000;
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
   logger.log(`Application running on: http://localhost:${port}`);
   logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
