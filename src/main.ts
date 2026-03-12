@@ -49,46 +49,49 @@ async function bootstrap() {
     }),
   );
 
-  // Configuración de Swagger
-  const config = new DocumentBuilder()
-    .setTitle('Lymon Hotel API')
-    .setDescription(
-      'API para la gestión hotelera - Autenticación, Hoteles y Habitaciones',
-    )
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Ingresa tu token JWT (sin la palabra Bearer)',
-        in: 'header',
-      },
-      'JWT-auth',
-    )
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Token JWT de cuenta de huésped',
-        in: 'header',
-      },
-      'GuestJWT-auth',
-    )
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true, // Recordar el token entre recargas
-    },
-  });
-
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 3000);
+  const isDevelopment = configService.get<string>('isDevelopment') === 'true';
+
+  if (isDevelopment) {
+    const config = new DocumentBuilder()
+      .setTitle('Lymon Hotel API')
+      .setDescription(
+        'API para la gestión hotelera - Autenticación, Hoteles y Habitaciones',
+      )
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Ingresa tu token JWT (sin la palabra Bearer)',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Token JWT de cuenta de huésped',
+          in: 'header',
+        },
+        'GuestJWT-auth',
+      )
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    });
+    logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
+  }
+
   await app.listen(port);
   logger.log(`Application running on: http://localhost:${port}`);
-  logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
 }
 bootstrap();
