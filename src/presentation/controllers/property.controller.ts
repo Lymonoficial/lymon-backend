@@ -11,6 +11,8 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   Get,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
@@ -21,6 +23,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { CreatePropertyDto } from '@/presentation/dtos/create-property.dto';
+import { DeletePropertyCommand } from '@/application/property/commands/delete-property.command';
 import { GetPropertiesByTenantQuery } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.query';
 import { GetPropertiesByTenantResult } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.result';
 
@@ -125,6 +128,30 @@ export class PropertyController {
         limit: result.limit,
         totalPages: Math.ceil(result.total / result.limit),
       },
+    };
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a property' })
+  @ApiResponse({ status: 200, description: 'Property deleted successfully' })
+  @ApiResponse({ status: 403, description: 'Only the tenant owner can delete properties' })
+  @ApiResponse({ status: 404, description: 'Property not found' })
+  async deleteProperty(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+  ) {
+    const command = new DeletePropertyCommand(
+      id,
+      user.tenantId,
+      user.userId,
+      user.email,
+      user.isOwner,
+    );
+
+    await this.commandBus.execute<DeletePropertyCommand, void>(command);
+
+    return {
+      message: 'Property deleted successfully',
     };
   }
 }

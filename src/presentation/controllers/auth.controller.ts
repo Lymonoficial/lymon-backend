@@ -1,5 +1,7 @@
 import { LoginCommand } from '@/application/auth/commands/login.command';
 import { LoginResult } from '@/application/auth/commands/login.handler';
+import { LogoutCommand } from '@/application/auth/commands/logout.command';
+import { LogoutResult } from '@/application/auth/commands/logout.handler';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { RegisterTenantCommand } from '@/application/tenant/commands/register-tenant.command';
 import { RegisterTenantResult } from '@/application/tenant/commands/register-tenant.handler';
@@ -144,6 +146,22 @@ export class AuthController {
   getMe(@CurrentUser() user: JwtPayload) {
     return {
       data: user,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Logout current user' })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
+  async logout(@CurrentUser() user: JwtPayload) {
+    const command = new LogoutCommand(user.userId, user.email, user.tenantId);
+    const result = await this.commandBus.execute<LogoutCommand, LogoutResult>(
+      command,
+    );
+
+    return {
+      message: result.message,
     };
   }
 }
