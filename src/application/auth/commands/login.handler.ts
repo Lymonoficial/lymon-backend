@@ -26,8 +26,14 @@ import {
 import { RoleId } from '@/domain/role/entities/role.entity';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AuditLoggedEvent, AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
-import { AuditAction, AuditEntityType } from '@/domain/audit/value-objects/audit-action.vo';
+import {
+  AuditLoggedEvent,
+  AUDIT_LOG_EVENT,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 export class LoginResult {
   constructor(
