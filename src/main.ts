@@ -65,6 +65,16 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Token JWT de cuenta de huésped',
+        in: 'header',
+      },
+      'GuestJWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
