@@ -2,15 +2,18 @@ import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CreateGuestCommand } from '@/application/guest/commands/create-guest.command';
 import { CreateGuestResult } from '@/application/guest/commands/create-guest.result';
 import { SearchGuestsQuery } from '@/application/guest/queries/search-guests.query';
+import { GetGuestByIdQuery } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.query';
+import type { GetGuestByIdResult } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.result';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
+import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CreateGuestDto } from '@/presentation/dtos/create-guest.dto';
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { Body, Controller, Get, Param, Post, Query, UseGuards, NotFoundException } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -25,6 +28,7 @@ import {
 export class GuestController {
   constructor(
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
     private readonly searchGuestsQuery: SearchGuestsQuery,
   ) {}
 
@@ -96,6 +100,26 @@ export class GuestController {
         updatedAt: guest.getUpdatedAt(),
       })),
       total: guests.length,
+    };
+  }
+  @Get(':guestId')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get complete profile of a guest by ID' })
+  @ApiResponse({ status: 200, description: 'Guest profile retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Guest not found' })
+  async getById(@CurrentUser() user: JwtPayload, @Param('guestId') guestId: string) {
+    const result = await this.queryBus.execute<GetGuestByIdQuery, GetGuestByIdResult>(
+      new GetGuestByIdQuery(user.tenantId, guestId)
+    );
+
+    if (!result.item) {
+      throw new NotFoundException('Guest not found');
+    }
+
+    return {
+      message: 'Guest profile retrieved successfully',
+      data: result.item,
     };
   }
 }
