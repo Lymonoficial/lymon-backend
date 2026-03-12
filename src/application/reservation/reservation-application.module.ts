@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 import { CreateReservationHandler } from './commands/create-reservation/create-reservation.handler';
+import { CreateGuestReservationHandler } from '@/application/reservation/commands/create-guest-reservation/create-guest-reservation.handler';
 import { ConfirmReservationHandler } from './commands/confirm-reservation/confirm-reservation.handler';
 import { CancelReservationHandler } from './commands/cancel-reservation/cancel-reservation.handler';
 import { CheckInHandler } from './commands/check-in/check-in.handler';
@@ -14,6 +15,7 @@ import { GetReservationsByUnitHandler } from './queries/get-reservations-by-unit
 
 const CommandHandlers = [
   CreateReservationHandler,
+  CreateGuestReservationHandler,
   ConfirmReservationHandler,
   CancelReservationHandler,
   CheckInHandler,

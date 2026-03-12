@@ -13,6 +13,7 @@ import { RoleController } from '@/presentation/controllers/role.controller';
 import { GuestController } from '@/presentation/controllers/guest.controller';
 import { CrmController } from '@/presentation/controllers/crm.controller';
 import { ReservationController } from '@/presentation/controllers/reservation.controller';
+import { GuestReservationController } from '@/presentation/controllers/guest-reservation.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -29,6 +30,7 @@ import { ReservationController } from '@/presentation/controllers/reservation.co
     RoleController,
     CrmController,
     ReservationController,
+    GuestReservationController,
   ],
 })
 export class PresentationModule {}
