@@ -1,9 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationError } from 'class-validator';
 import { DomainExceptionFilter } from './presentation/common/filters/domain-exception.filter';
+import { HttpLoggingInterceptor } from './presentation/common/interceptors/http-logging.interceptor';
 
 function flattenValidationErrors(errors: ValidationError[]): string[] {
   return errors.flatMap((error) => {
@@ -16,6 +17,7 @@ function flattenValidationErrors(errors: ValidationError[]): string[] {
 }
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
   // Habilitar CORS
@@ -27,6 +29,9 @@ async function bootstrap() {
 
   // Filtro global para errores de dominio
   app.useGlobalFilters(new DomainExceptionFilter());
+
+  // Logging HTTP global
+  app.useGlobalInterceptors(new HttpLoggingInterceptor());
 
   // Validación global
   app.useGlobalPipes(
@@ -71,7 +76,7 @@ async function bootstrap() {
 
   const port = 3000;
   await app.listen(port);
-  console.log(`🚀 Aplicación corriendo en: http://localhost:${port}`);
-  console.log(`📚 Documentación Swagger: http://localhost:${port}/api/docs`);
+  logger.log(`Application running on: http://localhost:${port}`);
+  logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
 }
 bootstrap();
