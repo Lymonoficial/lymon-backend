@@ -11,8 +11,8 @@ export class InventoryItem {
     private readonly propertyId: PropertyId,
     private readonly sku: string,
     private name: string,
-    private readonly category: string,
-    private readonly unit: string,
+    private category: string,
+    private unit: string,
     private minStock: number,
     private currentStock: number,
     private readonly createdAt: Date,
@@ -171,16 +171,36 @@ export class InventoryItem {
     return this.updatedAt;
   }
 
-  updateName(name: string): void {
-    const trimmed = name.trim();
-    if (!trimmed) throw new DomainException('Name is required');
-    this.name = trimmed;
-    this.touch();
-  }
+  update(params: {
+    name?: string;
+    category?: string;
+    unit?: string;
+    minStock?: number;
+  }): void {
+    if (params.name !== undefined) {
+      const name = params.name.trim();
+      if (!name) throw new DomainException('Name is required');
+      this.name = name;
+    }
 
-  updateMinStock(minStock: number): void {
-    if (minStock < 0) throw new DomainException('Min stock cannot be negative');
-    this.minStock = minStock;
+    if (params.category !== undefined) {
+      const category = params.category.trim();
+      if (!category) throw new DomainException('Category is required');
+      this.category = category;
+    }
+
+    if (params.unit !== undefined) {
+      const unit = params.unit.trim();
+      if (!unit) throw new DomainException('Unit is required');
+      this.unit = unit;
+    }
+
+    if (params.minStock !== undefined) {
+      if (params.minStock < 0)
+        throw new DomainException('Min stock cannot be negative');
+      this.minStock = params.minStock;
+    }
+
     this.touch();
   }
 

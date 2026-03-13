@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
@@ -13,9 +21,12 @@ import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CreateInventoryItemDto } from '@/presentation/dtos/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from '@/presentation/dtos/update-inventory-item.dto';
 import { RecordInventoryMovementDto } from '@/presentation/dtos/record-inventory-movement.dto';
 import { CreateInventoryItemCommand } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.command';
 import { CreateInventoryItemResult } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.result';
+import { UpdateInventoryItemCommand } from '@/application/inventory/commands/update-inventory-item/update-inventory-item.command';
+import { UpdateInventoryItemResult } from '@/application/inventory/commands/update-inventory-item/update-inventory-item.result';
 import { RecordInventoryMovementCommand } from '@/application/inventory/commands/record-inventory-movement/record-inventory-movement.command';
 import { RecordInventoryMovementResult } from '@/application/inventory/commands/record-inventory-movement/record-inventory-movement.result';
 import { GetInventoryItemsByPropertyQuery } from '@/application/inventory/queries/get-inventory-items-by-property/get-inventory-items-by-property.query';
@@ -65,6 +76,43 @@ export class InventoryController {
 
     return {
       message: 'Inventory item created successfully',
+      data: result,
+    };
+  }
+
+  @Patch('items/:itemId')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_EDIT)
+  @ApiOperation({ summary: 'Update a stock inventory item for a property' })
+  @ApiResponse({
+    status: 200,
+    description: 'Inventory item updated successfully',
+  })
+  async updateItem(
+    @CurrentUser() user: JwtPayload,
+    @Param('propertyId') propertyId: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateInventoryItemDto,
+  ) {
+    const result = await this.commandBus.execute<
+      UpdateInventoryItemCommand,
+      UpdateInventoryItemResult
+    >(
+      new UpdateInventoryItemCommand(
+        user.tenantId,
+        propertyId,
+        itemId,
+        dto.name,
+        dto.category,
+        dto.unit,
+        dto.minStock,
+        user.userId,
+        user.email,
+      ),
+    );
+
+    return {
+      message: 'Inventory item updated successfully',
       data: result,
     };
   }
