@@ -63,6 +63,18 @@ import {
 } from '@/infrastructure/persistence/schemas/reservation.schema';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
 import { MongoReservationRepository } from './repositories/mongo-reservation.repository';
+import {
+  InventoryItemDocument,
+  InventoryItemSchema,
+} from '@/infrastructure/persistence/schemas/inventory-item.schema';
+import {
+  InventoryMovementDocument,
+  InventoryMovementSchema,
+} from '@/infrastructure/persistence/schemas/inventory-movement.schema';
+import { INVENTORY_ITEM_REPOSITORY } from '@/domain/inventory/repositories/inventory-item.repository';
+import { MongoInventoryItemRepository } from '@/infrastructure/persistence/repositories/mongo-inventory-item.repository';
+import { INVENTORY_MOVEMENT_REPOSITORY } from '@/domain/inventory/repositories/inventory-movement.repository';
+import { MongoInventoryMovementRepository } from '@/infrastructure/persistence/repositories/mongo-inventory-movement.repository';
 
 @Module({
   imports: [
@@ -77,6 +89,11 @@ import { MongoReservationRepository } from './repositories/mongo-reservation.rep
       { name: AuditLogDocument.name, schema: AuditLogSchema },
       { name: IncidentReportDocument.name, schema: IncidentReportSchema },
       { name: ReservationDocument.name, schema: ReservationSchema },
+      { name: InventoryItemDocument.name, schema: InventoryItemSchema },
+      {
+        name: InventoryMovementDocument.name,
+        schema: InventoryMovementSchema,
+      },
     ]),
   ],
   providers: [
@@ -124,6 +141,14 @@ import { MongoReservationRepository } from './repositories/mongo-reservation.rep
       provide: RESERVATION_REPOSITORY,
       useClass: MongoReservationRepository,
     },
+    {
+      provide: INVENTORY_ITEM_REPOSITORY,
+      useClass: MongoInventoryItemRepository,
+    },
+    {
+      provide: INVENTORY_MOVEMENT_REPOSITORY,
+      useClass: MongoInventoryMovementRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -138,6 +163,8 @@ import { MongoReservationRepository } from './repositories/mongo-reservation.rep
     TRANSACTION_MANAGER,
     INCIDENT_REPORT_REPOSITORY,
     RESERVATION_REPOSITORY,
+    INVENTORY_ITEM_REPOSITORY,
+    INVENTORY_MOVEMENT_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
