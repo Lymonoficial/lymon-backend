@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
@@ -18,6 +28,7 @@ import { CreateInventoryItemCommand } from '@/application/inventory/commands/cre
 import { CreateInventoryItemResult } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.result';
 import { RecordInventoryMovementCommand } from '@/application/inventory/commands/record-inventory-movement/record-inventory-movement.command';
 import { RecordInventoryMovementResult } from '@/application/inventory/commands/record-inventory-movement/record-inventory-movement.result';
+import { DeleteInventoryItemCommand } from '@/application/inventory/commands/delete-inventory-item/delete-inventory-item.command';
 import { GetInventoryItemsByPropertyQuery } from '@/application/inventory/queries/get-inventory-items-by-property/get-inventory-items-by-property.query';
 import { GetInventoryItemsByPropertyResult } from '@/application/inventory/queries/get-inventory-items-by-property/get-inventory-items-by-property.result';
 import { GetLowStockItemsByPropertyQuery } from '@/application/inventory/queries/get-low-stock-items-by-property/get-low-stock-items-by-property.query';
@@ -149,5 +160,24 @@ export class InventoryController {
       message: 'Low stock items retrieved successfully',
       data: result.items,
     };
+  }
+
+  @Delete('items/:itemId')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_EDIT)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a stock inventory item for a property' })
+  @ApiResponse({
+    status: 204,
+    description: 'Inventory item deleted successfully',
+  })
+  async deleteItem(
+    @CurrentUser() user: JwtPayload,
+    @Param('propertyId') propertyId: string,
+    @Param('itemId') itemId: string,
+  ) {
+    await this.commandBus.execute<DeleteInventoryItemCommand, void>(
+      new DeleteInventoryItemCommand(user.tenantId, propertyId, itemId),
+    );
   }
 }

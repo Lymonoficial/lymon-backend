@@ -25,4 +25,5 @@ export interface InventoryItemRepository {
     propertyId: PropertyId,
     sku: string,
   ): Promise<InventoryItem | null>;
+  delete(id: InventoryItemId): Promise<void>;
 }
