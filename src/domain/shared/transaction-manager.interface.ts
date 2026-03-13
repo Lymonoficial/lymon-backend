@@ -7,7 +7,5 @@ export interface TransactionManager {
 }
 
 export interface TransactionContext {
-  // Contexto opaco que será usado por los repositorios
-  // En MongoDB será ClientSession, en otras DB será otra cosa
-  getContext(): unknown;
+  getContext(): TransactionContextData;
 }

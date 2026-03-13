@@ -6,6 +6,7 @@ import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { GuestDocument } from '@/infrastructure/persistence/schemas/guest.schema';
@@ -17,7 +18,10 @@ export class MongoGuestRepository implements GuestRepository {
     private readonly guestModel: Model<GuestDocument>,
   ) {}
 
-  async save(guest: Guest, transactionContext?: unknown): Promise<string> {
+  async save(
+    guest: Guest,
+    transactionContext?: TransactionContextData,
+  ): Promise<string> {
     const id = guest.getId()?.toString();
     const session = transactionContext as ClientSession | undefined;
     const summary = guest.getSummary();

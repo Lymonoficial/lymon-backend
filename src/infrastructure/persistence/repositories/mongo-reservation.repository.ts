@@ -16,6 +16,7 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
 @Injectable()
 export class MongoReservationRepository implements ReservationRepository {
@@ -24,7 +25,10 @@ export class MongoReservationRepository implements ReservationRepository {
     private readonly reservationModel: Model<ReservationDocument>,
   ) {}
 
-  async save(reservation: Reservation, ctx?: unknown): Promise<string> {
+  async save(
+    reservation: Reservation,
+    ctx?: TransactionContextData,
+  ): Promise<string> {
     const session = ctx as ClientSession | undefined;
     const id = reservation.getId()?.toString();
 
