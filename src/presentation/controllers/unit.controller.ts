@@ -2,8 +2,11 @@ import { CreateUnitCommand } from '@/application/unit/commands/create-unit.comma
 import { CreateUnitResult } from '@/application/unit/commands/create-unit.result';
 import { GetUnitsByPropertyQuery } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.query';
 import { GetUnitsByPropertyResult } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.result';
+import { GetPublicUnitsByTenantQuery } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.query';
+import { GetPublicUnitsByTenantResult } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
+import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import {
   Body,
   Controller,
@@ -69,6 +72,50 @@ export class UnitController {
       message: 'Unit created successfully',
       data: {
         unitId: result.unitId,
+      },
+    };
+  }
+
+  @Public()
+  @Get('public/:tenantId')
+  @ApiOperation({
+    summary: 'Get all units for a tenant (public, no authentication required)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
+  async getPublicByTenant(
+    @Param('tenantId') tenantId: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const query = new GetPublicUnitsByTenantQuery(tenantId, page, limit);
+
+    const result = await this.queryBus.execute<
+      GetPublicUnitsByTenantQuery,
+      GetPublicUnitsByTenantResult
+    >(query);
+
+    return {
+      message: 'Units retrieved successfully',
+      data: {
+        units: result.units,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
       },
     };
   }
