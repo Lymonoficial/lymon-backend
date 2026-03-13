@@ -2,11 +2,15 @@ import { Guest } from '@/domain/guest/entities/guest.entity';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
 export const GUEST_REPOSITORY = 'GUEST_REPOSITORY';
 
 export interface GuestRepository {
-  save(guest: Guest, transactionContext?: unknown): Promise<string>;
+  save(
+    guest: Guest,
+    transactionContext?: TransactionContextData,
+  ): Promise<string>;
   findById(id: GuestId): Promise<Guest | null>;
   findByTenantId(tenantId: TenantId): Promise<Guest[]>;
   findByPrimaryEmail(

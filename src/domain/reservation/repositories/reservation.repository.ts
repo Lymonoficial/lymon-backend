@@ -3,11 +3,12 @@ import { ReservationId } from '../value-objects/reservation-id.vo';
 import { DateRange } from '../value-objects/date-range.vo';
 import { ReservationSourceEnum } from '../value-objects/reservation-source.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
 export const RESERVATION_REPOSITORY = 'RESERVATION_REPOSITORY';
 
 export interface ReservationRepository {
-  save(reservation: Reservation, ctx?: unknown): Promise<string>;
+  save(reservation: Reservation, ctx?: TransactionContextData): Promise<string>;
   findById(id: ReservationId): Promise<Reservation | null>;
   findByTenantId(
     tenantId: string,
