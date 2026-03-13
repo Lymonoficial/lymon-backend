@@ -16,4 +16,9 @@ export interface UnitRepository {
   findByTenantId(tenantId: TenantId): Promise<Unit[]>;
   countByTenantId(tenantId: TenantId): Promise<number>;
   delete(id: UnitId): Promise<void>;
+  findByTenantIdPaginated(
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+  ): Promise<{ units: Unit[]; total: number }>;
 }

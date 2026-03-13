@@ -84,6 +84,24 @@ export class MongoUnitRepository implements UnitRepository {
     return documents.map((doc) => this.toDomain(doc));
   }
 
+  async findByTenantIdPaginated(
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+  ): Promise<{ units: Unit[]; total: number }> {
+    const filter = { tenantId: new Types.ObjectId(tenantId.toString()) };
+    const total = await this.unitModel.countDocuments(filter);
+    const documents = await this.unitModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+    return {
+      units: documents.map((doc) => this.toDomain(doc)),
+      total,
+    };
+  }
+
   async countByTenantId(tenantId: TenantId): Promise<number> {
     return this.unitModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),
