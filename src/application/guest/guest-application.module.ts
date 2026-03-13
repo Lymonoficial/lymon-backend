@@ -8,7 +8,7 @@ const QueryHandlers = [SearchGuestsQuery];
 @Module({
   imports: [
     CqrsModule,
-    PersistenceModule, // Esto es necesario para que el módulo encuentre el GUEST_REPOSITORY
+    PersistenceModule,
   ],
   providers: [...QueryHandlers],
   exports: [...QueryHandlers],
