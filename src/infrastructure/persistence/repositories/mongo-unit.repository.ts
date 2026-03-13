@@ -4,6 +4,7 @@ import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ClientSession, Types } from 'mongoose';
@@ -16,7 +17,10 @@ export class MongoUnitRepository implements UnitRepository {
     private readonly unitModel: Model<UnitDocument>,
   ) {}
 
-  async save(unit: Unit, transactionContext?: unknown): Promise<string> {
+  async save(
+    unit: Unit,
+    transactionContext?: TransactionContextData,
+  ): Promise<string> {
     const id = unit.getId()?.toString();
     const session = transactionContext as ClientSession | undefined;
 
@@ -78,6 +82,24 @@ export class MongoUnitRepository implements UnitRepository {
       .sort({ createdAt: -1 });
 
     return documents.map((doc) => this.toDomain(doc));
+  }
+
+  async findByTenantIdPaginated(
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+  ): Promise<{ units: Unit[]; total: number }> {
+    const filter = { tenantId: new Types.ObjectId(tenantId.toString()) };
+    const total = await this.unitModel.countDocuments(filter);
+    const documents = await this.unitModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+    return {
+      units: documents.map((doc) => this.toDomain(doc)),
+      total,
+    };
   }
 
   async countByTenantId(tenantId: TenantId): Promise<number> {

@@ -5,6 +5,7 @@ import { PropertyType } from '@/domain/property/value-objects/property-type.vo';
 import { CancellationPolicy } from '@/domain/property/value-objects/cancellation-policy.vo';
 import { Location } from '@/domain/property/value-objects/location.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ClientSession, Types } from 'mongoose';
@@ -19,7 +20,7 @@ export class MongoPropertyRepository implements PropertyRepository {
 
   async save(
     property: Property,
-    transactionContext?: unknown,
+    transactionContext?: TransactionContextData,
   ): Promise<string> {
     const id = property.getId()?.toString();
     const session = transactionContext as ClientSession | undefined;

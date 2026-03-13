@@ -10,6 +10,11 @@ import { IncidentReportController } from '@/presentation/controllers/incident-re
 import { TenantController } from '@/presentation/controllers/tenant.controller';
 import { GuestAuthController } from '@/presentation/controllers/guest-auth.controller';
 import { RoleController } from '@/presentation/controllers/role.controller';
+import { GuestController } from '@/presentation/controllers/guest.controller';
+import { CrmController } from '@/presentation/controllers/crm.controller';
+import { ReservationController } from '@/presentation/controllers/reservation.controller';
+import { GuestReservationController } from '@/presentation/controllers/guest-reservation.controller';
+import { InventoryController } from '@/presentation/controllers/inventory.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -22,7 +27,12 @@ import { RoleController } from '@/presentation/controllers/role.controller';
     IncidentReportController,
     TenantController,
     GuestAuthController,
+    GuestController,
     RoleController,
+    CrmController,
+    ReservationController,
+    GuestReservationController,
+    InventoryController,
   ],
 })
 export class PresentationModule {}

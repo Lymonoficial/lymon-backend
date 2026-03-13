@@ -10,6 +10,8 @@ import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './infrastructure/auth/guards/jwt-auth.guard';
 import { AuditInfrastructureModule } from './infrastructure/audit/audit-infrastructure.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ReservationInfrastructureModule } from './infrastructure/reservation/reservation-infrastructure.module';
 
 @Module({
   imports: [
@@ -24,10 +26,12 @@ import { AuditInfrastructureModule } from './infrastructure/audit/audit-infrastr
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     PresentationModule,
     ApplicationModule,
     AuditInfrastructureModule,
+    ReservationInfrastructureModule,
   ],
   controllers: [AppController],
   providers: [

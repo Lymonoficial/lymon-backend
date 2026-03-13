@@ -30,9 +30,7 @@ describe('RegisterGuestAccountHandler', () => {
 
   describe('when the email is already registered', () => {
     it('throws ConflictException', async () => {
-      guestAccountRepository.findByEmail.mockResolvedValue(
-        makeGuestAccount(),
-      );
+      guestAccountRepository.findByEmail.mockResolvedValue(makeGuestAccount());
 
       const command = new RegisterGuestAccountCommand(
         'John Doe',
@@ -42,9 +40,7 @@ describe('RegisterGuestAccountHandler', () => {
         'Doe',
       );
 
-      await expect(handler.execute(command)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(handler.execute(command)).rejects.toThrow(ConflictException);
       await expect(handler.execute(command)).rejects.toThrow(
         'An account with this email already exists',
       );
@@ -93,8 +89,7 @@ describe('RegisterGuestAccountHandler', () => {
       );
 
       // Validates the token sent is a 64-char hex string (32 random bytes)
-      const sentToken =
-        emailService.sendVerificationEmail.mock.calls[0][1];
+      const sentToken = emailService.sendVerificationEmail.mock.calls[0][1];
       expect(sentToken).toMatch(/^[a-f0-9]{64}$/);
     });
   });

@@ -1,6 +1,5 @@
 import { LoginCommand } from '@/application/auth/commands/login.command';
 import { LoginResult } from '@/application/auth/commands/login.handler';
-import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { RegisterTenantCommand } from '@/application/tenant/commands/register-tenant.command';
 import { RegisterTenantResult } from '@/application/tenant/commands/register-tenant.handler';
 import { VerifyEmailCommand } from '@/application/user/commands/verify-email/verify-email.command';
@@ -8,19 +7,16 @@ import { RecoverPasswordCommand } from '@/application/auth/commands/recover-pass
 import { RecoverPasswordResult } from '@/application/auth/commands/recover-password.handler';
 import { ConfirmRecoverPasswordCommand } from '@/application/auth/commands/confirm-recover-password.command';
 import { ConfirmRecoverPasswordResult } from '@/application/auth/commands/confirm-recover-password.handler';
-import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterTenantDto } from '@/presentation/dtos/register-tenant.dto';
 import { LoginDto } from '@/presentation/dtos/login.dto';
+import { RefreshTokenDto } from '@/presentation/dtos/refresh-token.dto';
+import { RefreshTokenCommand } from '@/application/auth/commands/refresh-token.command';
+import { RefreshTokenResult } from '@/application/auth/commands/refresh-token.handler';
 import { RecoverPasswordDto } from '@/presentation/dtos/recover-password.dto';
 import { ConfirmRecoverPasswordDto } from '@/presentation/dtos/confirm-recover-password.dto';
 
@@ -135,15 +131,24 @@ export class AuthController {
     };
   }
 
-  // TODO: Prueba naada más por ahora
   @UseGuards(JwtAuthGuard)
-  @Get('me')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get current user info' })
-  @ApiResponse({ status: 200, description: 'User info retrieved' })
-  getMe(@CurrentUser() user: JwtPayload) {
+  @Public()
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token using a valid refresh token' })
+  @ApiResponse({ status: 200, description: 'Tokens refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
+  async refresh(@Body() dto: RefreshTokenDto) {
+    const result = await this.commandBus.execute<
+      RefreshTokenCommand,
+      RefreshTokenResult
+    >(new RefreshTokenCommand(dto.refreshToken));
+
     return {
-      data: user,
+      message: 'Tokens refreshed successfully',
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      },
     };
   }
 }

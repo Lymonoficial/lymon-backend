@@ -6,6 +6,7 @@ import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { GuestDocument } from '@/infrastructure/persistence/schemas/guest.schema';
@@ -17,7 +18,10 @@ export class MongoGuestRepository implements GuestRepository {
     private readonly guestModel: Model<GuestDocument>,
   ) {}
 
-  async save(guest: Guest, transactionContext?: unknown): Promise<string> {
+  async save(
+    guest: Guest,
+    transactionContext?: TransactionContextData,
+  ): Promise<string> {
     const id = guest.getId()?.toString();
     const session = transactionContext as ClientSession | undefined;
     const summary = guest.getSummary();
@@ -115,6 +119,26 @@ export class MongoGuestRepository implements GuestRepository {
     return this.guestModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),
     });
+  }
+
+  async search(tenantId: TenantId, term: string): Promise<Guest[]> {
+    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(escapedTerm, 'i');
+
+    const documents = await this.guestModel
+      .find({
+        tenantId: new Types.ObjectId(tenantId.toString()),
+        $or: [
+          { fullName: pattern },
+          { primaryEmail: pattern },
+          { emails: pattern },
+          { 'identity.documentNumber': pattern },
+          { 'phones.number': pattern },
+        ],
+      })
+      .sort({ createdAt: -1 });
+
+    return documents.map((doc) => this.toDomain(doc));
   }
 
   async delete(id: GuestId): Promise<void> {

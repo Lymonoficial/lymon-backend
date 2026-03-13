@@ -1,0 +1,46 @@
+import { Reservation } from '../entities/reservation.entity';
+import { ReservationId } from '../value-objects/reservation-id.vo';
+import { DateRange } from '../value-objects/date-range.vo';
+import { ReservationSourceEnum } from '../value-objects/reservation-source.vo';
+import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
+
+export const RESERVATION_REPOSITORY = 'RESERVATION_REPOSITORY';
+
+export interface ReservationRepository {
+  save(reservation: Reservation, ctx?: TransactionContextData): Promise<string>;
+  findById(id: ReservationId): Promise<Reservation | null>;
+  findByTenantId(
+    tenantId: string,
+    page: number,
+    limit: number,
+  ): Promise<Reservation[]>;
+  findByPropertyId(
+    tenantId: string,
+    propertyId: string,
+    page: number,
+    limit: number,
+  ): Promise<Reservation[]>;
+  findByUnitId(
+    tenantId: string,
+    unitId: string,
+    page: number,
+    limit: number,
+  ): Promise<Reservation[]>;
+  findByGuestId(
+    tenantId: string,
+    guestId: string,
+    page: number,
+    limit: number,
+  ): Promise<Reservation[]>;
+  findByUnitAndDateRange(
+    unitId: UnitId,
+    dateRange: DateRange,
+  ): Promise<Reservation[]>;
+  findByExternalId(
+    source: ReservationSourceEnum,
+    externalId: string,
+  ): Promise<Reservation | null>;
+  countByTenantId(tenantId: string): Promise<number>;
+  findConfirmedDueForCheckIn(date: Date): Promise<Reservation[]>;
+}

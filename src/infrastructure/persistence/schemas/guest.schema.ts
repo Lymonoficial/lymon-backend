@@ -66,6 +66,7 @@ export class GuestDocument extends Document {
   }>;
 
   @Prop({
+    type: String,
     required: true,
     enum: Object.values(GuestStatusEnum),
     default: GuestStatusEnum.ACTIVE,

@@ -1,0 +1,69 @@
+import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CreateInventoryItemCommand } from './create-inventory-item.command';
+import { CreateInventoryItemResult } from './create-inventory-item.result';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+import {
+  INVENTORY_ITEM_REPOSITORY,
+  type InventoryItemRepository,
+} from '@/domain/inventory/repositories/inventory-item.repository';
+import {
+  PROPERTY_REPOSITORY,
+  type PropertyRepository,
+} from '@/domain/property/repositories/property.repository';
+import { InventoryItem } from '@/domain/inventory/entities/inventory-item.entity';
+
+@CommandHandler(CreateInventoryItemCommand)
+export class CreateInventoryItemHandler implements ICommandHandler<
+  CreateInventoryItemCommand,
+  CreateInventoryItemResult
+> {
+  constructor(
+    @Inject(INVENTORY_ITEM_REPOSITORY)
+    private readonly inventoryItemRepository: InventoryItemRepository,
+    @Inject(PROPERTY_REPOSITORY)
+    private readonly propertyRepository: PropertyRepository,
+  ) {}
+
+  async execute(
+    command: CreateInventoryItemCommand,
+  ): Promise<CreateInventoryItemResult> {
+    const tenantId = TenantId.createFromString(command.tenantId);
+    const propertyId = PropertyId.create(command.propertyId);
+
+    const property = await this.propertyRepository.findById(propertyId);
+    if (
+      !property ||
+      property.getTenantId().toString() !== tenantId.toString()
+    ) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const existingItem =
+      await this.inventoryItemRepository.findByPropertyIdAndSku(
+        tenantId,
+        propertyId,
+        command.sku,
+      );
+    if (existingItem) {
+      throw new ConflictException(
+        'An inventory item with this SKU already exists in this property',
+      );
+    }
+
+    const item = InventoryItem.create({
+      tenantId,
+      propertyId,
+      sku: command.sku,
+      name: command.name,
+      category: command.category,
+      unit: command.unit,
+      minStock: command.minStock,
+      initialStock: command.initialStock,
+    });
+
+    const itemId = await this.inventoryItemRepository.save(item);
+    return new CreateInventoryItemResult(itemId, item.getCurrentStock());
+  }
+}
