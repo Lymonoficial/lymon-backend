@@ -18,7 +18,10 @@ export class UserDocument extends Document {
   isOwner: boolean;
 
   @Prop({ type: [Object], required: true, default: [] })
-  roleAssignments: { roleId: string; scope: { type: string; resourceIds?: string[] } }[];
+  roleAssignments: {
+    roleId: string;
+    scope: { type: string; resourceIds?: string[] };
+  }[];
 
   @Prop({ required: true, default: false })
   emailVerified: boolean;
