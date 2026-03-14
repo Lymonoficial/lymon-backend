@@ -1,5 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { GUEST_REPOSITORY, type GuestRepository } from '@/domain/guest/repositories/guest.repository';
+import {
+  GUEST_REPOSITORY,
+  type GuestRepository,
+} from '@/domain/guest/repositories/guest.repository';
 import { Guest } from '@/domain/guest/entities/guest.entity';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
