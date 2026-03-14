@@ -130,6 +130,8 @@ export class MongoGuestRepository implements GuestRepository {
         tenantId: new Types.ObjectId(tenantId.toString()),
         $or: [
           { fullName: pattern },
+          { firstName: pattern},
+          { lastName: pattern},
           { primaryEmail: pattern },
           { emails: pattern },
           { 'identity.documentNumber': pattern },
