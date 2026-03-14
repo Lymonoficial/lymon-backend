@@ -8,11 +8,16 @@ import {
   Param,
   Post,
   UseGuards,
+  DefaultValuePipe,
+  ParseIntPipe,
+  Query,
+  Patch,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -160,6 +165,18 @@ export class InventoryController {
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.PROPERTY_VIEW)
   @ApiOperation({ summary: 'Get all inventory items by property' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Inventory items retrieved successfully',
@@ -167,15 +184,31 @@ export class InventoryController {
   async getItems(
     @CurrentUser() user: JwtPayload,
     @Param('propertyId') propertyId: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
   ) {
-    const result = await this.queryBus.execute<
-      GetInventoryItemsByPropertyQuery,
-      GetInventoryItemsByPropertyResult
-    >(new GetInventoryItemsByPropertyQuery(user.tenantId, propertyId));
+    const result: GetInventoryItemsByPropertyResult =
+      await this.queryBus.execute<
+        GetInventoryItemsByPropertyQuery,
+        GetInventoryItemsByPropertyResult
+      >(
+        new GetInventoryItemsByPropertyQuery(
+          user.tenantId,
+          propertyId,
+          page,
+          limit,
+        ),
+      );
 
     return {
       message: 'Inventory items retrieved successfully',
       data: result.items,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
     };
   }
 

@@ -45,6 +45,15 @@ export class GetInventoryItemsByPropertyQueryHandler implements IQueryHandler<
       propertyId,
     );
 
-    return new GetInventoryItemsByPropertyResult(items.map(toInventoryItemDto));
+    const total = items.length;
+    const start = (query.page - 1) * query.limit;
+    const paginatedItems = items.slice(start, start + query.limit);
+
+    return new GetInventoryItemsByPropertyResult(
+      paginatedItems.map(toInventoryItemDto),
+      total,
+      query.page,
+      query.limit,
+    );
   }
 }
