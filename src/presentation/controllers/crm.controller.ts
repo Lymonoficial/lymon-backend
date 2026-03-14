@@ -12,12 +12,19 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Post, Body, Param } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
+import { CreateGuestNoteDto } from '@/presentation/dtos/create-guest-note.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
 @Controller('crm')
 export class CrmController {
-  constructor(private readonly searchGuestsQuery: SearchGuestsQuery) {}
+  constructor(
+    private readonly searchGuestsQuery: SearchGuestsQuery,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @Get('guests')
   @UseGuards(PermissionGuard)
@@ -45,6 +52,38 @@ export class CrmController {
         tags: guest.getTags(),
       })),
       total: guests.length,
+    };
+  }
+
+  @Post('guests/:guestId/notes')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({
+    summary: 'Add internal note to a guest',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Internal note added successfully',
+  })
+  async addGuestNote(
+    @Param('guestId') guestId: string,
+    @Body() dto: CreateGuestNoteDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.commandBus.execute(
+      new CreateGuestNoteCommand(
+        user.tenantId,
+        guestId,
+        dto.note,
+        dto.type,
+        user.userId,
+        dto.status,
+      ),
+    );
+
+    return {
+      message: 'Internal note added successfully',
+      data: result,
     };
   }
 }

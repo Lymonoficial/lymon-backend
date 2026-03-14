@@ -36,6 +36,14 @@ import {
   IncidentReportDocument,
   IncidentReportSchema,
 } from '@/infrastructure/persistence/schemas/incident-report.schema';
+import {
+  GuestNoteDocument,
+  GuestNoteSchema,
+} from '@/infrastructure/persistence/schemas/guest-note.schema';
+import {
+  GUEST_NOTE_REPOSITORY,
+} from '@/domain/guest-note/repositories/guest-note.repository';
+import { MongoGuestNoteRepository } from '@/infrastructure/persistence/repositories/mongo-guest-note.repository';
 import { TENANT_REPOSITORY } from '@/domain/tenant/repositories/tenant.repository';
 import { MongoTenantRepository } from '@/infrastructure/persistence/repositories/mongo-tenant.repository';
 import { USER_REPOSITORY } from '@/domain/user/repositories/user.repository';
@@ -94,6 +102,7 @@ import { MongoInventoryMovementRepository } from '@/infrastructure/persistence/r
         name: InventoryMovementDocument.name,
         schema: InventoryMovementSchema,
       },
+      { name: GuestNoteDocument.name, schema: GuestNoteSchema },
     ]),
   ],
   providers: [
@@ -149,6 +158,10 @@ import { MongoInventoryMovementRepository } from '@/infrastructure/persistence/r
       provide: INVENTORY_MOVEMENT_REPOSITORY,
       useClass: MongoInventoryMovementRepository,
     },
+    {
+      provide: GUEST_NOTE_REPOSITORY,
+      useClass: MongoGuestNoteRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -165,6 +178,7 @@ import { MongoInventoryMovementRepository } from '@/infrastructure/persistence/r
     RESERVATION_REPOSITORY,
     INVENTORY_ITEM_REPOSITORY,
     INVENTORY_MOVEMENT_REPOSITORY,
+    GUEST_NOTE_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
