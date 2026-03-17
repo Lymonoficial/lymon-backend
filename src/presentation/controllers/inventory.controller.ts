@@ -12,7 +12,6 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   Query,
-  Patch,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
