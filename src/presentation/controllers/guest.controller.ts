@@ -73,12 +73,12 @@ export class GuestController {
   @RequirePermission(Permission.CRM_VIEW)
   @ApiOperation({ summary: 'List all guests for the current tenant' })
   @ApiQuery({
-    name: 'term',
+    name: 'q',
     required: false,
     description: 'Search by name, email, document number or phone',
   })
   @ApiResponse({ status: 200, description: 'Guests retrieved successfully' })
-  async getAll(@CurrentUser() user: JwtPayload, @Query('term') term = '') {
+  async getAll(@CurrentUser() user: JwtPayload, @Query('q') term = '') {
     const guests = await this.searchGuestsQuery.execute(
       TenantId.createFromString(user.tenantId),
       term,
