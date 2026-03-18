@@ -6,6 +6,10 @@ export class GuestId {
       throw new Error('GuestId cannot be empty');
     }
 
+    if (!/^[0-9a-fA-F]{24}$/.test(value)) {
+      throw new Error('Invalid GuestId format');
+    }
+
     return new GuestId(value);
   }
 

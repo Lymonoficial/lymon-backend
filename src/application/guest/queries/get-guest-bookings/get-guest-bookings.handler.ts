@@ -34,17 +34,22 @@ export class GetGuestBookingsHandler
       100,
     );
 
-    const items: GuestBookingDto[] = reservations.map((res) => ({
-      id: res.getId()!.toString(),
-      property: res.getPropertyId().toString(),
-      unit: res.getUnitId().toString(),
-      checkIn: res.getDateRange().getCheckIn(),
-      checkOut: res.getDateRange().getCheckOut(),
-      status: res.getStatus().toString(),
-      totalAmount: res.getTotalPrice(),
-      source: res.getSource().toString(),
-      createdAt: res.getCreatedAt(),
-    }));
+    const items: GuestBookingDto[] = reservations
+      .filter((res) => res.getTenantId().toString() === tenantId)
+      .sort(
+        (a, b) => b.getCreatedAt().getTime() - a.getCreatedAt().getTime(),
+      )
+      .map((res) => ({
+        id: res.getId()!.toString(),
+        property: res.getPropertyId().toString(),
+        unit: res.getUnitId().toString(),
+        checkIn: res.getDateRange().getCheckIn(),
+        checkOut: res.getDateRange().getCheckOut(),
+        status: res.getStatus().toString(),
+        totalAmount: res.getTotalPrice(),
+        source: res.getSource().toString(),
+        createdAt: res.getCreatedAt(),
+      }));
 
     return { items };
   }
