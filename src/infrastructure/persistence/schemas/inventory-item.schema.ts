@@ -37,6 +37,9 @@ export class InventoryItemDocument extends Document {
 
   @Prop({ required: true, default: 0 })
   currentStock: number;
+
+  @Prop({ type: Date, default: null })
+  deletedAt: Date | null;
 }
 
 export const InventoryItemSchema = SchemaFactory.createForClass(

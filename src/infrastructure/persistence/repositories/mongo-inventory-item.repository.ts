@@ -57,7 +57,10 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
   }
 
   async findById(id: InventoryItemId): Promise<InventoryItem | null> {
-    const document = await this.inventoryItemModel.findById(id.toString());
+    const document = await this.inventoryItemModel.findOne({
+      _id: id.toString(),
+      deletedAt: null,
+    });
     if (!document) return null;
     return this.toDomain(document);
   }
@@ -70,6 +73,7 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
       .find({
         tenantId: new Types.ObjectId(tenantId.toString()),
         propertyId: new Types.ObjectId(propertyId.toString()),
+        deletedAt: null,
       })
       .sort({ createdAt: -1 });
 
@@ -84,6 +88,7 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
       .find({
         tenantId: new Types.ObjectId(tenantId.toString()),
         propertyId: new Types.ObjectId(propertyId.toString()),
+        deletedAt: null,
         $expr: { $lte: ['$currentStock', '$minStock'] },
       })
       .sort({ currentStock: 1, updatedAt: -1 });
@@ -100,10 +105,17 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
       tenantId: new Types.ObjectId(tenantId.toString()),
       propertyId: new Types.ObjectId(propertyId.toString()),
       sku: sku.trim(),
+      deletedAt: null,
     });
 
     if (!document) return null;
     return this.toDomain(document);
+  }
+
+  async delete(id: InventoryItemId): Promise<void> {
+    await this.inventoryItemModel.findByIdAndUpdate(id.toString(), {
+      deletedAt: new Date(),
+    });
   }
 
   private toDomain(document: InventoryItemDocument): InventoryItem {
