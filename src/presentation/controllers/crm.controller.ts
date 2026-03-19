@@ -48,6 +48,7 @@ export class CrmController {
     return {
       message: 'CRM guests retrieved successfully',
       data: guests.map((guest) => ({
+        guestId: guest.getId()?.toString(),
         fullName: guest.getFullName(),
         primaryEmail: guest.getPrimaryEmail(),
         phones: guest.getPhones(),
