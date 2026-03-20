@@ -115,6 +115,7 @@ describe('CreateReservationHandler', () => {
 
   it('throws ConflictException when unit is not available', async () => {
     const unit = makeUnit();
+    const unitId = 'unit-1';
     unitRepository.findById.mockResolvedValue(unit);
     guestRepository.findById.mockResolvedValue(makeGuest());
 
@@ -135,7 +136,7 @@ describe('CreateReservationHandler', () => {
     const cmd = new CreateReservationCommand(
       'tenant-1',
       'prop-1',
-      unit.getId()!.toString(),
+      unitId,
       'guest-1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
       new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
@@ -153,6 +154,7 @@ describe('CreateReservationHandler', () => {
 
   it('creates reservation when available', async () => {
     const unit = makeUnit();
+    const unitId = 'unit-1';
     unitRepository.findById.mockResolvedValue(unit);
     guestRepository.findById.mockResolvedValue(makeGuest());
     reservationRepository.findByUnitAndDateRange.mockResolvedValue([]);
@@ -161,7 +163,7 @@ describe('CreateReservationHandler', () => {
     const cmd = new CreateReservationCommand(
       'tenant-1',
       'prop-1',
-      unit.getId()!.toString(),
+      unitId,
       'guest-1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
       new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),

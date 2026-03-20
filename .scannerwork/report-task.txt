@@ -1,0 +1,6 @@
+projectKey=lymon
+serverUrl=http://localhost:9000
+serverVersion=26.3.0.120487
+dashboardUrl=http://localhost:9000/dashboard?id=lymon
+ceTaskId=7c58828c-bb09-4aed-9b7b-6bf5a24a7fe3
+ceTaskUrl=http://localhost:9000/api/ce/task?id=7c58828c-bb09-4aed-9b7b-6bf5a24a7fe3
