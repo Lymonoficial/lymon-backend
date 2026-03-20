@@ -4,6 +4,8 @@ import { GetUnitsByPropertyQuery } from '@/application/unit/queries/GetUnitsByPr
 import { GetUnitsByPropertyResult } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.result';
 import { GetPublicUnitsByTenantQuery } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.query';
 import { GetPublicUnitsByTenantResult } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.result';
+import { GetPublicUnitByIdQuery } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query';
+import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
@@ -116,6 +118,29 @@ export class UnitController {
           limit: result.limit,
           totalPages: result.totalPages,
         },
+      },
+    };
+  }
+
+  @Public()
+  @Get('public/unit/:unitId')
+  @ApiOperation({
+    summary: 'Get a specific unit by ID (public, no authentication required)',
+  })
+  @ApiResponse({ status: 200, description: 'Unit retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Unit not found' })
+  async getPublicById(@Param('unitId') unitId: string) {
+    const query = new GetPublicUnitByIdQuery(unitId);
+
+    const result = await this.queryBus.execute<
+      GetPublicUnitByIdQuery,
+      GetPublicUnitByIdResult
+    >(query);
+
+    return {
+      message: 'Unit retrieved successfully',
+      data: {
+        unit: result.unit,
       },
     };
   }
