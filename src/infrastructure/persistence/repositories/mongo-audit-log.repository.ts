@@ -81,14 +81,16 @@ export class MongoAuditLogRepository implements AuditLogRepository {
   }): AuditLog {
     return AuditLog.reconstitute(
       AuditLogId.createFromString(doc._id.toString()),
-      doc.tenantId,
-      doc.userId,
-      doc.userEmail,
-      doc.action as AuditAction,
-      doc.entityType as AuditEntityType,
-      doc.entityId,
-      doc.metadata,
-      doc.createdAt,
+      {
+        tenantId: doc.tenantId,
+        userId: doc.userId,
+        userEmail: doc.userEmail,
+        action: doc.action as AuditAction,
+        entityType: doc.entityType as AuditEntityType,
+        entityId: doc.entityId,
+        metadata: doc.metadata,
+        createdAt: doc.createdAt,
+      }
     );
   }
 }
