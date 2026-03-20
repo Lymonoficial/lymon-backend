@@ -7,6 +7,15 @@ import {
   type ReservationRepository,
 } from '@/domain/reservation/repositories/reservation.repository';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import {
+  PROPERTY_REPOSITORY,
+  type PropertyRepository,
+} from '@/domain/property/repositories/property.repository';
+import {
+  UNIT_REPOSITORY,
+  type UnitRepository,
+} from '@/domain/unit/repositories/unit.repository';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @QueryHandler(GetGuestBookingsQuery)
 export class GetGuestBookingsHandler
@@ -15,6 +24,10 @@ export class GetGuestBookingsHandler
   constructor(
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,
+    @Inject(PROPERTY_REPOSITORY)
+    private readonly propertyRepository: PropertyRepository,
+    @Inject(UNIT_REPOSITORY)
+    private readonly unitRepository: UnitRepository,
   ) {}
 
   async execute(query: GetGuestBookingsQuery): Promise<GetGuestBookingsResult> {
@@ -33,23 +46,58 @@ export class GetGuestBookingsHandler
       1,
       100,
     );
+    const tenant = TenantId.createFromString(tenantId);
+
+    const [properties, units] = await Promise.all([
+      this.propertyRepository.findByTenantId(tenant),
+      this.unitRepository.findByTenantId(tenant),
+    ]);
+
+    const propertyNames = new Map(
+      properties.map((property) => [
+        property.getId()?.toString(),
+        property.getName(),
+      ]),
+    );
+    const unitNames = new Map(
+      units.map((unit) => [unit.getId()?.toString(), unit.getName()]),
+    );
 
     const items: GuestBookingDto[] = reservations
       .filter((res) => res.getTenantId().toString() === tenantId)
       .sort(
         (a, b) => b.getCreatedAt().getTime() - a.getCreatedAt().getTime(),
       )
-      .map((res) => ({
-        id: res.getId()!.toString(),
-        property: res.getPropertyId().toString(),
-        unit: res.getUnitId().toString(),
-        checkIn: res.getDateRange().getCheckIn(),
-        checkOut: res.getDateRange().getCheckOut(),
-        status: res.getStatus().toString(),
-        totalAmount: res.getTotalPrice(),
-        source: res.getSource().toString(),
-        createdAt: res.getCreatedAt(),
-      }));
+      .map((res) => {
+        const propertyId = res.getPropertyId().toString();
+        const unitId = res.getUnitId().toString();
+        const unit = units.find((item) => item.getId()?.toString() === unitId);
+        const resolvedPropertyId =
+          propertyNames.has(propertyId)
+            ? propertyId
+            : (unit?.getPropertyId().toString() ?? propertyId);
+
+        return {
+          id: res.getId()!.toString(),
+          propertyId: resolvedPropertyId,
+          propertyName: propertyNames.get(resolvedPropertyId) ?? null,
+          unitId,
+          unitName: unitNames.get(unitId) ?? null,
+          checkIn: res.getDateRange().getCheckIn(),
+          checkOut: res.getDateRange().getCheckOut(),
+          status: res.getStatus().toString(),
+          totalAmount: res.getTotalPrice(),
+          source: res.getSource().toString(),
+          createdAt: res.getCreatedAt(),
+          nights: res.getDateRange().nights(),
+          guestsCount: res.getGuestsCount(),
+          notes: res.getNotes(),
+          cancelledAt: res.getCancelledAt(),
+          cancellationReason: res.getCancellationReason(),
+          checkInActualAt: res.getCheckInActualAt(),
+          checkOutActualAt: res.getCheckOutActualAt(),
+        };
+      });
 
     return { items };
   }
