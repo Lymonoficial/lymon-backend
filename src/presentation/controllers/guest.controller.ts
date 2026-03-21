@@ -12,8 +12,9 @@ import { RequirePermission } from '@/infrastructure/auth/decorators/require-perm
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CreateGuestDto } from '@/presentation/dtos/create-guest.dto';
-import { Body, Controller, Get, Param, Post, Query, UseGuards, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards, NotFoundException, Patch } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -120,6 +121,25 @@ export class GuestController {
     return {
       message: 'Guest profile retrieved successfully',
       data: result.item,
+    };
+  }
+
+  @Patch(':guestId/tags')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE) 
+  @ApiOperation({ summary: 'Assign tags to a guest' })
+  @ApiResponse({ status: 200, description: 'Tags assigned successfully' })
+  async assignTags(
+    @CurrentUser() user: JwtPayload,
+    @Param('guestId') guestId: string,
+    @Body('tags') tags: string[],
+  ) {
+    await this.commandBus.execute(
+      new AssignGuestTagsCommand(guestId, tags, user.tenantId),
+    );
+
+    return {
+      message: 'Tags assigned successfully',
     };
   }
 }
