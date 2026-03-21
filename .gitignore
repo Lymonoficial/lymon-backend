@@ -61,3 +61,7 @@ docs/add-staff-endpoint-frontend-guide.md
 docs/audit-log-frontend-guide.md
 docs/guest-auth-frontend-guide.md
 docs/user-stories.feature
+
+# Archivos de configuración de SonarQube
+.scannerwork/
+.sonarlint/
