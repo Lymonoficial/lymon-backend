@@ -14,6 +14,7 @@ import { Unit } from '@/domain/unit/entities/unit.entity';
 import { Guest } from '@/domain/guest/entities/guest.entity';
 import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
 import { BedTypeEnum } from '@/domain/unit/value-objects/bed-type.vo';
+import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 
 describe('CreateReservationHandler', () => {
   let handler: CreateReservationHandler;
@@ -37,7 +38,8 @@ describe('CreateReservationHandler', () => {
   });
 
   function makeUnit() {
-    return Unit.create(
+    return Unit.reconstitute(
+      UnitId.create('unit-1'),           // ← ID explícito
       TenantId.createFromString('tenant-1'),
       PropertyId.create('prop-1'),
       'Unit 1',
@@ -56,6 +58,8 @@ describe('CreateReservationHandler', () => {
       [],
       100,
       ExternalIds.create(),
+      new Date(),
+      new Date(),
     );
   }
 

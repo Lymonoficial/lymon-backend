@@ -125,6 +125,12 @@ export class GuestAccount {
     this.clearResetToken();
   }
 
+  changePassword(newHash: string): void {
+    this.passwordHash = newHash;
+    this.passwordChangedAt = new Date();
+    this.touch();
+  }
+
   updateProfile(
     fullName: string,
     firstName?: string | null,

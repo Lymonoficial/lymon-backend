@@ -8,6 +8,7 @@ import { VerifyGuestEmailHandler } from '@/application/guest-auth/commands/verif
 import { GuestLoginHandler } from '@/application/guest-auth/commands/login-guest/login-guest.handler';
 import { RecoverGuestPasswordHandler } from '@/application/guest-auth/commands/recover-guest-password/recover-guest-password.handler';
 import { ConfirmRecoverGuestPasswordHandler } from '@/application/guest-auth/commands/confirm-recover-guest-password/confirm-recover-guest-password.handler';
+import { ChangeGuestPasswordHandler } from '@/application/guest-auth/commands/change-guest-password/change-guest-password.handler';
 
 const CommandHandlers = [
   RegisterGuestAccountHandler,
@@ -15,6 +16,7 @@ const CommandHandlers = [
   GuestLoginHandler,
   RecoverGuestPasswordHandler,
   ConfirmRecoverGuestPasswordHandler,
+  ChangeGuestPasswordHandler,
 ];
 
 @Module({
