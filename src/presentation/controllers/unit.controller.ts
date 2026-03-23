@@ -1,5 +1,6 @@
 import { CreateUnitCommand } from '@/application/unit/commands/create-unit.command';
 import { CreateUnitResult } from '@/application/unit/commands/create-unit.result';
+import { DeleteUnitCommand } from '@/application/unit/commands/delete-unit.command';
 import { GetUnitsByPropertyQuery } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.query';
 import { GetUnitsByPropertyResult } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.result';
 import { GetPublicUnitsByTenantQuery } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.query';
@@ -13,7 +14,10 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -195,5 +199,24 @@ export class UnitController {
         },
       },
     };
+  }
+
+  @Delete(':unitId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a unit' })
+  @ApiResponse({ status: 204, description: 'Unit deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Unit not found' })
+  async deleteUnit(
+    @CurrentUser() user: JwtPayload,
+    @Param('unitId') unitId: string,
+  ): Promise<void> {
+    const command = new DeleteUnitCommand(
+      user.tenantId,
+      unitId,
+      user.userId,
+      user.email,
+    );
+
+    await this.commandBus.execute<DeleteUnitCommand, void>(command);
   }
 }

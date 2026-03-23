@@ -87,6 +87,9 @@ export class UnitDocument extends Document {
 
   @Prop()
   updatedAt: Date;
+
+  @Prop({ type: Date, default: null })
+  deletedAt: Date | null;
 }
 
 export const UnitSchema = SchemaFactory.createForClass(UnitDocument);

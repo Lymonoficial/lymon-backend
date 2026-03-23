@@ -62,7 +62,10 @@ export class MongoUnitRepository implements UnitRepository {
   }
 
   async findById(id: UnitId): Promise<Unit | null> {
-    const document = await this.unitModel.findById(id.toString());
+    const document = await this.unitModel.findOne({
+      _id: id.toString(),
+      deletedAt: null,
+    });
     if (!document) return null;
 
     return this.toDomain(document);
@@ -70,7 +73,10 @@ export class MongoUnitRepository implements UnitRepository {
 
   async findByPropertyId(propertyId: PropertyId): Promise<Unit[]> {
     const documents = await this.unitModel
-      .find({ propertyId: new Types.ObjectId(propertyId.toString()) })
+      .find({
+        propertyId: new Types.ObjectId(propertyId.toString()),
+        deletedAt: null,
+      })
       .sort({ createdAt: -1 });
 
     return documents.map((doc) => this.toDomain(doc));
@@ -78,7 +84,10 @@ export class MongoUnitRepository implements UnitRepository {
 
   async findByTenantId(tenantId: TenantId): Promise<Unit[]> {
     const documents = await this.unitModel
-      .find({ tenantId: new Types.ObjectId(tenantId.toString()) })
+      .find({
+        tenantId: new Types.ObjectId(tenantId.toString()),
+        deletedAt: null,
+      })
       .sort({ createdAt: -1 });
 
     return documents.map((doc) => this.toDomain(doc));
@@ -89,7 +98,10 @@ export class MongoUnitRepository implements UnitRepository {
     page: number,
     limit: number,
   ): Promise<{ units: Unit[]; total: number }> {
-    const filter = { tenantId: new Types.ObjectId(tenantId.toString()) };
+    const filter = {
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      deletedAt: null,
+    };
     const total = await this.unitModel.countDocuments(filter);
     const documents = await this.unitModel
       .find(filter)
@@ -105,11 +117,15 @@ export class MongoUnitRepository implements UnitRepository {
   async countByTenantId(tenantId: TenantId): Promise<number> {
     return this.unitModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),
+      deletedAt: null,
     });
   }
 
   async delete(id: UnitId): Promise<void> {
-    await this.unitModel.findByIdAndDelete(id.toString());
+    await this.unitModel.findByIdAndUpdate(id.toString(), {
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    });
   }
 
   private toDomain(document: UnitDocument): Unit {
