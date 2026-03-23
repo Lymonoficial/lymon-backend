@@ -1,7 +1,12 @@
 import { CreatePropertyCommand } from '@/application/property/commands/create-property.command';
 import { CreatePropertyResult } from '@/application/property/commands/create-property.result';
+import { UpdatePropertyCommand } from '@/application/property/commands/update-property.command';
+import { UpdatePropertyResult } from '@/application/property/commands/update-property.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
+import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
+import { Permission } from '@/domain/role/value-objects/permission.vo';
+import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import {
   Body,
   Controller,
@@ -11,6 +16,9 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   Get,
+  Patch,
+  Param,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
@@ -21,6 +29,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { CreatePropertyDto } from '@/presentation/dtos/create-property.dto';
+import { UpdatePropertyDto } from '@/presentation/dtos/update-property.dto';
 import { GetPropertiesByTenantQuery } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.query';
 import { GetPropertiesByTenantResult } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.result';
 
@@ -124,6 +133,51 @@ export class PropertyController {
         page: result.page,
         limit: result.limit,
         totalPages: Math.ceil(result.total / result.limit),
+      },
+    };
+  }
+
+  @Patch(':propertyId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_EDIT)
+  @ApiOperation({ summary: 'Update an existing property' })
+  @ApiResponse({ status: 200, description: 'Property updated successfully' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'Property not found' })
+  async updateProperty(
+    @CurrentUser() user: JwtPayload,
+    @Param('propertyId') propertyId: string,
+    @Body() dto: UpdatePropertyDto,
+  ) {
+    const command = new UpdatePropertyCommand(
+      user.tenantId,
+      propertyId,
+      dto.name,
+      dto.description,
+      dto.address,
+      dto.city,
+      dto.state,
+      dto.country,
+      dto.zipCode,
+      dto.location,
+      dto.checkInTime,
+      dto.checkOutTime,
+      dto.cancellationPolicy,
+      dto.hostPhone,
+      dto.hostEmail,
+      user.userId,
+      user.email,
+    );
+
+    const result = await this.commandBus.execute<
+      UpdatePropertyCommand,
+      UpdatePropertyResult
+    >(command);
+
+    return {
+      message: 'Property updated successfully',
+      data: {
+        propertyId: result.propertyId,
       },
     };
   }
