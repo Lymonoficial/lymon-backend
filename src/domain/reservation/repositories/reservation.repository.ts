@@ -42,5 +42,9 @@ export interface ReservationRepository {
     externalId: string,
   ): Promise<Reservation | null>;
   countByTenantId(tenantId: string): Promise<number>;
+  existsActiveByPropertyId(
+    tenantId: string,
+    propertyId: string,
+  ): Promise<boolean>;
   findConfirmedDueForCheckIn(date: Date): Promise<Reservation[]>;
 }
