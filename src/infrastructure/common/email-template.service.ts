@@ -65,4 +65,26 @@ export class EmailTemplateService {
       supportUrl: this.supportUrl,
     });
   }
+  renderLowStockAlertTemplate(variables: {
+    ownerName: string;
+    tenantName: string;
+    propertyName: string;
+    itemName: string;
+    itemSku: string;
+    currentStock: number;
+    minStock: number;
+    difference: number;
+  }): string {
+    return this.renderTemplate('low-stock-alert', {
+      ownerName: variables.ownerName,
+      tenantName: variables.tenantName,
+      propertyName: variables.propertyName,
+      itemName: variables.itemName,
+      itemSku: variables.itemSku,
+      currentStock: variables.currentStock.toString(),
+      minStock: variables.minStock.toString(),
+      difference: Math.abs(variables.difference).toString(),
+      supportUrl: this.supportUrl,
+    });
+  }
 }

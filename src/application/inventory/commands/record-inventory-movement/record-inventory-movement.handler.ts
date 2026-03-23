@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RecordInventoryMovementCommand } from './record-inventory-movement.command';
 import { RecordInventoryMovementResult } from './record-inventory-movement.result';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -23,6 +24,10 @@ import {
 } from '@/domain/shared/transaction-manager.interface';
 import { InventoryMovementType } from '@/domain/inventory/value-objects/inventory-movement-type.vo';
 import { InventoryMovement } from '@/domain/inventory/entities/inventory-movement.entity';
+import {
+  LowStockAlertEvent,
+  LOW_STOCK_ALERT_EVENT,
+} from '@/domain/inventory/events/low-stock-alert.event';
 
 @CommandHandler(RecordInventoryMovementCommand)
 export class RecordInventoryMovementHandler implements ICommandHandler<
@@ -38,6 +43,7 @@ export class RecordInventoryMovementHandler implements ICommandHandler<
     private readonly propertyRepository: PropertyRepository,
     @Inject(TRANSACTION_MANAGER)
     private readonly transactionManager: TransactionManager,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(
@@ -68,7 +74,12 @@ export class RecordInventoryMovementHandler implements ICommandHandler<
           throw new NotFoundException('Inventory item not found');
         }
 
+        const previousStock = item.getCurrentStock();
+        const minStock = item.getMinStock();
+
         item.applyMovement(movementType, command.quantity);
+        const currentStock = item.getCurrentStock();
+
         await this.inventoryItemRepository.save(item, context.getContext());
 
         const movement = InventoryMovement.create({
@@ -91,10 +102,37 @@ export class RecordInventoryMovementHandler implements ICommandHandler<
         return {
           movementId,
           itemId: item.getId()?.toString() ?? '',
-          currentStock: item.getCurrentStock(),
+          currentStock,
+          itemName: item.getName(),
+          itemSku: item.getSku(),
+          minStock,
+          previousStock,
         };
       },
     );
+
+    const crossedMinimumThreshold =
+      result.previousStock >= result.minStock &&
+      result.currentStock < result.minStock;
+
+    if (crossedMinimumThreshold) {
+      this.eventEmitter.emit(
+        LOW_STOCK_ALERT_EVENT,
+        new LowStockAlertEvent(
+          command.tenantId,
+          command.propertyId,
+          property.getName(),
+          result.itemId,
+          result.itemName,
+          result.itemSku,
+          result.minStock,
+          result.previousStock,
+          result.currentStock,
+          command.type,
+          command.quantity,
+        ),
+      );
+    }
 
     return new RecordInventoryMovementResult(
       result.movementId,

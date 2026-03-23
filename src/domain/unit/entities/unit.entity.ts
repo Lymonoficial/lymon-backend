@@ -203,6 +203,34 @@ export class Unit {
     this.updatedAt = new Date();
   }
 
+  updateInventoryCount(inventoryCount: number): void {
+    if (inventoryCount < 1) {
+      throw new Error('Inventory count must be at least 1');
+    }
+
+    this.inventoryCount = inventoryCount;
+    this.updatedAt = new Date();
+  }
+
+  updateBedrooms(bedrooms: Bedroom[]): void {
+    this.bedrooms = bedrooms;
+    this.updatedAt = new Date();
+  }
+
+  updateBathroomsCount(bathroomsCount: number): void {
+    if (bathroomsCount < 0) {
+      throw new Error('Bathrooms count cannot be negative');
+    }
+
+    this.bathroomsCount = bathroomsCount;
+    this.updatedAt = new Date();
+  }
+
+  updateShared(isShared: boolean): void {
+    this.isShared = isShared;
+    this.updatedAt = new Date();
+  }
+
   updatePrice(pricePerNight: number): void {
     if (pricePerNight < 0) {
       throw new Error('Price per night cannot be negative');

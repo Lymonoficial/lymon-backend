@@ -37,6 +37,10 @@ export interface ReservationRepository {
     unitId: UnitId,
     dateRange: DateRange,
   ): Promise<Reservation[]>;
+  findActiveByUnitFromDate(
+    unitId: UnitId,
+    fromDate: Date,
+  ): Promise<Reservation[]>;
   findByExternalId(
     source: ReservationSourceEnum,
     externalId: string,
@@ -47,5 +51,9 @@ export interface ReservationRepository {
   ): Promise<boolean>;
   existsActiveByUnitId(tenantId: string, unitId: string): Promise<boolean>;
   countByTenantId(tenantId: string): Promise<number>;
+  existsActiveByPropertyId(
+    tenantId: string,
+    propertyId: string,
+  ): Promise<boolean>;
   findConfirmedDueForCheckIn(date: Date): Promise<Reservation[]>;
 }

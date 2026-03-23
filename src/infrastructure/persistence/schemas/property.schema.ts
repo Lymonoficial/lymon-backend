@@ -69,6 +69,9 @@ export class PropertyDocument extends Document {
 
   @Prop()
   updatedAt: Date;
+
+  @Prop({ type: Date, default: null })
+  deletedAt: Date | null;
 }
 
 export const PropertySchema = SchemaFactory.createForClass(PropertyDocument);

@@ -165,6 +165,21 @@ export class MongoReservationRepository implements ReservationRepository {
     return docs.map((d) => this.toDomain(d));
   }
 
+  async findActiveByUnitFromDate(
+    unitId: UnitId,
+    fromDate: Date,
+  ): Promise<Reservation[]> {
+    const docs = await this.reservationModel.find({
+      unitId: new Types.ObjectId(unitId.toString()),
+      status: {
+        $nin: [ReservationStatusEnum.CANCELLED, ReservationStatusEnum.NO_SHOW],
+      },
+      checkOut: { $gt: fromDate },
+    });
+
+    return docs.map((d) => this.toDomain(d));
+  }
+
   async findByExternalId(
     source: ReservationSourceEnum,
     externalId: string,
@@ -207,6 +222,25 @@ export class MongoReservationRepository implements ReservationRepository {
     return this.reservationModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId),
     });
+  }
+
+  async existsActiveByPropertyId(
+    tenantId: string,
+    propertyId: string,
+  ): Promise<boolean> {
+    const activeReservation = await this.reservationModel.exists({
+      tenantId: new Types.ObjectId(tenantId),
+      propertyId: new Types.ObjectId(propertyId),
+      status: {
+        $in: [
+          ReservationStatusEnum.PENDING,
+          ReservationStatusEnum.CONFIRMED,
+          ReservationStatusEnum.CHECKED_IN,
+        ],
+      },
+    });
+
+    return Boolean(activeReservation);
   }
 
   async findConfirmedDueForCheckIn(date: Date): Promise<Reservation[]> {

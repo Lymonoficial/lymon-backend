@@ -1,6 +1,8 @@
 import { CreateUnitCommand } from '@/application/unit/commands/create-unit.command';
 import { CreateUnitResult } from '@/application/unit/commands/create-unit.result';
 import { DeleteUnitCommand } from '@/application/unit/commands/delete-unit.command';
+import { UpdateUnitCommand } from '@/application/unit/commands/update-unit.command';
+import { UpdateUnitResult } from '@/application/unit/commands/update-unit.result';
 import { GetUnitsByPropertyQuery } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.query';
 import { GetUnitsByPropertyResult } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.result';
 import { GetPublicUnitsByTenantQuery } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.query';
@@ -10,6 +12,9 @@ import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUni
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
+import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
+import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
+import { Permission } from '@/domain/role/value-objects/permission.vo';
 import {
   Body,
   Controller,
@@ -18,10 +23,12 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Param,
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
@@ -32,6 +39,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateUnitDto } from '@/presentation/dtos/create-unit.dto';
+import { UpdateUnitDto } from '@/presentation/dtos/update-unit.dto';
 
 @ApiTags('units')
 @ApiBearerAuth('JWT-auth')
@@ -76,6 +84,53 @@ export class UnitController {
 
     return {
       message: 'Unit created successfully',
+      data: {
+        unitId: result.unitId,
+      },
+    };
+  }
+
+  @Patch(':unitId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_EDIT)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update an existing unit' })
+  @ApiResponse({ status: 200, description: 'Unit updated successfully' })
+  @ApiResponse({ status: 404, description: 'Unit not found' })
+  @ApiResponse({
+    status: 409,
+    description: 'Inventory change conflicts with active reservations',
+  })
+  async update(
+    @CurrentUser() user: JwtPayload,
+    @Param('unitId') unitId: string,
+    @Body() dto: UpdateUnitDto,
+  ) {
+    const command = new UpdateUnitCommand(
+      user.tenantId,
+      unitId,
+      dto.name,
+      dto.description,
+      dto.inventoryCount,
+      dto.maxGuests,
+      dto.standardGuests,
+      dto.bedrooms,
+      dto.bathroomsCount,
+      dto.isShared,
+      dto.amenities,
+      dto.pricePerNight,
+      dto.externalIds,
+      user.userId,
+      user.email,
+    );
+
+    const result = await this.commandBus.execute<
+      UpdateUnitCommand,
+      UpdateUnitResult
+    >(command);
+
+    return {
+      message: 'Unit updated successfully',
       data: {
         unitId: result.unitId,
       },

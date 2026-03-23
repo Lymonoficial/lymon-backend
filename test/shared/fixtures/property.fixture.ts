@@ -59,5 +59,6 @@ export function makeProperty(
     merged.hostEmail,
     new Date(),
     new Date(),
+    null,
   );
 }
