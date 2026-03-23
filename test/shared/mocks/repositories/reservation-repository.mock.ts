@@ -9,6 +9,7 @@ export function createReservationRepositoryMock(): jest.Mocked<ReservationReposi
     findByUnitId: jest.fn(),
     findByGuestId: jest.fn(),
     findByUnitAndDateRange: jest.fn(),
+    findActiveByUnitFromDate: jest.fn(),
     findByExternalId: jest.fn(),
     countByTenantId: jest.fn(),
     existsActiveByPropertyId: jest.fn(),
