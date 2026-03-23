@@ -1,0 +1,139 @@
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { DeleteUnitHandler } from '@/application/unit/commands/delete-unit.handler';
+import { DeleteUnitCommand } from '@/application/unit/commands/delete-unit.command';
+import { UnitRepository } from '@/domain/unit/repositories/unit.repository';
+import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
+import { ReservationRepository } from '@/domain/reservation/repositories/reservation.repository';
+import { createReservationRepositoryMock } from '@test/shared/mocks/repositories/reservation-repository.mock';
+import { Unit } from '@/domain/unit/entities/unit.entity';
+import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
+
+const UNIT_ID = 'unit-123';
+const TENANT_ID = 'tenant-123';
+const PROPERTY_ID = 'property-123';
+
+function makeUnit(overrides?: Partial<{ tenantId: string; id: string }>): Unit {
+  return Unit.reconstitute(
+    UnitId.create(overrides?.id ?? UNIT_ID),
+    TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
+    PropertyId.create(PROPERTY_ID),
+    'Unit Name',
+    'Unit Description',
+    1,
+    4,
+    2,
+    [],
+    1,
+    false,
+    ['wifi'],
+    100,
+    ExternalIds.create(),
+    new Date(),
+    new Date(),
+  );
+}
+
+describe('DeleteUnitHandler', () => {
+  let handler: DeleteUnitHandler;
+  let unitRepository: jest.Mocked<UnitRepository>;
+  let reservationRepository: jest.Mocked<ReservationRepository>;
+  let eventEmitter: jest.Mocked<EventEmitter2>;
+
+  beforeEach(() => {
+    unitRepository = createUnitRepositoryMock();
+    reservationRepository = createReservationRepositoryMock();
+    reservationRepository.existsActiveByUnitId.mockResolvedValue(false);
+    eventEmitter = {
+      emit: jest.fn(),
+    } as unknown as jest.Mocked<EventEmitter2>;
+
+    handler = new DeleteUnitHandler(
+      unitRepository,
+      reservationRepository,
+      eventEmitter,
+    );
+  });
+
+  describe('when unit does not exist', () => {
+    it('throws NotFoundException', async () => {
+      unitRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        handler.execute(new DeleteUnitCommand(TENANT_ID, UNIT_ID)),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(reservationRepository.existsActiveByUnitId).not.toHaveBeenCalled();
+      expect(unitRepository.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when unit belongs to another tenant', () => {
+    it('throws NotFoundException', async () => {
+      unitRepository.findById.mockResolvedValue(
+        makeUnit({ tenantId: 'other-tenant' }),
+      );
+
+      await expect(
+        handler.execute(new DeleteUnitCommand(TENANT_ID, UNIT_ID)),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(reservationRepository.existsActiveByUnitId).not.toHaveBeenCalled();
+      expect(unitRepository.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when unit has active reservations', () => {
+    it('throws ForbiddenException', async () => {
+      unitRepository.findById.mockResolvedValue(makeUnit());
+      reservationRepository.existsActiveByUnitId.mockResolvedValue(true);
+
+      await expect(
+        handler.execute(new DeleteUnitCommand(TENANT_ID, UNIT_ID)),
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(unitRepository.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when unit exists and belongs to tenant', () => {
+    it('deletes unit successfully', async () => {
+      unitRepository.findById.mockResolvedValue(makeUnit());
+
+      await expect(
+        handler.execute(new DeleteUnitCommand(TENANT_ID, UNIT_ID)),
+      ).resolves.toBeUndefined();
+
+      expect(unitRepository.delete).toHaveBeenCalledTimes(1);
+      expect(unitRepository.delete).toHaveBeenCalledWith(
+        expect.objectContaining({}),
+      );
+    });
+
+    it('emits audit event when actor info is present', async () => {
+      unitRepository.findById.mockResolvedValue(makeUnit());
+
+      await handler.execute(
+        new DeleteUnitCommand(
+          TENANT_ID,
+          UNIT_ID,
+          'actor-1',
+          'actor@example.com',
+        ),
+      );
+
+      expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not emit audit event without actor info', async () => {
+      unitRepository.findById.mockResolvedValue(makeUnit());
+
+      await handler.execute(new DeleteUnitCommand(TENANT_ID, UNIT_ID));
+
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+  });
+});
