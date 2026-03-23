@@ -15,6 +15,19 @@ export class AuditLogId {
   }
 }
 
+//Refactorizacion para reconstitute no reciba 9 parametros sino 2, porque
+//los maximos parametros permitidos son 7.
+export interface AuditLogData {
+  tenantId: string;
+  userId: string;
+  userEmail: string;
+  action: AuditAction;
+  entityType: AuditEntityType;
+  entityId?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+}
+
 /**
  * Immutable audit log entry.
  */
@@ -53,27 +66,21 @@ export class AuditLog {
     );
   }
 
+  // De 9 a 2 parametros.
   static reconstitute(
     id: AuditLogId,
-    tenantId: string,
-    userId: string,
-    userEmail: string,
-    action: AuditAction,
-    entityType: AuditEntityType,
-    entityId: string | undefined,
-    metadata: Record<string, unknown> | undefined,
-    createdAt: Date,
+    data: AuditLogData,
   ): AuditLog {
     return new AuditLog(
       id,
-      tenantId,
-      userId,
-      userEmail,
-      action,
-      entityType,
-      entityId,
-      metadata,
-      createdAt,
+      data.tenantId,
+      data.userId,
+      data.userEmail,
+      data.action,
+      data.entityType,
+      data.entityId,
+      data.metadata,
+      data.createdAt,
     );
   }
 

@@ -18,6 +18,8 @@ import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create
 import { CreateGuestNoteDto } from '@/presentation/dtos/create-guest-note.dto';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.query';
+import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -88,6 +90,31 @@ export class CrmController {
     return {
       message: 'Internal note added successfully',
       data: result,
+    };
+  }
+
+  @Get('guests/:guestId/notes')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({
+    summary: 'Get all internal notes for a guest',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest notes retrieved successfully',
+  })
+  async getGuestNotes(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestNotesByGuestIdQuery,
+      GetGuestNotesByGuestIdResult
+    >(new GetGuestNotesByGuestIdQuery(user.tenantId, guestId));
+
+    return {
+      message: 'Guest notes retrieved successfully',
+      data: result.items,
     };
   }
 
