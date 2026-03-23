@@ -30,6 +30,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -173,6 +174,25 @@ export class GuestController {
     return {
       message: 'Guest profile retrieved successfully',
       data: result.item,
+    };
+  }
+
+  @Patch(':guestId/tags')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE) 
+  @ApiOperation({ summary: 'Assign tags to a guest' })
+  @ApiResponse({ status: 200, description: 'Tags assigned successfully' })
+  async assignTags(
+    @CurrentUser() user: JwtPayload,
+    @Param('guestId') guestId: string,
+    @Body('tags') tags: string[],
+  ) {
+    await this.commandBus.execute(
+      new AssignGuestTagsCommand(guestId, tags, user.tenantId),
+    );
+
+    return {
+      message: 'Tags assigned successfully',
     };
   }
 }

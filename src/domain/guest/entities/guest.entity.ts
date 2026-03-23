@@ -259,7 +259,7 @@ export class Guest {
 
   private static uniqueStrings(values: string[]): string[] {
     const normalized = values
-      .map((value) => value.trim())
+      .map((value) => value.trim().toLowerCase())
       .filter((value) => value.length > 0);
 
     return [...new Set(normalized)];
