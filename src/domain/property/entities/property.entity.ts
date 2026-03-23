@@ -24,6 +24,7 @@ export class Property {
     private hostEmail: string,
     private readonly createdAt: Date,
     private updatedAt: Date,
+    private deletedAt: Date | null,
   ) {}
 
   static create(
@@ -70,6 +71,7 @@ export class Property {
       hostEmail,
       new Date(),
       new Date(),
+      null,
     );
   }
 
@@ -92,6 +94,7 @@ export class Property {
     hostEmail: string,
     createdAt: Date,
     updatedAt: Date,
+    deletedAt: Date | null,
   ): Property {
     return new Property(
       id,
@@ -112,6 +115,7 @@ export class Property {
       hostEmail,
       createdAt,
       updatedAt,
+      deletedAt,
     );
   }
 
@@ -187,6 +191,10 @@ export class Property {
     return this.updatedAt;
   }
 
+  getDeletedAt(): Date | null {
+    return this.deletedAt;
+  }
+
   updateDetails(
     name: string,
     description: string,
@@ -239,5 +247,11 @@ export class Property {
     this.hostPhone = phone;
     this.hostEmail = email;
     this.updatedAt = new Date();
+  }
+
+  softDelete(): void {
+    const now = new Date();
+    this.deletedAt = now;
+    this.updatedAt = now;
   }
 }

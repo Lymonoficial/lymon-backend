@@ -177,6 +177,25 @@ export class MongoReservationRepository implements ReservationRepository {
     });
   }
 
+  async existsActiveByPropertyId(
+    tenantId: string,
+    propertyId: string,
+  ): Promise<boolean> {
+    const activeReservation = await this.reservationModel.exists({
+      tenantId: new Types.ObjectId(tenantId),
+      propertyId: new Types.ObjectId(propertyId),
+      status: {
+        $in: [
+          ReservationStatusEnum.PENDING,
+          ReservationStatusEnum.CONFIRMED,
+          ReservationStatusEnum.CHECKED_IN,
+        ],
+      },
+    });
+
+    return Boolean(activeReservation);
+  }
+
   async findConfirmedDueForCheckIn(date: Date): Promise<Reservation[]> {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
