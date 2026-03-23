@@ -65,7 +65,10 @@ export class MongoPropertyRepository implements PropertyRepository {
   }
 
   async findById(id: PropertyId): Promise<Property | null> {
-    const document = await this.propertyModel.findById(id.toString());
+    const document = await this.propertyModel.findOne({
+      _id: new Types.ObjectId(id.toString()),
+      deletedAt: null,
+    });
     if (!document) return null;
 
     return this.toDomain(document);
@@ -73,7 +76,10 @@ export class MongoPropertyRepository implements PropertyRepository {
 
   async findByTenantId(tenantId: TenantId): Promise<Property[]> {
     const documents = await this.propertyModel
-      .find({ tenantId: new Types.ObjectId(tenantId.toString()) })
+      .find({
+        tenantId: new Types.ObjectId(tenantId.toString()),
+        deletedAt: null,
+      })
       .sort({ createdAt: -1 });
 
     return documents.map((doc) => this.toDomain(doc));
@@ -82,11 +88,15 @@ export class MongoPropertyRepository implements PropertyRepository {
   async countByTenantId(tenantId: TenantId): Promise<number> {
     return this.propertyModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),
+      deletedAt: null,
     });
   }
 
   async delete(id: PropertyId): Promise<void> {
-    await this.propertyModel.findByIdAndDelete(id.toString());
+    await this.propertyModel.findByIdAndUpdate(id.toString(), {
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    });
   }
 
   private toDomain(document: PropertyDocument): Property {
@@ -109,6 +119,7 @@ export class MongoPropertyRepository implements PropertyRepository {
       document.hostEmail,
       document.createdAt,
       document.updatedAt,
+      document.deletedAt ?? null,
     );
   }
 }

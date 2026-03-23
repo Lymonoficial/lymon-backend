@@ -6,10 +6,14 @@ import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
+import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import {
   Body,
   Controller,
+  Delete,
+  HttpCode,
+  HttpStatus,
   Post,
   Query,
   ParseBoolPipe,
@@ -28,8 +32,10 @@ import {
   ApiTags,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CreatePropertyDto } from '@/presentation/dtos/create-property.dto';
 import { UpdatePropertyDto } from '@/presentation/dtos/update-property.dto';
+import { DeletePropertyCommand } from '@/application/property/commands/delete-property.command';
 import { GetPropertiesByTenantQuery } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.query';
 import { GetPropertiesByTenantResult } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.result';
 
@@ -180,5 +186,20 @@ export class PropertyController {
         propertyId: result.propertyId,
       },
     };
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_DELETE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Soft delete a property' })
+  @ApiResponse({ status: 204, description: 'Property deleted successfully' })
+  @ApiResponse({
+    status: 403,
+    description: 'Property has active reservations and cannot be deleted',
+  })
+  @ApiResponse({ status: 404, description: 'Property not found' })
+  async remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    await this.commandBus.execute<DeletePropertyCommand, void>(
+      new DeletePropertyCommand(id, user.tenantId, user.userId, user.email),
+    );
   }
 }
