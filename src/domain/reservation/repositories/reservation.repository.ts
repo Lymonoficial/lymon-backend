@@ -37,6 +37,10 @@ export interface ReservationRepository {
     unitId: UnitId,
     dateRange: DateRange,
   ): Promise<Reservation[]>;
+  findActiveByUnitFromDate(
+    unitId: UnitId,
+    fromDate: Date,
+  ): Promise<Reservation[]>;
   findByExternalId(
     source: ReservationSourceEnum,
     externalId: string,
