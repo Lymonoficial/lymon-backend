@@ -150,6 +150,7 @@ export class MongoUnitRepository implements UnitRepository {
       ),
       document.createdAt,
       document.updatedAt,
+      document.deletedAt,
     );
   }
 }

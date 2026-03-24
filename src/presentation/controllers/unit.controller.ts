@@ -13,6 +13,7 @@ import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
+import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import {
@@ -257,8 +258,11 @@ export class UnitController {
   }
 
   @Delete(':unitId')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.UNIT_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a unit' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 204, description: 'Unit deleted successfully' })
   @ApiResponse({ status: 404, description: 'Unit not found' })
   async deleteUnit(

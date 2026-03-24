@@ -34,6 +34,7 @@ function makeUnit(overrides?: Partial<{ tenantId: string; id: string }>): Unit {
     ExternalIds.create(),
     new Date(),
     new Date(),
+    null,
   );
 }
 
