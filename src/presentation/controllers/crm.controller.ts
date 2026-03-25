@@ -20,6 +20,8 @@ import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-boo
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
 import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.query';
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
+import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
+import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -139,6 +141,31 @@ export class CrmController {
 
     return {
       message: 'Guest bookings retrieved successfully',
+      data: result.items,
+    };
+  }
+
+  @Get('guests/:guestId/emails')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({
+    summary: 'Get communication history (emails) for a guest',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest emails retrieved successfully',
+  })
+  async getGuestEmails(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestEmailsByGuestIdQuery,
+      GetGuestEmailsByGuestIdResult
+    >(new GetGuestEmailsByGuestIdQuery(user.tenantId, guestId));
+
+    return {
+      message: 'Guest communication history retrieved successfully',
       data: result.items,
     };
   }
