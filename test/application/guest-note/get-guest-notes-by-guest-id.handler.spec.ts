@@ -1,0 +1,112 @@
+import { GetGuestNotesByGuestIdHandler } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.handler';
+import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.query';
+import { GuestNote } from '@/domain/guest-note/entities/guest-note.entity';
+import { GuestNoteRepository } from '@/domain/guest-note/repositories/guest-note.repository';
+import { GuestNoteStatusEnum } from '@/domain/guest-note/value-objects/guest-node-status.vo';
+import { GuestNoteTypeEnum } from '@/domain/guest-note/value-objects/guest-node-type.vo';
+import { GuestNoteId } from '@/domain/guest-note/value-objects/guest-note-id.vo';
+import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+
+function createGuestNoteRepositoryMock(): jest.Mocked<GuestNoteRepository> {
+  return {
+    save: jest.fn(),
+    findById: jest.fn(),
+    findByGuestId: jest.fn(),
+    delete: jest.fn(),
+  };
+}
+
+describe('GetGuestNotesByGuestIdHandler', () => {
+  let handler: GetGuestNotesByGuestIdHandler;
+  let guestNoteRepository: jest.Mocked<GuestNoteRepository>;
+
+  const tenantId = 'tenant-123';
+  const guestId = '65f1a1a2b3c4d5e6f7a8b9c0';
+
+  beforeEach(() => {
+    guestNoteRepository = createGuestNoteRepositoryMock();
+    handler = new GetGuestNotesByGuestIdHandler(guestNoteRepository);
+  });
+
+  function makeGuestNote(
+    overrides?: Partial<{
+      id: string;
+      tenantId: string;
+      guestId: string;
+      note: string;
+      type: GuestNoteTypeEnum;
+      status: GuestNoteStatusEnum;
+      createdBy: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }>,
+  ): GuestNote {
+    return GuestNote.reconstitute(
+      GuestNoteId.createFromString(overrides?.id ?? 'note-123'),
+      TenantId.createFromString(overrides?.tenantId ?? tenantId),
+      GuestId.createFromString(overrides?.guestId ?? guestId),
+      overrides?.note ?? 'Prefers a quiet room',
+      overrides?.type ?? GuestNoteTypeEnum.PREFERENCE,
+      overrides?.status ?? GuestNoteStatusEnum.NOT_PINNED,
+      overrides?.createdBy ?? 'user-123',
+      overrides?.createdAt ?? new Date('2030-01-01T10:00:00Z'),
+      overrides?.updatedAt ?? new Date('2030-01-01T10:00:00Z'),
+      null,
+    );
+  }
+
+  describe('when guest notes exist', () => {
+    it('returns notes mapped to DTOs', async () => {
+      const note = makeGuestNote({
+        id: 'note-abc',
+        note: 'VIP guest',
+        type: GuestNoteTypeEnum.GENERAL,
+        status: GuestNoteStatusEnum.IS_PINNED,
+        createdBy: 'staff-001',
+      });
+      guestNoteRepository.findByGuestId.mockResolvedValue([note]);
+
+      const query = new GetGuestNotesByGuestIdQuery(tenantId, guestId);
+      const result = await handler.execute(query);
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]).toMatchObject({
+        id: 'note-abc',
+        guestId,
+        note: 'VIP guest',
+        type: GuestNoteTypeEnum.GENERAL,
+        status: GuestNoteStatusEnum.IS_PINNED,
+        createdBy: 'staff-001',
+      });
+      expect(guestNoteRepository.findByGuestId).toHaveBeenCalledWith(
+        expect.objectContaining({ toString: expect.any(Function) }),
+        expect.objectContaining({ toString: expect.any(Function) }),
+      );
+    });
+  });
+
+  describe('when the guest id format is invalid', () => {
+    it('returns an empty list and does not query the repository', async () => {
+      const query = new GetGuestNotesByGuestIdQuery(
+        tenantId,
+        'invalid-guest-id',
+      );
+      const result = await handler.execute(query);
+
+      expect(result.items).toEqual([]);
+      expect(guestNoteRepository.findByGuestId).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when there are no guest notes', () => {
+    it('returns an empty list', async () => {
+      guestNoteRepository.findByGuestId.mockResolvedValue([]);
+
+      const query = new GetGuestNotesByGuestIdQuery(tenantId, guestId);
+      const result = await handler.execute(query);
+
+      expect(result.items).toEqual([]);
+    });
+  });
+});

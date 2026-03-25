@@ -13,9 +13,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Post, Body, Param } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
 import { CreateGuestNoteDto } from '@/presentation/dtos/create-guest-note.dto';
+import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
+import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.query';
+import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -24,6 +28,7 @@ export class CrmController {
   constructor(
     private readonly searchGuestsQuery: SearchGuestsQuery,
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get('guests')
@@ -45,6 +50,7 @@ export class CrmController {
     return {
       message: 'CRM guests retrieved successfully',
       data: guests.map((guest) => ({
+        guestId: guest.getId()?.toString(),
         fullName: guest.getFullName(),
         primaryEmail: guest.getPrimaryEmail(),
         phones: guest.getPhones(),
@@ -84,6 +90,56 @@ export class CrmController {
     return {
       message: 'Internal note added successfully',
       data: result,
+    };
+  }
+
+  @Get('guests/:guestId/notes')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({
+    summary: 'Get all internal notes for a guest',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest notes retrieved successfully',
+  })
+  async getGuestNotes(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestNotesByGuestIdQuery,
+      GetGuestNotesByGuestIdResult
+    >(new GetGuestNotesByGuestIdQuery(user.tenantId, guestId));
+
+    return {
+      message: 'Guest notes retrieved successfully',
+      data: result.items,
+    };
+  }
+
+  @Get('guests/:guestId/bookings')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({
+    summary: 'Get reservation history for a guest',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest bookings retrieved successfully',
+  })
+  async getGuestBookings(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestBookingsQuery,
+      GetGuestBookingsResult
+    >(new GetGuestBookingsQuery(user.tenantId, guestId));
+
+    return {
+      message: 'Guest bookings retrieved successfully',
+      data: result.items,
     };
   }
 }

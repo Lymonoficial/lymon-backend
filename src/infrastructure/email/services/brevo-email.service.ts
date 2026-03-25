@@ -1,6 +1,7 @@
 import {
   IEmailService,
   SendEmailParams,
+  SendLowStockAlertEmailParams,
 } from '@/application/shared/services/email.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { BrevoClient } from '@getbrevo/brevo';
@@ -67,6 +68,28 @@ export class BrevoEmailService implements IEmailService {
     await this.sendEmail({
       to: [{ email, name: email }],
       subject: 'Recuperación de contraseña - Lymon',
+      htmlContent,
+    });
+  }
+
+  async sendLowStockAlertEmail(
+    params: SendLowStockAlertEmailParams,
+  ): Promise<void> {
+    const difference = params.minStock - params.currentStock;
+    const htmlContent = this.emailTemplateService.renderLowStockAlertTemplate({
+      ownerName: params.ownerName,
+      tenantName: params.tenantName,
+      propertyName: params.propertyName,
+      itemName: params.itemName,
+      itemSku: params.itemSku,
+      currentStock: params.currentStock,
+      minStock: params.minStock,
+      difference,
+    });
+
+    await this.sendEmail({
+      to: [{ email: params.ownerEmail, name: params.ownerName }],
+      subject: `Alerta: ${params.itemName} está por debajo de stock mínimo`,
       htmlContent,
     });
   }

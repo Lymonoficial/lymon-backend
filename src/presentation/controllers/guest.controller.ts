@@ -1,4 +1,7 @@
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
+import { ChangeGuestPasswordCommand } from '@/application/guest-auth/commands/change-guest-password/change-guest-password.command';
+import { ChangeGuestPasswordResult } from '@/application/guest-auth/commands/change-guest-password/change-guest-password.handler';
+import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
 import { CreateGuestCommand } from '@/application/guest/commands/create-guest.command';
 import { CreateGuestResult } from '@/application/guest/commands/create-guest.result';
 import { SearchGuestsQuery } from '@/application/guest/queries/search-guests.query';
@@ -11,9 +14,23 @@ import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
+import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-guest.decorator';
+import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
+import { ChangePasswordDto } from '@/presentation/dtos/change-password.dto';
 import { CreateGuestDto } from '@/presentation/dtos/create-guest.dto';
-import { Body, Controller, Get, Param, Post, Query, UseGuards, NotFoundException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+  NotFoundException,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -102,16 +119,53 @@ export class GuestController {
       total: guests.length,
     };
   }
+
+  @Public()
+  @UseGuards(GuestJwtAuthGuard)
+  @Patch('change-password')
+  @ApiBearerAuth('GuestJWT-auth')
+  @ApiOperation({ summary: 'Change password from guest profile' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({ status: 401, description: 'Current password is incorrect' })
+  @ApiResponse({
+    status: 400,
+    description: 'New password cannot be the same as the current password',
+  })
+  async changePassword(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    const result = await this.commandBus.execute<
+      ChangeGuestPasswordCommand,
+      ChangeGuestPasswordResult
+    >(
+      new ChangeGuestPasswordCommand(
+        guest.guestAccountId,
+        dto.currentPassword,
+        dto.newPassword,
+      ),
+    );
+
+    return { message: result.message };
+  }
+
   @Get(':guestId')
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)
   @ApiOperation({ summary: 'Get complete profile of a guest by ID' })
-  @ApiResponse({ status: 200, description: 'Guest profile retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest profile retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Guest not found' })
-  async getById(@CurrentUser() user: JwtPayload, @Param('guestId') guestId: string) {
-    const result = await this.queryBus.execute<GetGuestByIdQuery, GetGuestByIdResult>(
-      new GetGuestByIdQuery(user.tenantId, guestId)
-    );
+  async getById(
+    @CurrentUser() user: JwtPayload,
+    @Param('guestId') guestId: string,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestByIdQuery,
+      GetGuestByIdResult
+    >(new GetGuestByIdQuery(user.tenantId, guestId));
 
     if (!result.item) {
       throw new NotFoundException('Guest not found');
@@ -120,6 +174,25 @@ export class GuestController {
     return {
       message: 'Guest profile retrieved successfully',
       data: result.item,
+    };
+  }
+
+  @Patch(':guestId/tags')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE) 
+  @ApiOperation({ summary: 'Assign tags to a guest' })
+  @ApiResponse({ status: 200, description: 'Tags assigned successfully' })
+  async assignTags(
+    @CurrentUser() user: JwtPayload,
+    @Param('guestId') guestId: string,
+    @Body('tags') tags: string[],
+  ) {
+    await this.commandBus.execute(
+      new AssignGuestTagsCommand(guestId, tags, user.tenantId),
+    );
+
+    return {
+      message: 'Tags assigned successfully',
     };
   }
 }

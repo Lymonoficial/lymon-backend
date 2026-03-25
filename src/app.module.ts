@@ -8,10 +8,11 @@ import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './infrastructure/auth/guards/jwt-auth.guard';
-import { AuditInfrastructureModule } from './infrastructure/audit/audit-infrastructure.module';
+import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
+import { AuditInfrastructureModule } from '@/infrastructure/audit/audit-infrastructure.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ReservationInfrastructureModule } from './infrastructure/reservation/reservation-infrastructure.module';
+import { ReservationInfrastructureModule } from '@/infrastructure/reservation/reservation-infrastructure.module';
+import { InventoryInfrastructureModule } from '@/infrastructure/inventory/inventory-infrastructure.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ReservationInfrastructureModule } from './infrastructure/reservation/re
     ApplicationModule,
     AuditInfrastructureModule,
     ReservationInfrastructureModule,
+    InventoryInfrastructureModule,
   ],
   controllers: [AppController],
   providers: [

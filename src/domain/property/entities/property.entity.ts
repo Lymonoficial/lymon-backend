@@ -53,6 +53,7 @@ export class Property {
     private hostEmail: string,
     private readonly createdAt: Date,
     private updatedAt: Date,
+    private deletedAt: Date | null,
   ) {}
 
   static create(props: PropertyProps): Property {
@@ -83,33 +84,51 @@ export class Property {
       props.hostEmail,
       new Date(),
       new Date(),
+      null,
     );
   }
 
   static reconstitute(
     id: PropertyId,
-    props: PropertyProps,
-    timestamps: { createdAt: Date; updatedAt: Date },
+    tenantId: TenantId,
+    name: string,
+    description: string,
+    propertyType: PropertyType,
+    address: string,
+    city: string,
+    state: string,
+    country: string,
+    zipCode: string,
+    location: Location,
+    checkInTime: string,
+    checkOutTime: string,
+    cancellationPolicy: CancellationPolicy,
+    hostPhone: string,
+    hostEmail: string,
+    createdAt: Date,
+    updatedAt: Date,
+    deletedAt: Date | null = null,
   ): Property {
     return new Property(
       id,
-      props.tenantId,
-      props.name,
-      props.description,
-      props.propertyType,
-      props.address,
-      props.city,
-      props.state,
-      props.country,
-      props.zipCode,
-      props.location,
-      props.checkInTime,
-      props.checkOutTime,
-      props.cancellationPolicy,
-      props.hostPhone,
-      props.hostEmail,
-      timestamps.createdAt,
-      timestamps.updatedAt,
+      tenantId,
+      name,
+      description,
+      propertyType,
+      address,
+      city,
+      state,
+      country,
+      zipCode,
+      location,
+      checkInTime,
+      checkOutTime,
+      cancellationPolicy,
+      hostPhone,
+      hostEmail,
+      createdAt,
+      updatedAt,
+      deletedAt,
     );
   }
 
@@ -185,6 +204,10 @@ export class Property {
     return this.updatedAt;
   }
 
+  getDeletedAt(): Date | null {
+    return this.deletedAt;
+  }
+
   updateDetails(data: PropertyUpdateData): void {
     if (data.name && data.name.trim() !== '') {
       this.name = data.name.trim();
@@ -228,5 +251,11 @@ export class Property {
     this.hostPhone = phone;
     this.hostEmail = email;
     this.updatedAt = new Date();
+  }
+
+  softDelete(): void {
+    const now = new Date();
+    this.deletedAt = now;
+    this.updatedAt = now;
   }
 }

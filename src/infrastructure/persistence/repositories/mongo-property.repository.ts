@@ -65,7 +65,10 @@ export class MongoPropertyRepository implements PropertyRepository {
   }
 
   async findById(id: PropertyId): Promise<Property | null> {
-    const document = await this.propertyModel.findById(id.toString());
+    const document = await this.propertyModel.findOne({
+      _id: new Types.ObjectId(id.toString()),
+      deletedAt: null,
+    });
     if (!document) return null;
 
     return this.toDomain(document);
@@ -73,7 +76,10 @@ export class MongoPropertyRepository implements PropertyRepository {
 
   async findByTenantId(tenantId: TenantId): Promise<Property[]> {
     const documents = await this.propertyModel
-      .find({ tenantId: new Types.ObjectId(tenantId.toString()) })
+      .find({
+        tenantId: new Types.ObjectId(tenantId.toString()),
+        deletedAt: null,
+      })
       .sort({ createdAt: -1 });
 
     return documents.map((doc) => this.toDomain(doc));
@@ -82,37 +88,38 @@ export class MongoPropertyRepository implements PropertyRepository {
   async countByTenantId(tenantId: TenantId): Promise<number> {
     return this.propertyModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),
+      deletedAt: null,
     });
   }
 
   async delete(id: PropertyId): Promise<void> {
-    await this.propertyModel.findByIdAndDelete(id.toString());
+    await this.propertyModel.findByIdAndUpdate(id.toString(), {
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    });
   }
 
   private toDomain(document: PropertyDocument): Property {
     return Property.reconstitute(
       PropertyId.create(document._id.toString()),
-      {
-        tenantId: TenantId.createFromString(document.tenantId.toString()),
-        name: document.name,
-        description: document.description,
-        propertyType: PropertyType.create(document.propertyType),
-        address: document.address,
-        city: document.city,
-        state: document.state,
-        country: document.country,
-        zipCode: document.zipCode,
-        location: Location.create(document.location.lat, document.location.lng),
-        checkInTime: document.checkInTime,
-        checkOutTime: document.checkOutTime,
-        cancellationPolicy: CancellationPolicy.create(document.cancellationPolicy),
-        hostPhone: document.hostPhone,
-        hostEmail: document.hostEmail,
-      },
-      {
-        createdAt: document.createdAt,
-        updatedAt: document.updatedAt,
-      },
+      TenantId.createFromString(document.tenantId.toString()),
+      document.name,
+      document.description,
+      PropertyType.create(document.propertyType),
+      document.address,
+      document.city,
+      document.state,
+      document.country,
+      document.zipCode,
+      Location.create(document.location.lat, document.location.lng),
+      document.checkInTime,
+      document.checkOutTime,
+      CancellationPolicy.create(document.cancellationPolicy),
+      document.hostPhone,
+      document.hostEmail,
+      document.createdAt,
+      document.updatedAt,
+      document.deletedAt ?? null,
     );
   }
 }

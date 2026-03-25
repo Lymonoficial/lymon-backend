@@ -1,21 +1,32 @@
 import { CreateUnitCommand } from '@/application/unit/commands/create-unit.command';
 import { CreateUnitResult } from '@/application/unit/commands/create-unit.result';
+import { UpdateUnitCommand } from '@/application/unit/commands/update-unit.command';
+import { UpdateUnitResult } from '@/application/unit/commands/update-unit.result';
 import { GetUnitsByPropertyQuery } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.query';
 import { GetUnitsByPropertyResult } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.result';
 import { GetPublicUnitsByTenantQuery } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.query';
 import { GetPublicUnitsByTenantResult } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.result';
+import { GetPublicUnitByIdQuery } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query';
+import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
+import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
+import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
+import { Permission } from '@/domain/role/value-objects/permission.vo';
 import {
   Body,
   Controller,
   DefaultValuePipe,
   Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
   Param,
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
@@ -26,6 +37,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateUnitDto } from '@/presentation/dtos/create-unit.dto';
+import { UpdateUnitDto } from '@/presentation/dtos/update-unit.dto';
 
 @ApiTags('units')
 @ApiBearerAuth('JWT-auth')
@@ -76,6 +88,53 @@ export class UnitController {
     };
   }
 
+  @Patch(':unitId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_EDIT)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update an existing unit' })
+  @ApiResponse({ status: 200, description: 'Unit updated successfully' })
+  @ApiResponse({ status: 404, description: 'Unit not found' })
+  @ApiResponse({
+    status: 409,
+    description: 'Inventory change conflicts with active reservations',
+  })
+  async update(
+    @CurrentUser() user: JwtPayload,
+    @Param('unitId') unitId: string,
+    @Body() dto: UpdateUnitDto,
+  ) {
+    const command = new UpdateUnitCommand(
+      user.tenantId,
+      unitId,
+      dto.name,
+      dto.description,
+      dto.inventoryCount,
+      dto.maxGuests,
+      dto.standardGuests,
+      dto.bedrooms,
+      dto.bathroomsCount,
+      dto.isShared,
+      dto.amenities,
+      dto.pricePerNight,
+      dto.externalIds,
+      user.userId,
+      user.email,
+    );
+
+    const result = await this.commandBus.execute<
+      UpdateUnitCommand,
+      UpdateUnitResult
+    >(command);
+
+    return {
+      message: 'Unit updated successfully',
+      data: {
+        unitId: result.unitId,
+      },
+    };
+  }
+
   @Public()
   @Get('public/:tenantId')
   @ApiOperation({
@@ -116,6 +175,29 @@ export class UnitController {
           limit: result.limit,
           totalPages: result.totalPages,
         },
+      },
+    };
+  }
+
+  @Public()
+  @Get('public/unit/:unitId')
+  @ApiOperation({
+    summary: 'Get a specific unit by ID (public, no authentication required)',
+  })
+  @ApiResponse({ status: 200, description: 'Unit retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Unit not found' })
+  async getPublicById(@Param('unitId') unitId: string) {
+    const query = new GetPublicUnitByIdQuery(unitId);
+
+    const result = await this.queryBus.execute<
+      GetPublicUnitByIdQuery,
+      GetPublicUnitByIdResult
+    >(query);
+
+    return {
+      message: 'Unit retrieved successfully',
+      data: {
+        unit: result.unit,
       },
     };
   }
