@@ -61,23 +61,23 @@ export class CreatePropertyHandler implements ICommandHandler<CreatePropertyComm
     await this.validatePlanLimits(tenantId, tenant.getPlan().getSiteLimit());
 
     const propertyType = PropertyType.create(command.propertyType);
-    const property = Property.create(
-      tenantId,
-      command.name,
-      command.description,
-      propertyType,
-      command.address,
-      command.city,
-      command.state,
-      command.country,
-      command.zipCode,
-      Location.create(command.location.lat, command.location.lng),
-      command.checkInTime,
-      command.checkOutTime,
-      CancellationPolicy.create(command.cancellationPolicy),
-      command.hostPhone,
-      command.hostEmail,
-    );
+    const property = Property.create({
+      tenantId: tenantId,
+      name: command.name,
+      description: command.description,
+      propertyType: propertyType,
+      address: command.address,
+      city: command.city,
+      state: command.state,
+      country: command.country,
+      zipCode: command.zipCode,
+      location: Location.create(command.location.lat, command.location.lng),
+      checkInTime: command.checkInTime,
+      checkOutTime: command.checkOutTime,
+      cancellationPolicy: CancellationPolicy.create(command.cancellationPolicy),
+      hostPhone: command.hostPhone,
+      hostEmail: command.hostEmail,
+    });
 
     const shouldAutoCreate =
       command.autoCreateUnit && propertyType.shouldAutoCreateUnit();
