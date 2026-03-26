@@ -3,6 +3,11 @@ export interface EmailRecipient {
   name: string;
 }
 
+export interface EmailAttachment {
+  url: string;
+  name: string;
+}
+
 export interface SendEmailParams {
   to: EmailRecipient[];
   subject: string;
@@ -10,6 +15,7 @@ export interface SendEmailParams {
   sender?: EmailRecipient;
   cc?: EmailRecipient[];
   bcc?: EmailRecipient[];
+  attachments?: EmailAttachment[];
 }
 
 export interface IEmailService {

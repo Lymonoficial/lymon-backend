@@ -34,6 +34,8 @@ export class BrevoEmailService implements IEmailService {
         to: params.to,
         cc: params.cc,
         bcc: params.bcc,
+        ...(params.attachments &&
+          params.attachments.length > 0 && { attachment: params.attachments }),
       });
       this.logger.log(`Email sent successfully to ${params.to[0].email}`);
     } catch (error) {
