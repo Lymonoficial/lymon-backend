@@ -1,4 +1,4 @@
-import { Tenant } from '@/domain/tenant/entities/tenant.entity';
+import { Tenant, TenantReconstitutionProps } from '@/domain/tenant/entities/tenant.entity';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { PlanType, PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -29,17 +29,18 @@ export function makeTenant(
   }>,
 ): Tenant {
   const merged = { ...TENANT_FIXTURE_DEFAULTS, ...overrides };
-  return Tenant.reconstitute(
-    TenantId.createFromString(merged.id),
-    merged.name,
-    Email.create(merged.ownerEmail),
-    PlanType.create(merged.plan),
-    merged.emailVerified,
-    merged.contactPhone,
-    merged.address,
-    merged.website,
-    merged.logoUrl,
-    new Date(),
-    new Date(),
-  );
+  const props: TenantReconstitutionProps = {
+    id: TenantId.createFromString(merged.id),
+    name: merged.name,
+    ownerEmail: Email.create(merged.ownerEmail),
+    plan: PlanType.create(merged.plan),
+    emailVerified: merged.emailVerified,
+    contactPhone: merged.contactPhone,
+    address: merged.address,
+    website: merged.website,
+    logoUrl: merged.logoUrl,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  return Tenant.reconstitute(props);
 }
