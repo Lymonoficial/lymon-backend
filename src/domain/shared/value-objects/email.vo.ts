@@ -1,3 +1,4 @@
+import { validate } from 'email-validator';
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 
 export class Email {
@@ -15,8 +16,7 @@ export class Email {
   }
 
   private static isValid(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return validate(email);
   }
 
   toString(): string {
