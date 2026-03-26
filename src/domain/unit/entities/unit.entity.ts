@@ -4,6 +4,54 @@ import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
 import { Bedroom } from '@/domain/unit/value-objects/bed-type.vo';
 
+// ─── Input interfaces to reduce parameter count ──────────────────────────────
+
+export interface UnitBasicInfo {
+  name: string;
+  description: string;
+}
+
+export interface UnitInventoryConfig {
+  inventoryCount: number;
+}
+
+export interface UnitCapacityConfig {
+  maxGuests: number;
+  standardGuests: number;
+}
+
+export interface UnitPhysicalFeatures {
+  bedrooms: Bedroom[];
+  bathroomsCount: number;
+  isShared: boolean;
+}
+
+export interface UnitPricingConfig {
+  pricePerNight: number;
+}
+
+export interface UnitCreateInput {
+  tenantId: TenantId;
+  propertyId: PropertyId;
+  basicInfo: UnitBasicInfo;
+  inventoryConfig: UnitInventoryConfig;
+  capacityConfig: UnitCapacityConfig;
+  physicalFeatures: UnitPhysicalFeatures;
+  pricingConfig: UnitPricingConfig;
+  amenities: string[];
+  externalIds: ExternalIds;
+}
+
+export interface UnitTimestamps {
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UnitReconstituteInput extends UnitCreateInput {
+  id: UnitId;
+  timestamps: UnitTimestamps;
+}
+
 export class Unit {
   private constructor(
     private readonly id: UnitId | null,
@@ -24,38 +72,39 @@ export class Unit {
     private updatedAt: Date,
   ) {}
 
-  static create(
-    tenantId: TenantId,
-    propertyId: PropertyId,
-    name: string,
-    description: string,
-    inventoryCount: number,
-    maxGuests: number,
-    standardGuests: number,
-    bedrooms: Bedroom[],
-    bathroomsCount: number,
-    isShared: boolean,
-    amenities: string[],
-    pricePerNight: number,
-    externalIds: ExternalIds,
-  ): Unit {
-    if (!name || name.trim() === '') {
+  static create(input: UnitCreateInput): Unit {
+    const {
+      tenantId,
+      propertyId,
+      basicInfo,
+      inventoryConfig,
+      capacityConfig,
+      physicalFeatures,
+      pricingConfig,
+      amenities,
+      externalIds,
+    } = input;
+
+    if (!basicInfo.name || basicInfo.name.trim() === '') {
       throw new Error('Unit name cannot be empty');
     }
 
-    if (inventoryCount < 1) {
+    if (inventoryConfig.inventoryCount < 1) {
       throw new Error('Inventory count must be at least 1');
     }
 
-    if (maxGuests < 1) {
+    if (capacityConfig.maxGuests < 1) {
       throw new Error('Max guests must be at least 1');
     }
 
-    if (standardGuests < 1 || standardGuests > maxGuests) {
+    if (
+      capacityConfig.standardGuests < 1 ||
+      capacityConfig.standardGuests > capacityConfig.maxGuests
+    ) {
       throw new Error('Standard guests must be between 1 and max guests');
     }
 
-    if (pricePerNight < 0) {
+    if (pricingConfig.pricePerNight < 0) {
       throw new Error('Price per night cannot be negative');
     }
 
@@ -63,57 +112,54 @@ export class Unit {
       null,
       tenantId,
       propertyId,
-      name.trim(),
-      description.trim(),
-      inventoryCount,
-      maxGuests,
-      standardGuests,
-      bedrooms,
-      bathroomsCount,
-      isShared,
+      basicInfo.name.trim(),
+      basicInfo.description.trim(),
+      inventoryConfig.inventoryCount,
+      capacityConfig.maxGuests,
+      capacityConfig.standardGuests,
+      physicalFeatures.bedrooms,
+      physicalFeatures.bathroomsCount,
+      physicalFeatures.isShared,
       amenities,
-      pricePerNight,
+      pricingConfig.pricePerNight,
       externalIds,
       new Date(),
       new Date(),
     );
   }
 
-  static reconstitute(
-    id: UnitId,
-    tenantId: TenantId,
-    propertyId: PropertyId,
-    name: string,
-    description: string,
-    inventoryCount: number,
-    maxGuests: number,
-    standardGuests: number,
-    bedrooms: Bedroom[],
-    bathroomsCount: number,
-    isShared: boolean,
-    amenities: string[],
-    pricePerNight: number,
-    externalIds: ExternalIds,
-    createdAt: Date,
-    updatedAt: Date,
-  ): Unit {
+  static reconstitute(input: UnitReconstituteInput): Unit {
+    const {
+      id,
+      tenantId,
+      propertyId,
+      basicInfo,
+      inventoryConfig,
+      capacityConfig,
+      physicalFeatures,
+      pricingConfig,
+      amenities,
+      externalIds,
+      timestamps,
+    } = input;
+
     return new Unit(
       id,
       tenantId,
       propertyId,
-      name,
-      description,
-      inventoryCount,
-      maxGuests,
-      standardGuests,
-      bedrooms,
-      bathroomsCount,
-      isShared,
+      basicInfo.name,
+      basicInfo.description,
+      inventoryConfig.inventoryCount,
+      capacityConfig.maxGuests,
+      capacityConfig.standardGuests,
+      physicalFeatures.bedrooms,
+      physicalFeatures.bathroomsCount,
+      physicalFeatures.isShared,
       amenities,
-      pricePerNight,
+      pricingConfig.pricePerNight,
       externalIds,
-      createdAt,
-      updatedAt,
+      timestamps.createdAt,
+      timestamps.updatedAt,
     );
   }
 
