@@ -22,6 +22,7 @@ export class Unit {
     private externalIds: ExternalIds,
     private readonly createdAt: Date,
     private updatedAt: Date,
+    private deletedAt: Date | null,
   ) {}
 
   static create(
@@ -76,6 +77,7 @@ export class Unit {
       externalIds,
       new Date(),
       new Date(),
+      null,
     );
   }
 
@@ -96,6 +98,7 @@ export class Unit {
     externalIds: ExternalIds,
     createdAt: Date,
     updatedAt: Date,
+    deletedAt: Date | null,
   ): Unit {
     return new Unit(
       id,
@@ -114,6 +117,7 @@ export class Unit {
       externalIds,
       createdAt,
       updatedAt,
+      deletedAt,
     );
   }
 
@@ -179,6 +183,10 @@ export class Unit {
 
   getUpdatedAt(): Date {
     return this.updatedAt;
+  }
+
+  getDeletedAt(): Date | null {
+    return this.deletedAt;
   }
 
   updateDetails(name: string, description: string): void {

@@ -60,6 +60,7 @@ describe('CreateReservationHandler', () => {
       ExternalIds.create(),
       new Date(),
       new Date(),
+      null,
     );
   }
 
