@@ -106,21 +106,31 @@ export class CreatePropertyHandler implements ICommandHandler<CreatePropertyComm
         );
         const propertyId = PropertyId.create(propertyIdString);
 
-        const unit = Unit.create(
+        const unit = Unit.create({
           tenantId,
           propertyId,
-          command.name,
-          command.description,
-          1,
-          4,
-          2,
-          [],
-          1,
-          false,
-          [],
-          0,
-          ExternalIds.create(),
-        );
+          basicInfo: {
+            name: command.name,
+            description: command.description,
+          },
+          inventoryConfig: {
+            inventoryCount: 1,
+          },
+          capacityConfig: {
+            maxGuests: 4,
+            standardGuests: 2,
+          },
+          physicalFeatures: {
+            bedrooms: [],
+            bathroomsCount: 1,
+            isShared: false,
+          },
+          pricingConfig: {
+            pricePerNight: 0,
+          },
+          amenities: [],
+          externalIds: ExternalIds.create(),
+        });
 
         const unitIdString = await this.unitRepository.save(
           unit,

@@ -26,25 +26,36 @@ const PROPERTY_ID = '65f1a1a2b3c4d5e6f7a8b9c3';
 function makeUnit(
   overrides?: Partial<{ tenantId: string; inventoryCount: number }>,
 ): Unit {
-  return Unit.reconstitute(
-    UnitId.create(UNIT_ID),
-    TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
-    PropertyId.create(PROPERTY_ID),
-    'Deluxe Suite',
-    'Ocean view suite',
-    overrides?.inventoryCount ?? 3,
-    4,
-    2,
-    [{ roomName: 'Master', beds: [{ type: BedTypeEnum.QUEEN, count: 1 }] }],
-    1,
-    false,
-    ['wifi'],
-    200,
-    ExternalIds.create('airbnb-1', undefined, undefined),
-    new Date('2030-01-01T00:00:00.000Z'),
-    new Date('2030-01-01T00:00:00.000Z'),
-    null,
-  );
+  return Unit.reconstitute({
+    id: UnitId.create(UNIT_ID),
+    tenantId: TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
+    propertyId: PropertyId.create(PROPERTY_ID),
+    basicInfo: {
+      name: 'Deluxe Suite',
+      description: 'Ocean view suite',
+    },
+    inventoryConfig: {
+      inventoryCount: overrides?.inventoryCount ?? 3,
+    },
+    capacityConfig: {
+      maxGuests: 4,
+      standardGuests: 2,
+    },
+    physicalFeatures: {
+      bedrooms: [{ roomName: 'Master', beds: [{ type: BedTypeEnum.QUEEN, count: 1 }] }],
+      bathroomsCount: 1,
+      isShared: false,
+    },
+    pricingConfig: {
+      pricePerNight: 200,
+    },
+    amenities: ['wifi'],
+    externalIds: ExternalIds.create('airbnb-1', undefined, undefined),
+    timestamps: {
+      createdAt: new Date('2030-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2030-01-01T00:00:00.000Z'),
+    },
+  });
 }
 
 function makeCommand(

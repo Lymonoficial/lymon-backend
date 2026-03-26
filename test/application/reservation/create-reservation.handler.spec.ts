@@ -38,30 +38,41 @@ describe('CreateReservationHandler', () => {
   });
 
   function makeUnit() {
-    return Unit.reconstitute(
-      UnitId.create('unit-1'), // ← ID explícito
-      TenantId.createFromString('tenant-1'),
-      PropertyId.create('prop-1'),
-      'Unit 1',
-      'Nice unit',
-      1,
-      2,
-      1,
-      [
-        {
-          roomName: 'Main',
-          beds: [{ type: BedTypeEnum.QUEEN, count: 1 }],
-        },
-      ],
-      1,
-      false,
-      [],
-      100,
-      ExternalIds.create(),
-      new Date(),
-      new Date(),
-      null,
-    );
+    return Unit.reconstitute({
+      id: UnitId.create('unit-1'),
+      tenantId: TenantId.createFromString('tenant-1'),
+      propertyId: PropertyId.create('prop-1'),
+      basicInfo: {
+        name: 'Unit 1',
+        description: 'Nice unit',
+      },
+      inventoryConfig: {
+        inventoryCount: 1,
+      },
+      capacityConfig: {
+        maxGuests: 2,
+        standardGuests: 1,
+      },
+      physicalFeatures: {
+        bedrooms: [
+          {
+            roomName: 'Main',
+            beds: [{ type: BedTypeEnum.QUEEN, count: 1 }],
+          },
+        ],
+        bathroomsCount: 1,
+        isShared: false,
+      },
+      pricingConfig: {
+        pricePerNight: 100,
+      },
+      amenities: [],
+      externalIds: ExternalIds.create(),
+      timestamps: {
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
   }
 
   function makeGuest() {
