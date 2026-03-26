@@ -1,4 +1,4 @@
-import { Tenant } from '@/domain/tenant/entities/tenant.entity';
+import { Tenant, TenantReconstitutionProps } from '@/domain/tenant/entities/tenant.entity';
 import { TenantRepository } from '@/domain/tenant/repositories/tenant.repository';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -60,18 +60,19 @@ export class MongoTenantRepository implements TenantRepository {
   }
 
   private toDomainEntity(doc: TenantDocument): Tenant {
-    return Tenant.reconstitute({
+    const props: TenantReconstitutionProps = {
       id: TenantId.createFromString(doc._id.toString()),
       name: doc.name,
-      ownerEmail: Email.createFromString(doc.ownerEmail),
-      plan: PlanType.createFromString(doc.plan),
+      ownerEmail: Email.create(doc.ownerEmail),
+      plan: PlanType.create(doc.plan),
       emailVerified: doc.emailVerified,
-      contactPhone: doc.contactPhone,
-      address: doc.address,
-      website: doc.website,
-      logoUrl: doc.logoUrl,
+      contactPhone: doc.contactPhone ?? null,
+      address: doc.address ?? null,
+      website: doc.website ?? null,
+      logoUrl: doc.logoUrl ?? null,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
-    });
+    };
+    return Tenant.reconstitute(props);
   }
 }
