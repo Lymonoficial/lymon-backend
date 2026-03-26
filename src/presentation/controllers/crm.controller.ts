@@ -22,6 +22,8 @@ import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/ge
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
+import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
+import { SendGuestMessageDto } from '@/presentation/dtos/send-guest-message.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -167,6 +169,39 @@ export class CrmController {
     return {
       message: 'Guest communication history retrieved successfully',
       data: result.items,
+    };
+  }
+
+  @Post('guests/:guestId/messages')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({
+    summary: 'Send an email or message to a guest',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Message sent and recorded successfully',
+  })
+  async sendGuestMessage(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: SendGuestMessageDto,
+  ) {
+    const result = await this.commandBus.execute(
+      new SendGuestMessageCommand(
+        user.tenantId,
+        guestId,
+        dto.subject,
+        dto.body,
+        dto.templateId,
+        dto.attachments,
+        user.userId,
+      ),
+    );
+
+    return {
+      message: 'Message sent and recorded successfully',
+      data: result,
     };
   }
 }
