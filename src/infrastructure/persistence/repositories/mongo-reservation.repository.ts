@@ -18,6 +18,12 @@ import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
+const ACTIVE_RESERVATION_STATUSES = [
+  ReservationStatusEnum.PENDING,
+  ReservationStatusEnum.CONFIRMED,
+  ReservationStatusEnum.CHECKED_IN,
+];
+
 @Injectable()
 export class MongoReservationRepository implements ReservationRepository {
   constructor(
@@ -184,6 +190,32 @@ export class MongoReservationRepository implements ReservationRepository {
     });
     if (!doc) return null;
     return this.toDomain(doc);
+  }
+
+  async existsActiveByPropertyId(
+    tenantId: string,
+    propertyId: string,
+  ): Promise<boolean> {
+    const count = await this.reservationModel.countDocuments({
+      tenantId: new Types.ObjectId(tenantId),
+      propertyId: new Types.ObjectId(propertyId),
+      status: { $in: ACTIVE_RESERVATION_STATUSES },
+    });
+
+    return count > 0;
+  }
+
+  async existsActiveByUnitId(
+    tenantId: string,
+    unitId: string,
+  ): Promise<boolean> {
+    const count = await this.reservationModel.countDocuments({
+      tenantId: new Types.ObjectId(tenantId),
+      unitId: new Types.ObjectId(unitId),
+      status: { $in: ACTIVE_RESERVATION_STATUSES },
+    });
+
+    return count > 0;
   }
 
   async countByTenantId(tenantId: string): Promise<number> {

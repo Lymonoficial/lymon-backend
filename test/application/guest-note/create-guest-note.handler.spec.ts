@@ -6,7 +6,11 @@ import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest
 import { makeGuest } from '@test/shared/fixtures/guest.fixture';
 import { GuestNoteTypeEnum } from '@/domain/guest-note/value-objects/guest-node-type.vo';
 import { GuestNoteStatusEnum } from '@/domain/guest-note/value-objects/guest-node-status.vo';
-import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 
 function createGuestNoteRepositoryMock(): jest.Mocked<GuestNoteRepository> {
   return {
@@ -24,7 +28,7 @@ describe('CreateGuestNoteHandler', () => {
 
   const defaultProps = {
     tenantId: 'tenant-123',
-    guestId: 'guest-123',
+    guestId: '65f1a1a2b3c4d5e6f7a8b9d1',
     note: 'Valid note content for testing',
     type: GuestNoteTypeEnum.GENERAL,
     createdBy: 'user-123',
@@ -48,8 +52,12 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.status,
       );
 
-      await expect(handler.execute(command)).rejects.toThrow(ForbiddenException);
-      await expect(handler.execute(command)).rejects.toThrow('Tenant context is required');
+      await expect(handler.execute(command)).rejects.toThrow(
+        ForbiddenException,
+      );
+      await expect(handler.execute(command)).rejects.toThrow(
+        'Tenant context is required',
+      );
     });
 
     it('Lanza BadRequestException("Note content cannot be empty") para nota vacía', async () => {
@@ -62,8 +70,12 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.status,
       );
 
-      await expect(handler.execute(command)).rejects.toThrow(BadRequestException);
-      await expect(handler.execute(command)).rejects.toThrow('Note content cannot be empty');
+      await expect(handler.execute(command)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(handler.execute(command)).rejects.toThrow(
+        'Note content cannot be empty',
+      );
     });
 
     it('Lanza BadRequestException (Validation Error) para tipo de nota inválido', async () => {
@@ -76,8 +88,12 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.status,
       );
 
-      await expect(handler.execute(command)).rejects.toThrow(BadRequestException);
-      await expect(handler.execute(command)).rejects.toThrow('Invalid note type');
+      await expect(handler.execute(command)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(handler.execute(command)).rejects.toThrow(
+        'Invalid note type',
+      );
     });
   });
 
@@ -113,8 +129,12 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.status,
       );
 
-      await expect(handler.execute(command)).rejects.toThrow(ForbiddenException);
-      await expect(handler.execute(command)).rejects.toThrow('Creator not authorized for this guest tenant');
+      await expect(handler.execute(command)).rejects.toThrow(
+        ForbiddenException,
+      );
+      await expect(handler.execute(command)).rejects.toThrow(
+        'Creator not authorized for this guest tenant',
+      );
       expect(guestNoteRepository.save).not.toHaveBeenCalled();
     });
 
@@ -137,7 +157,7 @@ describe('CreateGuestNoteHandler', () => {
       expect(result).toBeDefined();
       expect(typeof result.guestNoteId).toBe('string');
       expect(guestNoteRepository.save).toHaveBeenCalledTimes(1);
-      
+
       const savedNote = guestNoteRepository.save.mock.calls[0][0];
       expect(savedNote.getNote()).toBe(defaultProps.note);
       expect(savedNote.getType()).toBe(defaultProps.type);

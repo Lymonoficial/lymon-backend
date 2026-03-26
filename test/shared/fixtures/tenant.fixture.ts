@@ -1,6 +1,9 @@
 import { Tenant, TenantReconstitutionProps } from '@/domain/tenant/entities/tenant.entity';
 import { Email } from '@/domain/shared/value-objects/email.vo';
-import { PlanType, PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
+import {
+  PlanType,
+  PlanTypeEnum,
+} from '@/domain/tenant/value-objects/plan-type.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 export const TENANT_FIXTURE_DEFAULTS = {

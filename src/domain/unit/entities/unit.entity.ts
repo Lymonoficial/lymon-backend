@@ -70,6 +70,7 @@ export class Unit {
     private externalIds: ExternalIds,
     private readonly createdAt: Date,
     private updatedAt: Date,
+    private deletedAt: Date | null,
   ) {}
 
   static create(input: UnitCreateInput): Unit {
@@ -125,6 +126,7 @@ export class Unit {
       externalIds,
       new Date(),
       new Date(),
+      null,
     );
   }
 
@@ -225,6 +227,10 @@ export class Unit {
 
   getUpdatedAt(): Date {
     return this.updatedAt;
+  }
+
+  getDeletedAt(): Date | null {
+    return this.deletedAt;
   }
 
   updateDetails(name: string, description: string): void {
