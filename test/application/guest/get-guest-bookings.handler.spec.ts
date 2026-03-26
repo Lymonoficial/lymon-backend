@@ -60,6 +60,7 @@ describe('GetGuestBookingsHandler', () => {
       ExternalIds.create(),
       new Date('2030-01-01T10:00:00Z'),
       new Date('2030-01-01T10:00:00Z'),
+      null,
     );
   }
 

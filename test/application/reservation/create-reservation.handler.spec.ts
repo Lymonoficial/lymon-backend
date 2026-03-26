@@ -39,7 +39,7 @@ describe('CreateReservationHandler', () => {
 
   function makeUnit() {
     return Unit.reconstitute(
-      UnitId.create('unit-1'),           // ← ID explícito
+      UnitId.create('unit-1'), // ← ID explícito
       TenantId.createFromString('tenant-1'),
       PropertyId.create('prop-1'),
       'Unit 1',
@@ -60,6 +60,7 @@ describe('CreateReservationHandler', () => {
       ExternalIds.create(),
       new Date(),
       new Date(),
+      null,
     );
   }
 
@@ -79,7 +80,7 @@ describe('CreateReservationHandler', () => {
       'tenant-1',
       'prop-1',
       'unit-1',
-      'guest-1',
+      '65f1a1a2b3c4d5e6f7a8b9d1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
       new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       1,
@@ -102,7 +103,7 @@ describe('CreateReservationHandler', () => {
       'tenant-1',
       'prop-1',
       'unit-1',
-      'guest-1',
+      '65f1a1a2b3c4d5e6f7a8b9d1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
       new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       1,
@@ -140,7 +141,7 @@ describe('CreateReservationHandler', () => {
       'tenant-1',
       'prop-1',
       unit.getId()!.toString(),
-      'guest-1',
+      '65f1a1a2b3c4d5e6f7a8b9d1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
       new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       1,
@@ -166,7 +167,7 @@ describe('CreateReservationHandler', () => {
       'tenant-1',
       'prop-1',
       unit.getId()!.toString(),
-      'guest-1',
+      '65f1a1a2b3c4d5e6f7a8b9d1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
       new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       1,

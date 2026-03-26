@@ -28,7 +28,7 @@ describe('GetReservationsByTenantHandler', () => {
       tenantId: TenantId.createFromString('tenant-1'),
       propertyId: PropertyId.create('prop-1'),
       unitId: UnitId.create('unit-1'),
-      guestId: GuestId.createFromString('guest-1'),
+      guestId: GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9d1'),
       dateRange: DateRange.create(
         new Date(Date.now() + 24 * 60 * 60 * 1000),
         new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
@@ -43,7 +43,7 @@ describe('GetReservationsByTenantHandler', () => {
       tenantId: TenantId.createFromString('tenant-1'),
       propertyId: PropertyId.create('prop-1'),
       unitId: UnitId.create('unit-2'),
-      guestId: GuestId.createFromString('guest-2'),
+      guestId: GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9d2'),
       dateRange: DateRange.create(
         new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
         new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
@@ -74,7 +74,7 @@ describe('GetReservationsByTenantHandler', () => {
       tenantId: TenantId.createFromString('tenant-1'),
       propertyId: PropertyId.create('prop-1'),
       unitId: UnitId.create('unit-3'),
-      guestId: GuestId.createFromString('guest-3'),
+      guestId: GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9d3'),
       dateRange: DateRange.create(
         new Date(Date.now() + 24 * 60 * 60 * 1000),
         new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
@@ -89,7 +89,7 @@ describe('GetReservationsByTenantHandler', () => {
       tenantId: TenantId.createFromString('tenant-2'),
       propertyId: PropertyId.create('prop-2'),
       unitId: UnitId.create('unit-4'),
-      guestId: GuestId.createFromString('guest-4'),
+      guestId: GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9d4'),
       dateRange: DateRange.create(
         new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
         new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),

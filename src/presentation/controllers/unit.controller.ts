@@ -1,5 +1,6 @@
 import { CreateUnitCommand } from '@/application/unit/commands/create-unit.command';
 import { CreateUnitResult } from '@/application/unit/commands/create-unit.result';
+import { DeleteUnitCommand } from '@/application/unit/commands/delete-unit.command';
 import { UpdateUnitCommand } from '@/application/unit/commands/update-unit.command';
 import { UpdateUnitResult } from '@/application/unit/commands/update-unit.result';
 import { GetUnitsByPropertyQuery } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.query';
@@ -12,12 +13,14 @@ import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
+import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -252,5 +255,27 @@ export class UnitController {
         },
       },
     };
+  }
+
+  @Delete(':unitId')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.UNIT_DELETE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a unit' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 204, description: 'Unit deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Unit not found' })
+  async deleteUnit(
+    @CurrentUser() user: JwtPayload,
+    @Param('unitId') unitId: string,
+  ): Promise<void> {
+    const command = new DeleteUnitCommand(
+      user.tenantId,
+      unitId,
+      user.userId,
+      user.email,
+    );
+
+    await this.commandBus.execute<DeleteUnitCommand, void>(command);
   }
 }
