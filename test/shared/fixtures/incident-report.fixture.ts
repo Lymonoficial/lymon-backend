@@ -16,15 +16,15 @@ export function makeIncidentReport(
 ): IncidentReport {
   const merged = { ...INCIDENT_REPORT_FIXTURE_DEFAULTS, ...overrides };
 
-  return IncidentReport.reconstitute(
-    IncidentReportId.create(merged.id),
-    merged.tenantId,
-    merged.propertyId,
-    merged.createdBy,
-    merged.title,
-    merged.description,
-    merged.attachmentUrls,
-    new Date(),
-    new Date(),
-  );
+  return IncidentReport.reconstitute({
+    id: IncidentReportId.create(merged.id),
+    tenantId: merged.tenantId,
+    propertyId: merged.propertyId,
+    createdBy: merged.createdBy,
+    title: merged.title,
+    description: merged.description,
+    attachmentUrls: merged.attachmentUrls,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
 }
