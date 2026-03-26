@@ -60,18 +60,18 @@ export class MongoTenantRepository implements TenantRepository {
   }
 
   private toDomainEntity(doc: TenantDocument): Tenant {
-    return Tenant.reconstitute(
-      TenantId.createFromString(doc._id.toString()),
-      doc.name,
-      Email.create(doc.ownerEmail),
-      PlanType.create(doc.plan),
-      doc.emailVerified,
-      doc.contactPhone ?? null,
-      doc.address ?? null,
-      doc.website ?? null,
-      doc.logoUrl ?? null,
-      doc.createdAt,
-      doc.updatedAt,
-    );
+    return Tenant.reconstitute({
+      id: TenantId.createFromString(doc._id.toString()),
+      name: doc.name,
+      ownerEmail: Email.createFromString(doc.ownerEmail),
+      plan: PlanType.createFromString(doc.plan),
+      emailVerified: doc.emailVerified,
+      contactPhone: doc.contactPhone,
+      address: doc.address,
+      website: doc.website,
+      logoUrl: doc.logoUrl,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    });
   }
 }
