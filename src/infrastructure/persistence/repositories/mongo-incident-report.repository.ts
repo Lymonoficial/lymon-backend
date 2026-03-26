@@ -83,16 +83,16 @@ export class MongoIncidentReportRepository implements IncidentReportRepository {
   }
 
   private toDomain(doc: IncidentReportDocument): IncidentReport {
-    return IncidentReport.reconstitute(
-      IncidentReportId.create(doc._id.toString()),
-      doc.tenantId.toString(),
-      doc.propertyId.toString(),
-      doc.createdBy.toString(),
-      doc.title,
-      doc.description,
-      doc.attachmentUrls ?? [],
-      doc.createdAt,
-      doc.updatedAt,
-    );
+    return IncidentReport.reconstitute({
+      id: IncidentReportId.create(doc._id.toString()),
+      tenantId: doc.tenantId.toString(),
+      propertyId: doc.propertyId.toString(),
+      createdBy: doc.createdBy.toString(),
+      title: doc.title,
+      description: doc.description,
+      attachmentUrls: doc.attachmentUrls ?? [],
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    });
   }
 }
