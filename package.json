@@ -16,7 +16,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:cov:scope": "jest --coverage --coverageDirectory=coverage/scope --testPathPatterns=\"test/application/(incident-report/(create-incident-report|get-incident-reports-by-property|update-incident-report)|tenant/(update-tenant-profile|get-tenant-profile)|auth/login|property/(create-property|get-properties-by-tenant)|tenant/register-tenant|user/verify-email)|test/infrastructure/(auth/guards/(jwt-auth|permission)|persistence/repositories/(mongo-incident-report|mongo-tenant))|test/presentation/controllers/(incident-report|tenant)|test/domain/tenant/value-objects/plan-type\"",
+    "test:cov:scope": "jest --coverage --coverageDirectory=coverage/scope --testPathPatterns=\"test/application/(incident-report/(create-incident-report|get-incident-reports-by-property|update-incident-report)|tenant/(update-tenant-profile|get-tenant-profile)|auth/login|property/(create-property|get-properties-by-tenant)|tenant/register-tenant|user/verify-email|role/get-system-roles|guest-auth/(recover-guest-password|verify-guest-email|login-guest|register-guest-account))|test/infrastructure/(auth/guards/(jwt-auth|permission)|persistence/repositories/(mongo-incident-report|mongo-tenant|mongo-role|mongo-guest-account))|test/presentation/controllers/(incident-report|tenant|role|guest-auth)|test/domain/(tenant/value-objects/plan-type|guest-account/entities/guest-account.entity|guest-account/value-objects/guest-account-id)\"",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "sonar": "npm run test:cov:scope && sonar-scanner"
@@ -79,14 +79,24 @@
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
     "rootDir": ".",
-    "roots": ["<rootDir>/src", "<rootDir>/test"],
+    "roots": [
+      "<rootDir>/src",
+      "<rootDir>/test"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": ["ts-jest", {
-        "tsconfig": "tsconfig.jest.json"
-      }]
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.jest.json"
+        }
+      ]
     },
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1",
@@ -98,6 +108,22 @@
       "src/application/incident-report/queries/GetIncidentReportsByProperty/get-incident-reports-by-property.query-handler.ts",
       "src/application/tenant/commands/update-tenant-profile.handler.ts",
       "src/application/tenant/queries/GetTenantProfile/get-tenant-profile.query-handler.ts",
+      "src/application/role/queries/GetSystemRoles/get-system-roles.query-handler.ts",
+      "src/application/guest-auth/commands/recover-guest-password/recover-guest-password.handler.ts",
+      "src/application/guest-auth/commands/verify-guest-email/verify-guest-email.handler.ts",
+      "src/application/guest-auth/commands/login-guest/login-guest.handler.ts",
+      "src/application/guest-auth/commands/register-guest-account/register-guest-account.handler.ts",
+      "src/domain/role/entities/role.entity.ts",
+      "src/domain/role/repositories/role.repository.ts",
+      "src/domain/role/value-objects/permission.vo.ts",
+      "src/domain/guest-account/entities/guest-account.entity.ts",
+      "src/domain/guest-account/repositories/guest-account.repository.ts",
+      "src/domain/guest-account/value-objects/guest-account-id.vo.ts",
+      "src/domain/guest-account/value-objects/guest-account-status.vo.ts",
+      "src/infrastructure/persistence/repositories/mongo-role.repository.ts",
+      "src/infrastructure/persistence/repositories/mongo-guest-account.repository.ts",
+      "src/presentation/controllers/role.controller.ts",
+      "src/presentation/controllers/guest-auth.controller.ts",
       "src/domain/incident-report/entities/incident-report.entity.ts",
       "src/domain/incident-report/repositories/incident-report.repository.ts",
       "src/domain/incident-report/value-objects/incident-report-id.vo.ts",
@@ -113,7 +139,11 @@
       "src/infrastructure/auth/guards/permission.guard.ts"
     ],
     "coverageDirectory": "./coverage",
-    "coverageReporters": ["lcov", "text", "text-summary"],
+    "coverageReporters": [
+      "lcov",
+      "text",
+      "text-summary"
+    ],
     "testEnvironment": "node"
   }
 }
