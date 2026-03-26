@@ -210,18 +210,27 @@ const property = Property.create({
 
 ### Cargar desde la base de datos:
 ```typescript
-const property = Property.reconstitute(
-  propertyId,
-  {
-    tenantId,
-    name: "Casa de playa",
-    // ... resto de props
-  },
-  {
-    createdAt: new Date("2025-01-01"),
-    updatedAt: new Date("2025-03-24")
-  }
-);
+const property = Property.reconstitute({
+  id: propertyId,
+  tenantId,
+  name: "Casa de playa",
+  description: "Una casa hermosa frente al mar",
+  propertyType: PropertyType.CASA,
+  address: "Av. Playa 123",
+  city: "Cartagena",
+  state: "Bolívar",
+  country: "Colombia",
+  zipCode: "130001",
+  location: Location.create(10.3932, -75.4830),
+  checkInTime: "15:00",
+  checkOutTime: "11:00",
+  cancellationPolicy: CancellationPolicy.MODERATE,
+  hostPhone: "+573001234567",
+  hostEmail: "host@example.com",
+  createdAt: new Date("2025-01-01"),
+  updatedAt: new Date("2025-03-24"),
+  deletedAt: null
+});
 ```
 
 ### Actualizar detalles:
