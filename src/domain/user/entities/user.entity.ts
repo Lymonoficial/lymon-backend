@@ -15,6 +15,21 @@ export interface RoleAssignment {
   scope: UserScope;
 }
 
+export interface UserReconstitutionData {
+  id: UserId;
+  email: Email;
+  passwordHash: string;
+  tenantId: TenantId;
+  isOwnerFlag: boolean;
+  roleAssignments: RoleAssignment[];
+  emailVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  passwordChangedAt?: Date;
+}
+
 /** Kept for OWNER identity checks only. Staff roles are managed via RoleAssignment. */
 export enum UserRoleEnum {
   OWNER = 'OWNER',
@@ -97,33 +112,24 @@ export class User {
     );
   }
 
-  static reconstitute(
-    id: UserId,
-    email: Email,
-    passwordHash: string,
-    tenantId: TenantId,
-    isOwnerFlag: boolean,
-    roleAssignments: RoleAssignment[],
-    emailVerified: boolean,
-    createdAt: Date,
-    updatedAt: Date,
-    resetPasswordToken?: string,
-    resetPasswordExpires?: Date,
-    passwordChangedAt?: Date,
-  ): User {
+  /**
+   * Reconstitutes a User entity from persisted data.
+   * Reduces parameter count by using a data transfer object, improving code maintainability.
+   */
+  static reconstitute(data: UserReconstitutionData): User {
     return new User(
-      id,
-      email,
-      passwordHash,
-      tenantId,
-      isOwnerFlag,
-      roleAssignments,
-      emailVerified,
-      createdAt,
-      updatedAt,
-      resetPasswordToken,
-      resetPasswordExpires,
-      passwordChangedAt,
+      data.id,
+      data.email,
+      data.passwordHash,
+      data.tenantId,
+      data.isOwnerFlag,
+      data.roleAssignments,
+      data.emailVerified,
+      data.createdAt,
+      data.updatedAt,
+      data.resetPasswordToken,
+      data.resetPasswordExpires,
+      data.passwordChangedAt,
     );
   }
 

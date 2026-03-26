@@ -29,15 +29,15 @@ export function makeUser(
   }>,
 ): User {
   const merged = { ...USER_FIXTURE_DEFAULTS, ...overrides };
-  return User.reconstitute(
-    UserId.createFromString(merged.id),
-    Email.create(merged.email),
-    merged.passwordHash,
-    TenantId.createFromString(merged.tenantId),
-    merged.isOwner,
-    merged.roleAssignments,
-    merged.emailVerified,
-    new Date(),
-    new Date(),
-  );
+  return User.reconstitute({
+    id: UserId.createFromString(merged.id),
+    email: Email.create(merged.email),
+    passwordHash: merged.passwordHash,
+    tenantId: TenantId.createFromString(merged.tenantId),
+    isOwnerFlag: merged.isOwner,
+    roleAssignments: merged.roleAssignments,
+    emailVerified: merged.emailVerified,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
 }

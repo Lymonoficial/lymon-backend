@@ -100,26 +100,26 @@ export class MongoPropertyRepository implements PropertyRepository {
   }
 
   private toDomain(document: PropertyDocument): Property {
-    return Property.reconstitute(
-      PropertyId.create(document._id.toString()),
-      TenantId.createFromString(document.tenantId.toString()),
-      document.name,
-      document.description,
-      PropertyType.create(document.propertyType),
-      document.address,
-      document.city,
-      document.state,
-      document.country,
-      document.zipCode,
-      Location.create(document.location.lat, document.location.lng),
-      document.checkInTime,
-      document.checkOutTime,
-      CancellationPolicy.create(document.cancellationPolicy),
-      document.hostPhone,
-      document.hostEmail,
-      document.createdAt,
-      document.updatedAt,
-      document.deletedAt ?? null,
-    );
+    return Property.reconstitute({
+      id: PropertyId.create(document._id.toString()),
+      tenantId: TenantId.createFromString(document.tenantId.toString()),
+      name: document.name,
+      description: document.description,
+      propertyType: PropertyType.create(document.propertyType),
+      address: document.address,
+      city: document.city,
+      state: document.state,
+      country: document.country,
+      zipCode: document.zipCode,
+      location: Location.create(document.location.lat, document.location.lng),
+      checkInTime: document.checkInTime,
+      checkOutTime: document.checkOutTime,
+      cancellationPolicy: CancellationPolicy.create(document.cancellationPolicy),
+      hostPhone: document.hostPhone,
+      hostEmail: document.hostEmail,
+      createdAt: document.createdAt,
+      updatedAt: document.updatedAt,
+      deletedAt: document.deletedAt ?? null,
+    });
   }
 }

@@ -19,6 +19,7 @@ import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { PropertyUpdateData } from '@/domain/property/entities/property.entity';
 
 @CommandHandler(UpdatePropertyCommand)
 export class UpdatePropertyHandler implements ICommandHandler<
@@ -44,19 +45,21 @@ export class UpdatePropertyHandler implements ICommandHandler<
       throw new NotFoundException('Property not found');
     }
 
+    const data: PropertyUpdateData = {
+      name: command.name ?? property.getName(),
+      description: command.description ?? property.getDescription(),
+      address: command.address ?? property.getAddress(),
+      city: command.city ?? property.getCity(),
+      state: command.state ?? property.getState(),
+      country: command.country ?? property.getCountry(),
+      zipCode: command.zipCode ?? property.getZipCode(),
+      location: command.location
+        ? Location.create(command.location.lat, command.location.lng)
+        : property.getLocation(),
+    };
+
     if (this.hasAnyDetailsField(command)) {
-      property.updateDetails(
-        command.name ?? property.getName(),
-        command.description ?? property.getDescription(),
-        command.address ?? property.getAddress(),
-        command.city ?? property.getCity(),
-        command.state ?? property.getState(),
-        command.country ?? property.getCountry(),
-        command.zipCode ?? property.getZipCode(),
-        command.location
-          ? Location.create(command.location.lat, command.location.lng)
-          : property.getLocation(),
-      );
+      property.updateDetails(data);
     }
 
     if (
