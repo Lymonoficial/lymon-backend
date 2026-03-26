@@ -13,6 +13,7 @@ import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
+import { BedTypeEnum } from '@/domain/unit/value-objects/bed-type.vo';
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
 import { createReservationRepositoryMock } from '@test/shared/mocks/repositories/reservation-repository.mock';
 import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitter.mock';
@@ -34,7 +35,7 @@ function makeUnit(
     overrides?.inventoryCount ?? 3,
     4,
     2,
-    [{ roomName: 'Master', beds: [{ type: 'QUEEN', count: 1 }] }],
+    [{ roomName: 'Master', beds: [{ type: BedTypeEnum.QUEEN, count: 1 }] }],
     1,
     false,
     ['wifi'],
@@ -42,6 +43,7 @@ function makeUnit(
     ExternalIds.create('airbnb-1', undefined, undefined),
     new Date('2030-01-01T00:00:00.000Z'),
     new Date('2030-01-01T00:00:00.000Z'),
+    null,
   );
 }
 

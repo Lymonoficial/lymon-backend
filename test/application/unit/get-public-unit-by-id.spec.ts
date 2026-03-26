@@ -36,6 +36,7 @@ function makeUnit(overrides?: Partial<{ id: string }>): Unit {
     ExternalIds.create('ext-airbnb', 'ext-booking', 'ext-vrbo'),
     new Date(),
     new Date(),
+    null,
   );
 }
 
