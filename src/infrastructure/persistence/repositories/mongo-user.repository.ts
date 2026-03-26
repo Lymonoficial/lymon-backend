@@ -106,19 +106,19 @@ export class MongoUserRepository implements UserRepository {
   }
 
   private toDomainEntity(doc: UserDocument & { _id: Types.ObjectId }): User {
-    return User.reconstitute(
-      UserId.createFromString(doc._id.toString()),
-      Email.create(doc.email),
-      doc.passwordHash,
-      TenantId.createFromString(doc.tenantId),
-      doc.isOwner,
-      doc.roleAssignments as RoleAssignment[],
-      doc.emailVerified,
-      doc.createdAt,
-      doc.updatedAt,
-      doc.resetPasswordToken,
-      doc.resetPasswordExpires,
-      doc.passwordChangedAt,
-    );
+    return User.reconstitute({
+      id: UserId.createFromString(doc._id.toString()),
+      email: Email.create(doc.email),
+      passwordHash: doc.passwordHash,
+      tenantId: TenantId.createFromString(doc.tenantId),
+      isOwnerFlag: doc.isOwner,
+      roleAssignments: doc.roleAssignments as RoleAssignment[],
+      emailVerified: doc.emailVerified,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+      resetPasswordToken: doc.resetPasswordToken,
+      resetPasswordExpires: doc.resetPasswordExpires,
+      passwordChangedAt: doc.passwordChangedAt,
+    });
   }
 }
