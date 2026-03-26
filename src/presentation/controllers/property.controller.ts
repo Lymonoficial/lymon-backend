@@ -32,7 +32,6 @@ import {
   ApiTags,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CreatePropertyDto } from '@/presentation/dtos/create-property.dto';
 import { UpdatePropertyDto } from '@/presentation/dtos/update-property.dto';
 import { DeletePropertyCommand } from '@/application/property/commands/delete-property.command';
@@ -186,6 +185,8 @@ export class PropertyController {
         propertyId: result.propertyId,
       },
     };
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.PROPERTY_DELETE)
