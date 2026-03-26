@@ -16,7 +16,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:cov:scope": "jest --coverage --coverageDirectory=coverage/scope --testPathPatterns=\"test/application/(auth/login|property/(create-property|get-properties-by-tenant)|tenant/register-tenant|user/verify-email)\"",
+    "test:cov:scope": "jest --coverage --coverageDirectory=coverage/scope --testPathPatterns=\"test/(application/(auth/login|property/(create-property|get-properties-by-tenant)|tenant/register-tenant|user/verify-email)|domain/user)\"",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "sonar": "npm run test:cov:scope && sonar-scanner"
