@@ -4,6 +4,35 @@ import { Location } from '@/domain/property/value-objects/location.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { PropertyType } from '@/domain/property/value-objects/property-type.vo';
 
+export interface PropertyProps {
+  tenantId: TenantId;
+  name: string;
+  description: string;
+  propertyType: PropertyType;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  location: Location;
+  checkInTime: string;
+  checkOutTime: string;
+  cancellationPolicy: CancellationPolicy;
+  hostPhone: string;
+  hostEmail: string;
+}
+
+export interface PropertyUpdateData {
+  name: string;
+  description: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  location: Location;
+}
+
 export class Property {
   private constructor(
     private readonly id: PropertyId | null,
@@ -27,48 +56,32 @@ export class Property {
     private deletedAt: Date | null,
   ) {}
 
-  static create(
-    tenantId: TenantId,
-    name: string,
-    description: string,
-    propertyType: PropertyType,
-    address: string,
-    city: string,
-    state: string,
-    country: string,
-    zipCode: string,
-    location: Location,
-    checkInTime: string,
-    checkOutTime: string,
-    cancellationPolicy: CancellationPolicy,
-    hostPhone: string,
-    hostEmail: string,
-  ): Property {
-    if (!name || name.trim() === '') {
+  static create(props: PropertyProps): Property {
+    if (!props.name || props.name.trim() === '') {
       throw new Error('Property name cannot be empty');
     }
 
-    if (!address || address.trim() === '') {
+    if (!props.address || props.address.trim() === '') {
       throw new Error('Property address cannot be empty');
     }
 
     return new Property(
       null,
-      tenantId,
-      name.trim(),
-      description.trim(),
-      propertyType,
-      address.trim(),
-      city.trim(),
-      state.trim(),
-      country.trim(),
-      zipCode.trim(),
-      location,
-      checkInTime,
-      checkOutTime,
-      cancellationPolicy,
-      hostPhone,
-      hostEmail,
+      props.tenantId,
+      props.name.trim(),
+      props.description.trim(),
+      props.propertyType,
+      props.address.trim(),
+      props.city.trim(),
+      props.state.trim(),
+      props.country.trim(),
+      props.zipCode.trim(),
+      props.location,
+      props.checkInTime,
+      props.checkOutTime,
+      props.cancellationPolicy,
+      props.hostPhone,
+      props.hostEmail,
       new Date(),
       new Date(),
       null,
@@ -94,7 +107,7 @@ export class Property {
     hostEmail: string,
     createdAt: Date,
     updatedAt: Date,
-    deletedAt: Date | null,
+    deletedAt: Date | null = null,
   ): Property {
     return new Property(
       id,
@@ -195,39 +208,30 @@ export class Property {
     return this.deletedAt;
   }
 
-  updateDetails(
-    name: string,
-    description: string,
-    address: string,
-    city: string,
-    state: string,
-    country: string,
-    zipCode: string,
-    location: Location,
-  ): void {
-    if (name && name.trim() !== '') {
-      this.name = name.trim();
+  updateDetails(data: PropertyUpdateData): void {
+    if (data.name && data.name.trim() !== '') {
+      this.name = data.name.trim();
     }
-    if (description !== undefined) {
-      this.description = description.trim();
+    if (data.description !== undefined) {
+      this.description = data.description.trim();
     }
-    if (address && address.trim() !== '') {
-      this.address = address.trim();
+    if (data.address && data.address.trim() !== '') {
+      this.address = data.address.trim();
     }
-    if (city && city.trim() !== '') {
-      this.city = city.trim();
+    if (data.city && data.city.trim() !== '') {
+      this.city = data.city.trim();
     }
-    if (state && state.trim() !== '') {
-      this.state = state.trim();
+    if (data.state && data.state.trim() !== '') {
+      this.state = data.state.trim();
     }
-    if (country && country.trim() !== '') {
-      this.country = country.trim();
+    if (data.country && data.country.trim() !== '') {
+      this.country = data.country.trim();
     }
-    if (zipCode && zipCode.trim() !== '') {
-      this.zipCode = zipCode.trim();
+    if (data.zipCode && data.zipCode.trim() !== '') {
+      this.zipCode = data.zipCode.trim();
     }
-    if (location) {
-      this.location = location;
+    if (data.location) {
+      this.location = data.location;
     }
     this.updatedAt = new Date();
   }
