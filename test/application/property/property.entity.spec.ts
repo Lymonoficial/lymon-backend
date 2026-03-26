@@ -316,26 +316,19 @@ describe('Property Entity', () => {
     });
 
     it.each([
-      ['address', 'getAddress'],
-      ['city', 'getCity'],
-      ['state', 'getState'],
-      ['country', 'getCountry'],
-      ['zipCode', 'getZipCode'],
-    ])('should not update %s when empty string', (field, getter) => {
+      ['address', 'getAddress', '', 'empty string'],
+      ['address', 'getAddress', '   ', 'whitespace'],
+      ['city', 'getCity', '', 'empty string'],
+      ['city', 'getCity', '   ', 'whitespace'],
+      ['state', 'getState', '', 'empty string'],
+      ['state', 'getState', '   ', 'whitespace'],
+      ['country', 'getCountry', '', 'empty string'],
+      ['country', 'getCountry', '   ', 'whitespace'],
+      ['zipCode', 'getZipCode', '', 'empty string'],
+      ['zipCode', 'getZipCode', '   ', 'whitespace'],
+    ])('should not update %s when %s', (field, getter, value) => {
       const original = (property as any)[getter]();
-      property.updateDetails({ ...validProps, [field]: '' });
-      expect((property as any)[getter]()).toBe(original);
-    });
-
-    it.each([
-      ['address', 'getAddress'],
-      ['city', 'getCity'],
-      ['state', 'getState'],
-      ['country', 'getCountry'],
-      ['zipCode', 'getZipCode'],
-    ])('should not update %s when only whitespace', (field, getter) => {
-      const original = (property as any)[getter]();
-      property.updateDetails({ ...validProps, [field]: '   ' });
+      property.updateDetails({ ...validProps, [field]: value });
       expect((property as any)[getter]()).toBe(original);
     });
 
