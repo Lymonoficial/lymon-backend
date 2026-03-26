@@ -23,14 +23,36 @@ export interface PropertyProps {
 }
 
 export interface PropertyUpdateData {
+  name?: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  location?: Location;
+}
+
+export interface PropertyReconstituteData {
+  id: PropertyId;
+  tenantId: TenantId;
   name: string;
   description: string;
+  propertyType: PropertyType;
   address: string;
   city: string;
   state: string;
   country: string;
   zipCode: string;
   location: Location;
+  checkInTime: string;
+  checkOutTime: string;
+  cancellationPolicy: CancellationPolicy;
+  hostPhone: string;
+  hostEmail: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 export class Property {
@@ -88,47 +110,27 @@ export class Property {
     );
   }
 
-  static reconstitute(
-    id: PropertyId,
-    tenantId: TenantId,
-    name: string,
-    description: string,
-    propertyType: PropertyType,
-    address: string,
-    city: string,
-    state: string,
-    country: string,
-    zipCode: string,
-    location: Location,
-    checkInTime: string,
-    checkOutTime: string,
-    cancellationPolicy: CancellationPolicy,
-    hostPhone: string,
-    hostEmail: string,
-    createdAt: Date,
-    updatedAt: Date,
-    deletedAt: Date | null = null,
-  ): Property {
+  static reconstitute(data: PropertyReconstituteData): Property {
     return new Property(
-      id,
-      tenantId,
-      name,
-      description,
-      propertyType,
-      address,
-      city,
-      state,
-      country,
-      zipCode,
-      location,
-      checkInTime,
-      checkOutTime,
-      cancellationPolicy,
-      hostPhone,
-      hostEmail,
-      createdAt,
-      updatedAt,
-      deletedAt,
+      data.id,
+      data.tenantId,
+      data.name,
+      data.description,
+      data.propertyType,
+      data.address,
+      data.city,
+      data.state,
+      data.country,
+      data.zipCode,
+      data.location,
+      data.checkInTime,
+      data.checkOutTime,
+      data.cancellationPolicy,
+      data.hostPhone,
+      data.hostEmail,
+      data.createdAt,
+      data.updatedAt,
+      data.deletedAt ?? null,
     );
   }
 
