@@ -1,6 +1,9 @@
 import { Property } from '../../../src/domain/property/entities/property.entity';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
-import { PropertyType, PropertyTypeEnum } from '@/domain/property/value-objects/property-type.vo';
+import {
+  PropertyType,
+  PropertyTypeEnum,
+} from '@/domain/property/value-objects/property-type.vo';
 import {
   CancellationPolicy,
   CancellationPolicyEnum,
@@ -306,63 +309,49 @@ describe('Property Entity', () => {
       expect(property.getName()).toBe(originalName);
     });
 
-    it('should update description', () => {
-      property.updateDetails({
-        ...validProps,
-        description: 'Nueva descripción',
-      });
-      expect(property.getDescription()).toBe('Nueva descripción');
-    });
-
     it('should not update description when undefined', () => {
       const originalDescription = property.getDescription();
       property.updateDetails({ ...validProps, description: undefined });
       expect(property.getDescription()).toBe(originalDescription);
     });
 
-    it('should update address', () => {
-      property.updateDetails({ ...validProps, address: 'Nueva Calle' });
-      expect(property.getAddress()).toBe('Nueva Calle');
+    it.each([
+      ['address', 'getAddress'],
+      ['city', 'getCity'],
+      ['state', 'getState'],
+      ['country', 'getCountry'],
+      ['zipCode', 'getZipCode'],
+    ])('should not update %s when empty string', (field, getter) => {
+      const original = (property as any)[getter]();
+      property.updateDetails({ ...validProps, [field]: '' });
+      expect((property as any)[getter]()).toBe(original);
     });
 
-    it('should not update address when empty string', () => {
-      const originalAddress = property.getAddress();
-      property.updateDetails({ ...validProps, address: '' });
-      expect(property.getAddress()).toBe(originalAddress);
+    it.each([
+      ['address', 'getAddress'],
+      ['city', 'getCity'],
+      ['state', 'getState'],
+      ['country', 'getCountry'],
+      ['zipCode', 'getZipCode'],
+    ])('should not update %s when only whitespace', (field, getter) => {
+      const original = (property as any)[getter]();
+      property.updateDetails({ ...validProps, [field]: '   ' });
+      expect((property as any)[getter]()).toBe(original);
     });
 
-    it('should not update address when only whitespace', () => {
-      const originalAddress = property.getAddress();
-      property.updateDetails({ ...validProps, address: '   ' });
-      expect(property.getAddress()).toBe(originalAddress);
-    });
-
-    it('should not update city when empty string', () => {
-      const originalCity = property.getCity();
-      property.updateDetails({ ...validProps, city: '' });
-      expect(property.getCity()).toBe(originalCity);
-    });
-
-    it('should not update state when empty string', () => {
-      const originalState = property.getState();
-      property.updateDetails({ ...validProps, state: '' });
-      expect(property.getState()).toBe(originalState);
-    });
-
-    it('should not update country when empty string', () => {
-      const originalCountry = property.getCountry();
-      property.updateDetails({ ...validProps, country: '' });
-      expect(property.getCountry()).toBe(originalCountry);
-    });
-
-    it('should not update zipCode when empty string', () => {
-      const originalZipCode = property.getZipCode();
-      property.updateDetails({ ...validProps, zipCode: '' });
-      expect(property.getZipCode()).toBe(originalZipCode);
+    it.each([
+      ['address', 'getAddress', 'Nueva Calle'],
+      ['city', 'getCity', 'Nueva Ciudad'],
+      ['state', 'getState', 'Nuevo Estado'],
+      ['country', 'getCountry', 'Nuevo País'],
+      ['zipCode', 'getZipCode', '999999'],
+    ])('should update %s with valid value', (field, getter, newValue) => {
+      property.updateDetails({ ...validProps, [field]: newValue });
+      expect((property as any)[getter]()).toBe(newValue);
     });
 
     it('should update location when provided', () => {
-      const newLocation = Location.create(10.3932, -75.4830);
+      const newLocation = Location.create(10.3932, -75.483);
       property.updateDetails({ ...validProps, location: newLocation });
       expect(property.getLocation()).toEqual(newLocation);
     });
@@ -389,26 +378,6 @@ describe('Property Entity', () => {
       expect(property.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
         originalUpdatedAt.getTime(),
       );
-    });
-
-    it('should update city with valid value', () => {
-      property.updateDetails({ ...validProps, city: 'Nueva Ciudad' });
-      expect(property.getCity()).toBe('Nueva Ciudad');
-    });
-
-    it('should update state with valid value', () => {
-      property.updateDetails({ ...validProps, state: 'Nuevo Estado' });
-      expect(property.getState()).toBe('Nuevo Estado');
-    });
-
-    it('should update country with valid value', () => {
-      property.updateDetails({ ...validProps, country: 'Nuevo País' });
-      expect(property.getCountry()).toBe('Nuevo País');
-    });
-
-    it('should update zipCode with valid value', () => {
-      property.updateDetails({ ...validProps, zipCode: '999999' });
-      expect(property.getZipCode()).toBe('999999');
     });
   });
 
@@ -497,7 +466,9 @@ describe('Property Entity', () => {
 
       const deletedAt = property.getDeletedAt();
       expect(deletedAt).not.toBeNull();
-      expect(deletedAt!.getTime()).toBeGreaterThanOrEqual(beforeDelete.getTime());
+      expect(deletedAt!.getTime()).toBeGreaterThanOrEqual(
+        beforeDelete.getTime(),
+      );
       expect(deletedAt!.getTime()).toBeLessThanOrEqual(afterDelete.getTime());
     });
 
