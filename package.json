@@ -19,7 +19,7 @@
     "test:cov:scope": "jest --coverage --coverageDirectory=coverage/scope --testPathPatterns=\"test/application/(incident-report/(create-incident-report|get-incident-reports-by-property|update-incident-report)|tenant/(update-tenant-profile|get-tenant-profile)|auth/login|property/(create-property|get-properties-by-tenant)|tenant/register-tenant|user/verify-email|role/get-system-roles|guest-auth/(recover-guest-password|verify-guest-email|login-guest|register-guest-account))|test/infrastructure/(auth/guards/(jwt-auth|permission)|persistence/repositories/(mongo-incident-report|mongo-tenant|mongo-role|mongo-guest-account))|test/presentation/controllers/(incident-report|tenant|role|guest-auth)|test/domain/(tenant/value-objects/plan-type|guest-account/entities/guest-account.entity|guest-account/value-objects/guest-account-id)\"",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "sonar": "npm run test:cov:scope && sonar-scanner"
+    "sonar": "jest --coverage && node -e \"const { execSync } = require('child_process'); execSync('docker run --rm -v ' + process.cwd() + ':/usr/src sonarsource/sonar-scanner-cli', {stdio: 'inherit'})\""
   },
   "dependencies": {
     "@getbrevo/brevo": "^4.0.1",
