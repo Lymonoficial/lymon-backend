@@ -2,11 +2,12 @@ import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-accou
 import { GuestAccountStatusEnum } from '@/domain/guest-account/value-objects/guest-account-status.vo';
 import { CreateGuestAccountParams } from '@/domain/guest-account/entities/guest-account.types';
 import { Email } from '@/domain/shared/value-objects/email.vo';
+import { IGuestAccount } from '../interfaces/guest-account.interface';
 
 export class GuestAccount {
   private constructor(
     private readonly id: GuestAccountId | null,
-    private email: Email,
+    private readonly email: Email,
     private passwordHash: string,
     private fullName: string,
     private firstName: string | null,
@@ -47,39 +48,23 @@ export class GuestAccount {
     );
   }
 
-  static reconstitute(
-    id: GuestAccountId,
-    email: Email,
-    passwordHash: string,
-    fullName: string,
-    firstName: string | null,
-    lastName: string | null,
-    status: GuestAccountStatusEnum,
-    emailVerified: boolean,
-    emailVerificationToken: string | null,
-    emailVerificationExpiry: Date | null,
-    passwordResetToken: string | null,
-    passwordResetExpiry: Date | null,
-    passwordChangedAt: Date | null,
-    createdAt: Date,
-    updatedAt: Date,
-  ): GuestAccount {
+  static reconstitute(data: IGuestAccount): GuestAccount {
     return new GuestAccount(
-      id,
-      email,
-      passwordHash,
-      fullName,
-      firstName,
-      lastName,
-      status,
-      emailVerified,
-      emailVerificationToken,
-      emailVerificationExpiry,
-      passwordResetToken,
-      passwordResetExpiry,
-      passwordChangedAt,
-      createdAt,
-      updatedAt,
+      data.id,
+      data.email,
+      data.passwordHash,
+      data.fullName,
+      data.firstName,
+      data.lastName,
+      data.status,
+      data.emailVerified,
+      data.emailVerificationToken,
+      data.emailVerificationExpiry,
+      data.passwordResetToken,
+      data.passwordResetExpiry,
+      data.passwordChangedAt,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 

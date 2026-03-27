@@ -72,22 +72,22 @@ export class MongoGuestAccountRepository implements GuestAccountRepository {
   }
 
   private toDomain(doc: GuestAccountDocument): GuestAccount {
-    return GuestAccount.reconstitute(
-      GuestAccountId.createFromString(doc._id.toString()),
-      Email.create(doc.email),
-      doc.passwordHash,
-      doc.fullName,
-      doc.firstName,
-      doc.lastName,
-      doc.status,
-      doc.emailVerified,
-      doc.emailVerificationToken,
-      doc.emailVerificationExpiry,
-      doc.passwordResetToken,
-      doc.passwordResetExpiry,
-      doc.passwordChangedAt,
-      doc.createdAt,
-      doc.updatedAt,
-    );
+    return GuestAccount.reconstitute({
+      id: GuestAccountId.createFromString(doc._id.toString()),
+      email: Email.create(doc.email),
+      passwordHash: doc.passwordHash,
+      fullName: doc.fullName,
+      firstName: doc.firstName,
+      lastName: doc.lastName,
+      status: doc.status,
+      emailVerified: doc.emailVerified,
+      emailVerificationToken: doc.emailVerificationToken,
+      emailVerificationExpiry: doc.emailVerificationExpiry,
+      passwordResetToken: doc.passwordResetToken,
+      passwordResetExpiry: doc.passwordResetExpiry,
+      passwordChangedAt: doc.passwordChangedAt,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    });
   }
 }
