@@ -74,27 +74,37 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
         .toLocaleDateString();
     }
 
-    // 4. Preparar contenido HTML
+    // 4. Preparar variables para placeholders
+    const dynamicVariables = {
+      guestName: guest.getFullName(),
+      propertyName: propertyName,
+      checkInDate: checkInDate,
+      checkOutDate: checkOutDate,
+      subject: command.subject || '',
+      body: command.body || '',
+    };
+
+    // Resolver placeholders en asunto y cuerpo de entrada
+    const subject = this.templateService.resolvePlaceholders(command.subject || '', dynamicVariables);
+    const resolvedBody = this.templateService.resolvePlaceholders(command.body || '', dynamicVariables);
+
+    // 5. Preparar contenido HTML final
     let htmlContent = '';
-    const subject = command.subject;
 
     if (command.templateId) {
-      // Usar plantilla predefinida
+      // Usar plantilla predefinida y resolver variables (incluyendo el cuerpo resuelto)
       const templateName = command.templateId === 'GUEST_WELCOME' ? 'guest-message' : command.templateId;
       htmlContent = this.templateService.renderTemplate(templateName, {
+        ...dynamicVariables,
+        body: resolvedBody,
         subject: subject,
-        guestName: guest.getFullName(),
-        propertyName: propertyName,
-        checkInDate: checkInDate,
-        checkOutDate: checkOutDate,
-        body: command.body || '', // Si hay body en texto libre, se inyecta en la plantilla
       });
     } else {
-      // Solo texto libre (usar plantilla base muy simple)
+      // Solo texto libre (usar plantilla base muy simple) con variables ya resueltas
       htmlContent = `
         <div style="font-family: sans-serif; padding: 20px;">
           <h2>Hola ${guest.getFullName()},</h2>
-          <p>${command.body}</p>
+          <div style="line-height: 1.6;">${resolvedBody}</div>
           <hr/>
           <p style="font-size: 0.8em; color: #666;">Enviado por ${propertyName}</p>
         </div>

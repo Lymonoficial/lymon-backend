@@ -23,6 +23,24 @@ export class EmailTemplateService {
   }
 
   /**
+   * Resolve placeholders like {{variableName}} in a string using provided data.
+   * If a placeholder's value is missing, it's replaced with an empty string.
+   * @param text - The text containing placeholders
+   * @param variables - Object containing values for replacement
+   * @returns Formatted text
+   */
+  resolvePlaceholders(text: string, variables: any = {}): string {
+    if (!text) return '';
+
+    // Regex to find all {{placeholder}} patterns
+    return text.replace(/\{\{(.+?)\}\}/g, (match, key) => {
+      const value = variables[key.trim()];
+      // If value is null, undefined or doesn't exist, return empty string as fallback
+      return value !== undefined && value !== null ? String(value) : '';
+    });
+  }
+
+  /**
    * Load and render an email template with variables
    * @param templateName - Name of the template file (without .html)
    * @param variables - Variables to replace in template
@@ -35,15 +53,8 @@ export class EmailTemplateService {
       throw new Error(`Template not found: ${templateName}`);
     }
 
-    let html = fs.readFileSync(templatePath, 'utf-8');
-
-    // Replace all variables
-    Object.entries(variables).forEach(([key, value]) => {
-      const placeholder = `{{${key}}}`;
-      html = html.replaceAll(placeholder, value);
-    });
-
-    return html;
+    const html = fs.readFileSync(templatePath, 'utf-8');
+    return this.resolvePlaceholders(html, variables);
   }
 
   /**
