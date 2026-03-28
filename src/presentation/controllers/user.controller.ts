@@ -24,6 +24,10 @@ import { InviteStaffDto } from '@/presentation/dtos/invite-staff.dto';
 import { InviteStaffCommand } from '@/application/user/commands/invite-staff/invite-staff.command';
 import { RoleAssignment } from '@/domain/user/entities/user.entity';
 import { GetStaffByTenantQuery } from '@/application/user/queries/get-staff-by-tenant/get-staff-by-tenant.query';
+import type {
+  GetStaffByTenantResult,
+  StaffDto,
+} from '@/application/user/queries/get-staff-by-tenant/get-staff-by-tenant.result';
 
 @ApiTags('user')
 @Controller('user')
@@ -97,15 +101,20 @@ export class UserController {
     status: HttpStatus.OK,
     description: 'Staff retrieved successfully',
   })
-  async getStaff(@CurrentUser() jwtPayload: JwtPayload) {
-    const result = await this.queryBus.execute(
-      new GetStaffByTenantQuery(jwtPayload.tenantId),
-    );
+  async getStaff(
+    @CurrentUser() jwtPayload: JwtPayload,
+  ): Promise<{ message: string; data: StaffDto[]; total: number }> {
+    const result = await this.queryBus.execute<
+      GetStaffByTenantQuery,
+      GetStaffByTenantResult
+    >(new GetStaffByTenantQuery(jwtPayload.tenantId));
+
+    const items: StaffDto[] = result?.items ?? [];
 
     return {
       message: 'Staff retrieved successfully',
-      data: result.items,
-      total: result.items.length,
+      data: items,
+      total: items.length,
     };
   }
 }
