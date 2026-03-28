@@ -6,6 +6,7 @@ import { UpdateUnitHandler } from '@/application/unit/commands/update-unit.handl
 import { GetUnitsByPropertyQueryHandler } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.query-handler';
 import { GetPublicUnitsByTenantQueryHandler } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.query-handler';
 import { GetPublicUnitByIdQueryHandler } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query-handler';
+import { GetAllPublicUnitsQueryHandler } from '@/application/unit/queries/GetAllPublicUnits/get-all-public-units.query-handler';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 
 const CommandHandlers = [
@@ -17,6 +18,7 @@ const QueryHandlers = [
   GetUnitsByPropertyQueryHandler,
   GetPublicUnitsByTenantQueryHandler,
   GetPublicUnitByIdQueryHandler,
+  GetAllPublicUnitsQueryHandler,
 ];
 
 @Module({
