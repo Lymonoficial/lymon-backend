@@ -141,7 +141,7 @@ export class UnitController {
   }
 
   @Public()
-  @Get('public/all')
+  @Get('public')
   @ApiOperation({
     summary: 'Get all public units (no authentication required)',
   })
