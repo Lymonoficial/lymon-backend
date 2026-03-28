@@ -7,6 +7,7 @@ import { ChangePasswordHandler } from '@/application/user/commands/change-passwo
 import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { LoginHandler } from '@/application/auth/commands/login.handler';
 import { RefreshTokenHandler } from '@/application/auth/commands/refresh-token.handler';
+import { LogoutHandler } from '@/application/auth/commands/logout.handler';
 import { RecoverPasswordHandler } from '@/application/auth/commands/recover-password.handler';
 import { ConfirmRecoverPasswordHandler } from './auth/commands/confirm-recover-password.handler';
 import { EmailModule } from '@/infrastructure/email/email.module';
@@ -27,6 +28,7 @@ const CommandHandlers = [
   RegisterTenantHandler,
   LoginHandler,
   RefreshTokenHandler,
+  LogoutHandler,
   RecoverPasswordHandler,
   ConfirmRecoverPasswordHandler,
   VerifyEmailHandler,
