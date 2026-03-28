@@ -7,6 +7,8 @@ import { GetUnitsByPropertyQuery } from '@/application/unit/queries/GetUnitsByPr
 import { GetUnitsByPropertyResult } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.result';
 import { GetPublicUnitsByTenantQuery } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.query';
 import { GetPublicUnitsByTenantResult } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.result';
+import { GetAllPublicUnitsQuery } from '@/application/unit/queries/GetAllPublicUnits/get-all-public-units.query';
+import { GetAllPublicUnitsResult } from '@/application/unit/queries/GetAllPublicUnits/get-all-public-units.result';
 import { GetPublicUnitByIdQuery } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query';
 import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
@@ -134,6 +136,49 @@ export class UnitController {
       message: 'Unit updated successfully',
       data: {
         unitId: result.unitId,
+      },
+    };
+  }
+
+  @Public()
+  @Get('public/all')
+  @ApiOperation({
+    summary: 'Get all public units (no authentication required)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
+  async getAllPublic(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const query = new GetAllPublicUnitsQuery(page, limit);
+
+    const result = await this.queryBus.execute<
+      GetAllPublicUnitsQuery,
+      GetAllPublicUnitsResult
+    >(query);
+
+    return {
+      message: 'Units retrieved successfully',
+      data: {
+        units: result.units,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
       },
     };
   }
