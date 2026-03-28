@@ -1,9 +1,11 @@
+import { Email } from '@/domain/shared/value-objects/email.vo';
+import { GuestAccountId } from '../value-objects/guest-account-id.vo';
 import { GuestAccountStatusEnum } from '../value-objects/guest-account-status.vo';
 
 export interface IGuestAccount {
   emailVerified: boolean;
-  id: string;
-  email: string;
+  id: GuestAccountId;
+  email: Email;
   passwordHash: string;
   fullName: string;
   firstName: string | null;
