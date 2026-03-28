@@ -21,4 +21,8 @@ export interface UnitRepository {
     page: number,
     limit: number,
   ): Promise<{ units: Unit[]; total: number }>;
+  findAllPaginated(
+    page: number,
+    limit: number,
+  ): Promise<{ units: Unit[]; total: number }>;
 }
