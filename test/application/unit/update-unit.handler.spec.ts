@@ -42,7 +42,9 @@ function makeUnit(
       standardGuests: 2,
     },
     physicalFeatures: {
-      bedrooms: [{ roomName: 'Master', beds: [{ type: BedTypeEnum.QUEEN, count: 1 }] }],
+      bedrooms: [
+        { roomName: 'Master', beds: [{ type: BedTypeEnum.QUEEN, count: 1 }] },
+      ],
       bathroomsCount: 1,
       isShared: false,
     },
