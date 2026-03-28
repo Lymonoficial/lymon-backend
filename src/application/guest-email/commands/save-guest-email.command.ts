@@ -1,10 +1,5 @@
 import { GuestEmailStatusEnum } from '@/domain/guest-email/value-objects/guest-email-status.vo';
-
-export interface SaveGuestEmailAttachment {
-  url: string;
-  name: string;
-  type?: string;
-}
+import { GuestEmailAttachment } from '@/domain/guest-email/entities/guest-email.types';
 
 export class SaveGuestEmailCommand {
   constructor(
@@ -13,7 +8,7 @@ export class SaveGuestEmailCommand {
     public readonly subject: string,
     public readonly body: string,
     public readonly status: GuestEmailStatusEnum,
-    public readonly attachments: SaveGuestEmailAttachment[] = [],
+    public readonly attachments: GuestEmailAttachment[] = [],
     public readonly sentById?: string,
   ) {}
 }
