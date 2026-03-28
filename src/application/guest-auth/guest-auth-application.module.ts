@@ -9,6 +9,8 @@ import { GuestLoginHandler } from '@/application/guest-auth/commands/login-guest
 import { RecoverGuestPasswordHandler } from '@/application/guest-auth/commands/recover-guest-password/recover-guest-password.handler';
 import { ConfirmRecoverGuestPasswordHandler } from '@/application/guest-auth/commands/confirm-recover-guest-password/confirm-recover-guest-password.handler';
 import { ChangeGuestPasswordHandler } from '@/application/guest-auth/commands/change-guest-password/change-guest-password.handler';
+import { RefreshGuestTokenHandler } from '@/application/guest-auth/commands/refresh-guest-token/refresh-guest-token.handler';
+import { LogoutGuestHandler } from '@/application/guest-auth/commands/logout-guest/logout-guest.handler';
 
 const CommandHandlers = [
   RegisterGuestAccountHandler,
@@ -17,6 +19,8 @@ const CommandHandlers = [
   RecoverGuestPasswordHandler,
   ConfirmRecoverGuestPasswordHandler,
   ChangeGuestPasswordHandler,
+  RefreshGuestTokenHandler,
+  LogoutGuestHandler,
 ];
 
 @Module({
