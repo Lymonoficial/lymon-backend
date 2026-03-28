@@ -114,6 +114,23 @@ export class MongoUnitRepository implements UnitRepository {
     };
   }
 
+  async findAllPaginated(
+    page: number,
+    limit: number,
+  ): Promise<{ units: Unit[]; total: number }> {
+    const filter = { deletedAt: null };
+    const total = await this.unitModel.countDocuments(filter);
+    const documents = await this.unitModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+    return {
+      units: documents.map((doc) => this.toDomain(doc)),
+      total,
+    };
+  }
+
   async countByTenantId(tenantId: TenantId): Promise<number> {
     return this.unitModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),
