@@ -24,6 +24,8 @@ export class PublicUnitDto {
     public readonly isShared: boolean,
     public readonly amenities: string[],
     public readonly pricePerNight: number,
+    public readonly tenantId: string,
+    public readonly propertyId: string,
   ) {}
 }
 
