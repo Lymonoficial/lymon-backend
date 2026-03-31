@@ -18,6 +18,11 @@ import { RegisterGuestAccountDto } from '@/presentation/dtos/register-guest-acco
 import { GuestLoginDto } from '@/presentation/dtos/guest-login.dto';
 import { RecoverGuestPasswordDto } from '@/presentation/dtos/recover-guest-password.dto';
 import { ConfirmRecoverGuestPasswordDto } from '@/presentation/dtos/confirm-recover-guest-password.dto';
+import { RefreshTokenDto } from '@/presentation/dtos/refresh-token.dto';
+import { RefreshGuestTokenCommand } from '@/application/guest-auth/commands/refresh-guest-token/refresh-guest-token.command';
+import { RefreshGuestTokenResult } from '@/application/guest-auth/commands/refresh-guest-token/refresh-guest-token.result';
+import { LogoutGuestCommand } from '@/application/guest-auth/commands/logout-guest/logout-guest.command';
+import { LogoutGuestResult } from '@/application/guest-auth/commands/logout-guest/logout-guest.result';
 
 @ApiTags('guest-auth')
 @Public()
@@ -118,5 +123,40 @@ export class GuestAuthController {
     );
 
     return { message: result.message };
+  }
+
+  @GuestPublic()
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh guest access token' })
+  @ApiResponse({ status: 200, description: 'Tokens refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
+  async refresh(@Body() dto: RefreshTokenDto) {
+    const result = await this.commandBus.execute<
+      RefreshGuestTokenCommand,
+      RefreshGuestTokenResult
+    >(new RefreshGuestTokenCommand(dto.refreshToken));
+
+    return {
+      message: 'Tokens refreshed successfully',
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      },
+    };
+  }
+
+  @GuestPublic()
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout guest and revoke current refresh token' })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
+  async logout(@Body() dto: RefreshTokenDto) {
+    const result = await this.commandBus.execute<
+      LogoutGuestCommand,
+      LogoutGuestResult
+    >(new LogoutGuestCommand(dto.refreshToken));
+
+    return {
+      message: result.message,
+    };
   }
 }

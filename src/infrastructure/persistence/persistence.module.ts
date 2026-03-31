@@ -40,9 +40,7 @@ import {
   GuestNoteDocument,
   GuestNoteSchema,
 } from '@/infrastructure/persistence/schemas/guest-note.schema';
-import {
-  GUEST_NOTE_REPOSITORY,
-} from '@/domain/guest-note/repositories/guest-note.repository';
+import { GUEST_NOTE_REPOSITORY } from '@/domain/guest-note/repositories/guest-note.repository';
 import { MongoGuestNoteRepository } from '@/infrastructure/persistence/repositories/mongo-guest-note.repository';
 import { TENANT_REPOSITORY } from '@/domain/tenant/repositories/tenant.repository';
 import { MongoTenantRepository } from '@/infrastructure/persistence/repositories/mongo-tenant.repository';

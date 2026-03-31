@@ -19,6 +19,8 @@ import { RefreshTokenCommand } from '@/application/auth/commands/refresh-token.c
 import { RefreshTokenResult } from '@/application/auth/commands/refresh-token.handler';
 import { RecoverPasswordDto } from '@/presentation/dtos/recover-password.dto';
 import { ConfirmRecoverPasswordDto } from '@/presentation/dtos/confirm-recover-password.dto';
+import { LogoutCommand } from '@/application/auth/commands/logout.command';
+import { LogoutResult } from '@/application/auth/commands/logout.handler';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -149,6 +151,20 @@ export class AuthController {
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       },
+    };
+  }
+
+  @Public()
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout and revoke current refresh token' })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
+  async logout(@Body() dto: RefreshTokenDto) {
+    const result = await this.commandBus.execute<LogoutCommand, LogoutResult>(
+      new LogoutCommand(dto.refreshToken),
+    );
+
+    return {
+      message: result.message,
     };
   }
 }
