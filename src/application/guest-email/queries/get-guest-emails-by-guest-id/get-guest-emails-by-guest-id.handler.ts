@@ -41,11 +41,11 @@ export class GetGuestEmailsByGuestIdHandler
     const emails = await this.guestEmailRepository.findByGuestId(tenantId, guestId);
 
     const items: GuestEmailDto[] = emails.map((email) => ({
-      id: email.getId()?.toString() ?? '',
+      id: email.getId().toString(),
       guestId: email.getGuestId().toString(),
       subject: email.getSubject(),
-      body: email.getBody(),
       status: email.getStatus(),
+      messageId: email.getMessageId(),
       attachments: email.getAttachments().map(att => ({
         url: att.url,
         name: att.name,

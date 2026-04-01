@@ -12,8 +12,8 @@ export interface CreateGuestEmailParams {
   tenantId: TenantId;
   guestId: GuestId;
   subject: string;
-  body: string;
   status: GuestEmailStatusEnum;
+  messageId?: string;
   attachments?: GuestEmailAttachment[];
   sentById?: string;
 }

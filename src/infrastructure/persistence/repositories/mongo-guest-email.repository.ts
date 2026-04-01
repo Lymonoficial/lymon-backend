@@ -16,14 +16,14 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
   ) {}
 
   async save(email: GuestEmail): Promise<void> {
-    const id = email.getId()?.toString();
+    const id = email.getId().toString();
 
     const document = {
       tenantId: new Types.ObjectId(email.getTenantId().toString()),
       guestId: new Types.ObjectId(email.getGuestId().toString()),
       subject: email.getSubject(),
-      body: email.getBody(),
       status: email.getStatus(),
+      messageId: email.getMessageId(),
       attachments: email.getAttachments().map(att => ({
         url: att.url,
         name: att.name,
@@ -33,12 +33,13 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
       createdAt: email.getCreatedAt(),
     };
 
-    if (id) {
-      await this.emailModel.findByIdAndUpdate(id, document, { new: true });
-      return;
-    }
+    await this.emailModel.findByIdAndUpdate(id, document, { upsert: true, new: true });
+  }
 
-    await this.emailModel.create(document);
+  async findById(id: GuestEmailId): Promise<GuestEmail | null> {
+    const doc = await this.emailModel.findById(id.toString());
+    if (!doc) return null;
+    return this.toDomain(doc);
   }
 
   async findByGuestId(tenantId: TenantId, guestId: GuestId): Promise<GuestEmail[]> {
@@ -54,13 +55,13 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
 
   private toDomain(doc: GuestEmailDocument): GuestEmail {
     return GuestEmail.reconstitute(
-      GuestEmailId.createFromString(doc._id.toString()),
+      GuestEmailId.createFromString(doc._id as string),
       TenantId.createFromString(doc.tenantId.toString()),
       GuestId.createFromString(doc.guestId.toString()),
       doc.subject,
-      doc.body,
-      doc.status,
-      doc.attachments,
+      doc.status as any,
+      doc.attachments as any,
+      doc.messageId,
       doc.sentById,
       doc.createdAt,
     );

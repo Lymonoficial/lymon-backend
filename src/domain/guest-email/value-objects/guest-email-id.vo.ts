@@ -1,5 +1,11 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export class GuestEmailId {
   private constructor(private readonly value: string) {}
+
+  static create(): GuestEmailId {
+    return new GuestEmailId(uuidv4());
+  }
 
   static createFromString(value: string): GuestEmailId {
     if (!value || value.trim() === '') {

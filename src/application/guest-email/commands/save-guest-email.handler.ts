@@ -31,29 +31,23 @@ export class SaveGuestEmailHandler implements ICommandHandler<SaveGuestEmailComm
       throw new BadRequestException('Email subject cannot be empty');
     }
 
-    if (!command.body || command.body.trim() === '') {
-      throw new BadRequestException('Email body cannot be empty');
-    }
-
     const tenantId = TenantId.createFromString(command.tenantId);
     const guestId = GuestId.createFromString(command.guestId);
 
-    // Verifica que el Guest exista
     const guest = await this.guestRepository.findById(guestId);
     if (!guest) {
       throw new NotFoundException('Guest not found');
     }
 
-    // Verifica la autorizacion del tenant
     if (!guest.getTenantId().equals(tenantId)) {
       throw new ForbiddenException('Not authorized for this guest tenant');
     }
 
+    // El modelo GuestEmail ya no recibe el cuerpo (body) por política de optimización
     const guestEmail = GuestEmail.create({
       tenantId,
       guestId,
       subject: command.subject,
-      body: command.body,
       status: command.status,
       attachments: command.attachments,
       sentById: command.sentById,
@@ -61,6 +55,6 @@ export class SaveGuestEmailHandler implements ICommandHandler<SaveGuestEmailComm
 
     await this.guestEmailRepository.save(guestEmail);
 
-    return { id: guestEmail.getId()?.toString() || '' };
+    return { id: guestEmail.getId().toString() };
   }
 }

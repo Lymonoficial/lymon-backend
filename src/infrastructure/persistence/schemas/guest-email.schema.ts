@@ -1,9 +1,12 @@
 import { GuestEmailStatusEnum } from '@/domain/guest-email/value-objects/guest-email-status.vo';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
 @Schema({ collection: 'guest_emails', timestamps: true })
-export class GuestEmailDocument extends Document {
+export class GuestEmailDocument {
+  @Prop({ type: String })
+  _id: string;
+
   @Prop({
     type: Types.ObjectId,
     ref: 'TenantDocument',
@@ -23,16 +26,21 @@ export class GuestEmailDocument extends Document {
   @Prop({ type: String, required: true })
   subject: string;
 
-  @Prop({ type: String, required: true })
-  body: string;
-
   @Prop({
     type: String,
     required: true,
     enum: Object.values(GuestEmailStatusEnum),
-    default: GuestEmailStatusEnum.SENT,
+    default: GuestEmailStatusEnum.PENDING,
   })
   status: GuestEmailStatusEnum;
+
+  @Prop({
+    type: String,
+    required: false,
+    default: null,
+    index: true,
+  })
+  messageId: string | null;
 
   @Prop({
     type: [{
@@ -61,3 +69,4 @@ export class GuestEmailDocument extends Document {
 export const GuestEmailSchema = SchemaFactory.createForClass(GuestEmailDocument);
 
 GuestEmailSchema.index({ tenantId: 1, guestId: 1, createdAt: -1 });
+GuestEmailSchema.index({ status: 1, createdAt: 1 });

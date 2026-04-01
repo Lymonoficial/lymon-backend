@@ -1,22 +1,18 @@
-import { GuestEmailStatusEnum } from '@/domain/guest-email/value-objects/guest-email-status.vo';
-
-export interface GuestEmailAttachmentDto {
-  url: string;
-  name: string;
-  type?: string;
-}
-
-export interface GuestEmailDto {
+export class GuestEmailDto {
   id: string;
   guestId: string;
   subject: string;
-  body: string;
-  status: GuestEmailStatusEnum;
-  attachments: GuestEmailAttachmentDto[];
+  status: string;
+  messageId: string | null;
+  attachments: {
+    url: string;
+    name: string;
+    type?: string;
+  }[];
   sentById: string | null;
   createdAt: Date;
 }
 
-export interface GetGuestEmailsByGuestIdResult {
+export class GetGuestEmailsByGuestIdResult {
   items: GuestEmailDto[];
 }

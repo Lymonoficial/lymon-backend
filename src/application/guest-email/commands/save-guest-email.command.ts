@@ -6,7 +6,6 @@ export class SaveGuestEmailCommand {
     public readonly tenantId: string,
     public readonly guestId: string,
     public readonly subject: string,
-    public readonly body: string,
     public readonly status: GuestEmailStatusEnum,
     public readonly attachments: GuestEmailAttachment[] = [],
     public readonly sentById?: string,
