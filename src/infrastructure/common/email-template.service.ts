@@ -22,44 +22,23 @@ export class EmailTemplateService {
     this.supportUrl = supportUrl;
   }
 
-  /**
-   * Resolve placeholders like {{variableName}} in a string using provided data.
-   * If a placeholder's value is missing, it's replaced with an empty string.
-   * @param text - The text containing placeholders
-   * @param variables - Object containing values for replacement
-   * @returns Formatted text
-   */
   resolvePlaceholders(text: string, variables: any = {}): string {
     if (!text) return '';
-
-    // Regex to find all {{placeholder}} patterns
     return text.replace(/\{\{(.+?)\}\}/g, (match, key) => {
       const value = variables[key.trim()];
-      // If value is null, undefined or doesn't exist, return empty string as fallback
       return value !== undefined && value !== null ? String(value) : '';
     });
   }
 
-  /**
-   * Load and render an email template with variables
-   * @param templateName - Name of the template file (without .html)
-   * @param variables - Variables to replace in template
-   * @returns Rendered HTML content
-   */
-  renderTemplate(templateName: string, variables: TemplateVariables): string {
+  renderTemplate(templateName: string, variables: any): string {
     const templatePath = path.join(this.templatesDir, `${templateName}.html`);
-
     if (!fs.existsSync(templatePath)) {
       throw new Error(`Template not found: ${templateName}`);
     }
-
     const html = fs.readFileSync(templatePath, 'utf-8');
     return this.resolvePlaceholders(html, variables);
   }
 
-  /**
-   * Render verify email template
-   */
   renderVerifyEmailTemplate(verificationUrl: string): string {
     return this.renderTemplate('verify-email', {
       verificationUrl,
@@ -67,15 +46,13 @@ export class EmailTemplateService {
     });
   }
 
-  /**
-   * Render recover password template
-   */
   renderRecoverPasswordTemplate(recoveryUrl: string): string {
     return this.renderTemplate('recover-password', {
       recoveryUrl,
       supportUrl: this.supportUrl,
     });
   }
+
   renderLowStockAlertTemplate(variables: {
     ownerName: string;
     tenantName: string;

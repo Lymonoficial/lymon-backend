@@ -19,7 +19,7 @@ export interface SendEmailParams {
 }
 
 export interface IEmailService {
-  sendEmail(params: SendEmailParams): Promise<void>;
+  sendEmail(params: SendEmailParams): Promise<{ messageId: string }>;
   sendVerificationEmail(email: string, token: string): Promise<void>;
   sendRecoveryEmail(email: string, plainToken: string): Promise<void>;
   sendLowStockAlertEmail(params: SendLowStockAlertEmailParams): Promise<void>;
