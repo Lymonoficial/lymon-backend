@@ -1,7 +1,6 @@
 import { Inject, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EMAIL_SERVICE } from '@/application/shared/services/email.service';
-import type { IEmailService } from '@/application/shared/services/email.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import type { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
@@ -14,15 +13,13 @@ import { GuestEmail } from '@/domain/guest-email/entities/guest-email.entity';
 import { GuestEmailStatusEnum } from '@/domain/guest-email/value-objects/guest-email-status.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { EmailTemplateService } from '@/infrastructure/common/email-template.service';
 import { SendGuestMessageCommand } from './send-guest-message.command';
+import { GuestEmailCreatedEvent } from '../../events/guest-email-created.event';
 
 @CommandHandler(SendGuestMessageCommand)
 export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessageCommand> {
   constructor(
-    @Inject(EMAIL_SERVICE)
-    private readonly emailService: IEmailService,
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
     @Inject(RESERVATION_REPOSITORY)
@@ -32,10 +29,10 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
     @Inject(GUEST_EMAIL_REPOSITORY)
     private readonly guestEmailRepository: GuestEmailRepository,
     private readonly templateService: EmailTemplateService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: SendGuestMessageCommand): Promise<{ id: string }> {
-    // 1. Validaciones básicas
     if (!command.body && !command.templateId) {
       throw new BadRequestException('Debe proporcionar un mensaje de texto libre o un ID de plantilla');
     }
@@ -43,13 +40,11 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
     const tenantId = TenantId.createFromString(command.tenantId);
     const guestId = GuestId.createFromString(command.guestId);
 
-    // 2. Obtener datos del huésped
     const guest = await this.guestRepository.findById(guestId);
     if (!guest || !guest.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Huésped no encontrado');
     }
 
-    // 3. Obtener última reserva para variables dinámicas
     const reservations = await this.reservationRepository.findByGuestId(command.tenantId, command.guestId, 1, 1);
     const lastReservation = reservations.length > 0 ? reservations[0] : null;
 
@@ -74,7 +69,6 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
         .toLocaleDateString();
     }
 
-    // 4. Preparar variables para placeholders
     const dynamicVariables = {
       guestName: guest.getFullName(),
       propertyName: propertyName,
@@ -84,15 +78,11 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
       body: command.body || '',
     };
 
-    // Resolver placeholders en asunto y cuerpo de entrada
     const subject = this.templateService.resolvePlaceholders(command.subject || '', dynamicVariables);
     const resolvedBody = this.templateService.resolvePlaceholders(command.body || '', dynamicVariables);
 
-    // 5. Preparar contenido HTML final
     let htmlContent = '';
-
     if (command.templateId) {
-      // Usar plantilla predefinida y resolver variables (incluyendo el cuerpo resuelto)
       const templateName = command.templateId === 'GUEST_WELCOME' ? 'guest-message' : command.templateId;
       htmlContent = this.templateService.renderTemplate(templateName, {
         ...dynamicVariables,
@@ -100,7 +90,6 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
         subject: subject,
       });
     } else {
-      // Solo texto libre (usar plantilla base muy simple) con variables ya resueltas
       htmlContent = `
         <div style="font-family: sans-serif; padding: 20px;">
           <h2>Hola ${guest.getFullName()},</h2>
@@ -111,47 +100,23 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
       `;
     }
 
-    // 5. Enviar Email
-    try {
-      await this.emailService.sendEmail({
-        to: [{ email: guest.getPrimaryEmail(), name: guest.getFullName() }],
-        subject: subject,
-        htmlContent: htmlContent,
-        sender: { name: propertyName, email: 'no-reply@lymon.com.co' }, // Remitente a nombre de la propiedad
-        attachments: command.attachments.map(att => ({
-          url: att.url,
-          name: att.name,
-        })),
-      });
+    const guestEmail = GuestEmail.create({
+      tenantId,
+      guestId,
+      subject: subject,
+      status: GuestEmailStatusEnum.PENDING,
+      attachments: command.attachments,
+      sentById: command.sentById,
+    });
 
-      // 6. Registrar en el historial
-      const guestEmail = GuestEmail.create({
-        tenantId,
-        guestId,
-        subject: subject,
-        body: htmlContent,
-        status: GuestEmailStatusEnum.SENT,
-        attachments: command.attachments,
-        sentById: command.sentById,
-      });
+    await this.guestEmailRepository.save(guestEmail);
 
-      await this.guestEmailRepository.save(guestEmail);
+    // Pasamos el NOMBRE DE LA PROPIEDAD como remitente visual
+    this.eventEmitter.emit(
+      'guest-email.created', 
+      new GuestEmailCreatedEvent(guestEmail.getId().toString(), subject, htmlContent, propertyName)
+    );
 
-      return { id: guestEmail.getId()?.toString() || '' };
-    } catch (error) {
-      // Registrar como fallido si falla el envío
-      const guestEmail = GuestEmail.create({
-        tenantId,
-        guestId,
-        subject: subject,
-        body: htmlContent,
-        status: GuestEmailStatusEnum.FAILED,
-        attachments: command.attachments,
-        sentById: command.sentById,
-      });
-      await this.guestEmailRepository.save(guestEmail);
-      
-      throw new BadRequestException(`Fallo al enviar el mensaje: ${error.message}`);
-    }
+    return { id: guestEmail.getId().toString() };
   }
 }
