@@ -146,17 +146,24 @@ export class CrmController {
   }
 
   @Patch('guests/:guestId/tags')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
   @ApiOperation({ summary: 'Assign tags to a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tags assigned successfully',
+  })
   async assignTags(
     @Param('guestId') guestId: string,
     @Body('tags') tags: string[],
-    @Request() req: any,
-  ): Promise<void> {
-    const tenantId = req.user.tenantId; 
-    
-    return this.commandBus.execute(
-      new AssignGuestTagsCommand(guestId, tags, tenantId),
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new AssignGuestTagsCommand(guestId, tags, user.tenantId),
     );
-  }
 
+    return {
+      message: 'Tags assigned successfully',
+    };
+  }
 }
