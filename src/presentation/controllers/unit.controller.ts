@@ -1,23 +1,28 @@
 import { CreateUnitCommand } from '@/application/unit/commands/create-unit.command';
 import { CreateUnitResult } from '@/application/unit/commands/create-unit.result';
+import { DeleteUnitCommand } from '@/application/unit/commands/delete-unit.command';
 import { UpdateUnitCommand } from '@/application/unit/commands/update-unit.command';
 import { UpdateUnitResult } from '@/application/unit/commands/update-unit.result';
 import { GetUnitsByPropertyQuery } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.query';
 import { GetUnitsByPropertyResult } from '@/application/unit/queries/GetUnitsByProperty/get-units-by-property.result';
 import { GetPublicUnitsByTenantQuery } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.query';
 import { GetPublicUnitsByTenantResult } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.result';
+import { GetAllPublicUnitsQuery } from '@/application/unit/queries/GetAllPublicUnits/get-all-public-units.query';
+import { GetAllPublicUnitsResult } from '@/application/unit/queries/GetAllPublicUnits/get-all-public-units.result';
 import { GetPublicUnitByIdQuery } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query';
 import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
+import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -131,6 +136,49 @@ export class UnitController {
       message: 'Unit updated successfully',
       data: {
         unitId: result.unitId,
+      },
+    };
+  }
+
+  @Public()
+  @Get('public')
+  @ApiOperation({
+    summary: 'Get all public units (no authentication required)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
+  async getAllPublic(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const query = new GetAllPublicUnitsQuery(page, limit);
+
+    const result = await this.queryBus.execute<
+      GetAllPublicUnitsQuery,
+      GetAllPublicUnitsResult
+    >(query);
+
+    return {
+      message: 'Units retrieved successfully',
+      data: {
+        units: result.units,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
       },
     };
   }
@@ -252,5 +300,27 @@ export class UnitController {
         },
       },
     };
+  }
+
+  @Delete(':unitId')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.UNIT_DELETE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a unit' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 204, description: 'Unit deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Unit not found' })
+  async deleteUnit(
+    @CurrentUser() user: JwtPayload,
+    @Param('unitId') unitId: string,
+  ): Promise<void> {
+    const command = new DeleteUnitCommand(
+      user.tenantId,
+      unitId,
+      user.userId,
+      user.email,
+    );
+
+    await this.commandBus.execute<DeleteUnitCommand, void>(command);
   }
 }

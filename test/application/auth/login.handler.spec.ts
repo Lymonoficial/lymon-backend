@@ -163,7 +163,10 @@ describe('LoginHandler', () => {
             expect.objectContaining({
               roleId: 'role-admin',
               roleName: 'ADMIN',
-              permissions: [Permission.PROPERTY_VIEW, Permission.PROPERTY_CREATE],
+              permissions: [
+                Permission.PROPERTY_VIEW,
+                Permission.PROPERTY_CREATE,
+              ],
             }),
           ],
         }),
@@ -175,7 +178,10 @@ describe('LoginHandler', () => {
     it('returns LoginResult with all resolved roles', async () => {
       const assignments: RoleAssignment[] = [
         { roleId: 'role-admin', scope: { type: 'TENANT' } },
-        { roleId: 'role-staff', scope: { type: 'PROPERTY', resourceIds: ['prop-1'] } },
+        {
+          roleId: 'role-staff',
+          scope: { type: 'PROPERTY', resourceIds: ['prop-1'] },
+        },
         { roleId: 'role-deleted', scope: { type: 'TENANT' } },
       ];
       userRepository.findByEmail.mockResolvedValue(

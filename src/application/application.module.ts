@@ -7,6 +7,7 @@ import { ChangePasswordHandler } from '@/application/user/commands/change-passwo
 import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { LoginHandler } from '@/application/auth/commands/login.handler';
 import { RefreshTokenHandler } from '@/application/auth/commands/refresh-token.handler';
+import { LogoutHandler } from '@/application/auth/commands/logout.handler';
 import { RecoverPasswordHandler } from '@/application/auth/commands/recover-password.handler';
 import { ConfirmRecoverPasswordHandler } from './auth/commands/confirm-recover-password.handler';
 import { EmailModule } from '@/infrastructure/email/email.module';
@@ -23,11 +24,13 @@ import { ReservationApplicationModule } from '@/application/reservation/reservat
 import { InventoryApplicationModule } from '@/application/inventory/inventory-application.module';
 import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-application.module';
 import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
+import { UserApplicationModule } from '@/application/user/user-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
   LoginHandler,
   RefreshTokenHandler,
+  LogoutHandler,
   RecoverPasswordHandler,
   ConfirmRecoverPasswordHandler,
   VerifyEmailHandler,
@@ -52,6 +55,7 @@ const CommandHandlers = [
     InventoryApplicationModule,
     GuestNoteApplicationModule,
     GuestEmailApplicationModule,
+    UserApplicationModule,
   ],
   providers: [...CommandHandlers],
   exports: [...CommandHandlers, GuestApplicationModule],

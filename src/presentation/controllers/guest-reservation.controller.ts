@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Query,
   UseGuards,
@@ -11,6 +13,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -22,6 +25,8 @@ import { CreateGuestReservationDto } from '@/presentation/dtos/create-guest-rese
 import { CreateGuestReservationCommand } from '@/application/reservation/commands/create-guest-reservation/create-guest-reservation.command';
 import { CreateReservationResult } from '@/application/reservation/commands/create-reservation/create-reservation.result';
 import { GetGuestReservationQuery } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.query';
+import { GetReservationsByGuestIdQuery } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query';
+import { GetReservationsByGuestIdResult } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.result';
 import { ReservationDto } from '@/application/reservation/queries/shared/reservation.dto';
 
 @ApiTags('guest-reservations')
@@ -62,6 +67,35 @@ export class GuestReservationController {
     return {
       message: 'Reservation created successfully',
       reservationId: result.reservationId,
+    };
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all reservations for the authenticated guest' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'Reservations retrieved successfully' })
+  async findByGuest(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const result = await this.queryBus.execute<
+      GetReservationsByGuestIdQuery,
+      GetReservationsByGuestIdResult
+    >(new GetReservationsByGuestIdQuery(guest.guestAccountId, page, limit));
+
+    return {
+      message: 'Reservations retrieved successfully',
+      data: {
+        items: result.items,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: Math.ceil(result.total / result.limit),
+        },
+      },
     };
   }
 

@@ -13,6 +13,7 @@ import { GetReservationByIdHandler } from '@/application/reservation/queries/get
 import { GetReservationsByTenantHandler } from '@/application/reservation/queries/get-reservations-by-tenant/get-reservations-by-tenant.query-handler';
 import { GetReservationsByUnitHandler } from '@/application/reservation/queries/get-reservations-by-unit/get-reservations-by-unit.query-handler';
 import { GetGuestReservationHandler } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.query-handler';
+import { GetReservationsByGuestIdHandler } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query-handler';
 
 const CommandHandlers = [
   CreateReservationHandler,
@@ -30,6 +31,7 @@ const QueryHandlers = [
   GetReservationsByTenantHandler,
   GetReservationsByUnitHandler,
   GetGuestReservationHandler,
+  GetReservationsByGuestIdHandler,
 ];
 
 @Module({

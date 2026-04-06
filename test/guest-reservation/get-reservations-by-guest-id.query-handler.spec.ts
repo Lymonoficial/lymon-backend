@@ -1,0 +1,201 @@
+import { GetReservationsByGuestIdHandler } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query-handler';
+import { GetReservationsByGuestIdQuery } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query';
+import { GetReservationsByGuestIdResult } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.result';
+import { ReservationRepository } from '@/domain/reservation/repositories/reservation.repository';
+import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
+import { Reservation } from '@/domain/reservation/entities/reservation.entity';
+import { Guest } from '@/domain/guest/entities/guest.entity';
+import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
+import { ReservationId } from '@/domain/reservation/value-objects/reservation-id.vo';
+import { DateRange } from '@/domain/reservation/value-objects/date-range.vo';
+import {
+  ReservationSource,
+  ReservationSourceEnum,
+} from '@/domain/reservation/value-objects/reservation-source.vo';
+import {
+  GuestStatusEnum,
+  GuestIdentity,
+  GuestSummary,
+} from '@/domain/guest/entities/guest.types';
+
+const GUEST_ACCOUNT_ID = '65f1a1a2b3c4d5e6f7a8b900';
+const GUEST_ID_1 = '65f1a1a2b3c4d5e6f7a8b9d1';
+const GUEST_ID_2 = '65f1a1a2b3c4d5e6f7a8b9d2';
+
+function createReservationRepositoryMock(): jest.Mocked<ReservationRepository> {
+  return {
+    save: jest.fn(),
+    findById: jest.fn(),
+    findByTenantId: jest.fn(),
+    findByPropertyId: jest.fn(),
+    findByUnitId: jest.fn(),
+    findByGuestId: jest.fn(),
+    findByUnitAndDateRange: jest.fn(),
+    findActiveByUnitFromDate: jest.fn(),
+    findByExternalId: jest.fn(),
+    existsActiveByPropertyId: jest.fn(),
+    existsActiveByUnitId: jest.fn(),
+    countByTenantId: jest.fn(),
+    countByGuestId: jest.fn(),
+    findAllByGuestId: jest.fn(),
+    countAllByGuestId: jest.fn(),
+    findByGuestIds: jest.fn(),
+    countByGuestIds: jest.fn(),
+    findConfirmedDueForCheckIn: jest.fn(),
+  };
+}
+
+function createGuestRepositoryMock(): jest.Mocked<GuestRepository> {
+  return {
+    save: jest.fn(),
+    findById: jest.fn(),
+    findByTenantId: jest.fn(),
+    findByPrimaryEmail: jest.fn(),
+    findByGuestAccountId: jest.fn(),
+    findAllByGuestAccountId: jest.fn(),
+    countByTenantId: jest.fn(),
+    delete: jest.fn(),
+    search: jest.fn(),
+  };
+}
+
+function makeGuest(guestId: string, tenantId: string): Guest {
+  const identity: GuestIdentity = {};
+  const summary: GuestSummary = {
+    totalBookings: 0,
+    totalNights: 0,
+    totalSpend: 0,
+    lastStayAt: null,
+    lastPropertyId: null,
+    lastUnitId: null,
+  };
+
+  return Guest.reconstitute(
+    GuestId.createFromString(guestId),
+    TenantId.createFromString(tenantId),
+    GuestAccountId.createFromString(GUEST_ACCOUNT_ID),
+    identity,
+    'John',
+    'Doe',
+    'John Doe',
+    'john@example.com',
+    ['john@example.com'],
+    [],
+    GuestStatusEnum.ACTIVE,
+    [],
+    '',
+    summary,
+    new Date(),
+    new Date(),
+  );
+}
+
+function makeReservation(id: string, guestId: string, tenantId: string): Reservation {
+  const reservation = Reservation.createConfirmed({
+    tenantId: TenantId.createFromString(tenantId),
+    propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
+    unitId: UnitId.create('65f1a1a2b3c4d5e6f7a8b9c2'),
+    guestId: GuestId.createFromString(guestId),
+    dateRange: DateRange.create(
+      new Date(Date.now() + 24 * 60 * 60 * 1000),
+      new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    ),
+    source: ReservationSource.create(ReservationSourceEnum.DIRECT),
+    guestsCount: 2,
+    pricePerNight: 120,
+  });
+  reservation.setId(ReservationId.create(id));
+  return reservation;
+}
+
+describe('GetReservationsByGuestIdHandler', () => {
+  let handler: GetReservationsByGuestIdHandler;
+  let reservationRepository: jest.Mocked<ReservationRepository>;
+  let guestRepository: jest.Mocked<GuestRepository>;
+
+  beforeEach(() => {
+    reservationRepository = createReservationRepositoryMock();
+    guestRepository = createGuestRepositoryMock();
+    handler = new GetReservationsByGuestIdHandler(
+      reservationRepository,
+      guestRepository,
+    );
+  });
+
+  it('returns empty result when no guest profiles exist for the guestAccountId', async () => {
+    guestRepository.findAllByGuestAccountId.mockResolvedValue([]);
+
+    const result = await handler.execute(
+      new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 1, 10),
+    );
+
+    expect(result).toBeInstanceOf(GetReservationsByGuestIdResult);
+    expect(result.items).toHaveLength(0);
+    expect(result.total).toBe(0);
+    expect(reservationRepository.findByGuestIds).not.toHaveBeenCalled();
+    expect(reservationRepository.countByGuestIds).not.toHaveBeenCalled();
+  });
+
+  it('returns paginated reservations across all tenants for the guestAccountId', async () => {
+    const guest1 = makeGuest(GUEST_ID_1, 'tenant-1');
+    const guest2 = makeGuest(GUEST_ID_2, 'tenant-2');
+    const res1 = makeReservation('65f1a1a2b3c4d5e6f7a8b9e1', GUEST_ID_1, 'tenant-1');
+    const res2 = makeReservation('65f1a1a2b3c4d5e6f7a8b9e2', GUEST_ID_2, 'tenant-2');
+
+    guestRepository.findAllByGuestAccountId.mockResolvedValue([guest1, guest2]);
+    reservationRepository.findByGuestIds.mockResolvedValue([res1, res2]);
+    reservationRepository.countByGuestIds.mockResolvedValue(2);
+
+    const result = await handler.execute(
+      new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 1, 10),
+    );
+
+    expect(result).toBeInstanceOf(GetReservationsByGuestIdResult);
+    expect(result.items).toHaveLength(2);
+    expect(result.total).toBe(2);
+    expect(result.page).toBe(1);
+    expect(result.limit).toBe(10);
+    expect(reservationRepository.findByGuestIds).toHaveBeenCalledWith(
+      [GUEST_ID_1, GUEST_ID_2],
+      1,
+      10,
+    );
+  });
+
+  it('passes correct page and limit to the repository', async () => {
+    const guest = makeGuest(GUEST_ID_1, 'tenant-1');
+
+    guestRepository.findAllByGuestAccountId.mockResolvedValue([guest]);
+    reservationRepository.findByGuestIds.mockResolvedValue([]);
+    reservationRepository.countByGuestIds.mockResolvedValue(0);
+
+    await handler.execute(new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 3, 5));
+
+    expect(reservationRepository.findByGuestIds).toHaveBeenCalledWith(
+      [GUEST_ID_1],
+      3,
+      5,
+    );
+    expect(reservationRepository.countByGuestIds).toHaveBeenCalledWith([GUEST_ID_1]);
+  });
+
+  it('returns correct total when it exceeds the page limit', async () => {
+    const guest = makeGuest(GUEST_ID_1, 'tenant-1');
+    const res = makeReservation('65f1a1a2b3c4d5e6f7a8b9e1', GUEST_ID_1, 'tenant-1');
+
+    guestRepository.findAllByGuestAccountId.mockResolvedValue([guest]);
+    reservationRepository.findByGuestIds.mockResolvedValue([res]);
+    reservationRepository.countByGuestIds.mockResolvedValue(15);
+
+    const result = await handler.execute(
+      new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 1, 10),
+    );
+
+    expect(result.total).toBe(15);
+    expect(result.items).toHaveLength(1);
+  });
+});

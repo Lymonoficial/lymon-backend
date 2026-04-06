@@ -43,24 +43,36 @@ describe('GetGuestBookingsHandler', () => {
     propertyId?: string;
     name?: string;
   }): Unit {
-    return Unit.reconstitute(
-      UnitId.create(overrides?.id ?? unitId),
-      TenantId.createFromString(overrides?.tenantId ?? tenantId),
-      PropertyId.create(overrides?.propertyId ?? propertyId),
-      overrides?.name ?? 'Ocean View Suite',
-      'Spacious room',
-      1,
-      4,
-      2,
-      [],
-      1,
-      false,
-      [],
-      180,
-      ExternalIds.create(),
-      new Date('2030-01-01T10:00:00Z'),
-      new Date('2030-01-01T10:00:00Z'),
-    );
+    return Unit.reconstitute({
+      id: UnitId.create(overrides?.id ?? unitId),
+      tenantId: TenantId.createFromString(overrides?.tenantId ?? tenantId),
+      propertyId: PropertyId.create(overrides?.propertyId ?? propertyId),
+      basicInfo: {
+        name: overrides?.name ?? 'Ocean View Suite',
+        description: 'Spacious room',
+      },
+      inventoryConfig: {
+        inventoryCount: 1,
+      },
+      capacityConfig: {
+        maxGuests: 4,
+        standardGuests: 2,
+      },
+      physicalFeatures: {
+        bedrooms: [],
+        bathroomsCount: 1,
+        isShared: false,
+      },
+      pricingConfig: {
+        pricePerNight: 180,
+      },
+      amenities: [],
+      externalIds: ExternalIds.create(),
+      timestamps: {
+        createdAt: new Date('2030-01-01T10:00:00Z'),
+        updatedAt: new Date('2030-01-01T10:00:00Z'),
+      },
+    });
   }
 
   function mockTenantCatalog(

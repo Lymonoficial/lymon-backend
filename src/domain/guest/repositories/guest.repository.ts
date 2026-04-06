@@ -21,6 +21,7 @@ export interface GuestRepository {
     tenantId: TenantId,
     guestAccountId: GuestAccountId,
   ): Promise<Guest | null>;
+  findAllByGuestAccountId(guestAccountId: GuestAccountId): Promise<Guest[]>;
   countByTenantId(tenantId: TenantId): Promise<number>;
   delete(id: GuestId): Promise<void>;
   search(tenantId: TenantId, term: string): Promise<Guest[]>;

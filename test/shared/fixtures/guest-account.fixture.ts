@@ -31,21 +31,21 @@ export function makeGuestAccount(
   }>,
 ): GuestAccount {
   const merged = { ...GUEST_ACCOUNT_FIXTURE_DEFAULTS, ...overrides };
-  return GuestAccount.reconstitute(
-    GuestAccountId.createFromString(merged.id),
-    Email.create(merged.email),
-    merged.passwordHash,
-    merged.fullName,
-    merged.firstName,
-    merged.lastName,
-    merged.status,
-    merged.emailVerified,
-    merged.emailVerificationToken,
-    merged.emailVerificationExpiry,
-    null,
-    null,
-    null,
-    new Date(),
-    new Date(),
-  );
+  return GuestAccount.reconstitute({
+    id: GuestAccountId.createFromString(merged.id),
+    email: Email.create(merged.email),
+    passwordHash: merged.passwordHash,
+    fullName: merged.fullName,
+    firstName: merged.firstName,
+    lastName: merged.lastName,
+    status: merged.status,
+    emailVerified: merged.emailVerified,
+    emailVerificationToken: merged.emailVerificationToken,
+    emailVerificationExpiry: merged.emailVerificationExpiry,
+    passwordResetToken: null,
+    passwordResetExpiry: null,
+    passwordChangedAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
 }

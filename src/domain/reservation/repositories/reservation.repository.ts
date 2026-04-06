@@ -45,7 +45,17 @@ export interface ReservationRepository {
     source: ReservationSourceEnum,
     externalId: string,
   ): Promise<Reservation | null>;
+  existsActiveByPropertyId(
+    tenantId: string,
+    propertyId: string,
+  ): Promise<boolean>;
+  existsActiveByUnitId(tenantId: string, unitId: string): Promise<boolean>;
   countByTenantId(tenantId: string): Promise<number>;
+  countByGuestId(tenantId: string, guestId: string): Promise<number>;
+  findAllByGuestId(guestId: string, page: number, limit: number): Promise<Reservation[]>;
+  countAllByGuestId(guestId: string): Promise<number>;
+  findByGuestIds(guestIds: string[], page: number, limit: number): Promise<Reservation[]>;
+  countByGuestIds(guestIds: string[]): Promise<number>;
   existsActiveByPropertyId(
     tenantId: string,
     propertyId: string,

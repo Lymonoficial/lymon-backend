@@ -1,6 +1,21 @@
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { PlanType } from '@/domain/tenant/value-objects/plan-type.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { ITenant } from '../interfaces/tenant.interface';
+
+export interface TenantReconstitutionProps {
+  id: TenantId;
+  name: string;
+  ownerEmail: Email;
+  plan: PlanType;
+  emailVerified: boolean;
+  contactPhone: string | null;
+  address: string | null;
+  website: string | null;
+  logoUrl: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export class Tenant {
   private constructor(
@@ -37,31 +52,19 @@ export class Tenant {
     );
   }
 
-  static reconstitute(
-    id: TenantId,
-    name: string,
-    ownerEmail: Email,
-    plan: PlanType,
-    emailVerified: boolean,
-    contactPhone: string | null,
-    address: string | null,
-    website: string | null,
-    logoUrl: string | null,
-    createdAt: Date,
-    updatedAt: Date,
-  ): Tenant {
+  static reconstitute(props: TenantReconstitutionProps): Tenant {
     return new Tenant(
-      id,
-      name,
-      ownerEmail,
-      plan,
-      emailVerified,
-      contactPhone,
-      address,
-      website,
-      logoUrl,
-      createdAt,
-      updatedAt,
+      props.id,
+      props.name,
+      props.ownerEmail,
+      props.plan,
+      props.emailVerified,
+      props.contactPhone,
+      props.address,
+      props.website,
+      props.logoUrl,
+      props.createdAt,
+      props.updatedAt,
     );
   }
 
