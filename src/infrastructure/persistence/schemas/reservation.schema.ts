@@ -62,7 +62,7 @@ export class ReservationDocument extends Document {
   @Prop({ type: String, default: null })
   notes: string | null;
 
-  @Prop({ type: String })
+  @Prop({ type: String, default: undefined })
   externalReservationId?: string;
 
   @Prop({ type: Date, default: null })
@@ -86,5 +86,11 @@ ReservationSchema.index({ tenantId: 1, createdAt: -1 });
 ReservationSchema.index({ guestId: 1, checkIn: -1, createdAt: -1, status: 1 });
 ReservationSchema.index(
   { externalReservationId: 1, source: 1 },
-  { sparse: true, unique: true },
+  {
+    unique: true,
+    // Only index documents where externalReservationId is present and not null.
+    partialFilterExpression: {
+      externalReservationId: { $exists: true, $ne: null },
+    },
+  },
 );
