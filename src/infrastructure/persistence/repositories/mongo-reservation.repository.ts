@@ -1,12 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, ClientSession } from 'mongoose';
-import { ReservationRepository } from '@/domain/reservation/repositories/reservation.repository';
+import type {
+  GuestReservationFilters,
+  GuestReservationQueryOptions,
+  GuestReservationsReadRepository,
+} from '@/domain/reservation/repositories/guest-reservations-read.repository';
+import type { ReservationRepository } from '@/domain/reservation/repositories/reservation.repository';
 import { Reservation } from '@/domain/reservation/entities/reservation.entity';
 import { ReservationId } from '@/domain/reservation/value-objects/reservation-id.vo';
 import { DateRange } from '@/domain/reservation/value-objects/date-range.vo';
-import { ReservationSourceEnum } from '@/domain/reservation/value-objects/reservation-source.vo';
-import { ReservationSource } from '@/domain/reservation/value-objects/reservation-source.vo';
+import {
+  ReservationSource,
+  ReservationSourceEnum,
+} from '@/domain/reservation/value-objects/reservation-source.vo';
 import {
   ReservationStatus,
   ReservationStatusEnum,
@@ -25,7 +32,9 @@ const ACTIVE_RESERVATION_STATUSES = [
 ];
 
 @Injectable()
-export class MongoReservationRepository implements ReservationRepository {
+export class MongoReservationRepository
+  implements ReservationRepository, GuestReservationsReadRepository
+{
   constructor(
     @InjectModel(ReservationDocument.name)
     private readonly reservationModel: Model<ReservationDocument>,
@@ -76,7 +85,7 @@ export class MongoReservationRepository implements ReservationRepository {
     const saved = session
       ? await newDoc.save({ session })
       : await newDoc.save();
-    return saved._id.toString();
+    return saved._id.toHexString();
   }
 
   async findById(id: ReservationId): Promise<Reservation | null> {
@@ -151,6 +160,54 @@ export class MongoReservationRepository implements ReservationRepository {
       .skip(skip)
       .limit(limit);
     return docs.map((d) => this.toDomain(d));
+  }
+
+  async findByGuestIds(
+    guestIds: string[],
+    options: GuestReservationQueryOptions,
+  ): Promise<Reservation[]> {
+    if (guestIds.length === 0) {
+      return [];
+    }
+
+    const skip = (options.page - 1) * options.limit;
+    let sortField: 'status' | 'createdAt' | 'checkIn' = 'checkIn';
+    if (options.sortBy === 'status') {
+      sortField = 'status';
+    }
+    if (options.sortBy === 'createdAt') {
+      sortField = 'createdAt';
+    }
+    const sortDirection = options.sortOrder === 'asc' ? 1 : -1;
+
+    const guestObjectIds = guestIds.map(
+      (guestId) => new Types.ObjectId(guestId),
+    );
+    const filters = this.buildGuestFilters(guestObjectIds, options);
+
+    const docs = await this.reservationModel
+      .find(filters)
+      .sort({ [sortField]: sortDirection, createdAt: -1 })
+      .skip(skip)
+      .limit(options.limit);
+
+    return docs.map((d) => this.toDomain(d));
+  }
+
+  async countByGuestIds(
+    guestIds: string[],
+    filters?: GuestReservationFilters,
+  ): Promise<number> {
+    if (guestIds.length === 0) {
+      return 0;
+    }
+
+    const guestObjectIds = guestIds.map(
+      (guestId) => new Types.ObjectId(guestId),
+    );
+    return this.reservationModel.countDocuments(
+      this.buildGuestFilters(guestObjectIds, filters),
+    );
   }
 
   async findByUnitAndDateRange(
@@ -235,14 +292,43 @@ export class MongoReservationRepository implements ReservationRepository {
     return docs.map((d) => this.toDomain(d));
   }
 
+  private buildGuestFilters(
+    guestIds: Types.ObjectId[],
+    filters?: GuestReservationFilters,
+  ): Record<string, unknown> {
+    const query: Record<string, unknown> = {
+      guestId: { $in: guestIds },
+    };
+
+    if (filters?.status) {
+      query.status = filters.status;
+    }
+
+    if (filters?.fromDate || filters?.toDate) {
+      const checkInFilter: Record<string, Date> = {};
+
+      if (filters.fromDate) {
+        checkInFilter.$gte = filters.fromDate;
+      }
+
+      if (filters.toDate) {
+        checkInFilter.$lte = filters.toDate;
+      }
+
+      query.checkIn = checkInFilter;
+    }
+
+    return query;
+  }
+
   private toDomain(doc: ReservationDocument): Reservation {
     return Reservation.reconstitute(
-      doc._id.toString(),
-      TenantId.createFromString(doc.tenantId.toString()),
-      PropertyId.create(doc.propertyId.toString()),
-      UnitId.create(doc.unitId.toString()),
-      GuestId.createFromString(doc.guestId.toString()),
-      DateRange.create(doc.checkIn, doc.checkOut),
+      doc._id.toHexString(),
+      TenantId.createFromString(doc.tenantId.toHexString()),
+      PropertyId.create(doc.propertyId.toHexString()),
+      UnitId.create(doc.unitId.toHexString()),
+      GuestId.createFromString(doc.guestId.toHexString()),
+      DateRange.reconstitute(doc.checkIn, doc.checkOut),
       ReservationSource.create(doc.source as ReservationSourceEnum),
       ReservationStatus.create(doc.status as ReservationStatusEnum),
       doc.guestsCount,

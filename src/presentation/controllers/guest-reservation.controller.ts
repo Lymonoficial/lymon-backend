@@ -22,7 +22,10 @@ import { CreateGuestReservationDto } from '@/presentation/dtos/create-guest-rese
 import { CreateGuestReservationCommand } from '@/application/reservation/commands/create-guest-reservation/create-guest-reservation.command';
 import { CreateReservationResult } from '@/application/reservation/commands/create-reservation/create-reservation.result';
 import { GetGuestReservationQuery } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.query';
-import { ReservationDto } from '@/application/reservation/queries/shared/reservation.dto';
+import { GuestReservationDetailResult } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.result';
+import { GetGuestReservationsQuery } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query';
+import { GetGuestReservationsResult } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.result';
+import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 @ApiTags('guest-reservations')
 @ApiBearerAuth('GuestJWT-auth')
@@ -65,16 +68,69 @@ export class GuestReservationController {
     };
   }
 
+  @Get()
+  @ApiOperation({ summary: 'List authenticated guest bookings' })
+  @ApiResponse({ status: 200, description: 'Paginated guest bookings list' })
+  async findAll(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Query()
+    query: {
+      page?: string;
+      limit?: string;
+      status?: string;
+      fromDate?: string;
+      toDate?: string;
+      sortBy?: 'date' | 'status' | 'createdAt';
+      sortOrder?: 'asc' | 'desc';
+    },
+  ): Promise<GetGuestReservationsResult> {
+    const parsedStatus = this.parseStatus(query.status);
+    const sortBy = query.sortBy ?? 'date';
+    const sortOrder = query.sortOrder ?? 'desc';
+
+    return this.queryBus.execute<
+      GetGuestReservationsQuery,
+      GetGuestReservationsResult
+    >(
+      new GetGuestReservationsQuery(
+        guest.guestAccountId,
+        Math.max(1, Number.parseInt(query.page ?? '1', 10) || 1),
+        Math.max(1, Number.parseInt(query.limit ?? '20', 10) || 20),
+        parsedStatus,
+        query.fromDate ? new Date(query.fromDate) : undefined,
+        query.toDate ? new Date(query.toDate) : undefined,
+        sortBy,
+        sortOrder,
+      ),
+    );
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a guest reservation by ID' })
-  @ApiResponse({ status: 200, type: ReservationDto })
+  @ApiResponse({ status: 200, description: 'Reservation detail for guest' })
   async findOne(
     @CurrentGuest() guest: GuestJwtPayload,
     @Param('id') id: string,
-    @Query('tenantId') tenantId: string,
-  ): Promise<ReservationDto> {
-    return this.queryBus.execute<GetGuestReservationQuery, ReservationDto>(
-      new GetGuestReservationQuery(id, tenantId, guest.guestAccountId),
-    );
+  ): Promise<GuestReservationDetailResult> {
+    return this.queryBus.execute<
+      GetGuestReservationQuery,
+      GuestReservationDetailResult
+    >(new GetGuestReservationQuery(id, guest.guestAccountId));
+  }
+
+  private parseStatus(status?: string): ReservationStatusEnum | undefined {
+    if (!status) {
+      return undefined;
+    }
+
+    const normalized = status.toLowerCase();
+    const statusMap: Record<string, ReservationStatusEnum> = {
+      pending: ReservationStatusEnum.PENDING,
+      confirmed: ReservationStatusEnum.CONFIRMED,
+      cancelled: ReservationStatusEnum.CANCELLED,
+      completed: ReservationStatusEnum.CHECKED_OUT,
+    };
+
+    return statusMap[normalized];
   }
 }

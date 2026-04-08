@@ -115,6 +115,18 @@ export class MongoGuestRepository implements GuestRepository {
     return document ? this.toDomain(document) : null;
   }
 
+  async findAllByGuestAccountId(
+    guestAccountId: GuestAccountId,
+  ): Promise<Guest[]> {
+    const documents = await this.guestModel
+      .find({
+        guestAccountId: new Types.ObjectId(guestAccountId.toString()),
+      })
+      .sort({ createdAt: -1 });
+
+    return documents.map((doc) => this.toDomain(doc));
+  }
+
   async countByTenantId(tenantId: TenantId): Promise<number> {
     return this.guestModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),

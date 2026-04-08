@@ -20,6 +20,10 @@ export class DateRange {
     return new DateRange(checkIn, checkOut);
   }
 
+  static reconstitute(checkIn: Date, checkOut: Date): DateRange {
+    return new DateRange(checkIn, checkOut);
+  }
+
   getCheckIn(): Date {
     return this.checkIn;
   }
