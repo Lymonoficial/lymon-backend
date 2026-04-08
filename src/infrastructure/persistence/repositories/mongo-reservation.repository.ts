@@ -281,53 +281,6 @@ export class MongoReservationRepository
     });
   }
 
-  async countByGuestId(tenantId: string, guestId: string): Promise<number> {
-    return this.reservationModel.countDocuments({
-      tenantId: new Types.ObjectId(tenantId),
-      guestId: new Types.ObjectId(guestId),
-    });
-  }
-
-  async findAllByGuestId(
-    guestId: string,
-    page: number,
-    limit: number,
-  ): Promise<Reservation[]> {
-    const skip = (page - 1) * limit;
-    const docs = await this.reservationModel
-      .find({ guestId: new Types.ObjectId(guestId) })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-    return docs.map((d) => this.toDomain(d));
-  }
-
-  async countAllByGuestId(guestId: string): Promise<number> {
-    return this.reservationModel.countDocuments({
-      guestId: new Types.ObjectId(guestId),
-    });
-  }
-
-  async findByGuestIds(
-    guestIds: string[],
-    page: number,
-    limit: number,
-  ): Promise<Reservation[]> {
-    const skip = (page - 1) * limit;
-    const docs = await this.reservationModel
-      .find({ guestId: { $in: guestIds.map((id) => new Types.ObjectId(id)) } })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-    return docs.map((d) => this.toDomain(d));
-  }
-
-  async countByGuestIds(guestIds: string[]): Promise<number> {
-    return this.reservationModel.countDocuments({
-      guestId: { $in: guestIds.map((id) => new Types.ObjectId(id)) },
-    });
-  }
-
   async findConfirmedDueForCheckIn(date: Date): Promise<Reservation[]> {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);

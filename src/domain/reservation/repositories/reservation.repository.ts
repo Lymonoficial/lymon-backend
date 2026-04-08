@@ -6,7 +6,6 @@ import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
 export const RESERVATION_REPOSITORY = 'RESERVATION_REPOSITORY';
-
 export interface ReservationRepository {
   save(reservation: Reservation, ctx?: TransactionContextData): Promise<string>;
   findById(id: ReservationId): Promise<Reservation | null>;
@@ -51,11 +50,6 @@ export interface ReservationRepository {
   ): Promise<boolean>;
   existsActiveByUnitId(tenantId: string, unitId: string): Promise<boolean>;
   countByTenantId(tenantId: string): Promise<number>;
-  countByGuestId(tenantId: string, guestId: string): Promise<number>;
-  findAllByGuestId(guestId: string, page: number, limit: number): Promise<Reservation[]>;
-  countAllByGuestId(guestId: string): Promise<number>;
-  findByGuestIds(guestIds: string[], page: number, limit: number): Promise<Reservation[]>;
-  countByGuestIds(guestIds: string[]): Promise<number>;
   existsActiveByPropertyId(
     tenantId: string,
     propertyId: string,
