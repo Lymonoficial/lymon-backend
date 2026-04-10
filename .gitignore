@@ -65,3 +65,5 @@ docs/user-stories.feature
 # Archivos de configuración de SonarQube
 .scannerwork/
 .sonarlint/
+
+.agents
