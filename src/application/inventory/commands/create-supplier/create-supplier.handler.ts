@@ -8,6 +8,15 @@ import {
   type SupplierRepository,
 } from '@/domain/inventory/repositories/supplier.repository';
 import { Supplier } from '@/domain/inventory/entities/supplier.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  AuditLoggedEvent,
+  AUDIT_LOG_EVENT,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(CreateSupplierCommand)
 export class CreateSupplierHandler implements ICommandHandler<
@@ -17,6 +26,7 @@ export class CreateSupplierHandler implements ICommandHandler<
   constructor(
     @Inject(SUPPLIER_REPOSITORY)
     private readonly supplierRepository: SupplierRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: CreateSupplierCommand): Promise<CreateSupplierResult> {
@@ -41,6 +51,19 @@ export class CreateSupplierHandler implements ICommandHandler<
     });
 
     const supplierId = await this.supplierRepository.save(supplier);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId,
+        command.actorEmail,
+        AuditAction.SUPPLIER_CREATED,
+        AuditEntityType.SUPPLIER,
+        supplierId,
+      ),
+    );
+
     return new CreateSupplierResult(supplierId);
   }
 }
