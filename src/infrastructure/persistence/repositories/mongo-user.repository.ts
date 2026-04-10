@@ -9,6 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UserDocument } from '@/infrastructure/persistence/schemas/user.schema';
 import { Model, Types } from 'mongoose';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { ConflictException } from '@nestjs/common';
+import { MongoServerError } from 'mongodb';
 
 export class MongoUserRepository implements UserRepository {
   constructor(
@@ -17,56 +19,66 @@ export class MongoUserRepository implements UserRepository {
   ) {}
 
   async save(user: User): Promise<void> {
-    const id = user.getId()?.toString();
+    try {
+      const id = user.getId()?.toString();
 
-    const document: Partial<UserDocument> = {
-      email: user.getEmail().toString(),
-      passwordHash: user.getPasswordHash(),
-      tenantId: user.getTenantId().toString(),
-      isOwner: user.isOwner(),
-      roleAssignments: user.getRoleAssignments(),
-      emailVerified: user.isEmailVerified(),
-      updatedAt: new Date(),
-    };
+      const document: Partial<UserDocument> = {
+        email: user.getEmail().toString(),
+        passwordHash: user.getPasswordHash(),
+        tenantId: user.getTenantId().toString(),
+        isOwner: user.isOwner(),
+        roleAssignments: user.getRoleAssignments(),
+        emailVerified: user.isEmailVerified(),
+        updatedAt: new Date(),
+      };
 
-    const resetPasswordToken = user.getResetPasswordToken();
-    const resetPasswordExpires = user.getResetPasswordExpires();
-    const passwordChangedAt = user.getPasswordChangedAt();
+      const resetPasswordToken = user.getResetPasswordToken();
+      const resetPasswordExpires = user.getResetPasswordExpires();
+      const passwordChangedAt = user.getPasswordChangedAt();
 
-    // Set or unset optional fields
-    if (resetPasswordToken !== undefined) {
-      document.resetPasswordToken = resetPasswordToken;
-    }
-    if (resetPasswordExpires !== undefined) {
-      document.resetPasswordExpires = resetPasswordExpires;
-    }
-    if (passwordChangedAt !== undefined) {
-      document.passwordChangedAt = passwordChangedAt;
-    }
-
-    if (id) {
-      const updateOperation: {
-        $set: Partial<UserDocument>;
-        $unset?: Record<string, string>;
-      } = { $set: document };
-
-      const unsetFields: Record<string, string> = {};
-      if (resetPasswordToken === undefined) {
-        unsetFields.resetPasswordToken = '';
+      // Set or unset optional fields
+      if (resetPasswordToken !== undefined) {
+        document.resetPasswordToken = resetPasswordToken;
       }
-      if (resetPasswordExpires === undefined) {
-        unsetFields.resetPasswordExpires = '';
+      if (resetPasswordExpires !== undefined) {
+        document.resetPasswordExpires = resetPasswordExpires;
+      }
+      if (passwordChangedAt !== undefined) {
+        document.passwordChangedAt = passwordChangedAt;
       }
 
-      if (Object.keys(unsetFields).length > 0) {
-        updateOperation.$unset = unsetFields;
+      if (id) {
+        const updateOperation: {
+          $set: Partial<UserDocument>;
+          $unset?: Record<string, string>;
+        } = { $set: document };
+
+        const unsetFields: Record<string, string> = {};
+        if (resetPasswordToken === undefined) {
+          unsetFields.resetPasswordToken = '';
+        }
+        if (resetPasswordExpires === undefined) {
+          unsetFields.resetPasswordExpires = '';
+        }
+
+        if (Object.keys(unsetFields).length > 0) {
+          updateOperation.$unset = unsetFields;
+        }
+
+        await this.userModel.findByIdAndUpdate(id, updateOperation, {
+          new: true,
+        });
+      } else {
+        await this.userModel.create({ ...document, createdAt: new Date() });
+      }
+    } catch (error) {
+      if (error instanceof MongoServerError && error.code === 11000) {
+        throw new ConflictException(
+          'This email is already registered. If this should be allowed across tenants, verify Mongo indexes and keep only the unique composite index { email, tenantId }.',
+        );
       }
 
-      await this.userModel.findByIdAndUpdate(id, updateOperation, {
-        new: true,
-      });
-    } else {
-      await this.userModel.create({ ...document, createdAt: new Date() });
+      throw error;
     }
   }
 
