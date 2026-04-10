@@ -1,4 +1,9 @@
-import { User, UserId, UserReconstitutionData, type RoleAssignment } from '@/domain/user/entities/user.entity';
+import {
+  User,
+  UserId,
+  UserReconstitutionData,
+  type RoleAssignment,
+} from '@/domain/user/entities/user.entity';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
@@ -49,7 +54,10 @@ describe('User Entity - Refactored reconstitute method', () => {
       const email = Email.create('staff@example.com');
       const tenantId = TenantId.createFromString('tenant-456');
       const roleAssignments: RoleAssignment[] = [
-        { roleId: 'ADMIN', scope: { type: 'PROPERTY', resourceIds: ['prop-1'] } },
+        {
+          roleId: 'ADMIN',
+          scope: { type: 'PROPERTY', resourceIds: ['prop-1'] },
+        },
       ];
       const now = new Date();
 

@@ -94,7 +94,11 @@ function makeGuest(guestId: string, tenantId: string): Guest {
   );
 }
 
-function makeReservation(id: string, guestId: string, tenantId: string): Reservation {
+function makeReservation(
+  id: string,
+  guestId: string,
+  tenantId: string,
+): Reservation {
   const reservation = Reservation.createConfirmed({
     tenantId: TenantId.createFromString(tenantId),
     propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
@@ -143,8 +147,16 @@ describe('GetReservationsByGuestIdHandler', () => {
   it('returns paginated reservations across all tenants for the guestAccountId', async () => {
     const guest1 = makeGuest(GUEST_ID_1, 'tenant-1');
     const guest2 = makeGuest(GUEST_ID_2, 'tenant-2');
-    const res1 = makeReservation('65f1a1a2b3c4d5e6f7a8b9e1', GUEST_ID_1, 'tenant-1');
-    const res2 = makeReservation('65f1a1a2b3c4d5e6f7a8b9e2', GUEST_ID_2, 'tenant-2');
+    const res1 = makeReservation(
+      '65f1a1a2b3c4d5e6f7a8b9e1',
+      GUEST_ID_1,
+      'tenant-1',
+    );
+    const res2 = makeReservation(
+      '65f1a1a2b3c4d5e6f7a8b9e2',
+      GUEST_ID_2,
+      'tenant-2',
+    );
 
     guestRepository.findAllByGuestAccountId.mockResolvedValue([guest1, guest2]);
     reservationRepository.findByGuestIds.mockResolvedValue([res1, res2]);
@@ -173,19 +185,27 @@ describe('GetReservationsByGuestIdHandler', () => {
     reservationRepository.findByGuestIds.mockResolvedValue([]);
     reservationRepository.countByGuestIds.mockResolvedValue(0);
 
-    await handler.execute(new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 3, 5));
+    await handler.execute(
+      new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 3, 5),
+    );
 
     expect(reservationRepository.findByGuestIds).toHaveBeenCalledWith(
       [GUEST_ID_1],
       3,
       5,
     );
-    expect(reservationRepository.countByGuestIds).toHaveBeenCalledWith([GUEST_ID_1]);
+    expect(reservationRepository.countByGuestIds).toHaveBeenCalledWith([
+      GUEST_ID_1,
+    ]);
   });
 
   it('returns correct total when it exceeds the page limit', async () => {
     const guest = makeGuest(GUEST_ID_1, 'tenant-1');
-    const res = makeReservation('65f1a1a2b3c4d5e6f7a8b9e1', GUEST_ID_1, 'tenant-1');
+    const res = makeReservation(
+      '65f1a1a2b3c4d5e6f7a8b9e1',
+      GUEST_ID_1,
+      'tenant-1',
+    );
 
     guestRepository.findAllByGuestAccountId.mockResolvedValue([guest]);
     reservationRepository.findByGuestIds.mockResolvedValue([res]);

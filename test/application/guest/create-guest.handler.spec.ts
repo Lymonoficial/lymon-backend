@@ -32,9 +32,7 @@ describe('CreateGuestHandler', () => {
         'existing@example.com',
       );
 
-      await expect(handler.execute(command)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(handler.execute(command)).rejects.toThrow(ConflictException);
       await expect(handler.execute(command)).rejects.toThrow(
         'A guest with this primary email already exists',
       );

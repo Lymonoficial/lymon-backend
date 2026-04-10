@@ -9,7 +9,12 @@ interface TemplateVariables {
 
 @Injectable()
 export class EmailTemplateService {
-  private readonly templatesDir = path.join(__dirname, '..', 'common', 'templates');
+  private readonly templatesDir = path.join(
+    __dirname,
+    '..',
+    'common',
+    'templates',
+  );
   private readonly supportUrl: string;
 
   constructor(private readonly configService: ConfigService) {

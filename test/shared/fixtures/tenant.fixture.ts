@@ -1,4 +1,7 @@
-import { Tenant, TenantReconstitutionProps } from '@/domain/tenant/entities/tenant.entity';
+import {
+  Tenant,
+  TenantReconstitutionProps,
+} from '@/domain/tenant/entities/tenant.entity';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import {
   PlanType,

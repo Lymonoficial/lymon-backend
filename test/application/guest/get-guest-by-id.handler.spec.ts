@@ -2,7 +2,10 @@ import { GetGuestByIdHandler } from '@/application/guest/queries/get-guest-by-id
 import { GetGuestByIdQuery } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.query';
 import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
-import { makeGuest, GUEST_FIXTURE_DEFAULTS } from '@test/shared/fixtures/guest.fixture';
+import {
+  makeGuest,
+  GUEST_FIXTURE_DEFAULTS,
+} from '@test/shared/fixtures/guest.fixture';
 import { GuestStatusEnum } from '@/domain/guest/entities/guest.types';
 
 describe('GetGuestByIdHandler', () => {
@@ -26,7 +29,7 @@ describe('GetGuestByIdHandler', () => {
         GUEST_FIXTURE_DEFAULTS.tenantId,
         GUEST_FIXTURE_DEFAULTS.id,
       );
-      
+
       const result = await handler.execute(query);
 
       expect(result.item).not.toBeNull();
@@ -72,14 +75,23 @@ describe('GetGuestByIdHandler', () => {
     it('should return phone number correctly (TC-04)', async () => {
       const phone = '+573001234567';
       const guest = makeGuest({
-        identity: { documentType: 'passport', documentNumber: 'TC04', countryCode: 'CO' },
+        identity: {
+          documentType: 'passport',
+          documentNumber: 'TC04',
+          countryCode: 'CO',
+        },
       });
 
-      jest.spyOn(guest, 'getPhones').mockReturnValue([{ number: phone, type: 'mobile', isPrimary: true }]);
+      jest
+        .spyOn(guest, 'getPhones')
+        .mockReturnValue([{ number: phone, type: 'mobile', isPrimary: true }]);
 
       guestRepository.findById.mockResolvedValue(guest);
 
-      const query = new GetGuestByIdQuery(GUEST_FIXTURE_DEFAULTS.tenantId, GUEST_FIXTURE_DEFAULTS.id);
+      const query = new GetGuestByIdQuery(
+        GUEST_FIXTURE_DEFAULTS.tenantId,
+        GUEST_FIXTURE_DEFAULTS.id,
+      );
       const result = await handler.execute(query);
 
       expect(result.item?.phones[0].number).toBe(phone);
@@ -89,7 +101,10 @@ describe('GetGuestByIdHandler', () => {
       const guest = makeGuest({ status: GuestStatusEnum.BLOCKED });
       guestRepository.findById.mockResolvedValue(guest);
 
-      const query = new GetGuestByIdQuery(GUEST_FIXTURE_DEFAULTS.tenantId, GUEST_FIXTURE_DEFAULTS.id);
+      const query = new GetGuestByIdQuery(
+        GUEST_FIXTURE_DEFAULTS.tenantId,
+        GUEST_FIXTURE_DEFAULTS.id,
+      );
       const result = await handler.execute(query);
 
       expect(result.item?.status).toBe(GuestStatusEnum.BLOCKED);
@@ -99,7 +114,10 @@ describe('GetGuestByIdHandler', () => {
       const guest = makeGuest();
       guestRepository.findById.mockResolvedValue(guest);
 
-      const query = new GetGuestByIdQuery(GUEST_FIXTURE_DEFAULTS.tenantId, GUEST_FIXTURE_DEFAULTS.id);
+      const query = new GetGuestByIdQuery(
+        GUEST_FIXTURE_DEFAULTS.tenantId,
+        GUEST_FIXTURE_DEFAULTS.id,
+      );
       const result = await handler.execute(query);
 
       expect(result.item?.firstName).toBeNull();

@@ -67,10 +67,7 @@ export class AuditLog {
   }
 
   // De 9 a 2 parametros.
-  static reconstitute(
-    id: AuditLogId,
-    data: AuditLogData,
-  ): AuditLog {
+  static reconstitute(id: AuditLogId, data: AuditLogData): AuditLog {
     return new AuditLog(
       id,
       data.tenantId,

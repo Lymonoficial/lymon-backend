@@ -13,7 +13,10 @@ export class CreateGuestNoteDto {
   @IsEnum(GuestNoteTypeEnum)
   type: GuestNoteTypeEnum;
 
-  @ApiPropertyOptional({ enum: GuestNoteStatusEnum, example: GuestNoteStatusEnum.NOT_PINNED })
+  @ApiPropertyOptional({
+    enum: GuestNoteStatusEnum,
+    example: GuestNoteStatusEnum.NOT_PINNED,
+  })
   @IsOptional()
   @IsEnum(GuestNoteStatusEnum)
   status?: GuestNoteStatusEnum;
