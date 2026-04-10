@@ -29,6 +29,18 @@ export class CreateGuestHandler implements ICommandHandler<CreateGuestCommand> {
       );
     }
 
+    if (command.identity?.documentNumber) {
+      const existingByDoc = await this.guestRepository.findByDocumentNumber(
+        tenantId,
+        command.identity.documentNumber,
+      );
+      if (existingByDoc) {
+        throw new ConflictException(
+          'A guest with this document number already exists',
+        );
+      }
+    }
+
     const guest = Guest.create({
       tenantId,
       identity: command.identity ?? {},
