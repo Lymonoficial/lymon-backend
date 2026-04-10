@@ -83,7 +83,10 @@ export class CrmController {
     @Body() dto: CreateGuestNoteDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    const result: CreateGuestNoteResult = await this.commandBus.execute(
+    const result = await this.commandBus.execute<
+      CreateGuestNoteCommand,
+      CreateGuestNoteResult
+    >(
       new CreateGuestNoteCommand(
         user.tenantId,
         guestId,
@@ -211,7 +214,10 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
     @Body() dto: SendGuestMessageDto,
   ) {
-    const result: { id: string } = await this.commandBus.execute(
+    const result = await this.commandBus.execute<
+      SendGuestMessageCommand,
+      { id: string }
+    >(
       new SendGuestMessageCommand(
         user.tenantId,
         guestId,
