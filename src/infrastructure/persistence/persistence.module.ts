@@ -94,6 +94,9 @@ import {
 } from '@/infrastructure/persistence/schemas/shift.schema';
 import { SHIFT_REPOSITORY } from '@/domain/shift/repositories/shift.repository';
 import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/mongo-shift.repository';
+import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
+import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
+import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
 
 @Module({
   imports: [
@@ -113,6 +116,7 @@ import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/
         name: InventoryMovementDocument.name,
         schema: InventoryMovementSchema,
       },
+      { name: SupplierDocument.name, schema: SupplierSchema },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
@@ -176,6 +180,10 @@ import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/
       useClass: MongoInventoryMovementRepository,
     },
     {
+      provide: SUPPLIER_REPOSITORY,
+      useClass: MongoSupplierRepository,
+    },
+    {
       provide: GUEST_NOTE_REPOSITORY,
       useClass: MongoGuestNoteRepository,
     },
@@ -204,6 +212,7 @@ import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/
     GUEST_RESERVATIONS_READ_REPOSITORY,
     INVENTORY_ITEM_REPOSITORY,
     INVENTORY_MOVEMENT_REPOSITORY,
+    SUPPLIER_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
