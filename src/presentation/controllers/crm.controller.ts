@@ -5,13 +5,15 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
+import { Request } from '@nestjs/common';
 import { Post, Body, Param } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
@@ -147,6 +149,28 @@ export class CrmController {
     };
   }
 
+  @Patch('guests/:guestId/tags')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Assign tags to a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tags assigned successfully',
+  })
+  async assignTags(
+    @Param('guestId') guestId: string,
+    @Body('tags') tags: string[],
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new AssignGuestTagsCommand(guestId, tags, user.tenantId),
+    );
+
+    return {
+      message: 'Tags assigned successfully',
+    };
+  }
+}
   @Get('guests/:guestId/emails')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)
