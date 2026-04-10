@@ -4,9 +4,9 @@ import { GetReservationsByGuestIdQuery } from './get-reservations-by-guest-id.qu
 import { GetReservationsByGuestIdResult } from './get-reservations-by-guest-id.result';
 import { toReservationDto } from '../shared/reservation.mapper';
 import {
-  RESERVATION_REPOSITORY,
-  type ReservationRepository,
-} from '@/domain/reservation/repositories/reservation.repository';
+  GUEST_RESERVATIONS_READ_REPOSITORY,
+  type GuestReservationsReadRepository,
+} from '@/domain/reservation/repositories/guest-reservations-read.repository';
 import {
   GUEST_REPOSITORY,
   type GuestRepository,
@@ -19,8 +19,8 @@ export class GetReservationsByGuestIdHandler implements IQueryHandler<
   GetReservationsByGuestIdResult
 > {
   constructor(
-    @Inject(RESERVATION_REPOSITORY)
-    private readonly reservationRepository: ReservationRepository,
+    @Inject(GUEST_RESERVATIONS_READ_REPOSITORY)
+    private readonly guestReservationsReadRepository: GuestReservationsReadRepository,
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
   ) {}
@@ -28,9 +28,12 @@ export class GetReservationsByGuestIdHandler implements IQueryHandler<
   async execute(
     query: GetReservationsByGuestIdQuery,
   ): Promise<GetReservationsByGuestIdResult> {
-    const guestAccountId = GuestAccountId.createFromString(query.guestAccountId);
+    const guestAccountId = GuestAccountId.createFromString(
+      query.guestAccountId,
+    );
 
-    const guestProfiles = await this.guestRepository.findAllByGuestAccountId(guestAccountId);
+    const guestProfiles =
+      await this.guestRepository.findAllByGuestAccountId(guestAccountId);
 
     const guestIds = guestProfiles
       .map((g) => g.getId()?.toString())
@@ -41,8 +44,13 @@ export class GetReservationsByGuestIdHandler implements IQueryHandler<
     }
 
     const [reservations, total] = await Promise.all([
-      this.reservationRepository.findByGuestIds(guestIds, query.page, query.limit),
-      this.reservationRepository.countByGuestIds(guestIds),
+      this.guestReservationsReadRepository.findByGuestIds(guestIds, {
+        page: query.page,
+        limit: query.limit,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      }),
+      this.guestReservationsReadRepository.countByGuestIds(guestIds),
     ]);
 
     return new GetReservationsByGuestIdResult(

@@ -83,6 +83,7 @@ export const ReservationSchema =
 
 ReservationSchema.index({ unitId: 1, checkIn: 1, checkOut: 1, status: 1 });
 ReservationSchema.index({ tenantId: 1, createdAt: -1 });
+ReservationSchema.index({ guestId: 1, checkIn: -1, createdAt: -1, status: 1 });
 ReservationSchema.index(
   { externalReservationId: 1, source: 1 },
   {

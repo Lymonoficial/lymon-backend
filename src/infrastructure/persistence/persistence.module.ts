@@ -68,6 +68,7 @@ import {
   ReservationSchema,
 } from '@/infrastructure/persistence/schemas/reservation.schema';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
+import { GUEST_RESERVATIONS_READ_REPOSITORY } from '@/domain/reservation/repositories/guest-reservations-read.repository';
 import { MongoReservationRepository } from './repositories/mongo-reservation.repository';
 import {
   InventoryItemDocument,
@@ -156,6 +157,10 @@ import { MongoGuestEmailRepository } from '@/infrastructure/persistence/reposito
       useClass: MongoReservationRepository,
     },
     {
+      provide: GUEST_RESERVATIONS_READ_REPOSITORY,
+      useExisting: RESERVATION_REPOSITORY,
+    },
+    {
       provide: INVENTORY_ITEM_REPOSITORY,
       useClass: MongoInventoryItemRepository,
     },
@@ -185,6 +190,7 @@ import { MongoGuestEmailRepository } from '@/infrastructure/persistence/reposito
     TRANSACTION_MANAGER,
     INCIDENT_REPORT_REPOSITORY,
     RESERVATION_REPOSITORY,
+    GUEST_RESERVATIONS_READ_REPOSITORY,
     INVENTORY_ITEM_REPOSITORY,
     INVENTORY_MOVEMENT_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
