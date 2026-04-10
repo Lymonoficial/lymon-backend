@@ -1,0 +1,169 @@
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { UpdateSupplierHandler } from '@/application/inventory/commands/update-supplier/update-supplier.handler';
+import { UpdateSupplierCommand } from '@/application/inventory/commands/update-supplier/update-supplier.command';
+import { UpdateSupplierResult } from '@/application/inventory/commands/update-supplier/update-supplier.result';
+import { SupplierRepository } from '@/domain/inventory/repositories/supplier.repository';
+import { createSupplierRepositoryMock } from '@test/shared/mocks/repositories/supplier-repository.mock';
+import { makeSupplier } from '@test/shared/fixtures/supplier.fixture';
+
+describe('UpdateSupplierHandler', () => {
+  let handler: UpdateSupplierHandler;
+  let supplierRepository: jest.Mocked<SupplierRepository>;
+
+  beforeEach(() => {
+    supplierRepository = createSupplierRepositoryMock();
+    handler = new UpdateSupplierHandler(supplierRepository);
+  });
+
+  it('throws NotFoundException when the supplier does not exist', async () => {
+    supplierRepository.findById.mockResolvedValue(null);
+
+    await expect(
+      handler.execute(
+        new UpdateSupplierCommand(
+          'tenant-123',
+          'supplier-123',
+          'Updated Supplier',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          'admin-user-id',
+          'admin@example.com',
+        ),
+      ),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('throws ConflictException when the NIT belongs to another supplier', async () => {
+    supplierRepository.findById.mockResolvedValue(
+      makeSupplier({ id: 'supplier-123' }),
+    );
+    supplierRepository.findByNit.mockResolvedValue(
+      makeSupplier({ id: 'supplier-456', nit: 'NIT-999999999' }),
+    );
+
+    await expect(
+      handler.execute(
+        new UpdateSupplierCommand(
+          'tenant-123',
+          'supplier-123',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          'NIT-999999999',
+          'admin-user-id',
+          'admin@example.com',
+        ),
+      ),
+    ).rejects.toThrow(ConflictException);
+
+    expect(supplierRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('updates the supplier and returns the supplier id', async () => {
+    supplierRepository.findById.mockResolvedValue(
+      makeSupplier({ id: 'supplier-123' }),
+    );
+    supplierRepository.findByNit.mockResolvedValue(null);
+    supplierRepository.save.mockResolvedValue('supplier-123');
+
+    const result = await handler.execute(
+      new UpdateSupplierCommand(
+        'tenant-123',
+        'supplier-123',
+        '  Updated Supplies Ltd.  ',
+        'UPDATED@SUPPLIES.COM',
+        '+12025550999',
+        'Chile',
+        'Santiago',
+        'nit-999999999',
+        'admin-user-id',
+        'admin@example.com',
+      ),
+    );
+
+    expect(result).toBeInstanceOf(UpdateSupplierResult);
+    expect(result.supplierId).toBe('supplier-123');
+    expect(supplierRepository.save).toHaveBeenCalledTimes(1);
+
+    const savedSupplier = supplierRepository.save.mock.calls[0][0];
+    expect(savedSupplier.getTenantId().toString()).toBe('tenant-123');
+    expect(savedSupplier.getName()).toBe('Updated Supplies Ltd.');
+    expect(savedSupplier.getContactEmail()).toBe('updated@supplies.com');
+    expect(savedSupplier.getContactPhone()).toBe('+12025550999');
+    expect(savedSupplier.getCountry()).toBe('Chile');
+    expect(savedSupplier.getCity()).toBe('Santiago');
+    expect(savedSupplier.getNit()).toBe('NIT-999999999');
+  });
+
+  it('throws BadRequestException when no field is provided', async () => {
+    supplierRepository.findById.mockResolvedValue(
+      makeSupplier({ id: 'supplier-123' }),
+    );
+
+    await expect(
+      handler.execute(
+        new UpdateSupplierCommand(
+          'tenant-123',
+          'supplier-123',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          'admin-user-id',
+          'admin@example.com',
+        ),
+      ),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('throws BadRequestException when tenantId or supplierId is empty', async () => {
+    await expect(
+      handler.execute(
+        new UpdateSupplierCommand(
+          '',
+          'supplier-123',
+          'Updated Supplier',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          'admin-user-id',
+          'admin@example.com',
+        ),
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      handler.execute(
+        new UpdateSupplierCommand(
+          'tenant-123',
+          '',
+          'Updated Supplier',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          'admin-user-id',
+          'admin@example.com',
+        ),
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(supplierRepository.findById).not.toHaveBeenCalled();
+    expect(supplierRepository.findByNit).not.toHaveBeenCalled();
+    expect(supplierRepository.save).not.toHaveBeenCalled();
+  });
+});
