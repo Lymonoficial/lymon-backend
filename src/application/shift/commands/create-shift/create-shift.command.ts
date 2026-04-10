@@ -6,6 +6,7 @@ export class CreateShiftCommand {
     public readonly date: string,
     public readonly startTime: string,
     public readonly endTime: string,
+    public readonly notes?: string,
     public readonly actorId?: string,
     public readonly actorEmail?: string,
   ) {}

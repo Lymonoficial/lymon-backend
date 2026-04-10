@@ -1,55 +1,52 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Matches,
-  MaxLength,
-} from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
-export class CreateShiftDto {
-  @ApiProperty({
+export class UpdateShiftDto {
+  @ApiPropertyOptional({
     example: '680c79f38b4f98f4f6383b12',
     description: 'Assigned staff user id',
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  staffMemberId!: string;
+  staffMemberId?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '680c79f38b4f98f4f6383b13',
     description: 'Property id where shift takes place',
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  propertyId!: string;
+  propertyId?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '2026-04-11',
     description: 'Shift date in ISO format (YYYY-MM-DD)',
   })
+  @IsOptional()
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
-  date!: string;
+  date?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '09:00',
     description: 'Shift start time (24h HH:mm)',
   })
+  @IsOptional()
   @IsString()
   @Matches(/^([01]\d|2[0-3]):[0-5]\d$/)
-  startTime!: string;
+  startTime?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '17:00',
     description: 'Shift end time (24h HH:mm)',
   })
+  @IsOptional()
   @IsString()
   @Matches(/^([01]\d|2[0-3]):[0-5]\d$/)
-  endTime!: string;
+  endTime?: string;
 
   @ApiPropertyOptional({
-    example: 'Staff requested an earlier finish for personal reasons.',
+    example: 'Updated due to emergency coverage changes.',
     description: 'Optional internal note for this shift',
   })
   @IsOptional()
