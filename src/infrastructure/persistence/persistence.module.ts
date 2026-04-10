@@ -81,6 +81,12 @@ import { INVENTORY_ITEM_REPOSITORY } from '@/domain/inventory/repositories/inven
 import { MongoInventoryItemRepository } from '@/infrastructure/persistence/repositories/mongo-inventory-item.repository';
 import { INVENTORY_MOVEMENT_REPOSITORY } from '@/domain/inventory/repositories/inventory-movement.repository';
 import { MongoInventoryMovementRepository } from '@/infrastructure/persistence/repositories/mongo-inventory-movement.repository';
+import {
+  GuestEmailDocument,
+  GuestEmailSchema,
+} from '@/infrastructure/persistence/schemas/guest-email.schema';
+import { GUEST_EMAIL_REPOSITORY } from '@/domain/guest-email/repositories/guest-email.repository';
+import { MongoGuestEmailRepository } from '@/infrastructure/persistence/repositories/mongo-guest-email.repository';
 
 @Module({
   imports: [
@@ -101,6 +107,7 @@ import { MongoInventoryMovementRepository } from '@/infrastructure/persistence/r
         schema: InventoryMovementSchema,
       },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
+      { name: GuestEmailDocument.name, schema: GuestEmailSchema },
     ]),
   ],
   providers: [
@@ -160,6 +167,10 @@ import { MongoInventoryMovementRepository } from '@/infrastructure/persistence/r
       provide: GUEST_NOTE_REPOSITORY,
       useClass: MongoGuestNoteRepository,
     },
+    {
+      provide: GUEST_EMAIL_REPOSITORY,
+      useClass: MongoGuestEmailRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -177,6 +188,7 @@ import { MongoInventoryMovementRepository } from '@/infrastructure/persistence/r
     INVENTORY_ITEM_REPOSITORY,
     INVENTORY_MOVEMENT_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
+    GUEST_EMAIL_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

@@ -23,6 +23,7 @@ import { GuestApplicationModule } from '@/application/guest/guest-application.mo
 import { ReservationApplicationModule } from '@/application/reservation/reservation-application.module';
 import { InventoryApplicationModule } from '@/application/inventory/inventory-application.module';
 import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-application.module';
+import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
 import { UserApplicationModule } from '@/application/user/user-application.module';
 
 const CommandHandlers = [
@@ -53,6 +54,7 @@ const CommandHandlers = [
     ReservationApplicationModule,
     InventoryApplicationModule,
     GuestNoteApplicationModule,
+    GuestEmailApplicationModule,
     UserApplicationModule,
   ],
   providers: [...CommandHandlers],

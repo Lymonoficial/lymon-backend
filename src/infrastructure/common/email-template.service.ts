@@ -22,33 +22,23 @@ export class EmailTemplateService {
     this.supportUrl = supportUrl;
   }
 
-  /**
-   * Load and render an email template with variables
-   * @param templateName - Name of the template file (without .html)
-   * @param variables - Variables to replace in template
-   * @returns Rendered HTML content
-   */
-  renderTemplate(templateName: string, variables: TemplateVariables): string {
-    const templatePath = path.join(this.templatesDir, `${templateName}.html`);
+  resolvePlaceholders(text: string, variables: any = {}): string {
+    if (!text) return '';
+    return text.replace(/\{\{(.+?)\}\}/g, (match, key) => {
+      const value = variables[key.trim()];
+      return value !== undefined && value !== null ? String(value) : '';
+    });
+  }
 
+  renderTemplate(templateName: string, variables: any): string {
+    const templatePath = path.join(this.templatesDir, `${templateName}.html`);
     if (!fs.existsSync(templatePath)) {
       throw new Error(`Template not found: ${templateName}`);
     }
-
-    let html = fs.readFileSync(templatePath, 'utf-8');
-
-    // Replace all variables
-    Object.entries(variables).forEach(([key, value]) => {
-      const placeholder = `{{${key}}}`;
-      html = html.replaceAll(placeholder, value);
-    });
-
-    return html;
+    const html = fs.readFileSync(templatePath, 'utf-8');
+    return this.resolvePlaceholders(html, variables);
   }
 
-  /**
-   * Render verify email template
-   */
   renderVerifyEmailTemplate(verificationUrl: string): string {
     return this.renderTemplate('verify-email', {
       verificationUrl,
@@ -56,15 +46,13 @@ export class EmailTemplateService {
     });
   }
 
-  /**
-   * Render recover password template
-   */
   renderRecoverPasswordTemplate(recoveryUrl: string): string {
     return this.renderTemplate('recover-password', {
       recoveryUrl,
       supportUrl: this.supportUrl,
     });
   }
+
   renderLowStockAlertTemplate(variables: {
     ownerName: string;
     tenantName: string;

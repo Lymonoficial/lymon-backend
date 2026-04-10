@@ -3,6 +3,11 @@ export interface EmailRecipient {
   name: string;
 }
 
+export interface EmailAttachment {
+  url: string;
+  name: string;
+}
+
 export interface SendEmailParams {
   to: EmailRecipient[];
   subject: string;
@@ -10,10 +15,11 @@ export interface SendEmailParams {
   sender?: EmailRecipient;
   cc?: EmailRecipient[];
   bcc?: EmailRecipient[];
+  attachments?: EmailAttachment[];
 }
 
 export interface IEmailService {
-  sendEmail(params: SendEmailParams): Promise<void>;
+  sendEmail(params: SendEmailParams): Promise<{ messageId: string }>;
   sendVerificationEmail(email: string, token: string): Promise<void>;
   sendRecoveryEmail(email: string, plainToken: string): Promise<void>;
   sendLowStockAlertEmail(params: SendLowStockAlertEmailParams): Promise<void>;
