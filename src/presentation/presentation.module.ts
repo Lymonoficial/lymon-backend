@@ -15,6 +15,7 @@ import { CrmController } from '@/presentation/controllers/crm.controller';
 import { ReservationController } from '@/presentation/controllers/reservation.controller';
 import { GuestReservationController } from '@/presentation/controllers/guest-reservation.controller';
 import { InventoryController } from '@/presentation/controllers/inventory.controller';
+import { SuppliersController } from '@/presentation/controllers/suppliers.controller';
 import { ShiftsController } from '@/presentation/controllers/shifts.controller';
 
 @Module({
@@ -34,6 +35,7 @@ import { ShiftsController } from '@/presentation/controllers/shifts.controller';
     ReservationController,
     GuestReservationController,
     InventoryController,
+    SuppliersController,
     ShiftsController,
   ],
 })

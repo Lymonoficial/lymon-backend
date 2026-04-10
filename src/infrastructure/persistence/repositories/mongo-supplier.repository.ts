@@ -75,18 +75,18 @@ export class MongoSupplierRepository implements SupplierRepository {
   }
 
   private toDomain(document: SupplierDocument): Supplier {
-    return Supplier.reconstitute(
-      SupplierId.create(document._id.toHexString()),
-      TenantId.createFromString(document.tenantId.toHexString()),
-      document.name,
-      document.contactEmail,
-      document.contactPhone,
-      document.country,
-      document.city,
-      document.nit,
-      document.createdAt,
-      document.updatedAt,
-      document.deletedAt,
-    );
+    return Supplier.reconstitute({
+      id: SupplierId.create(document._id.toHexString()),
+      tenantId: TenantId.createFromString(document.tenantId.toHexString()),
+      name: document.name,
+      contactEmail: document.contactEmail,
+      contactPhone: document.contactPhone,
+      country: document.country,
+      city: document.city,
+      nit: document.nit,
+      createdAt: document.createdAt,
+      updatedAt: document.updatedAt,
+      deletedAt: document.deletedAt,
+    });
   }
 }
