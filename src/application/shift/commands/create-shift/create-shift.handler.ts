@@ -98,6 +98,7 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
       endTime: command.endTime,
       startMinutes: start,
       endMinutes: end,
+      notes: command.notes,
       createdBy: command.actorId,
       createdByEmail: command.actorEmail,
     });

@@ -14,5 +14,6 @@ export interface ShiftRepository {
     shiftDate: Date,
     startMinutes: number,
     endMinutes: number,
+    excludeShiftId?: ShiftId,
   ): Promise<Shift | null>;
 }

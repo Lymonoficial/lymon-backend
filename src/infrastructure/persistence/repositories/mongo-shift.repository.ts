@@ -28,6 +28,7 @@ export class MongoShiftRepository implements ShiftRepository {
       endTime: shift.getEndTime(),
       startMinutes: shift.getStartMinutes(),
       endMinutes: shift.getEndMinutes(),
+      notes: shift.getNotes(),
       createdBy: shift.getCreatedBy(),
       createdByEmail: shift.getCreatedByEmail(),
       updatedAt: shift.getUpdatedAt(),
@@ -57,14 +58,21 @@ export class MongoShiftRepository implements ShiftRepository {
     shiftDate: Date,
     startMinutes: number,
     endMinutes: number,
+    excludeShiftId?: ShiftId,
   ): Promise<Shift | null> {
-    const doc = await this.shiftModel.findOne({
+    const query: Record<string, unknown> = {
       tenantId: new Types.ObjectId(tenantId.toString()),
       staffMemberId: new Types.ObjectId(staffMemberId.toString()),
       shiftDate,
       startMinutes: { $lt: endMinutes },
       endMinutes: { $gt: startMinutes },
-    });
+    };
+
+    if (excludeShiftId) {
+      query._id = { $ne: new Types.ObjectId(excludeShiftId.toString()) };
+    }
+
+    const doc = await this.shiftModel.findOne(query);
 
     return doc ? this.toDomain(doc) : null;
   }
@@ -80,6 +88,7 @@ export class MongoShiftRepository implements ShiftRepository {
       doc.endTime,
       doc.startMinutes,
       doc.endMinutes,
+      doc.notes ?? null,
       doc.createdBy ?? null,
       doc.createdByEmail ?? null,
       doc.createdAt,

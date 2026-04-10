@@ -12,21 +12,34 @@ export interface CreateShiftParams {
   endTime: string;
   startMinutes: number;
   endMinutes: number;
+  notes?: string;
   createdBy?: string;
   createdByEmail?: string;
+}
+
+export interface UpdateShiftParams {
+  staffMemberId: UserId;
+  propertyId: PropertyId;
+  shiftDate: Date;
+  startTime: string;
+  endTime: string;
+  startMinutes: number;
+  endMinutes: number;
+  notes?: string;
 }
 
 export class Shift {
   private constructor(
     private readonly id: ShiftId | null,
     private readonly tenantId: TenantId,
-    private readonly staffMemberId: UserId,
-    private readonly propertyId: PropertyId,
-    private readonly shiftDate: Date,
-    private readonly startTime: string,
-    private readonly endTime: string,
-    private readonly startMinutes: number,
-    private readonly endMinutes: number,
+    private staffMemberId: UserId,
+    private propertyId: PropertyId,
+    private shiftDate: Date,
+    private startTime: string,
+    private endTime: string,
+    private startMinutes: number,
+    private endMinutes: number,
+    private notes: string | null,
     private readonly createdBy: string | null,
     private readonly createdByEmail: string | null,
     private readonly createdAt: Date,
@@ -48,6 +61,7 @@ export class Shift {
       params.endTime,
       params.startMinutes,
       params.endMinutes,
+      params.notes?.trim() ?? null,
       params.createdBy ?? null,
       params.createdByEmail ?? null,
       new Date(),
@@ -65,6 +79,7 @@ export class Shift {
     endTime: string,
     startMinutes: number,
     endMinutes: number,
+    notes: string | null,
     createdBy: string | null,
     createdByEmail: string | null,
     createdAt: Date,
@@ -80,6 +95,7 @@ export class Shift {
       endTime,
       startMinutes,
       endMinutes,
+      notes,
       createdBy,
       createdByEmail,
       createdAt,
@@ -123,6 +139,10 @@ export class Shift {
     return this.endMinutes;
   }
 
+  getNotes(): string | null {
+    return this.notes;
+  }
+
   getCreatedBy(): string | null {
     return this.createdBy;
   }
@@ -137,5 +157,44 @@ export class Shift {
 
   getUpdatedAt(): Date {
     return this.updatedAt;
+  }
+
+  update(params: UpdateShiftParams, now: Date): void {
+    if (params.endMinutes <= params.startMinutes) {
+      throw new Error('Shift end time must be after start time');
+    }
+
+    const hasSchedulingChanges =
+      !this.staffMemberId.equals(params.staffMemberId) ||
+      !this.propertyId.equals(params.propertyId) ||
+      this.shiftDate.getTime() !== params.shiftDate.getTime() ||
+      this.startTime !== params.startTime ||
+      this.endTime !== params.endTime ||
+      this.startMinutes !== params.startMinutes ||
+      this.endMinutes !== params.endMinutes;
+
+    const shiftStartAt = new Date(
+      this.shiftDate.getTime() + this.startMinutes * 60 * 1000,
+    );
+    const isPastOrActive = now.getTime() >= shiftStartAt.getTime();
+
+    if (isPastOrActive && hasSchedulingChanges) {
+      throw new Error(
+        'This shift already started or is in the past. Only notes can be edited.',
+      );
+    }
+
+    if (!isPastOrActive) {
+      this.staffMemberId = params.staffMemberId;
+      this.propertyId = params.propertyId;
+      this.shiftDate = params.shiftDate;
+      this.startTime = params.startTime;
+      this.endTime = params.endTime;
+      this.startMinutes = params.startMinutes;
+      this.endMinutes = params.endMinutes;
+    }
+
+    this.notes = params.notes?.trim() ?? null;
+    this.updatedAt = new Date();
   }
 }

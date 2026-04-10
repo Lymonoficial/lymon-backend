@@ -9,7 +9,7 @@ export class ShiftDocument extends Document {
     required: true,
     index: true,
   })
-  tenantId: Types.ObjectId;
+  tenantId!: Types.ObjectId;
 
   @Prop({
     type: Types.ObjectId,
@@ -17,7 +17,7 @@ export class ShiftDocument extends Document {
     required: true,
     index: true,
   })
-  staffMemberId: Types.ObjectId;
+  staffMemberId!: Types.ObjectId;
 
   @Prop({
     type: Types.ObjectId,
@@ -25,34 +25,37 @@ export class ShiftDocument extends Document {
     required: true,
     index: true,
   })
-  propertyId: Types.ObjectId;
+  propertyId!: Types.ObjectId;
 
   @Prop({ type: Date, required: true, index: true })
-  shiftDate: Date;
+  shiftDate!: Date;
 
   @Prop({ type: String, required: true })
-  startTime: string;
+  startTime!: string;
 
   @Prop({ type: String, required: true })
-  endTime: string;
+  endTime!: string;
 
   @Prop({ type: Number, required: true })
-  startMinutes: number;
+  startMinutes!: number;
 
   @Prop({ type: Number, required: true })
-  endMinutes: number;
+  endMinutes!: number;
 
   @Prop({ type: String, default: null })
-  createdBy: string | null;
+  notes!: string | null;
 
   @Prop({ type: String, default: null })
-  createdByEmail: string | null;
+  createdBy!: string | null;
+
+  @Prop({ type: String, default: null })
+  createdByEmail!: string | null;
 
   @Prop()
-  createdAt: Date;
+  createdAt!: Date;
 
   @Prop()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 export const ShiftSchema = SchemaFactory.createForClass(ShiftDocument);
