@@ -7,15 +7,18 @@ import type { UnitRepository } from '@/domain/unit/repositories/unit.repository'
 import { mapUnitToPublicDto } from '@/application/reservation/queries/shared/unit.mapper';
 
 @QueryHandler(GetAllPublicUnitsQuery)
-export class GetAllPublicUnitsQueryHandler
-  implements IQueryHandler<GetAllPublicUnitsQuery, GetAllPublicUnitsResult>
-{
+export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
+  GetAllPublicUnitsQuery,
+  GetAllPublicUnitsResult
+> {
   constructor(
     @Inject(UNIT_REPOSITORY)
     private readonly unitRepository: UnitRepository,
   ) {}
 
-  async execute(query: GetAllPublicUnitsQuery): Promise<GetAllPublicUnitsResult> {
+  async execute(
+    query: GetAllPublicUnitsQuery,
+  ): Promise<GetAllPublicUnitsResult> {
     const { units, total } = await this.unitRepository.findAllPaginated(
       query.page,
       query.limit,

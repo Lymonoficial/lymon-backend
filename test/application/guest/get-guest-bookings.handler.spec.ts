@@ -208,7 +208,14 @@ describe('GetGuestBookingsHandler', () => {
       reservationRepository.findByGuestId.mockResolvedValue([reservation]);
       mockTenantCatalog(
         [makeProperty({ id: propertyId, tenantId })],
-        [makeUnit({ id: unitId, tenantId, propertyId, name: 'Ocean View Suite' })],
+        [
+          makeUnit({
+            id: unitId,
+            tenantId,
+            propertyId,
+            name: 'Ocean View Suite',
+          }),
+        ],
       );
 
       const query = new GetGuestBookingsQuery(tenantId, guestId);

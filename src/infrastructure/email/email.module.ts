@@ -7,10 +7,7 @@ import { GuestEmailCreatedListener } from './listeners/guest-email-created.liste
 import { PersistenceModule } from '../persistence/persistence.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    forwardRef(() => PersistenceModule),
-  ],
+  imports: [ConfigModule, forwardRef(() => PersistenceModule)],
   providers: [
     {
       provide: EMAIL_SERVICE,

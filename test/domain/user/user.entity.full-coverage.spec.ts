@@ -20,12 +20,16 @@ describe('User Entity - Full Coverage', () => {
 
     it('createFromString should throw if value is empty', () => {
       // Act & Assert
-      expect(() => UserId.createFromString('')).toThrow('UserId cannot be empty');
+      expect(() => UserId.createFromString('')).toThrow(
+        'UserId cannot be empty',
+      );
     });
 
     it('createFromString should throw if value is whitespace', () => {
       // Act & Assert
-      expect(() => UserId.createFromString('   ')).toThrow('UserId cannot be empty');
+      expect(() => UserId.createFromString('   ')).toThrow(
+        'UserId cannot be empty',
+      );
     });
 
     it('equals should return true for same values', () => {
@@ -77,12 +81,23 @@ describe('User Entity - Full Coverage', () => {
         const passwordHash = 'hashed-password';
         const tenantId = TenantId.createFromString('tenant-456');
         const roleAssignments: RoleAssignment[] = [
-          { roleId: 'VIEWER', scope: { type: 'PROPERTY', resourceIds: ['prop-1', 'prop-2'] } },
-          { roleId: 'EDITOR', scope: { type: 'UNIT', resourceIds: ['unit-1'] } },
+          {
+            roleId: 'VIEWER',
+            scope: { type: 'PROPERTY', resourceIds: ['prop-1', 'prop-2'] },
+          },
+          {
+            roleId: 'EDITOR',
+            scope: { type: 'UNIT', resourceIds: ['unit-1'] },
+          },
         ];
 
         // Act
-        const user = User.createStaff(email, passwordHash, tenantId, roleAssignments);
+        const user = User.createStaff(
+          email,
+          passwordHash,
+          tenantId,
+          roleAssignments,
+        );
 
         // Assert
         expect(user.getId()).toBeNull();
@@ -138,7 +153,10 @@ describe('User Entity - Full Coverage', () => {
     it('getRoleAssignments should return a copy not the original array', () => {
       // Arrange
       const roleAssignments: RoleAssignment[] = [
-        { roleId: 'VIEWER', scope: { type: 'PROPERTY', resourceIds: ['prop-1'] } },
+        {
+          roleId: 'VIEWER',
+          scope: { type: 'PROPERTY', resourceIds: ['prop-1'] },
+        },
       ];
       const user = User.createStaff(
         Email.create('staff@example.com'),
@@ -187,7 +205,11 @@ describe('User Entity - Full Coverage', () => {
     it('getEmail should return the email', () => {
       // Arrange
       const email = Email.create('myemail@example.com');
-      const user = User.createOwner(email, 'password', TenantId.createFromString('tenant-123'));
+      const user = User.createOwner(
+        email,
+        'password',
+        TenantId.createFromString('tenant-123'),
+      );
 
       // Act & Assert
       expect(user.getEmail()).toEqual(email);
@@ -313,8 +335,12 @@ describe('User Entity - Full Coverage', () => {
       expect(user.getPasswordHash()).toBe('new-password-hash');
       const passwordChangedAt = user.getPasswordChangedAt();
       expect(passwordChangedAt).toBeDefined();
-      expect(passwordChangedAt!.getTime()).toBeGreaterThanOrEqual(beforeChange.getTime());
-      expect(passwordChangedAt!.getTime()).toBeLessThanOrEqual(afterChange.getTime());
+      expect(passwordChangedAt!.getTime()).toBeGreaterThanOrEqual(
+        beforeChange.getTime(),
+      );
+      expect(passwordChangedAt!.getTime()).toBeLessThanOrEqual(
+        afterChange.getTime(),
+      );
     });
 
     it('changePassword should throw on empty string', () => {
@@ -326,7 +352,9 @@ describe('User Entity - Full Coverage', () => {
       );
 
       // Act & Assert
-      expect(() => user.changePassword('')).toThrow('Password hash cannot be empty');
+      expect(() => user.changePassword('')).toThrow(
+        'Password hash cannot be empty',
+      );
     });
 
     it('changePassword should throw on whitespace only', () => {
@@ -338,7 +366,9 @@ describe('User Entity - Full Coverage', () => {
       );
 
       // Act & Assert
-      expect(() => user.changePassword('   ')).toThrow('Password hash cannot be empty');
+      expect(() => user.changePassword('   ')).toThrow(
+        'Password hash cannot be empty',
+      );
     });
 
     it('changePassword can be called multiple times', () => {
@@ -452,9 +482,7 @@ describe('User Entity - Full Coverage', () => {
         passwordHash: 'password',
         tenantId: TenantId.createFromString('tenant-123'),
         isOwnerFlag: false,
-        roleAssignments: [
-          { roleId: 'VIEWER', scope: { type: 'TENANT' } },
-        ],
+        roleAssignments: [{ roleId: 'VIEWER', scope: { type: 'TENANT' } }],
         emailVerified: true,
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-02'),
@@ -471,14 +499,19 @@ describe('User Entity - Full Coverage', () => {
       expect(user.isEmailVerified()).toBe(true);
       expect(user.getRoleAssignments()).toHaveLength(1);
       expect(user.getResetPasswordToken()).toBe('token');
-      expect(user.getPasswordChangedAt()).toEqual(new Date('2024-01-01T12:00:00'));
+      expect(user.getPasswordChangedAt()).toEqual(
+        new Date('2024-01-01T12:00:00'),
+      );
     });
 
     it('should handle multiple role assignments of different scopes', () => {
       // Arrange
       const roleAssignments: RoleAssignment[] = [
         { roleId: 'ADMIN', scope: { type: 'TENANT' } },
-        { roleId: 'EDITOR', scope: { type: 'PROPERTY', resourceIds: ['prop-1', 'prop-2'] } },
+        {
+          roleId: 'EDITOR',
+          scope: { type: 'PROPERTY', resourceIds: ['prop-1', 'prop-2'] },
+        },
         { roleId: 'VIEWER', scope: { type: 'UNIT', resourceIds: ['unit-1'] } },
       ];
 
@@ -496,7 +529,10 @@ describe('User Entity - Full Coverage', () => {
       expect(retrieved).toHaveLength(3);
       expect(retrieved[0].scope.type).toBe('TENANT');
       expect(retrieved[1].scope.type).toBe('PROPERTY');
-      expect((retrieved[1].scope as any).resourceIds).toEqual(['prop-1', 'prop-2']);
+      expect((retrieved[1].scope as any).resourceIds).toEqual([
+        'prop-1',
+        'prop-2',
+      ]);
       expect(retrieved[2].scope.type).toBe('UNIT');
     });
   });

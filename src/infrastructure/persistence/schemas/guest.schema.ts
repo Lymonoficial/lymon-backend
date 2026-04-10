@@ -118,7 +118,4 @@ GuestSchema.index(
   { tenantId: 1, 'identity.documentNumber': 1 },
   { sparse: true },
 );
-GuestSchema.index(
-  { tenantId: 1, guestAccountId: 1 },
-  { sparse: true },
-);
+GuestSchema.index({ tenantId: 1, guestAccountId: 1 }, { sparse: true });

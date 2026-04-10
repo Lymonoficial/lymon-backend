@@ -40,7 +40,10 @@ export class MongoGuestNoteRepository implements GuestNoteRepository {
     });
   }
 
-  async findById(id: GuestNoteId, tenantId: TenantId): Promise<GuestNote | null> {
+  async findById(
+    id: GuestNoteId,
+    tenantId: TenantId,
+  ): Promise<GuestNote | null> {
     const doc = await this.noteModel.findOne({
       _id: new Types.ObjectId(id.toString()),
       tenantId: new Types.ObjectId(tenantId.toString()),
@@ -49,7 +52,10 @@ export class MongoGuestNoteRepository implements GuestNoteRepository {
     return doc ? this.toDomain(doc) : null;
   }
 
-  async findByGuestId(guestId: GuestId, tenantId: TenantId): Promise<GuestNote[]> {
+  async findByGuestId(
+    guestId: GuestId,
+    tenantId: TenantId,
+  ): Promise<GuestNote[]> {
     const docs = await this.noteModel
       .find({
         guestId: new Types.ObjectId(guestId.toString()),

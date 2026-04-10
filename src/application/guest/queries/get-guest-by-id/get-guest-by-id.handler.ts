@@ -10,9 +10,10 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 
 @QueryHandler(GetGuestByIdQuery)
-export class GetGuestByIdHandler
-  implements IQueryHandler<GetGuestByIdQuery, GetGuestByIdResult>
-{
+export class GetGuestByIdHandler implements IQueryHandler<
+  GetGuestByIdQuery,
+  GetGuestByIdResult
+> {
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
@@ -42,22 +43,25 @@ export class GetGuestByIdHandler
         lastName: guest.getLastName(),
         primaryEmail: guest.getPrimaryEmail(),
         emails: guest.getEmails(),
-        phones: guest.getPhones().map(p => ({
+        phones: guest.getPhones().map((p) => ({
           number: p.number,
           type: p.type,
-          isPrimary: p.isPrimary
+          isPrimary: p.isPrimary,
         })),
         status: guest.getStatus(),
         tags: guest.getTags(),
         preferencesNotes: guest.getPreferencesNotes() || null,
-        summary: guest.getSummary() ? {
-          totalBookings: guest.getSummary().totalBookings,
-          totalNights: guest.getSummary().totalNights,
-          totalSpend: guest.getSummary().totalSpend,
-          lastStayAt: guest.getSummary().lastStayAt,
-          lastPropertyId: guest.getSummary().lastPropertyId?.toString() ?? null,
-          lastUnitId: guest.getSummary().lastUnitId?.toString() ?? null,
-        } : null,
+        summary: guest.getSummary()
+          ? {
+              totalBookings: guest.getSummary().totalBookings,
+              totalNights: guest.getSummary().totalNights,
+              totalSpend: guest.getSummary().totalSpend,
+              lastStayAt: guest.getSummary().lastStayAt,
+              lastPropertyId:
+                guest.getSummary().lastPropertyId?.toString() ?? null,
+              lastUnitId: guest.getSummary().lastUnitId?.toString() ?? null,
+            }
+          : null,
         createdAt: guest.getCreatedAt().toISOString(),
         updatedAt: guest.getUpdatedAt().toISOString(),
       },

@@ -22,7 +22,7 @@ export class GetPublicUnitByIdQueryHandler implements IQueryHandler<
   ): Promise<GetPublicUnitByIdResult> {
     const unitId = UnitId.create(query.unitId);
     const unit = await this.unitRepository.findById(unitId);
-    
+
     if (!unit) {
       throw new NotFoundException('Unit not found');
     }

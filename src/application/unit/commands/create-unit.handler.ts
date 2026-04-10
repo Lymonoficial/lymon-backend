@@ -20,8 +20,14 @@ import { BedTypeEnum } from '@/domain/unit/value-objects/bed-type.vo';
 import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AuditLoggedEvent, AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
-import { AuditAction, AuditEntityType } from '@/domain/audit/value-objects/audit-action.vo';
+import {
+  AuditLoggedEvent,
+  AUDIT_LOG_EVENT,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(CreateUnitCommand)
 export class CreateUnitHandler implements ICommandHandler<CreateUnitCommand> {

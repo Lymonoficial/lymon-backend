@@ -5,21 +5,16 @@ import {
   GetGuestEmailsByGuestIdResult,
   GuestEmailDto,
 } from './get-guest-emails-by-guest-id.result';
-import {
-  GUEST_EMAIL_REPOSITORY,
-} from '@/domain/guest-email/repositories/guest-email.repository';
+import { GUEST_EMAIL_REPOSITORY } from '@/domain/guest-email/repositories/guest-email.repository';
 import type { GuestEmailRepository } from '@/domain/guest-email/repositories/guest-email.repository';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @QueryHandler(GetGuestEmailsByGuestIdQuery)
-export class GetGuestEmailsByGuestIdHandler
-  implements
-    IQueryHandler<
-      GetGuestEmailsByGuestIdQuery,
-      GetGuestEmailsByGuestIdResult
-    >
-{
+export class GetGuestEmailsByGuestIdHandler implements IQueryHandler<
+  GetGuestEmailsByGuestIdQuery,
+  GetGuestEmailsByGuestIdResult
+> {
   constructor(
     @Inject(GUEST_EMAIL_REPOSITORY)
     private readonly guestEmailRepository: GuestEmailRepository,
@@ -38,7 +33,10 @@ export class GetGuestEmailsByGuestIdHandler
       return { items: [] };
     }
 
-    const emails = await this.guestEmailRepository.findByGuestId(tenantId, guestId);
+    const emails = await this.guestEmailRepository.findByGuestId(
+      tenantId,
+      guestId,
+    );
 
     const items: GuestEmailDto[] = emails.map((email) => ({
       id: email.getId().toString(),
@@ -46,7 +44,7 @@ export class GetGuestEmailsByGuestIdHandler
       subject: email.getSubject(),
       status: email.getStatus(),
       messageId: email.getMessageId(),
-      attachments: email.getAttachments().map(att => ({
+      attachments: email.getAttachments().map((att) => ({
         url: att.url,
         name: att.name,
         type: att.type,

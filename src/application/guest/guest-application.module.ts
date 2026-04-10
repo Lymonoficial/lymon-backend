@@ -9,10 +9,7 @@ import { AssignGuestTagsCommand } from './commands/assign-guest-tags.command';
 import { AssignGuestTagsHandler } from './commands/assign-guest-tags.handler';
 import { MongoGuestRepository } from '@/infrastructure/persistence/repositories/mongo-guest.repository';
 
-const CommandHandlers = [
-  CreateGuestHandler,
-  AssignGuestTagsHandler,
-];
+const CommandHandlers = [CreateGuestHandler, AssignGuestTagsHandler];
 const QueryHandlers = [
   SearchGuestsQuery,
   GetGuestByIdHandler,
@@ -20,10 +17,7 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [
-    CqrsModule,
-    PersistenceModule,
-  ],
+  imports: [CqrsModule, PersistenceModule],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers],
 })

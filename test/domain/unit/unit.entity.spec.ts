@@ -1077,7 +1077,10 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('UT-105: should accept many amenities', () => {
-      const manyAmenities = Array.from({ length: 100 }, (_, i) => `amenity-${i}`);
+      const manyAmenities = Array.from(
+        { length: 100 },
+        (_, i) => `amenity-${i}`,
+      );
 
       unit.updateAmenities(manyAmenities);
 
