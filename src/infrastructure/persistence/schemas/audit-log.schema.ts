@@ -26,6 +26,15 @@ export class AuditLogDocument extends Document {
   @Prop({ type: Object })
   metadata?: Record<string, unknown>;
 
+  @Prop({ type: Object })
+  previousValue?: Record<string, unknown>;
+
+  @Prop({ type: Object })
+  newValue?: Record<string, unknown>;
+
+  @Prop()
+  ipAddress?: string;
+
   @Prop({ required: true, default: () => new Date() })
   createdAt: Date;
 }
