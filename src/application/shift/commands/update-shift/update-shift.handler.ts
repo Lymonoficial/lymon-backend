@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Types } from 'mongoose';
 import { UpdateShiftCommand } from './update-shift.command';
 import { UpdateShiftCommandResult } from './update-shift.result';
 import {
@@ -76,20 +75,14 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     const nextEndTime = command.endTime ?? shift.getEndTime();
     const nextStartMinutes = this.toMinutes(nextStartTime);
     const nextEndMinutes = this.toMinutes(nextEndTime);
+    const previousSnapshot = this.getShiftSnapshot(shift);
 
     if (nextEndMinutes <= nextStartMinutes) {
       throw new BadRequestException('Shift end time must be after start time');
     }
 
-    // Validate property ID format if provided
-    if (command.propertyId && !this.isValidObjectId(command.propertyId)) {
-      throw new BadRequestException('Invalid property ID format');
-    }
-
-    // Validate staff member ID format if provided
-    if (command.staffMemberId && !this.isValidObjectId(command.staffMemberId)) {
-      throw new BadRequestException('Invalid staff member ID format');
-    }
+    this.validateObjectId(command.propertyId, 'property');
+    this.validateObjectId(command.staffMemberId, 'staff member');
 
     const staffMember = await this.userRepository.findById(nextStaffMemberId);
     if (!staffMember || !staffMember.getTenantId().equals(tenantId)) {
@@ -142,6 +135,9 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
       throw error;
     }
 
+    const nextSnapshot = this.getShiftSnapshot(shift);
+    const auditDiff = this.buildAuditDiff(previousSnapshot, nextSnapshot);
+
     const updatedShiftId = await this.shiftRepository.save(shift);
 
     await this.emailService.sendEmail({
@@ -173,13 +169,11 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
           AuditAction.SHIFT_UPDATED,
           AuditEntityType.SHIFT,
           updatedShiftId,
-          {
-            staffMemberId: shift.getStaffMemberId().toString(),
-            propertyId: shift.getPropertyId().toString(),
-            date: this.formatDate(shift.getShiftDate()),
-            startTime: shift.getStartTime(),
-            endTime: shift.getEndTime(),
-          },
+          auditDiff.changedFields.length > 0
+            ? { changedFields: auditDiff.changedFields }
+            : undefined,
+          auditDiff.previousValue,
+          auditDiff.newValue,
         ),
       );
     }
@@ -221,7 +215,63 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     return value.toISOString().slice(0, 10);
   }
 
-  private isValidObjectId(id: string): boolean {
-    return Types.ObjectId.isValid(id);
+  private getShiftSnapshot(shift: {
+    getStaffMemberId(): UserId;
+    getPropertyId(): PropertyId;
+    getShiftDate(): Date;
+    getStartTime(): string;
+    getEndTime(): string;
+    getNotes(): string | null;
+  }): Record<string, unknown> {
+    return {
+      staffMemberId: shift.getStaffMemberId().toString(),
+      propertyId: shift.getPropertyId().toString(),
+      date: this.formatDate(shift.getShiftDate()),
+      startTime: shift.getStartTime(),
+      endTime: shift.getEndTime(),
+      notes: shift.getNotes(),
+    };
+  }
+
+  private buildAuditDiff(
+    previousSnapshot: Record<string, unknown>,
+    nextSnapshot: Record<string, unknown>,
+  ): {
+    changedFields: string[];
+    previousValue?: Record<string, unknown>;
+    newValue?: Record<string, unknown>;
+  } {
+    const changedFields: string[] = [];
+    const previousValue: Record<string, unknown> = {};
+    const newValue: Record<string, unknown> = {};
+
+    for (const field of Object.keys(nextSnapshot)) {
+      const previousFieldValue = previousSnapshot[field];
+      const nextFieldValue = nextSnapshot[field];
+
+      if (previousFieldValue === nextFieldValue) {
+        continue;
+      }
+
+      changedFields.push(field);
+      previousValue[field] = previousFieldValue;
+      newValue[field] = nextFieldValue;
+    }
+
+    return {
+      changedFields,
+      previousValue: changedFields.length > 0 ? previousValue : undefined,
+      newValue: changedFields.length > 0 ? newValue : undefined,
+    };
+  }
+
+  private validateObjectId(value: string | undefined, fieldName: string): void {
+    if (!value) {
+      return;
+    }
+
+    if (!/^[a-fA-F0-9]{24}$/.test(value)) {
+      throw new BadRequestException(`Invalid ${fieldName} ID format`);
+    }
   }
 }
