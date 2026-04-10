@@ -28,6 +28,9 @@ export class MongoAuditLogRepository implements AuditLogRepository {
       entityType: log.getEntityType(),
       entityId: log.getEntityId(),
       metadata: log.getMetadata(),
+      previousValue: log.getPreviousValue(),
+      newValue: log.getNewValue(),
+      ipAddress: log.getIpAddress(),
       createdAt: log.getCreatedAt(),
     });
   }
@@ -77,6 +80,9 @@ export class MongoAuditLogRepository implements AuditLogRepository {
     entityType: string;
     entityId?: string;
     metadata?: Record<string, unknown>;
+    previousValue?: Record<string, unknown>;
+    newValue?: Record<string, unknown>;
+    ipAddress?: string;
     createdAt: Date;
   }): AuditLog {
     return AuditLog.reconstitute(
@@ -89,6 +95,9 @@ export class MongoAuditLogRepository implements AuditLogRepository {
         entityType: doc.entityType as AuditEntityType,
         entityId: doc.entityId,
         metadata: doc.metadata,
+        previousValue: doc.previousValue,
+        newValue: doc.newValue,
+        ipAddress: doc.ipAddress,
         createdAt: doc.createdAt,
       },
     );

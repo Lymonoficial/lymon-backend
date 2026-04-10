@@ -14,7 +14,7 @@ export function Match(property: string, validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: unknown, args: ValidationArguments) {
-          const [relatedPropertyName] = args.constraints as string[];
+          const [relatedPropertyName] = args.constraints;
           const relatedValue = (args.object as Record<string, unknown>)[
             relatedPropertyName
           ];

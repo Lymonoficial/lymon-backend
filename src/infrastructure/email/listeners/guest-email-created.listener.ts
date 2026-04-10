@@ -66,9 +66,9 @@ export class GuestEmailCreatedListener {
       guestEmail.updateStatus(GuestEmailStatusEnum.SENT);
       guestEmail.updateMessageId(response.messageId);
       await this.guestEmailRepository.save(guestEmail);
-    } catch (error: unknown) {
+    } catch (error: any) {
       this.logger.error(
-        `Error procesando email ${event.guestEmailId}: ${error instanceof Error ? error.message : String(error)}`,
+        `Error procesando email ${event.guestEmailId}: ${error.message}`,
       );
 
       try {

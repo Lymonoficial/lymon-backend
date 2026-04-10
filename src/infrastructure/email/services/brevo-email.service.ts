@@ -50,12 +50,11 @@ export class BrevoEmailService implements IEmailService {
         `[BREVO] Email enviado con éxito desde ${sender.email} a ${params.to[0].email} (ID: ${messageId})`,
       );
       return { messageId };
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
+    } catch (error: any) {
       this.logger.error(
-        `[BREVO_ERROR] Fallo al enviar email desde ${params.sender?.email || this.defaultSender.email}: ${message}`,
+        `[BREVO_ERROR] Fallo al enviar email desde ${params.sender?.email || this.defaultSender.email}: ${error.message}`,
       );
-      throw new Error(`Failed to send email: ${message}`);
+      throw new Error(`Failed to send email: ${error.message}`);
     }
   }
 

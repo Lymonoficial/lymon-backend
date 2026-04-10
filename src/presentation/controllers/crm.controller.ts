@@ -171,7 +171,6 @@ export class CrmController {
       message: 'Tags assigned successfully',
     };
   }
-
   @Get('guests/:guestId/emails')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)

@@ -185,9 +185,9 @@ describe('GetReservationsByGuestIdHandler', () => {
       [GUEST_ID_1],
       { page: 3, limit: 5, sortBy: 'createdAt', sortOrder: 'desc' },
     );
-    expect(
-      guestReservationsReadRepository.countByGuestIds,
-    ).toHaveBeenCalledWith([GUEST_ID_1]);
+    expect(reservationRepository.countByGuestIds).toHaveBeenCalledWith([
+      GUEST_ID_1,
+    ]);
   });
 
   it('returns correct total when it exceeds the page limit', async () => {
