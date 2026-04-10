@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UpdateSupplierCommand } from './update-supplier.command';
 import { UpdateSupplierResult } from './update-supplier.result';
 import {
@@ -14,6 +15,14 @@ import {
 import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { Supplier } from '@/domain/inventory/entities/supplier.entity';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
 
 @CommandHandler(UpdateSupplierCommand)
 export class UpdateSupplierHandler implements ICommandHandler<
@@ -23,6 +32,7 @@ export class UpdateSupplierHandler implements ICommandHandler<
   constructor(
     @Inject(SUPPLIER_REPOSITORY)
     private readonly supplierRepository: SupplierRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: UpdateSupplierCommand): Promise<UpdateSupplierResult> {
@@ -76,6 +86,18 @@ export class UpdateSupplierHandler implements ICommandHandler<
     });
 
     await this.supplierRepository.save(updatedSupplier);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId ?? '',
+        command.actorEmail ?? '',
+        AuditAction.SUPPLIER_UPDATED,
+        AuditEntityType.SUPPLIER,
+        command.supplierId,
+      ),
+    );
 
     return new UpdateSupplierResult(command.supplierId);
   }
