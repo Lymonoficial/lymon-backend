@@ -37,7 +37,7 @@ describe('SearchGuestsQuery', () => {
 
   it('should call findByTenantId if the term is empty', async () => {
     const tenantId = TenantId.createFromString('hotel-123');
-    
+
     await query.execute(tenantId, '');
 
     expect(mockRepository.findByTenantId).toHaveBeenCalledWith(tenantId);

@@ -127,7 +127,7 @@ describe('CreateGuestHandler', () => {
 
       // Validates guest was saved with normalized and mapped values
       expect(guestRepository.save).toHaveBeenCalledTimes(1);
-      const savedGuest: Guest = guestRepository.save.mock.calls[0][0] as Guest;
+      const savedGuest: Guest = guestRepository.save.mock.calls[0][0];
       expect(savedGuest.getTenantId().toString()).toBe('tenant-123');
       expect(savedGuest.getFullName()).toBe('Jane Smith');
       expect(savedGuest.getPrimaryEmail()).toBe('jane@example.com');

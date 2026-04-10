@@ -114,7 +114,9 @@ export class MongoPropertyRepository implements PropertyRepository {
       location: Location.create(document.location.lat, document.location.lng),
       checkInTime: document.checkInTime,
       checkOutTime: document.checkOutTime,
-      cancellationPolicy: CancellationPolicy.create(document.cancellationPolicy),
+      cancellationPolicy: CancellationPolicy.create(
+        document.cancellationPolicy,
+      ),
       hostPhone: document.hostPhone,
       hostEmail: document.hostEmail,
       createdAt: document.createdAt,

@@ -1,4 +1,7 @@
-import { Tenant, TenantReconstitutionProps } from '@/domain/tenant/entities/tenant.entity';
+import {
+  Tenant,
+  TenantReconstitutionProps,
+} from '@/domain/tenant/entities/tenant.entity';
 import { TenantRepository } from '@/domain/tenant/repositories/tenant.repository';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';

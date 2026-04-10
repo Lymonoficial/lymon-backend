@@ -1,6 +1,9 @@
 import { GuestEmailId } from '../value-objects/guest-email-id.vo';
 import { GuestEmailStatusEnum } from '../value-objects/guest-email-status.vo';
-import { CreateGuestEmailParams, GuestEmailAttachment } from './guest-email.types';
+import {
+  CreateGuestEmailParams,
+  GuestEmailAttachment,
+} from './guest-email.types';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 
@@ -60,15 +63,33 @@ export class GuestEmail {
   }
 
   // Getters
-  getId(): GuestEmailId { return this.id; }
-  getTenantId(): TenantId { return this.tenantId; }
-  getGuestId(): GuestId { return this.guestId; }
-  getSubject(): string { return this.subject; }
-  getStatus(): GuestEmailStatusEnum { return this.status; }
-  getAttachments(): GuestEmailAttachment[] { return [...this.attachments]; }
-  getMessageId(): string | null { return this.messageId; }
-  getSentById(): string | null { return this.sentById; }
-  getCreatedAt(): Date { return this.createdAt; }
+  getId(): GuestEmailId {
+    return this.id;
+  }
+  getTenantId(): TenantId {
+    return this.tenantId;
+  }
+  getGuestId(): GuestId {
+    return this.guestId;
+  }
+  getSubject(): string {
+    return this.subject;
+  }
+  getStatus(): GuestEmailStatusEnum {
+    return this.status;
+  }
+  getAttachments(): GuestEmailAttachment[] {
+    return [...this.attachments];
+  }
+  getMessageId(): string | null {
+    return this.messageId;
+  }
+  getSentById(): string | null {
+    return this.sentById;
+  }
+  getCreatedAt(): Date {
+    return this.createdAt;
+  }
 
   updateStatus(status: GuestEmailStatusEnum): void {
     this.status = status;

@@ -6,8 +6,11 @@ import { DeletePropertyHandler } from '@/application/property/commands/delete-pr
 import { GetPropertiesByTenantQueryHandler } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.query-handler';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 
-
-const CommandHandlers = [CreatePropertyHandler, UpdatePropertyHandler, DeletePropertyHandler];
+const CommandHandlers = [
+  CreatePropertyHandler,
+  UpdatePropertyHandler,
+  DeletePropertyHandler,
+];
 const QueryHandlers = [GetPropertiesByTenantQueryHandler];
 
 @Module({

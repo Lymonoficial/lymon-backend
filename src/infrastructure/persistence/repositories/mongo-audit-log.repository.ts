@@ -90,7 +90,7 @@ export class MongoAuditLogRepository implements AuditLogRepository {
         entityId: doc.entityId,
         metadata: doc.metadata,
         createdAt: doc.createdAt,
-      }
+      },
     );
   }
 }
