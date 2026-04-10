@@ -12,10 +12,12 @@ import { EmailTemplateService } from '@/infrastructure/common/email-template.ser
 export class BrevoEmailService implements IEmailService {
   private readonly logger = new Logger(BrevoEmailService.name);
   private readonly client: BrevoClient;
-  
+
   private get defaultSender() {
     return {
-      email: this.configService.get<string>('SENDER_EMAIL') || 'lymonoficial@outlook.com',
+      email:
+        this.configService.get<string>('SENDER_EMAIL') ||
+        'lymonoficial@outlook.com',
       name: 'Lymon',
     };
   }
@@ -42,13 +44,18 @@ export class BrevoEmailService implements IEmailService {
         ...(params.attachments &&
           params.attachments.length > 0 && { attachment: params.attachments }),
       });
-      
+
       const messageId = response.messageId || 'SENT';
-      this.logger.log(`[BREVO] Email enviado con éxito desde ${sender.email} a ${params.to[0].email} (ID: ${messageId})`);
+      this.logger.log(
+        `[BREVO] Email enviado con éxito desde ${sender.email} a ${params.to[0].email} (ID: ${messageId})`,
+      );
       return { messageId };
-    } catch (error: any) {
-      this.logger.error(`[BREVO_ERROR] Fallo al enviar email desde ${params.sender?.email || this.defaultSender.email}: ${error.message}`);
-      throw new Error(`Failed to send email: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[BREVO_ERROR] Fallo al enviar email desde ${params.sender?.email || this.defaultSender.email}: ${message}`,
+      );
+      throw new Error(`Failed to send email: ${message}`);
     }
   }
 

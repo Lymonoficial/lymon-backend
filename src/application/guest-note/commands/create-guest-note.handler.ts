@@ -1,4 +1,9 @@
-import { Inject, NotFoundException, ForbiddenException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Inject,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GuestNote } from '@/domain/guest-note/entities/guest-note.entity';
 import { GuestNoteTypeEnum } from '@/domain/guest-note/value-objects/guest-node-type.vo';
@@ -24,7 +29,9 @@ export class CreateGuestNoteHandler implements ICommandHandler<CreateGuestNoteCo
     private readonly guestRepository: GuestRepository,
   ) {}
 
-  async execute(command: CreateGuestNoteCommand): Promise<CreateGuestNoteResult> {
+  async execute(
+    command: CreateGuestNoteCommand,
+  ): Promise<CreateGuestNoteResult> {
     if (!command.tenantId) {
       throw new ForbiddenException('Tenant context is required');
     }
@@ -48,7 +55,9 @@ export class CreateGuestNoteHandler implements ICommandHandler<CreateGuestNoteCo
 
     // Verificamos que el creador/tenant tenga permiso sobre el huésped
     if (!guest.getTenantId().equals(tenantId)) {
-      throw new ForbiddenException('Creator not authorized for this guest tenant');
+      throw new ForbiddenException(
+        'Creator not authorized for this guest tenant',
+      );
     }
 
     const guestNote = GuestNote.create({

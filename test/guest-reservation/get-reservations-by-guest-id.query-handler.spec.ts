@@ -1,7 +1,7 @@
 import { GetReservationsByGuestIdHandler } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query-handler';
 import { GetReservationsByGuestIdQuery } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query';
 import { GetReservationsByGuestIdResult } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.result';
-import { ReservationRepository } from '@/domain/reservation/repositories/reservation.repository';
+import { GuestReservationsReadRepository } from '@/domain/reservation/repositories/guest-reservations-read.repository';
 import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { Reservation } from '@/domain/reservation/entities/reservation.entity';
 import { Guest } from '@/domain/guest/entities/guest.entity';
@@ -26,26 +26,10 @@ const GUEST_ACCOUNT_ID = '65f1a1a2b3c4d5e6f7a8b900';
 const GUEST_ID_1 = '65f1a1a2b3c4d5e6f7a8b9d1';
 const GUEST_ID_2 = '65f1a1a2b3c4d5e6f7a8b9d2';
 
-function createReservationRepositoryMock(): jest.Mocked<ReservationRepository> {
+function createGuestReservationsReadRepositoryMock(): jest.Mocked<GuestReservationsReadRepository> {
   return {
-    save: jest.fn(),
-    findById: jest.fn(),
-    findByTenantId: jest.fn(),
-    findByPropertyId: jest.fn(),
-    findByUnitId: jest.fn(),
-    findByGuestId: jest.fn(),
-    findByUnitAndDateRange: jest.fn(),
-    findActiveByUnitFromDate: jest.fn(),
-    findByExternalId: jest.fn(),
-    existsActiveByPropertyId: jest.fn(),
-    existsActiveByUnitId: jest.fn(),
-    countByTenantId: jest.fn(),
-    countByGuestId: jest.fn(),
-    findAllByGuestId: jest.fn(),
-    countAllByGuestId: jest.fn(),
     findByGuestIds: jest.fn(),
     countByGuestIds: jest.fn(),
-    findConfirmedDueForCheckIn: jest.fn(),
   };
 }
 
@@ -55,6 +39,7 @@ function createGuestRepositoryMock(): jest.Mocked<GuestRepository> {
     findById: jest.fn(),
     findByTenantId: jest.fn(),
     findByPrimaryEmail: jest.fn(),
+    findByDocumentNumber: jest.fn(),
     findByGuestAccountId: jest.fn(),
     findAllByGuestAccountId: jest.fn(),
     countByTenantId: jest.fn(),
@@ -94,7 +79,11 @@ function makeGuest(guestId: string, tenantId: string): Guest {
   );
 }
 
-function makeReservation(id: string, guestId: string, tenantId: string): Reservation {
+function makeReservation(
+  id: string,
+  guestId: string,
+  tenantId: string,
+): Reservation {
   const reservation = Reservation.createConfirmed({
     tenantId: TenantId.createFromString(tenantId),
     propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
@@ -114,14 +103,15 @@ function makeReservation(id: string, guestId: string, tenantId: string): Reserva
 
 describe('GetReservationsByGuestIdHandler', () => {
   let handler: GetReservationsByGuestIdHandler;
-  let reservationRepository: jest.Mocked<ReservationRepository>;
+  let guestReservationsReadRepository: jest.Mocked<GuestReservationsReadRepository>;
   let guestRepository: jest.Mocked<GuestRepository>;
 
   beforeEach(() => {
-    reservationRepository = createReservationRepositoryMock();
+    guestReservationsReadRepository =
+      createGuestReservationsReadRepositoryMock();
     guestRepository = createGuestRepositoryMock();
     handler = new GetReservationsByGuestIdHandler(
-      reservationRepository,
+      guestReservationsReadRepository,
       guestRepository,
     );
   });
@@ -136,19 +126,34 @@ describe('GetReservationsByGuestIdHandler', () => {
     expect(result).toBeInstanceOf(GetReservationsByGuestIdResult);
     expect(result.items).toHaveLength(0);
     expect(result.total).toBe(0);
-    expect(reservationRepository.findByGuestIds).not.toHaveBeenCalled();
-    expect(reservationRepository.countByGuestIds).not.toHaveBeenCalled();
+    expect(
+      guestReservationsReadRepository.findByGuestIds,
+    ).not.toHaveBeenCalled();
+    expect(
+      guestReservationsReadRepository.countByGuestIds,
+    ).not.toHaveBeenCalled();
   });
 
   it('returns paginated reservations across all tenants for the guestAccountId', async () => {
     const guest1 = makeGuest(GUEST_ID_1, 'tenant-1');
     const guest2 = makeGuest(GUEST_ID_2, 'tenant-2');
-    const res1 = makeReservation('65f1a1a2b3c4d5e6f7a8b9e1', GUEST_ID_1, 'tenant-1');
-    const res2 = makeReservation('65f1a1a2b3c4d5e6f7a8b9e2', GUEST_ID_2, 'tenant-2');
+    const res1 = makeReservation(
+      '65f1a1a2b3c4d5e6f7a8b9e1',
+      GUEST_ID_1,
+      'tenant-1',
+    );
+    const res2 = makeReservation(
+      '65f1a1a2b3c4d5e6f7a8b9e2',
+      GUEST_ID_2,
+      'tenant-2',
+    );
 
     guestRepository.findAllByGuestAccountId.mockResolvedValue([guest1, guest2]);
-    reservationRepository.findByGuestIds.mockResolvedValue([res1, res2]);
-    reservationRepository.countByGuestIds.mockResolvedValue(2);
+    guestReservationsReadRepository.findByGuestIds.mockResolvedValue([
+      res1,
+      res2,
+    ]);
+    guestReservationsReadRepository.countByGuestIds.mockResolvedValue(2);
 
     const result = await handler.execute(
       new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 1, 10),
@@ -159,10 +164,9 @@ describe('GetReservationsByGuestIdHandler', () => {
     expect(result.total).toBe(2);
     expect(result.page).toBe(1);
     expect(result.limit).toBe(10);
-    expect(reservationRepository.findByGuestIds).toHaveBeenCalledWith(
+    expect(guestReservationsReadRepository.findByGuestIds).toHaveBeenCalledWith(
       [GUEST_ID_1, GUEST_ID_2],
-      1,
-      10,
+      { page: 1, limit: 10, sortBy: 'createdAt', sortOrder: 'desc' },
     );
   });
 
@@ -170,26 +174,33 @@ describe('GetReservationsByGuestIdHandler', () => {
     const guest = makeGuest(GUEST_ID_1, 'tenant-1');
 
     guestRepository.findAllByGuestAccountId.mockResolvedValue([guest]);
-    reservationRepository.findByGuestIds.mockResolvedValue([]);
-    reservationRepository.countByGuestIds.mockResolvedValue(0);
+    guestReservationsReadRepository.findByGuestIds.mockResolvedValue([]);
+    guestReservationsReadRepository.countByGuestIds.mockResolvedValue(0);
 
-    await handler.execute(new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 3, 5));
-
-    expect(reservationRepository.findByGuestIds).toHaveBeenCalledWith(
-      [GUEST_ID_1],
-      3,
-      5,
+    await handler.execute(
+      new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 3, 5),
     );
-    expect(reservationRepository.countByGuestIds).toHaveBeenCalledWith([GUEST_ID_1]);
+
+    expect(guestReservationsReadRepository.findByGuestIds).toHaveBeenCalledWith(
+      [GUEST_ID_1],
+      { page: 3, limit: 5, sortBy: 'createdAt', sortOrder: 'desc' },
+    );
+    expect(
+      guestReservationsReadRepository.countByGuestIds,
+    ).toHaveBeenCalledWith([GUEST_ID_1]);
   });
 
   it('returns correct total when it exceeds the page limit', async () => {
     const guest = makeGuest(GUEST_ID_1, 'tenant-1');
-    const res = makeReservation('65f1a1a2b3c4d5e6f7a8b9e1', GUEST_ID_1, 'tenant-1');
+    const res = makeReservation(
+      '65f1a1a2b3c4d5e6f7a8b9e1',
+      GUEST_ID_1,
+      'tenant-1',
+    );
 
     guestRepository.findAllByGuestAccountId.mockResolvedValue([guest]);
-    reservationRepository.findByGuestIds.mockResolvedValue([res]);
-    reservationRepository.countByGuestIds.mockResolvedValue(15);
+    guestReservationsReadRepository.findByGuestIds.mockResolvedValue([res]);
+    guestReservationsReadRepository.countByGuestIds.mockResolvedValue(15);
 
     const result = await handler.execute(
       new GetReservationsByGuestIdQuery(GUEST_ACCOUNT_ID, 1, 10),

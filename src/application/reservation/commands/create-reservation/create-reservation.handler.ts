@@ -1,9 +1,4 @@
-import {
-  Inject,
-  ConflictException,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Inject, ConflictException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateReservationCommand } from './create-reservation.command';

@@ -1,4 +1,4 @@
-import { Inject, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
@@ -34,7 +34,9 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
 
   async execute(command: SendGuestMessageCommand): Promise<{ id: string }> {
     if (!command.body && !command.templateId) {
-      throw new BadRequestException('Debe proporcionar un mensaje de texto libre o un ID de plantilla');
+      throw new BadRequestException(
+        'Debe proporcionar un mensaje de texto libre o un ID de plantilla',
+      );
     }
 
     const tenantId = TenantId.createFromString(command.tenantId);
@@ -45,7 +47,12 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
       throw new NotFoundException('Huésped no encontrado');
     }
 
-    const reservations = await this.reservationRepository.findByGuestId(command.tenantId, command.guestId, 1, 1);
+    const reservations = await this.reservationRepository.findByGuestId(
+      command.tenantId,
+      command.guestId,
+      1,
+      1,
+    );
     const lastReservation = reservations.length > 0 ? reservations[0] : null;
 
     let propertyName = 'Lymón Property';
@@ -78,12 +85,21 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
       body: command.body || '',
     };
 
-    const subject = this.templateService.resolvePlaceholders(command.subject || '', dynamicVariables);
-    const resolvedBody = this.templateService.resolvePlaceholders(command.body || '', dynamicVariables);
+    const subject = this.templateService.resolvePlaceholders(
+      command.subject || '',
+      dynamicVariables,
+    );
+    const resolvedBody = this.templateService.resolvePlaceholders(
+      command.body || '',
+      dynamicVariables,
+    );
 
     let htmlContent = '';
     if (command.templateId) {
-      const templateName = command.templateId === 'GUEST_WELCOME' ? 'guest-message' : command.templateId;
+      const templateName =
+        command.templateId === 'GUEST_WELCOME'
+          ? 'guest-message'
+          : command.templateId;
       htmlContent = this.templateService.renderTemplate(templateName, {
         ...dynamicVariables,
         body: resolvedBody,
@@ -113,8 +129,13 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
 
     // Pasamos el NOMBRE DE LA PROPIEDAD como remitente visual
     this.eventEmitter.emit(
-      'guest-email.created', 
-      new GuestEmailCreatedEvent(guestEmail.getId().toString(), subject, htmlContent, propertyName)
+      'guest-email.created',
+      new GuestEmailCreatedEvent(
+        guestEmail.getId().toString(),
+        subject,
+        htmlContent,
+        propertyName,
+      ),
     );
 
     return { id: guestEmail.getId().toString() };

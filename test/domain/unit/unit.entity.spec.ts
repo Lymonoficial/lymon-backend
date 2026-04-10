@@ -655,7 +655,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('UT-064: should update updatedAt timestamp', () => {
-      const originalUpdatedAt = unit.getUpdatedAt();
       const before = new Date();
       unit.updateDetails('New Suite', 'New description');
       const after = new Date();
@@ -802,7 +801,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     it('UT-080: should update updatedAt timestamp', () => {
       const before = new Date();
       unit.updateInventoryCount(5);
-      const after = new Date();
 
       expect(unit.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
@@ -862,7 +860,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     it('UT-084: should update updatedAt timestamp', () => {
       const before = new Date();
       unit.updateBedrooms([]);
-      const after = new Date();
 
       expect(unit.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
@@ -928,7 +925,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     it('UT-090: should update updatedAt timestamp', () => {
       const before = new Date();
       unit.updateBathroomsCount(1);
-      const after = new Date();
 
       expect(unit.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
@@ -977,7 +973,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     it('UT-094: should update updatedAt timestamp', () => {
       const before = new Date();
       unit.updateShared(true);
-      const after = new Date();
 
       expect(unit.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
@@ -1036,7 +1031,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     it('UT-101: should update updatedAt timestamp', () => {
       const before = new Date();
       unit.updatePrice(300);
-      const after = new Date();
 
       expect(unit.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
@@ -1077,7 +1071,10 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('UT-105: should accept many amenities', () => {
-      const manyAmenities = Array.from({ length: 100 }, (_, i) => `amenity-${i}`);
+      const manyAmenities = Array.from(
+        { length: 100 },
+        (_, i) => `amenity-${i}`,
+      );
 
       unit.updateAmenities(manyAmenities);
 
@@ -1087,7 +1084,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     it('UT-106: should update updatedAt timestamp', () => {
       const before = new Date();
       unit.updateAmenities(['balcony']);
-      const after = new Date();
 
       expect(unit.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
@@ -1130,7 +1126,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
     it('UT-109: should update updatedAt timestamp', () => {
       const before = new Date();
       unit.updateExternalIds(ExternalIds.create());
-      const after = new Date();
 
       expect(unit.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
@@ -1193,7 +1188,6 @@ describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
 
       const before1 = new Date();
       unit.updatePrice(300);
-      const after1 = new Date();
       const secondUpdatedAt = unit.getUpdatedAt();
 
       expect(secondUpdatedAt.getTime()).toBeGreaterThanOrEqual(

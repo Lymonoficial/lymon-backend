@@ -1,7 +1,6 @@
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { PlanType } from '@/domain/tenant/value-objects/plan-type.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { ITenant } from '../interfaces/tenant.interface';
 
 export interface TenantReconstitutionProps {
   id: TenantId;

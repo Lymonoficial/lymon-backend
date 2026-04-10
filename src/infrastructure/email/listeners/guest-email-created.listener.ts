@@ -29,11 +29,16 @@ export class GuestEmailCreatedListener {
       const emailId = GuestEmailId.createFromString(event.guestEmailId);
       const guestEmail = await this.guestEmailRepository.findById(emailId);
 
-      if (!guestEmail || guestEmail.getStatus() !== GuestEmailStatusEnum.PENDING) {
+      if (
+        !guestEmail ||
+        guestEmail.getStatus() !== GuestEmailStatusEnum.PENDING
+      ) {
         return;
       }
 
-      const guest = await this.guestRepository.findById(guestEmail.getGuestId());
+      const guest = await this.guestRepository.findById(
+        guestEmail.getGuestId(),
+      );
       if (!guest) {
         guestEmail.updateStatus(GuestEmailStatusEnum.FAILED);
         await this.guestEmailRepository.save(guestEmail);
@@ -46,11 +51,13 @@ export class GuestEmailCreatedListener {
         subject: event.subject,
         htmlContent: event.body,
         // Si hay senderName (nombre propiedad), lo usamos para sobreescribir el nombre visual
-        sender: event.senderName ? { 
-          email: 'lymonoficial@outlook.com', 
-          name: event.senderName 
-        } : undefined,
-        attachments: guestEmail.getAttachments().map(att => ({
+        sender: event.senderName
+          ? {
+              email: 'lymonoficial@outlook.com',
+              name: event.senderName,
+            }
+          : undefined,
+        attachments: guestEmail.getAttachments().map((att) => ({
           url: att.url,
           name: att.name,
         })),
@@ -59,10 +66,11 @@ export class GuestEmailCreatedListener {
       guestEmail.updateStatus(GuestEmailStatusEnum.SENT);
       guestEmail.updateMessageId(response.messageId);
       await this.guestEmailRepository.save(guestEmail);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Error procesando email ${event.guestEmailId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
 
-    } catch (error: any) {
-      this.logger.error(`Error procesando email ${event.guestEmailId}: ${error.message}`);
-      
       try {
         const emailId = GuestEmailId.createFromString(event.guestEmailId);
         const guestEmail = await this.guestEmailRepository.findById(emailId);
@@ -70,7 +78,9 @@ export class GuestEmailCreatedListener {
           guestEmail.updateStatus(GuestEmailStatusEnum.FAILED);
           await this.guestEmailRepository.save(guestEmail);
         }
-      } catch (e) {}
+      } catch {
+        // silently ignore cleanup errors
+      }
     }
   }
 }

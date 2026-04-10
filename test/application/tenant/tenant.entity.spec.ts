@@ -1,6 +1,12 @@
-import { Tenant, TenantReconstitutionProps } from '../../../src/domain/tenant/entities/tenant.entity';
+import {
+  Tenant,
+  TenantReconstitutionProps,
+} from '../../../src/domain/tenant/entities/tenant.entity';
 import { Email } from '@/domain/shared/value-objects/email.vo';
-import { PlanType, PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
+import {
+  PlanType,
+  PlanTypeEnum,
+} from '@/domain/tenant/value-objects/plan-type.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 describe('Tenant Entity', () => {
@@ -168,7 +174,6 @@ describe('Tenant Entity', () => {
 
     it('should update only specific fields', () => {
       const tenant = Tenant.create(validName, validEmail, validPlan);
-      const originalCreatedAt = tenant.getCreatedAt();
 
       tenant.updateProfile('Updated Name', undefined, undefined);
 

@@ -353,7 +353,6 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('TT-029: should update updatedAt timestamp', () => {
-      const originalUpdatedAt = tenant.getUpdatedAt();
       const before = new Date();
 
       tenant.verifyEmail();
@@ -632,13 +631,23 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('TT-054: should update website', () => {
-      tenant.updateProfile(undefined, undefined, undefined, 'https://example.com');
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        'https://example.com',
+      );
 
       expect(tenant.getWebsite()).toBe('https://example.com');
     });
 
     it('TT-055: should allow setting website to null', () => {
-      tenant.updateProfile(undefined, undefined, undefined, 'https://example.com');
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        'https://example.com',
+      );
       expect(tenant.getWebsite()).toBe('https://example.com');
 
       tenant.updateProfile(undefined, undefined, undefined, null);
@@ -653,7 +662,12 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('TT-057: should not update website if undefined', () => {
-      tenant.updateProfile(undefined, undefined, undefined, 'https://example.com');
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        'https://example.com',
+      );
       const originalWebsite = tenant.getWebsite();
 
       tenant.updateProfile(undefined, undefined, undefined, undefined);
@@ -662,7 +676,12 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('TT-058: should accept various URL formats', () => {
-      tenant.updateProfile(undefined, undefined, undefined, 'http://localhost:3000');
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        'http://localhost:3000',
+      );
       expect(tenant.getWebsite()).toBe('http://localhost:3000');
 
       tenant.updateProfile(undefined, undefined, undefined, 'example.com');
@@ -726,7 +745,13 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
       );
       const originalLogo = tenant.getLogoUrl();
 
-      tenant.updateProfile(undefined, undefined, undefined, undefined, undefined);
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
 
       expect(tenant.getLogoUrl()).toBe(originalLogo);
     });
@@ -778,7 +803,12 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
       const originalPhone = tenant.getContactPhone();
       const originalAddress = tenant.getAddress();
 
-      tenant.updateProfile('Updated Name', undefined, undefined, 'https://new.com');
+      tenant.updateProfile(
+        'Updated Name',
+        undefined,
+        undefined,
+        'https://new.com',
+      );
 
       expect(tenant.getName()).toBe('Updated Name');
       expect(tenant.getContactPhone()).toBe(originalPhone);
@@ -892,7 +922,9 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
       setTimeout(() => {
         tenant.verifyEmail();
         const afterVerify = tenant.getUpdatedAt();
-        expect(afterVerify.getTime()).toBeGreaterThanOrEqual(createdAt.getTime());
+        expect(afterVerify.getTime()).toBeGreaterThanOrEqual(
+          createdAt.getTime(),
+        );
 
         setTimeout(() => {
           tenant.updateProfile('New Name');

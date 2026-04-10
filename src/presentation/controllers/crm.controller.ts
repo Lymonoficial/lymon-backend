@@ -17,6 +17,7 @@ import { Request } from '@nestjs/common';
 import { Post, Body, Param } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
+import { CreateGuestNoteResult } from '@/application/guest-note/commands/create-guest-note.result';
 import { CreateGuestNoteDto } from '@/presentation/dtos/create-guest-note.dto';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
@@ -82,7 +83,7 @@ export class CrmController {
     @Body() dto: CreateGuestNoteDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    const result = await this.commandBus.execute(
+    const result: CreateGuestNoteResult = await this.commandBus.execute(
       new CreateGuestNoteCommand(
         user.tenantId,
         guestId,
@@ -170,7 +171,7 @@ export class CrmController {
       message: 'Tags assigned successfully',
     };
   }
-}
+
   @Get('guests/:guestId/emails')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)
@@ -211,7 +212,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
     @Body() dto: SendGuestMessageDto,
   ) {
-    const result = await this.commandBus.execute(
+    const result: { id: string } = await this.commandBus.execute(
       new SendGuestMessageCommand(
         user.tenantId,
         guestId,
