@@ -78,7 +78,9 @@ export class GuestEmailCreatedListener {
           guestEmail.updateStatus(GuestEmailStatusEnum.FAILED);
           await this.guestEmailRepository.save(guestEmail);
         }
-      } catch (e) {}
+      } catch {
+        // silently ignore cleanup errors
+      }
     }
   }
 }

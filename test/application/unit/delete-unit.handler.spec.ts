@@ -17,25 +17,19 @@ const TENANT_ID = 'tenant-123';
 const PROPERTY_ID = 'property-123';
 
 function makeUnit(overrides?: Partial<{ tenantId: string; id: string }>): Unit {
-  return Unit.reconstitute(
-    UnitId.create(overrides?.id ?? UNIT_ID),
-    TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
-    PropertyId.create(PROPERTY_ID),
-    'Unit Name',
-    'Unit Description',
-    1,
-    4,
-    2,
-    [],
-    1,
-    false,
-    ['wifi'],
-    100,
-    ExternalIds.create(),
-    new Date(),
-    new Date(),
-    null,
-  );
+  return Unit.reconstitute({
+    id: UnitId.create(overrides?.id ?? UNIT_ID),
+    tenantId: TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
+    propertyId: PropertyId.create(PROPERTY_ID),
+    basicInfo: { name: 'Unit Name', description: 'Unit Description' },
+    inventoryConfig: { inventoryCount: 1 },
+    capacityConfig: { maxGuests: 4, standardGuests: 2 },
+    physicalFeatures: { bedrooms: [], bathroomsCount: 1, isShared: false },
+    pricingConfig: { pricePerNight: 100 },
+    amenities: ['wifi'],
+    externalIds: ExternalIds.create(),
+    timestamps: { createdAt: new Date(), updatedAt: new Date() },
+  });
 }
 
 describe('DeleteUnitHandler', () => {

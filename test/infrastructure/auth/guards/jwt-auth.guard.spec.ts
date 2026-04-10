@@ -1,13 +1,13 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { type ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 
 describe('JwtAuthGuard', () => {
-  const makeContext = () =>
+  const makeContext = (): ExecutionContext =>
     ({
       getHandler: jest.fn(),
       getClass: jest.fn(),
-    }) as any;
+    }) as unknown as ExecutionContext;
 
   it('returns true for public routes', () => {
     const reflector = {
@@ -48,9 +48,9 @@ describe('JwtAuthGuard', () => {
 
     const guard = new JwtAuthGuard(reflector);
 
-    expect(() => guard.handleRequest(null, null)).toThrow(
-      UnauthorizedException,
-    );
+    expect(() => {
+      guard.handleRequest(null, null);
+    }).toThrow(UnauthorizedException);
   });
 
   it('returns user when request is valid', () => {

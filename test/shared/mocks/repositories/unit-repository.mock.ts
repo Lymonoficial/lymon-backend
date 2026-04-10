@@ -9,5 +9,6 @@ export function createUnitRepositoryMock(): jest.Mocked<UnitRepository> {
     countByTenantId: jest.fn(),
     delete: jest.fn(),
     findByTenantIdPaginated: jest.fn(),
+    findAllPaginated: jest.fn(),
   };
 }

@@ -139,12 +139,8 @@ describe('User Entity - Full Coverage', () => {
         { roleId: 'ADMIN', scope: { type: 'TENANT' } },
       ];
 
-      const beforeUpdate = new Date();
-
       // Act
       user.updateRoleAssignments(newRoleAssignments);
-
-      const afterUpdate = new Date();
 
       // Assert
       expect(user.getRoleAssignments()).toEqual(newRoleAssignments);
@@ -288,11 +284,8 @@ describe('User Entity - Full Coverage', () => {
         'password',
         TenantId.createFromString('tenant-123'),
       );
-      const beforeVerify = new Date();
-
       // Act
       user.verifyEmail();
-      const afterVerify = new Date();
 
       // Assert
       expect(user.isEmailVerified()).toBe(true);
