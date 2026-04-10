@@ -88,6 +88,12 @@ import {
 } from '@/infrastructure/persistence/schemas/guest-email.schema';
 import { GUEST_EMAIL_REPOSITORY } from '@/domain/guest-email/repositories/guest-email.repository';
 import { MongoGuestEmailRepository } from '@/infrastructure/persistence/repositories/mongo-guest-email.repository';
+import {
+  ShiftDocument,
+  ShiftSchema,
+} from '@/infrastructure/persistence/schemas/shift.schema';
+import { SHIFT_REPOSITORY } from '@/domain/shift/repositories/shift.repository';
+import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/mongo-shift.repository';
 
 @Module({
   imports: [
@@ -109,6 +115,7 @@ import { MongoGuestEmailRepository } from '@/infrastructure/persistence/reposito
       },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
+      { name: ShiftDocument.name, schema: ShiftSchema },
     ]),
   ],
   providers: [
@@ -176,6 +183,10 @@ import { MongoGuestEmailRepository } from '@/infrastructure/persistence/reposito
       provide: GUEST_EMAIL_REPOSITORY,
       useClass: MongoGuestEmailRepository,
     },
+    {
+      provide: SHIFT_REPOSITORY,
+      useClass: MongoShiftRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -195,6 +206,7 @@ import { MongoGuestEmailRepository } from '@/infrastructure/persistence/reposito
     INVENTORY_MOVEMENT_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
+    SHIFT_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
