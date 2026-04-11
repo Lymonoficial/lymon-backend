@@ -7,6 +7,7 @@ import { RecordInventoryMovementHandler } from '@/application/inventory/commands
 import { DeleteInventoryItemHandler } from '@/application/inventory/commands/delete-inventory-item/delete-inventory-item.handler';
 import { CreateSupplierHandler } from '@/application/inventory/commands/create-supplier/create-supplier.handler';
 import { UpdateSupplierHandler } from '@/application/inventory/commands/update-supplier/update-supplier.handler';
+import { DeleteSupplierHandler } from '@/application/inventory/commands/delete-supplier/delete-supplier.handler';
 import { AssociateSupplierToItemHandler } from '@/application/inventory/commands/associate-supplier-to-item/associate-supplier-to-item.handler';
 import { RemoveSupplierFromItemHandler } from '@/application/inventory/commands/remove-supplier-from-item/remove-supplier-from-item.handler';
 import { GetInventoryItemsByPropertyQueryHandler } from '@/application/inventory/queries/get-inventory-items-by-property/get-inventory-items-by-property.query-handler';
@@ -20,6 +21,7 @@ const CommandHandlers = [
   DeleteInventoryItemHandler,
   CreateSupplierHandler,
   UpdateSupplierHandler,
+  DeleteSupplierHandler,
   AssociateSupplierToItemHandler,
   RemoveSupplierFromItemHandler,
 ];

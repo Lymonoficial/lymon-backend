@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Delete,
   Get,
   Post,
   Patch,
@@ -31,6 +32,7 @@ import { CreateSupplierResult } from '@/application/inventory/commands/create-su
 import { UpdateSupplierDto } from '@/presentation/dtos/update-supplier.dto';
 import { UpdateSupplierCommand } from '@/application/inventory/commands/update-supplier/update-supplier.command';
 import { UpdateSupplierResult } from '@/application/inventory/commands/update-supplier/update-supplier.result';
+import { DeleteSupplierCommand } from '@/application/inventory/commands/delete-supplier/delete-supplier.command';
 import { GetItemsBySupplierQuery } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.query';
 import { GetItemsBySupplierResult } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.result';
 
@@ -121,6 +123,31 @@ export class SuppliersController {
         supplierId: result.supplierId,
       },
     };
+  }
+
+  @Delete(':supplierId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_EDIT)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a supplier' })
+  @ApiResponse({ status: 204, description: 'Supplier deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Supplier not found' })
+  @ApiResponse({
+    status: 409,
+    description: 'Supplier has associated inventory items',
+  })
+  async deleteSupplier(
+    @CurrentUser() user: JwtPayload,
+    @Param('supplierId') supplierId: string,
+  ) {
+    await this.commandBus.execute<DeleteSupplierCommand, void>(
+      new DeleteSupplierCommand(
+        String(user.tenantId),
+        supplierId,
+        String(user.userId),
+        String(user.email),
+      ),
+    );
   }
 
   @Get(':supplierId/items')

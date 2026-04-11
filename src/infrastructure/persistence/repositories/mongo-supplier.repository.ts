@@ -74,6 +74,13 @@ export class MongoSupplierRepository implements SupplierRepository {
     return this.toDomain(document);
   }
 
+  async delete(id: SupplierId): Promise<void> {
+    await this.supplierModel.findByIdAndUpdate(id.toString(), {
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
   private toDomain(document: SupplierDocument): Supplier {
     return Supplier.reconstitute({
       id: SupplierId.create(document._id.toHexString()),
