@@ -3,6 +3,7 @@ import { InventoryItemId } from '@/domain/inventory/value-objects/inventory-item
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 
 export const INVENTORY_ITEM_REPOSITORY = 'INVENTORY_ITEM_REPOSITORY';
 
@@ -25,5 +26,9 @@ export interface InventoryItemRepository {
     propertyId: PropertyId,
     sku: string,
   ): Promise<InventoryItem | null>;
+  findBySupplierId(
+    tenantId: TenantId,
+    supplierId: SupplierId,
+  ): Promise<InventoryItem[]>;
   delete(id: InventoryItemId): Promise<void>;
 }

@@ -2,14 +2,14 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
+  Patch,
   HttpCode,
   HttpStatus,
   Param,
-  Delete,
   ParseIntPipe,
   Post,
-  Patch,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -39,6 +39,8 @@ import {
   type SupplierSortOrder,
 } from '@/application/inventory/queries/get-suppliers/get-suppliers.query';
 import { GetSuppliersResult } from '@/application/inventory/queries/get-suppliers/get-suppliers.result';
+import { GetItemsBySupplierQuery } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.query';
+import { GetItemsBySupplierResult } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.result';
 
 @ApiTags('suppliers')
 @ApiBearerAuth('JWT-auth')
@@ -192,5 +194,37 @@ export class SuppliersController {
         String(user.email),
       ),
     );
+  }
+
+  @Get(':supplierId/items')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_VIEW)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get inventory items by supplier' })
+  @ApiResponse({
+    status: 200,
+    description: 'Supplier items retrieved successfully',
+  })
+  async getSupplierItems(
+    @CurrentUser() user: JwtPayload,
+    @Param('supplierId') supplierId: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const result: GetItemsBySupplierResult = await this.queryBus.execute<
+      GetItemsBySupplierQuery,
+      GetItemsBySupplierResult
+    >(new GetItemsBySupplierQuery(user.tenantId, supplierId, page, limit));
+
+    return {
+      message: 'Supplier items retrieved successfully',
+      data: result.items,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
+    };
   }
 }
