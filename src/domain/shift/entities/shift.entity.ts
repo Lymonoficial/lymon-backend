@@ -5,11 +5,12 @@ import { ShiftId } from '@/domain/shift/value-objects/shift-id.vo';
 
 export interface CreateShiftParams {
   tenantId: TenantId;
-  staffMemberId: UserId;
+  staffMemberIds: UserId[];
   propertyId: PropertyId;
-  shiftDate: Date;
-  startTime: string;
-  endTime: string;
+  startDate: Date;
+  endDate?: Date | null;
+  startHour: string;
+  endHour: string;
   startMinutes: number;
   endMinutes: number;
   notes?: string;
@@ -32,11 +33,12 @@ export class Shift {
   private constructor(
     private readonly id: ShiftId | null,
     private readonly tenantId: TenantId,
-    private staffMemberId: UserId,
+    private staffMemberIds: UserId[],
     private propertyId: PropertyId,
-    private shiftDate: Date,
-    private startTime: string,
-    private endTime: string,
+    private startDate: Date,
+    private endDate: Date | null,
+    private startHour: string,
+    private endHour: string,
     private startMinutes: number,
     private endMinutes: number,
     private notes: string | null,
@@ -51,14 +53,22 @@ export class Shift {
       throw new Error('Shift end time must be after start time');
     }
 
+    if (
+      params.endDate &&
+      params.endDate.getTime() < params.startDate.getTime()
+    ) {
+      throw new Error('Shift end date cannot be before start date');
+    }
+
     return new Shift(
       null,
       params.tenantId,
-      params.staffMemberId,
+      params.staffMemberIds,
       params.propertyId,
-      params.shiftDate,
-      params.startTime,
-      params.endTime,
+      params.startDate,
+      params.endDate ?? null,
+      params.startHour,
+      params.endHour,
       params.startMinutes,
       params.endMinutes,
       params.notes?.trim() ?? null,
@@ -72,11 +82,12 @@ export class Shift {
   static reconstitute(
     id: ShiftId,
     tenantId: TenantId,
-    staffMemberId: UserId,
+    staffMemberIds: UserId[],
     propertyId: PropertyId,
-    shiftDate: Date,
-    startTime: string,
-    endTime: string,
+    startDate: Date,
+    endDate: Date | null,
+    startHour: string,
+    endHour: string,
     startMinutes: number,
     endMinutes: number,
     notes: string | null,
@@ -88,11 +99,12 @@ export class Shift {
     return new Shift(
       id,
       tenantId,
-      staffMemberId,
+      staffMemberIds,
       propertyId,
-      shiftDate,
-      startTime,
-      endTime,
+      startDate,
+      endDate,
+      startHour,
+      endHour,
       startMinutes,
       endMinutes,
       notes,
@@ -111,24 +123,44 @@ export class Shift {
     return this.tenantId;
   }
 
+  getStaffMemberIds(): UserId[] {
+    return this.staffMemberIds;
+  }
+
   getStaffMemberId(): UserId {
-    return this.staffMemberId;
+    return this.staffMemberIds[0];
   }
 
   getPropertyId(): PropertyId {
     return this.propertyId;
   }
 
+  getStartDate(): Date {
+    return this.startDate;
+  }
+
+  getEndDate(): Date | null {
+    return this.endDate;
+  }
+
   getShiftDate(): Date {
-    return this.shiftDate;
+    return this.startDate;
+  }
+
+  getStartHour(): string {
+    return this.startHour;
   }
 
   getStartTime(): string {
-    return this.startTime;
+    return this.startHour;
+  }
+
+  getEndHour(): string {
+    return this.endHour;
   }
 
   getEndTime(): string {
-    return this.endTime;
+    return this.endHour;
   }
 
   getStartMinutes(): number {
@@ -165,16 +197,16 @@ export class Shift {
     }
 
     const hasSchedulingChanges =
-      !this.staffMemberId.equals(params.staffMemberId) ||
+      !this.getStaffMemberId().equals(params.staffMemberId) ||
       !this.propertyId.equals(params.propertyId) ||
-      this.shiftDate.getTime() !== params.shiftDate.getTime() ||
-      this.startTime !== params.startTime ||
-      this.endTime !== params.endTime ||
+      this.startDate.getTime() !== params.shiftDate.getTime() ||
+      this.startHour !== params.startTime ||
+      this.endHour !== params.endTime ||
       this.startMinutes !== params.startMinutes ||
       this.endMinutes !== params.endMinutes;
 
     const shiftStartAt = new Date(
-      this.shiftDate.getTime() + this.startMinutes * 60 * 1000,
+      this.startDate.getTime() + this.startMinutes * 60 * 1000,
     );
     const isPastOrActive = now.getTime() >= shiftStartAt.getTime();
 
@@ -185,11 +217,12 @@ export class Shift {
     }
 
     if (!isPastOrActive) {
-      this.staffMemberId = params.staffMemberId;
+      this.staffMemberIds = [params.staffMemberId];
       this.propertyId = params.propertyId;
-      this.shiftDate = params.shiftDate;
-      this.startTime = params.startTime;
-      this.endTime = params.endTime;
+      this.startDate = params.shiftDate;
+      this.endDate = params.shiftDate;
+      this.startHour = params.startTime;
+      this.endHour = params.endTime;
       this.startMinutes = params.startMinutes;
       this.endMinutes = params.endMinutes;
     }

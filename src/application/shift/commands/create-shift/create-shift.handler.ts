@@ -45,57 +45,74 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
     command: CreateShiftCommand,
   ): Promise<CreateShiftCommandResult> {
     const tenantId = TenantId.createFromString(command.tenantId);
-    const staffMemberId = UserId.createFromString(command.staffMemberId);
+    const staffMemberIds = this.toDistinctUserIds(command.staffMemberIds);
     const propertyId = PropertyId.create(command.propertyId);
 
-    const staffMember = await this.userRepository.findById(staffMemberId);
-    if (!staffMember || !staffMember.getTenantId().equals(tenantId)) {
-      throw new NotFoundException('Staff member not found for the tenant');
-    }
-    if (staffMember.isOwner()) {
-      throw new BadRequestException(
-        'Shift can only be assigned to a staff member',
-      );
-    }
+    const staffMembers = await this.getStaffMembers(staffMemberIds, tenantId);
 
     const property = await this.propertyRepository.findById(propertyId);
     if (!property || !property.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Property not found for the tenant');
     }
 
-    const shiftDate = new Date(`${command.date}T00:00:00.000Z`);
-    if (Number.isNaN(shiftDate.getTime())) {
-      throw new BadRequestException('Invalid shift date');
+    const startDate = this.parseDate(
+      command.startDate,
+      'Invalid shift start date',
+    );
+    const endDate = command.endDate
+      ? this.parseDate(command.endDate, 'Invalid shift end date')
+      : null;
+
+    if (endDate && endDate.getTime() < startDate.getTime()) {
+      throw new BadRequestException(
+        'Shift end date cannot be before start date',
+      );
     }
 
-    const start = this.toMinutes(command.startTime);
-    const end = this.toMinutes(command.endTime);
+    const start = this.toMinutes(command.startHour);
+    const end = this.toMinutes(command.endHour);
 
     if (end <= start) {
       throw new BadRequestException('Shift end time must be after start time');
     }
 
-    const overlappingShift = await this.shiftRepository.findOverlappingByStaff(
-      tenantId,
-      staffMemberId,
-      shiftDate,
-      start,
-      end,
-    );
+    const overlapRepository = this.shiftRepository as {
+      findOverlappingByStaffInRange: (
+        tenantId: TenantId,
+        staffMemberId: UserId,
+        startDate: Date,
+        endDate: Date | null,
+        startMinutes: number,
+        endMinutes: number,
+      ) => Promise<Shift | null>;
+    };
 
-    if (overlappingShift) {
-      throw new ConflictException(
-        'The selected staff member already has an overlapping shift',
-      );
+    for (const staffMemberId of staffMemberIds) {
+      const overlappingShift =
+        await overlapRepository.findOverlappingByStaffInRange(
+          tenantId,
+          staffMemberId,
+          startDate,
+          endDate,
+          start,
+          end,
+        );
+
+      if (overlappingShift) {
+        throw new ConflictException(
+          `Staff member ${staffMemberId.toString()} already has an overlapping shift`,
+        );
+      }
     }
 
     const shift = Shift.create({
       tenantId,
-      staffMemberId,
+      staffMemberIds,
       propertyId,
-      shiftDate,
-      startTime: command.startTime,
-      endTime: command.endTime,
+      startDate,
+      endDate,
+      startHour: command.startHour,
+      endHour: command.endHour,
       startMinutes: start,
       endMinutes: end,
       notes: command.notes,
@@ -105,23 +122,23 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
 
     const shiftId = await this.shiftRepository.save(shift);
 
-    await this.emailService.sendEmail({
-      to: [
-        {
+    if (staffMembers.length > 0) {
+      await this.emailService.sendEmail({
+        to: staffMembers.map((staffMember) => ({
           email: staffMember.getEmail().toString(),
           name: staffMember.getEmail().toString(),
-        },
-      ],
-      subject: 'New shift assigned',
-      htmlContent: `
-        <div style="font-family: sans-serif; line-height: 1.6;">
-          <p>A new shift has been assigned to you.</p>
-          <p><strong>Date:</strong> ${command.date}</p>
-          <p><strong>Time:</strong> ${command.startTime} - ${command.endTime}</p>
-          <p><strong>Property:</strong> ${property.getName()}</p>
-        </div>
-      `,
-    });
+        })),
+        subject: 'New shift assigned',
+        htmlContent: `
+            <div style="font-family: sans-serif; line-height: 1.6;">
+              <p>A new shift has been assigned to you.</p>
+              <p><strong>Date range:</strong> ${command.startDate} - ${command.endDate ?? 'No end date'}</p>
+              <p><strong>Time:</strong> ${command.startHour} - ${command.endHour}</p>
+              <p><strong>Property:</strong> ${property.getName()}</p>
+            </div>
+          `,
+      });
+    }
 
     return new CreateShiftCommandResult(shiftId);
   }
@@ -143,5 +160,58 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
     }
 
     return hours * 60 + minutes;
+  }
+
+  private parseDate(value: string, message: string): Date {
+    const parsedDate = new Date(`${value}T00:00:00.000Z`);
+    if (Number.isNaN(parsedDate.getTime())) {
+      throw new BadRequestException(message);
+    }
+    return parsedDate;
+  }
+
+  private toDistinctUserIds(values: string[]): UserId[] {
+    if (!values || values.length === 0) {
+      return [];
+    }
+
+    const uniqueValues = [...new Set(values)];
+    return uniqueValues.map((value) => UserId.createFromString(value));
+  }
+
+  private async getStaffMembers(
+    staffMemberIds: UserId[],
+    tenantId: TenantId,
+  ): Promise<
+    {
+      getTenantId(): TenantId;
+      isOwner(): boolean;
+      getEmail(): { toString(): string };
+    }[]
+  > {
+    const staffMembers = await Promise.all(
+      staffMemberIds.map((staffMemberId) =>
+        this.userRepository.findById(staffMemberId),
+      ),
+    );
+
+    for (let index = 0; index < staffMembers.length; index += 1) {
+      const staffMember = staffMembers[index];
+      if (!staffMember || !staffMember.getTenantId().equals(tenantId)) {
+        throw new NotFoundException('Staff member not found for the tenant');
+      }
+
+      if (staffMember.isOwner()) {
+        throw new BadRequestException(
+          'Shift can only be assigned to a staff member',
+        );
+      }
+    }
+
+    return staffMembers as {
+      getTenantId(): TenantId;
+      isOwner(): boolean;
+      getEmail(): { toString(): string };
+    }[];
   }
 }

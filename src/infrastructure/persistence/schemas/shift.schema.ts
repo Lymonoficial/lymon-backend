@@ -12,12 +12,20 @@ export class ShiftDocument extends Document {
   tenantId!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
+    type: [Types.ObjectId],
     ref: 'UserDocument',
     required: true,
     index: true,
   })
-  staffMemberId!: Types.ObjectId;
+  staffMemberIds!: Types.ObjectId[];
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'UserDocument',
+    required: false,
+    index: true,
+  })
+  staffMemberId?: Types.ObjectId;
 
   @Prop({
     type: Types.ObjectId,
@@ -28,13 +36,25 @@ export class ShiftDocument extends Document {
   propertyId!: Types.ObjectId;
 
   @Prop({ type: Date, required: true, index: true })
-  shiftDate!: Date;
+  startDate!: Date;
+
+  @Prop({ type: Date, default: null, index: true })
+  endDate!: Date | null;
+
+  @Prop({ type: Date, required: false, index: true })
+  shiftDate?: Date;
 
   @Prop({ type: String, required: true })
-  startTime!: string;
+  startHour!: string;
 
   @Prop({ type: String, required: true })
-  endTime!: string;
+  endHour!: string;
+
+  @Prop({ type: String, required: false })
+  startTime?: string;
+
+  @Prop({ type: String, required: false })
+  endTime?: string;
 
   @Prop({ type: Number, required: true })
   startMinutes!: number;
@@ -60,4 +80,4 @@ export class ShiftDocument extends Document {
 
 export const ShiftSchema = SchemaFactory.createForClass(ShiftDocument);
 
-ShiftSchema.index({ tenantId: 1, staffMemberId: 1, shiftDate: 1 });
+ShiftSchema.index({ tenantId: 1, staffMemberIds: 1, startDate: 1, endDate: 1 });
