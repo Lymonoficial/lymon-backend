@@ -18,14 +18,23 @@ export class MongoShiftRepository implements ShiftRepository {
 
   async save(shift: Shift): Promise<string> {
     const id = shift.getId()?.toString();
+    const startDate = shift.getStartDate();
+    const endDate = shift.getEndDate();
 
     const document = {
       tenantId: new Types.ObjectId(shift.getTenantId().toString()),
-      staffMemberId: new Types.ObjectId(shift.getStaffMemberId().toString()),
+      staffMemberIds: shift
+        .getStaffMemberIds()
+        .map((staffId) => new Types.ObjectId(staffId.toString())),
       propertyId: new Types.ObjectId(shift.getPropertyId().toString()),
-      shiftDate: shift.getShiftDate(),
-      startTime: shift.getStartTime(),
-      endTime: shift.getEndTime(),
+      startDate,
+      endDate,
+      startHour: shift.getStartHour(),
+      endHour: shift.getEndHour(),
+      // Legacy fields for backward compatibility in existing projections.
+      shiftDate: startDate,
+      startTime: shift.getStartHour(),
+      endTime: shift.getEndHour(),
       startMinutes: shift.getStartMinutes(),
       endMinutes: shift.getEndMinutes(),
       notes: shift.getNotes(),
@@ -60,10 +69,54 @@ export class MongoShiftRepository implements ShiftRepository {
     endMinutes: number,
     excludeShiftId?: ShiftId,
   ): Promise<Shift | null> {
+    return this.findOverlappingByStaffInRange(
+      tenantId,
+      staffMemberId,
+      shiftDate,
+      shiftDate,
+      startMinutes,
+      endMinutes,
+      excludeShiftId,
+    );
+  }
+
+  async findOverlappingByStaffInRange(
+    tenantId: TenantId,
+    staffMemberId: UserId,
+    startDate: Date,
+    endDate: Date | null,
+    startMinutes: number,
+    endMinutes: number,
+    excludeShiftId?: ShiftId,
+  ): Promise<Shift | null> {
+    const effectiveEndDate = endDate ?? this.getOpenEndedUpperBound();
     const query: Record<string, unknown> = {
       tenantId: new Types.ObjectId(tenantId.toString()),
-      staffMemberId: new Types.ObjectId(staffMemberId.toString()),
-      shiftDate,
+      $or: [
+        {
+          staffMemberIds: new Types.ObjectId(staffMemberId.toString()),
+        },
+        {
+          staffMemberId: new Types.ObjectId(staffMemberId.toString()),
+        },
+      ],
+      $and: [
+        {
+          $or: [
+            {
+              startDate: { $lte: effectiveEndDate },
+              $or: [
+                { endDate: null },
+                { endDate: { $exists: false } },
+                { endDate: { $gte: startDate } },
+              ],
+            },
+            {
+              shiftDate: { $gte: startDate, $lte: effectiveEndDate },
+            },
+          ],
+        },
+      ],
       startMinutes: { $lt: endMinutes },
       endMinutes: { $gt: startMinutes },
     };
@@ -78,14 +131,27 @@ export class MongoShiftRepository implements ShiftRepository {
   }
 
   private toDomain(doc: ShiftDocument): Shift {
+    const staffIds =
+      doc.staffMemberIds && doc.staffMemberIds.length > 0
+        ? doc.staffMemberIds
+        : doc.staffMemberId
+          ? [doc.staffMemberId]
+          : [];
+    const startDate = doc.startDate ?? doc.shiftDate;
+    const effectiveEndDate =
+      doc.endDate !== undefined && doc.endDate !== null
+        ? doc.endDate
+        : (doc.shiftDate ?? null);
+
     return Shift.reconstitute(
       ShiftId.createFromString(doc._id.toString()),
       TenantId.createFromString(doc.tenantId.toString()),
-      UserId.createFromString(doc.staffMemberId.toString()),
+      staffIds.map((staffId) => UserId.createFromString(staffId.toString())),
       PropertyId.create(doc.propertyId.toString()),
-      doc.shiftDate,
-      doc.startTime,
-      doc.endTime,
+      startDate,
+      effectiveEndDate,
+      doc.startHour ?? doc.startTime,
+      doc.endHour ?? doc.endTime,
       doc.startMinutes,
       doc.endMinutes,
       doc.notes ?? null,
@@ -94,5 +160,9 @@ export class MongoShiftRepository implements ShiftRepository {
       doc.createdAt,
       doc.updatedAt,
     );
+  }
+
+  private getOpenEndedUpperBound(): Date {
+    return new Date('9999-12-31T00:00:00.000Z');
   }
 }
