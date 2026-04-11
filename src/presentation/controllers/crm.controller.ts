@@ -26,9 +26,9 @@ import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
 import { SendGuestMessageDto } from '@/presentation/dtos/send-guest-message.dto';
-import { UpdateGuestPreferencesCommand } from '@/application/guest/commands/preferences/update-guest-preferences.command';
-import { UpdateGuestPreferencesResult } from '@/application/guest/commands/preferences/update-guest-preferences.result';
-import { UpdateGuestPreferencesDto } from '@/presentation/dtos/update-guest-preferences.dto';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
+import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferences.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -193,24 +193,24 @@ export class CrmController {
   @ApiResponse({ status: 404, description: 'Guest not found' })
   async updatePreferences(
     @Param('guestId') guestId: string,
-    @Body() dto: UpdateGuestPreferencesDto,
+    @Body() dto: SaveGuestPreferencesDto,
     @CurrentUser() user: JwtPayload,
   ) {
     const result = await this.commandBus.execute<
-      UpdateGuestPreferencesCommand,
-      UpdateGuestPreferencesResult
+      SaveGuestPreferencesCommand,
+      SaveGuestPreferencesResult
     >(
-      new UpdateGuestPreferencesCommand(
+      new SaveGuestPreferencesCommand(
         user.tenantId,
         guestId,
-        dto.preferencesNotes ?? '',
+        dto.preferencesNotes,
         user.activePlan,
       ),
     );
 
     return {
       message: 'Guest preferences updated successfully',
-      data: { guestId: result.guestId },
+      data: { guestId: result.guestId, wasCreated: result.wasCreated },
     };
   }
 
