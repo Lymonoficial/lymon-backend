@@ -1,15 +1,17 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AssignGuestTagsCommand } from './assign-guest-tags.command';
 import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import type { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
+import { LogAuditEventCommand } from '@/application/audit/commands/log-audit-event.command';
 
 @CommandHandler(AssignGuestTagsCommand)
 export class AssignGuestTagsHandler implements ICommandHandler<AssignGuestTagsCommand> {
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly repository: GuestRepository,
+    private readonly commandBus: CommandBus,
   ) {}
 
   async execute(command: AssignGuestTagsCommand): Promise<void> {
@@ -28,6 +30,19 @@ export class AssignGuestTagsHandler implements ICommandHandler<AssignGuestTagsCo
     }
 
     guest.setTags(tags);
-    await this.repository.save(guest);
+    await this.commandBus.execute(
+      new LogAuditEventCommand(        
+        tenantId,             
+        'SYSTEM_USER',        
+        'system@lymon.com',   
+        'UPDATE' as any,      
+        'GUEST' as any,       
+        guestId,              
+        {},                   
+        {},                   
+        { tags },             
+        '127.0.0.1'          
+      ),
+    );
   }
 }
