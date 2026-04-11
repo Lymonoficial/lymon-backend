@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RemoveSupplierFromItemCommand } from './remove-supplier-from-item.command';
@@ -52,23 +52,19 @@ export class RemoveSupplierFromItemHandler implements ICommandHandler<
   async execute(
     command: RemoveSupplierFromItemCommand,
   ): Promise<RemoveSupplierFromItemResult> {
-    const tenantId = this.parseTenantId(command.tenantId);
-    const propertyId = this.parsePropertyId(command.propertyId);
-    const itemId = this.parseItemId(command.itemId);
+    const tenantId = TenantId.createFromString(command.tenantId);
+    const propertyId = PropertyId.create(command.propertyId);
+    const itemId = InventoryItemId.create(command.itemId);
 
     const property = await this.propertyRepository.findById(propertyId);
-    if (
-      !property ||
-      property.getTenantId().toString() !== tenantId.toString()
-    ) {
+    if (property?.getTenantId().toString() !== tenantId.toString()) {
       throw new NotFoundException('Property not found');
     }
 
     const item = await this.inventoryItemRepository.findById(itemId);
     if (
-      !item ||
-      item.getTenantId().toString() !== tenantId.toString() ||
-      item.getPropertyId().toString() !== propertyId.toString()
+      item?.getTenantId().toString() !== tenantId.toString() ||
+      item?.getPropertyId().toString() !== propertyId.toString()
     ) {
       throw new NotFoundException('Inventory item not found');
     }
@@ -85,10 +81,7 @@ export class RemoveSupplierFromItemHandler implements ICommandHandler<
 
     if (supplierId) {
       const supplier = await this.supplierRepository.findById(supplierId);
-      if (
-        supplier &&
-        supplier.getTenantId().toString() === tenantId.toString()
-      ) {
+      if (supplier?.getTenantId().toString() === tenantId.toString()) {
         await this.supplierRepository.save(
           Supplier.reconstitute({
             id: supplier.getId()!,
@@ -125,30 +118,6 @@ export class RemoveSupplierFromItemHandler implements ICommandHandler<
     }
 
     return new RemoveSupplierFromItemResult(itemId.toString());
-  }
-
-  private parseTenantId(value: string): TenantId {
-    try {
-      return TenantId.createFromString(value);
-    } catch {
-      throw new BadRequestException('tenantId is required');
-    }
-  }
-
-  private parsePropertyId(value: string): PropertyId {
-    try {
-      return PropertyId.create(value);
-    } catch {
-      throw new BadRequestException('propertyId is required');
-    }
-  }
-
-  private parseItemId(value: string): InventoryItemId {
-    try {
-      return InventoryItemId.create(value);
-    } catch {
-      throw new BadRequestException('itemId is required');
-    }
   }
 
   private getItemSupplierSnapshot(item: {
