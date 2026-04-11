@@ -10,7 +10,14 @@ import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CreateShiftDto } from '@/presentation/dtos/create-shift.dto';
 import { UpdateShiftDto } from '@/presentation/dtos/update-shift.dto';
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
@@ -40,11 +47,12 @@ export class ShiftsController {
     >(
       new CreateShiftCommand(
         user.tenantId,
-        dto.staffMemberId,
+        dto.staffMemberIds ?? [],
         dto.propertyId,
-        dto.date,
-        dto.startTime,
-        dto.endTime,
+        dto.startDate,
+        dto.endDate ?? null,
+        dto.startHour,
+        dto.endHour,
         dto.notes,
         user.userId,
         user.email,
@@ -57,7 +65,7 @@ export class ShiftsController {
     };
   }
 
-  @Put(':id')
+  @Patch(':id')
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.TENANT_USERS_MANAGE)
   @ApiOperation({ summary: 'Update an existing work shift' })

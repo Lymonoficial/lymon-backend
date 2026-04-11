@@ -21,7 +21,7 @@ export class RefreshTokenHandler implements ICommandHandler<RefreshTokenCommand>
     private readonly tokenService: ITokenService,
   ) {}
 
-  async execute(command: RefreshTokenCommand): Promise<RefreshTokenResult> {
+  execute(command: RefreshTokenCommand): Promise<RefreshTokenResult> {
     let payload: JwtPayload;
 
     try {
@@ -43,6 +43,6 @@ export class RefreshTokenHandler implements ICommandHandler<RefreshTokenCommand>
     const accessToken = this.tokenService.generateAccesToken(cleanPayload);
     const refreshToken = this.tokenService.generateRefreshToken(cleanPayload);
 
-    return new RefreshTokenResult(accessToken, refreshToken);
+    return Promise.resolve(new RefreshTokenResult(accessToken, refreshToken));
   }
 }

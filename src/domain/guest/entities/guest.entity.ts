@@ -156,6 +156,11 @@ export class Guest {
     this.touch();
   }
 
+  linkToGuestAccount(guestAccountId: GuestAccountId): void {
+    this.guestAccountId = guestAccountId;
+    this.touch();
+  }
+
   updateCrmSummary(summary: GuestSummary): void {
     if (
       summary.totalBookings < 0 ||

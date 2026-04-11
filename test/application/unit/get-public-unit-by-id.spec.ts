@@ -4,7 +4,6 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetPublicUnitByIdQueryHandler } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query-handler';
 import { GetPublicUnitByIdQuery } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query';
 import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.result';
-import { UNIT_REPOSITORY } from '@/domain/unit/repositories/unit.repository';
 import type { UnitRepository } from '@/domain/unit/repositories/unit.repository';
 import { Unit } from '@/domain/unit/entities/unit.entity';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';

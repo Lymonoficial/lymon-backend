@@ -353,7 +353,6 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('TT-029: should update updatedAt timestamp', () => {
-      const originalUpdatedAt = tenant.getUpdatedAt();
       const before = new Date();
 
       tenant.verifyEmail();
