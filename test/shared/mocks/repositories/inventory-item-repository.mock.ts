@@ -7,6 +7,7 @@ export function createInventoryItemRepositoryMock(): jest.Mocked<InventoryItemRe
     findByPropertyId: jest.fn(),
     findLowStockByPropertyId: jest.fn(),
     findByPropertyIdAndSku: jest.fn(),
+    findBySupplierId: jest.fn(),
     delete: jest.fn(),
   };
 }

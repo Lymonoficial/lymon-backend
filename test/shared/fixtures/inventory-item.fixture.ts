@@ -2,12 +2,12 @@ import { InventoryItem } from '@/domain/inventory/entities/inventory-item.entity
 import { InventoryItemId } from '@/domain/inventory/value-objects/inventory-item-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 import { PROPERTY_FIXTURE_DEFAULTS } from '@test/shared/fixtures/property.fixture';
 import { TENANT_FIXTURE_DEFAULTS } from '@test/shared/fixtures/tenant.fixture';
-import { randomUUID } from 'crypto';
 
 export const INVENTORY_ITEM_FIXTURE_DEFAULTS = {
-  id: randomUUID(),
+  id: 'inventory-item-default',
   tenantId: TENANT_FIXTURE_DEFAULTS.id,
   propertyId: PROPERTY_FIXTURE_DEFAULTS.id,
   sku: 'SKU-001',
@@ -16,6 +16,7 @@ export const INVENTORY_ITEM_FIXTURE_DEFAULTS = {
   unit: 'unidad',
   minStock: 5,
   currentStock: 20,
+  supplierId: null,
 };
 
 export function makeInventoryItem(
@@ -29,21 +30,31 @@ export function makeInventoryItem(
     unit: string;
     minStock: number;
     currentStock: number;
+    supplierId: string | null;
   }>,
 ): InventoryItem {
   const merged = { ...INVENTORY_ITEM_FIXTURE_DEFAULTS, ...overrides };
 
-  return InventoryItem.reconstitute(
-    InventoryItemId.create(merged.id),
-    TenantId.createFromString(merged.tenantId),
-    PropertyId.create(merged.propertyId),
-    merged.sku,
-    merged.name,
-    merged.category,
-    merged.unit,
-    merged.minStock,
-    merged.currentStock,
-    new Date(),
-    new Date(),
-  );
+  return InventoryItem.reconstitute({
+    identity: {
+      id: InventoryItemId.create(merged.id),
+      tenantId: TenantId.createFromString(merged.tenantId),
+      propertyId: PropertyId.create(merged.propertyId),
+    },
+    profile: {
+      sku: merged.sku,
+      name: merged.name,
+      category: merged.category,
+      unit: merged.unit,
+      minStock: merged.minStock,
+      currentStock: merged.currentStock,
+      supplierId: merged.supplierId
+        ? SupplierId.create(merged.supplierId)
+        : null,
+    },
+    timestamps: {
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
 }
