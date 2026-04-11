@@ -18,6 +18,9 @@ import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-gue
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { ChangePasswordDto } from '@/presentation/dtos/change-password.dto';
 import { CreateGuestDto } from '@/presentation/dtos/create-guest.dto';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
+import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferences.dto';
 import {
   Body,
   Controller,
@@ -173,6 +176,44 @@ export class GuestController {
     return {
       message: 'Guest profile retrieved successfully',
       data: result.item,
+    };
+  }
+
+  @Patch(':guestId/preferences')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({
+    summary: 'Guardar (crear o actualizar) las notas de preferencias de un huésped',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Preferencias del huésped guardadas correctamente',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Plan no permite esta funcionalidad o permisos insuficientes',
+  })
+  @ApiResponse({ status: 404, description: 'Huésped no encontrado' })
+  async savePreferences(
+    @Param('guestId') guestId: string,
+    @Body() dto: SaveGuestPreferencesDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.commandBus.execute<
+      SaveGuestPreferencesCommand,
+      SaveGuestPreferencesResult
+    >(
+      new SaveGuestPreferencesCommand(
+        user.tenantId,
+        guestId,
+        dto.preferencesNotes,
+        user.activePlan,
+      ),
+    );
+
+    return {
+      message: 'Guest preferences saved successfully',
+      data: { guestId: result.guestId, wasCreated: result.wasCreated },
     };
   }
 }

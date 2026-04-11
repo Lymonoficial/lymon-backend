@@ -7,11 +7,15 @@ import { GetGuestBookingsHandler } from './queries/get-guest-bookings/get-guest-
 import { CreateGuestHandler } from '@/application/guest/commands/create-guest.handler';
 import { AssignGuestTagsCommand } from './commands/assign-guest-tags.command';
 import { AssignGuestTagsHandler } from './commands/assign-guest-tags.handler';
+import { UpdateGuestPreferencesHandler } from './commands/preferences/update-guest-preferences.handler';
+import { SaveGuestPreferencesHandler } from './commands/preferences/save-guest-preferences.handler';
 import { MongoGuestRepository } from '@/infrastructure/persistence/repositories/mongo-guest.repository';
 
 const CommandHandlers = [
   CreateGuestHandler,
   AssignGuestTagsHandler,
+  UpdateGuestPreferencesHandler,
+  SaveGuestPreferencesHandler,
 ];
 const QueryHandlers = [
   SearchGuestsQuery,
