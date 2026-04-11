@@ -3,6 +3,7 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { InventoryMovementType } from '@/domain/inventory/value-objects/inventory-movement-type.vo';
 import { InventoryItemId } from '@/domain/inventory/value-objects/inventory-item-id.vo';
+import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 
 export class InventoryItem {
   private constructor(
@@ -15,6 +16,7 @@ export class InventoryItem {
     private unit: string,
     private minStock: number,
     private currentStock: number,
+    private supplierId: SupplierId | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
   ) {}
@@ -28,6 +30,7 @@ export class InventoryItem {
     unit: string;
     minStock: number;
     initialStock?: number;
+    supplierId?: SupplierId | null;
   }): InventoryItem {
     const sku = params.sku.trim();
     const name = params.name.trim();
@@ -54,36 +57,45 @@ export class InventoryItem {
       unit,
       params.minStock,
       initialStock,
+      params.supplierId ?? null,
       new Date(),
       new Date(),
     );
   }
 
-  static reconstitute(
-    id: InventoryItemId,
-    tenantId: TenantId,
-    propertyId: PropertyId,
-    sku: string,
-    name: string,
-    category: string,
-    unit: string,
-    minStock: number,
-    currentStock: number,
-    createdAt: Date,
-    updatedAt: Date,
-  ): InventoryItem {
+  static reconstitute(data: {
+    identity: {
+      id: InventoryItemId;
+      tenantId: TenantId;
+      propertyId: PropertyId;
+    };
+    profile: {
+      sku: string;
+      name: string;
+      category: string;
+      unit: string;
+      minStock: number;
+      currentStock: number;
+      supplierId: SupplierId | null;
+    };
+    timestamps: {
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  }): InventoryItem {
     return new InventoryItem(
-      id,
-      tenantId,
-      propertyId,
-      sku,
-      name,
-      category,
-      unit,
-      minStock,
-      currentStock,
-      createdAt,
-      updatedAt,
+      data.identity.id,
+      data.identity.tenantId,
+      data.identity.propertyId,
+      data.profile.sku,
+      data.profile.name,
+      data.profile.category,
+      data.profile.unit,
+      data.profile.minStock,
+      data.profile.currentStock,
+      data.profile.supplierId,
+      data.timestamps.createdAt,
+      data.timestamps.updatedAt,
     );
   }
 
@@ -163,6 +175,10 @@ export class InventoryItem {
     return this.currentStock;
   }
 
+  getSupplierId(): SupplierId | null {
+    return this.supplierId;
+  }
+
   getCreatedAt(): Date {
     return this.createdAt;
   }
@@ -201,6 +217,16 @@ export class InventoryItem {
       this.minStock = params.minStock;
     }
 
+    this.touch();
+  }
+
+  associateSupplier(supplierId: SupplierId): void {
+    this.supplierId = supplierId;
+    this.touch();
+  }
+
+  removeSupplier(): void {
+    this.supplierId = null;
     this.touch();
   }
 
