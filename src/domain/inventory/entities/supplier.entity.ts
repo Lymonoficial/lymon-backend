@@ -1,6 +1,7 @@
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
+import { ISupplier } from '@/domain/inventory/interfaces/supplier.interface';
 
 export class Supplier {
   private constructor(
@@ -60,31 +61,19 @@ export class Supplier {
     );
   }
 
-  static reconstitute(
-    id: SupplierId,
-    tenantId: TenantId,
-    name: string,
-    contactEmail: string,
-    contactPhone: string,
-    country: string,
-    city: string,
-    nit: string,
-    createdAt: Date,
-    updatedAt: Date,
-    deletedAt: Date | null,
-  ): Supplier {
+  static reconstitute(data: ISupplier): Supplier {
     return new Supplier(
-      id,
-      tenantId,
-      name,
-      contactEmail,
-      contactPhone,
-      country,
-      city,
-      nit,
-      createdAt,
-      updatedAt,
-      deletedAt,
+      data.id,
+      data.tenantId,
+      data.name,
+      data.contactEmail,
+      data.contactPhone,
+      data.country,
+      data.city,
+      data.nit,
+      data.createdAt,
+      data.updatedAt,
+      data.deletedAt,
     );
   }
 

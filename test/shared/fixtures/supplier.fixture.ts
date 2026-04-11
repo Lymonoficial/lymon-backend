@@ -29,17 +29,17 @@ export function makeSupplier(
 ): Supplier {
   const merged = { ...SUPPLIER_FIXTURE_DEFAULTS, ...overrides };
 
-  return Supplier.reconstitute(
-    SupplierId.create(merged.id),
-    TenantId.createFromString(merged.tenantId),
-    merged.name,
-    merged.contactEmail,
-    merged.contactPhone,
-    merged.country,
-    merged.city,
-    merged.nit,
-    new Date(),
-    new Date(),
-    null,
-  );
+  return Supplier.reconstitute({
+    id: SupplierId.create(merged.id),
+    tenantId: TenantId.createFromString(merged.tenantId),
+    name: merged.name,
+    contactEmail: merged.contactEmail,
+    contactPhone: merged.contactPhone,
+    country: merged.country,
+    city: merged.city,
+    nit: merged.nit,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: null,
+  });
 }
