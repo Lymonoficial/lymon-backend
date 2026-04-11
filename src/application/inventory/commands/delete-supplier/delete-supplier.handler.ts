@@ -37,14 +37,11 @@ export class DeleteSupplierHandler implements ICommandHandler<
   ) {}
 
   async execute(command: DeleteSupplierCommand): Promise<void> {
-    const tenantId = this.parseTenantId(command.tenantId);
-    const supplierId = this.parseSupplierId(command.supplierId);
+    const tenantId = TenantId.createFromString(command.tenantId);
+    const supplierId = SupplierId.create(command.supplierId);
 
     const supplier = await this.supplierRepository.findById(supplierId);
-    if (
-      !supplier ||
-      supplier.getTenantId().toString() !== tenantId.toString()
-    ) {
+    if (supplier?.getTenantId().toString() !== tenantId.toString()) {
       throw new NotFoundException('Supplier not found');
     }
 
@@ -95,14 +92,6 @@ export class DeleteSupplierHandler implements ICommandHandler<
         ),
       );
     }
-  }
-
-  private parseTenantId(tenantId: string): TenantId {
-    return TenantId.createFromString(tenantId);
-  }
-
-  private parseSupplierId(supplierId: string): SupplierId {
-    return SupplierId.create(supplierId);
   }
 
   private getSupplierSnapshot(supplier: Supplier): Record<string, unknown> {
