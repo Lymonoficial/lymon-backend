@@ -13,7 +13,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
-import { Request } from '@nestjs/common';
 import { Post, Body, Param } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
@@ -26,6 +25,9 @@ import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
 import { SendGuestMessageDto } from '@/presentation/dtos/send-guest-message.dto';
+import { UpdateGuestPreferencesCommand } from '@/application/guest/commands/preferences/update-guest-preferences.command';
+import { UpdateGuestPreferencesResult } from '@/application/guest/commands/preferences/update-guest-preferences.result';
+import { UpdateGuestPreferencesDto } from '@/presentation/dtos/update-guest-preferences.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -170,7 +172,44 @@ export class CrmController {
       message: 'Tags assigned successfully',
     };
   }
-}
+
+  @Patch('guests/:guestId/preferences')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Update free-text preference notes for a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest preferences updated successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Plan does not allow guest preferences management or insufficient permissions',
+  })
+  @ApiResponse({ status: 404, description: 'Guest not found' })
+  async updatePreferences(
+    @Param('guestId') guestId: string,
+    @Body() dto: UpdateGuestPreferencesDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.commandBus.execute<
+      UpdateGuestPreferencesCommand,
+      UpdateGuestPreferencesResult
+    >(
+      new UpdateGuestPreferencesCommand(
+        user.tenantId,
+        guestId,
+        dto.preferencesNotes ?? '',
+        user.activePlan,
+      ),
+    );
+
+    return {
+      message: 'Guest preferences updated successfully',
+      data: { guestId: result.guestId },
+    };
+  }
+
   @Get('guests/:guestId/emails')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)
