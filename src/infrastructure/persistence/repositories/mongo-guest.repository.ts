@@ -104,6 +104,17 @@ export class MongoGuestRepository implements GuestRepository {
     return document ? this.toDomain(document) : null;
   }
 
+  async findByDocumentNumber(
+    tenantId: TenantId,
+    documentNumber: string,
+  ): Promise<Guest | null> {
+    const document = await this.guestModel.findOne({
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      'identity.documentNumber': documentNumber.trim(),
+    });
+    return document ? this.toDomain(document) : null;
+  }
+
   async findByGuestAccountId(
     tenantId: TenantId,
     guestAccountId: GuestAccountId,

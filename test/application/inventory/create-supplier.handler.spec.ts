@@ -7,14 +7,30 @@ import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { createSupplierRepositoryMock } from '@test/shared/mocks/repositories/supplier-repository.mock';
 import { makeSupplier } from '@test/shared/fixtures/supplier.fixture';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 describe('CreateSupplierHandler', () => {
   let handler: CreateSupplierHandler;
   let supplierRepository: jest.Mocked<SupplierRepository>;
+  let eventEmitter: jest.Mocked<Pick<EventEmitter2, 'emit'>>;
 
   beforeEach(() => {
     supplierRepository = createSupplierRepositoryMock();
-    handler = new CreateSupplierHandler(supplierRepository);
+    eventEmitter = {
+      emit: jest.fn(),
+    };
+    handler = new CreateSupplierHandler(
+      supplierRepository,
+      eventEmitter as EventEmitter2,
+    );
   });
 
   describe('when a supplier with the same NIT already exists', () => {
@@ -39,6 +55,7 @@ describe('CreateSupplierHandler', () => {
       );
 
       expect(supplierRepository.save).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
     });
   });
 
@@ -128,6 +145,20 @@ describe('CreateSupplierHandler', () => {
       expect(savedSupplier.getCountry()).toBe('Colombia');
       expect(savedSupplier.getCity()).toBe('Bogotá');
       expect(savedSupplier.getNit()).toBe('NIT-123456789');
+
+      expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+      const [eventName, eventPayload] = eventEmitter.emit.mock.calls[0];
+      expect(eventName).toBe(AUDIT_LOG_EVENT);
+      expect(eventPayload).toBeInstanceOf(AuditLoggedEvent);
+      expect((eventPayload as AuditLoggedEvent).action).toBe(
+        AuditAction.SUPPLIER_CREATED,
+      );
+      expect((eventPayload as AuditLoggedEvent).entityType).toBe(
+        AuditEntityType.SUPPLIER,
+      );
+      expect((eventPayload as AuditLoggedEvent).entityId).toBe(
+        'new-supplier-id',
+      );
     });
   });
 });

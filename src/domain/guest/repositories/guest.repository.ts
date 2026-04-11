@@ -17,6 +17,10 @@ export interface GuestRepository {
     tenantId: TenantId,
     primaryEmail: string,
   ): Promise<Guest | null>;
+  findByDocumentNumber(
+    tenantId: TenantId,
+    documentNumber: string,
+  ): Promise<Guest | null>;
   findByGuestAccountId(
     tenantId: TenantId,
     guestAccountId: GuestAccountId,

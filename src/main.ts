@@ -84,14 +84,18 @@ async function bootstrap() {
 
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document, {
+      explorer: true,
+      jsonDocumentUrl: 'api/docs-json',
+      yamlDocumentUrl: 'api/docs-yaml',
       swaggerOptions: {
         persistAuthorization: true,
       },
     });
     logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
+    logger.log(`Swagger JSON: http://localhost:${port}/api/docs-json`);
   }
 
   await app.listen(port);
   logger.log(`Application running on: http://localhost:${port}`);
 }
-bootstrap();
+void bootstrap();

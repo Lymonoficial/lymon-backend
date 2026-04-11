@@ -1,17 +1,17 @@
-import { ForbiddenException } from '@nestjs/common';
+import { type ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 
 describe('PermissionGuard', () => {
-  const makeContext = (user?: any) =>
+  const makeContext = (user?: unknown): ExecutionContext =>
     ({
       getHandler: jest.fn(),
       getClass: jest.fn(),
       switchToHttp: () => ({
         getRequest: () => ({ user }),
       }),
-    }) as any;
+    }) as unknown as ExecutionContext;
 
   it('allows access when no permission metadata is defined', () => {
     const reflector = {

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { GuestEmail } from '@/domain/guest-email/entities/guest-email.entity';
+import { GuestEmailAttachment } from '@/domain/guest-email/entities/guest-email.types';
 import { GuestEmailRepository } from '@/domain/guest-email/repositories/guest-email.repository';
 import { GuestEmailId } from '@/domain/guest-email/value-objects/guest-email-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
@@ -65,8 +66,9 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
       TenantId.createFromString(doc.tenantId.toString()),
       GuestId.createFromString(doc.guestId.toString()),
       doc.subject,
-      doc.status as any,
-      doc.attachments as any,
+
+      doc.status,
+      doc.attachments as GuestEmailAttachment[],
       doc.messageId,
       doc.sentById,
       doc.createdAt,
