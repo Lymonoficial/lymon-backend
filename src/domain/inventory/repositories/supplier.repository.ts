@@ -10,6 +10,7 @@ export interface SupplierRepository {
     supplier: Supplier,
     transactionContext?: TransactionContextData,
   ): Promise<string>;
+  findByTenantId(tenantId: TenantId): Promise<Supplier[]>;
   findById(id: SupplierId): Promise<Supplier | null>;
   findByNit(tenantId: TenantId, nit: string): Promise<Supplier | null>;
   delete(id: SupplierId): Promise<void>;

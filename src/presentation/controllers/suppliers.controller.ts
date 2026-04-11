@@ -1,15 +1,19 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
   Delete,
+  ParseIntPipe,
   Post,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -29,13 +33,62 @@ import { UpdateSupplierDto } from '@/presentation/dtos/update-supplier.dto';
 import { UpdateSupplierCommand } from '@/application/inventory/commands/update-supplier/update-supplier.command';
 import { UpdateSupplierResult } from '@/application/inventory/commands/update-supplier/update-supplier.result';
 import { DeleteSupplierCommand } from '@/application/inventory/commands/delete-supplier/delete-supplier.command';
+import {
+  GetSuppliersQuery,
+  type SupplierSortBy,
+  type SupplierSortOrder,
+} from '@/application/inventory/queries/get-suppliers/get-suppliers.query';
+import { GetSuppliersResult } from '@/application/inventory/queries/get-suppliers/get-suppliers.result';
 
 @ApiTags('suppliers')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 @Controller('suppliers')
 export class SuppliersController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_VIEW)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get suppliers list' })
+  @ApiResponse({ status: 200, description: 'Suppliers retrieved successfully' })
+  async getSuppliers(
+    @CurrentUser() user: JwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: SupplierSortBy,
+    @Query('sortOrder') sortOrder?: SupplierSortOrder,
+  ) {
+    const result = await this.queryBus.execute<
+      GetSuppliersQuery,
+      GetSuppliersResult
+    >(
+      new GetSuppliersQuery(
+        user.tenantId,
+        page,
+        limit,
+        search,
+        sortBy ?? 'createdAt',
+        sortOrder ?? 'desc',
+      ),
+    );
+
+    return {
+      message: 'Suppliers retrieved successfully',
+      data: result.suppliers,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
+    };
+  }
 
   @Post()
   @UseGuards(PermissionGuard)

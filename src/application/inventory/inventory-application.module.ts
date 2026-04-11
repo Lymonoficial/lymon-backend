@@ -12,6 +12,7 @@ import { AssociateSupplierToItemHandler } from '@/application/inventory/commands
 import { RemoveSupplierFromItemHandler } from '@/application/inventory/commands/remove-supplier-from-item/remove-supplier-from-item.handler';
 import { GetInventoryItemsByPropertyQueryHandler } from '@/application/inventory/queries/get-inventory-items-by-property/get-inventory-items-by-property.query-handler';
 import { GetLowStockItemsByPropertyQueryHandler } from '@/application/inventory/queries/get-low-stock-items-by-property/get-low-stock-items-by-property.query-handler';
+import { GetSuppliersQueryHandler } from '@/application/inventory/queries/get-suppliers/get-suppliers.query-handler';
 
 const CommandHandlers = [
   CreateInventoryItemHandler,
@@ -28,6 +29,7 @@ const CommandHandlers = [
 const QueryHandlers = [
   GetInventoryItemsByPropertyQueryHandler,
   GetLowStockItemsByPropertyQueryHandler,
+  GetSuppliersQueryHandler,
 ];
 
 @Module({

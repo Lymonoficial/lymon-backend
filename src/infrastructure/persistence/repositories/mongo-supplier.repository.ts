@@ -63,6 +63,17 @@ export class MongoSupplierRepository implements SupplierRepository {
     return this.toDomain(document);
   }
 
+  async findByTenantId(tenantId: TenantId): Promise<Supplier[]> {
+    const documents = await this.supplierModel
+      .find({
+        tenantId: new Types.ObjectId(tenantId.toString()),
+        deletedAt: null,
+      })
+      .sort({ createdAt: -1 });
+
+    return documents.map((document) => this.toDomain(document));
+  }
+
   async findByNit(tenantId: TenantId, nit: string): Promise<Supplier | null> {
     const document = await this.supplierModel.findOne({
       tenantId: new Types.ObjectId(tenantId.toString()),
