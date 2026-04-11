@@ -5,5 +5,6 @@ export function createSupplierRepositoryMock(): jest.Mocked<SupplierRepository> 
     save: jest.fn(),
     findById: jest.fn(),
     findByNit: jest.fn(),
+    delete: jest.fn(),
   };
 }

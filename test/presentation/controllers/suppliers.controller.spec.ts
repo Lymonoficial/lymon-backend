@@ -1,6 +1,7 @@
 import { CommandBus } from '@nestjs/cqrs';
 import { SuppliersController } from '@/presentation/controllers/suppliers.controller';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
+import { DeleteSupplierCommand } from '@/application/inventory/commands/delete-supplier/delete-supplier.command';
 
 describe('SuppliersController', () => {
   let controller: SuppliersController;
@@ -42,5 +43,16 @@ describe('SuppliersController', () => {
       message: 'Supplier created successfully',
       data: { supplierId: 'supplier-123' },
     });
+  });
+
+  it('dispatches DeleteSupplierCommand for supplier delete', async () => {
+    commandBus.execute.mockResolvedValue(undefined);
+
+    await controller.deleteSupplier(user, 'supplier-123');
+
+    expect(commandBus.execute).toHaveBeenCalledTimes(1);
+    expect(commandBus.execute).toHaveBeenCalledWith(
+      expect.any(DeleteSupplierCommand),
+    );
   });
 });
