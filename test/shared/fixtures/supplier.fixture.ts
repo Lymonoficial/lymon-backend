@@ -25,6 +25,9 @@ export function makeSupplier(
     country: string;
     city: string;
     nit: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
   }>,
 ): Supplier {
   const merged = { ...SUPPLIER_FIXTURE_DEFAULTS, ...overrides };
@@ -38,8 +41,8 @@ export function makeSupplier(
     country: merged.country,
     city: merged.city,
     nit: merged.nit,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
+    createdAt: merged.createdAt ?? new Date(),
+    updatedAt: merged.updatedAt ?? new Date(),
+    deletedAt: merged.deletedAt ?? null,
   });
 }
