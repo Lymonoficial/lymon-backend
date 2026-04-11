@@ -47,6 +47,8 @@ export class UpdateSupplierHandler implements ICommandHandler<
       throw new NotFoundException('Supplier not found');
     }
 
+    const previousSnapshot = this.getSupplierSnapshot(supplier);
+
     if (command.nit !== undefined) {
       const existingSupplier = await this.supplierRepository.findByNit(
         tenantId,
@@ -85,6 +87,9 @@ export class UpdateSupplierHandler implements ICommandHandler<
       deletedAt: supplier.getDeletedAt(),
     });
 
+    const nextSnapshot = this.getSupplierSnapshot(updatedSupplier);
+    const auditDiff = this.buildAuditDiff(previousSnapshot, nextSnapshot);
+
     await this.supplierRepository.save(updatedSupplier);
 
     this.eventEmitter.emit(
@@ -96,6 +101,11 @@ export class UpdateSupplierHandler implements ICommandHandler<
         AuditAction.SUPPLIER_UPDATED,
         AuditEntityType.SUPPLIER,
         command.supplierId,
+        auditDiff.changedFields.length > 0
+          ? { changedFields: auditDiff.changedFields }
+          : undefined,
+        auditDiff.previousValue,
+        auditDiff.newValue,
       ),
     );
 
@@ -132,5 +142,48 @@ export class UpdateSupplierHandler implements ICommandHandler<
         'At least one field must be provided for update',
       );
     }
+  }
+
+  private getSupplierSnapshot(supplier: Supplier): Record<string, unknown> {
+    return {
+      name: supplier.getName(),
+      contactEmail: supplier.getContactEmail(),
+      contactPhone: supplier.getContactPhone(),
+      country: supplier.getCountry(),
+      city: supplier.getCity(),
+      nit: supplier.getNit(),
+    };
+  }
+
+  private buildAuditDiff(
+    previousSnapshot: Record<string, unknown>,
+    nextSnapshot: Record<string, unknown>,
+  ): {
+    changedFields: string[];
+    previousValue?: Record<string, unknown>;
+    newValue?: Record<string, unknown>;
+  } {
+    const changedFields: string[] = [];
+    const previousValue: Record<string, unknown> = {};
+    const newValue: Record<string, unknown> = {};
+
+    for (const field of Object.keys(nextSnapshot)) {
+      const previousFieldValue = previousSnapshot[field];
+      const nextFieldValue = nextSnapshot[field];
+
+      if (previousFieldValue === nextFieldValue) {
+        continue;
+      }
+
+      changedFields.push(field);
+      previousValue[field] = previousFieldValue;
+      newValue[field] = nextFieldValue;
+    }
+
+    return {
+      changedFields,
+      previousValue: changedFields.length > 0 ? previousValue : undefined,
+      newValue: changedFields.length > 0 ? newValue : undefined,
+    };
   }
 }

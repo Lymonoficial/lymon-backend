@@ -110,7 +110,35 @@ describe('UpdateSupplierHandler', () => {
     expect(savedSupplier.getNit()).toBe('NIT-999999999');
     expect(eventEmitter.emit).toHaveBeenCalledWith(
       expect.any(String),
-      expect.objectContaining({ entityType: 'SUPPLIER' }),
+      expect.objectContaining({
+        entityType: 'SUPPLIER',
+        metadata: {
+          changedFields: [
+            'name',
+            'contactEmail',
+            'contactPhone',
+            'country',
+            'city',
+            'nit',
+          ],
+        },
+        previousValue: {
+          name: 'Fresh Supplies Inc.',
+          contactEmail: 'contact@freshsupplies.com',
+          contactPhone: '+12025550123',
+          country: 'Colombia',
+          city: 'Bogotá',
+          nit: 'NIT-123456789',
+        },
+        newValue: {
+          name: 'Updated Supplies Ltd.',
+          contactEmail: 'updated@supplies.com',
+          contactPhone: '+12025550999',
+          country: 'Chile',
+          city: 'Santiago',
+          nit: 'NIT-999999999',
+        },
+      }),
     );
   });
 
