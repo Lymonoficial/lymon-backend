@@ -3,7 +3,6 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GuestNote } from '@/domain/guest-note/entities/guest-note.entity';

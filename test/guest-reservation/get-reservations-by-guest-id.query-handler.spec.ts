@@ -1,6 +1,3 @@
-import { GetReservationsByGuestIdHandler } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query-handler';
-import { GetReservationsByGuestIdQuery } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query';
-import { GetReservationsByGuestIdResult } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.result';
 import { GuestReservationsReadRepository } from '@/domain/reservation/repositories/guest-reservations-read.repository';
 import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { Reservation } from '@/domain/reservation/entities/reservation.entity';
@@ -21,6 +18,9 @@ import {
   GuestIdentity,
   GuestSummary,
 } from '@/domain/guest/entities/guest.types';
+import { GetReservationsByGuestIdHandler } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query-handler';
+import { GetReservationsByGuestIdQuery } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query';
+import { GetReservationsByGuestIdResult } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.result';
 
 const GUEST_ACCOUNT_ID = '65f1a1a2b3c4d5e6f7a8b900';
 const GUEST_ID_1 = '65f1a1a2b3c4d5e6f7a8b9d1';
@@ -185,9 +185,9 @@ describe('GetReservationsByGuestIdHandler', () => {
       [GUEST_ID_1],
       { page: 3, limit: 5, sortBy: 'createdAt', sortOrder: 'desc' },
     );
-    expect(reservationRepository.countByGuestIds).toHaveBeenCalledWith([
-      GUEST_ID_1,
-    ]);
+    expect(
+      guestReservationsReadRepository.countByGuestIds,
+    ).toHaveBeenCalledWith([GUEST_ID_1]);
   });
 
   it('returns correct total when it exceeds the page limit', async () => {

@@ -1,5 +1,4 @@
 import { Reservation } from '@/domain/reservation/entities/reservation.entity';
-import { ReservationId } from '@/domain/reservation/value-objects/reservation-id.vo';
 import {
   ReservationStatus,
   ReservationStatusEnum,

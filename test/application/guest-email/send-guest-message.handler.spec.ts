@@ -34,7 +34,7 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
   const guestIdStr = '65f1a23b4c5d6e7f8a9b0c1e';
   const staffIdStr = '65f1a23b4c5d6e7f8a9b0c1f';
 
-  beforeEach(async () => {
+  beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
     reservationRepository = createReservationRepositoryMock();
     propertyRepository = createPropertyRepositoryMock();
