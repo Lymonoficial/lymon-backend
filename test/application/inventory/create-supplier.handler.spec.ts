@@ -29,7 +29,7 @@ describe('CreateSupplierHandler', () => {
     };
     handler = new CreateSupplierHandler(
       supplierRepository,
-      eventEmitter as EventEmitter2,
+      eventEmitter as unknown as EventEmitter2,
     );
   });
 
