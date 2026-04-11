@@ -4,11 +4,15 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Get,
   Post,
   Patch,
   UseGuards,
+  DefaultValuePipe,
+  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -27,13 +31,18 @@ import { CreateSupplierResult } from '@/application/inventory/commands/create-su
 import { UpdateSupplierDto } from '@/presentation/dtos/update-supplier.dto';
 import { UpdateSupplierCommand } from '@/application/inventory/commands/update-supplier/update-supplier.command';
 import { UpdateSupplierResult } from '@/application/inventory/commands/update-supplier/update-supplier.result';
+import { GetItemsBySupplierQuery } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.query';
+import { GetItemsBySupplierResult } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.result';
 
 @ApiTags('suppliers')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 @Controller('suppliers')
 export class SuppliersController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Post()
   @UseGuards(PermissionGuard)
@@ -110,6 +119,38 @@ export class SuppliersController {
       message: 'Supplier updated successfully',
       data: {
         supplierId: result.supplierId,
+      },
+    };
+  }
+
+  @Get(':supplierId/items')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_VIEW)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get inventory items by supplier' })
+  @ApiResponse({
+    status: 200,
+    description: 'Supplier items retrieved successfully',
+  })
+  async getSupplierItems(
+    @CurrentUser() user: JwtPayload,
+    @Param('supplierId') supplierId: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const result: GetItemsBySupplierResult = await this.queryBus.execute<
+      GetItemsBySupplierQuery,
+      GetItemsBySupplierResult
+    >(new GetItemsBySupplierQuery(user.tenantId, supplierId, page, limit));
+
+    return {
+      message: 'Supplier items retrieved successfully',
+      data: result.items,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
       },
     };
   }
