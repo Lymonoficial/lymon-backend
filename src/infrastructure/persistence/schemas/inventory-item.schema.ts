@@ -38,6 +38,9 @@ export class InventoryItemDocument extends Document {
   @Prop({ required: true, default: 0 })
   currentStock: number;
 
+  @Prop({ type: Types.ObjectId, default: null, index: true })
+  supplierId: Types.ObjectId | null;
+
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
 }
@@ -50,6 +53,7 @@ InventoryItemSchema.index(
   { tenantId: 1, propertyId: 1, sku: 1 },
   { unique: true },
 );
+InventoryItemSchema.index({ tenantId: 1, supplierId: 1 });
 InventoryItemSchema.index({
   tenantId: 1,
   propertyId: 1,

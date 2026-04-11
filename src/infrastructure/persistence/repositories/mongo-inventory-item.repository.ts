@@ -7,6 +7,7 @@ import { InventoryItem } from '@/domain/inventory/entities/inventory-item.entity
 import { InventoryItemId } from '@/domain/inventory/value-objects/inventory-item-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
 @Injectable()
@@ -32,6 +33,9 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
       unit: item.getUnit(),
       minStock: item.getMinStock(),
       currentStock: item.getCurrentStock(),
+      supplierId: item.getSupplierId()
+        ? new Types.ObjectId(item.getSupplierId()!.toString())
+        : null,
       updatedAt: item.getUpdatedAt(),
     };
 
@@ -53,7 +57,7 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
       { session },
     );
 
-    return created._id.toString();
+    return created._id.toHexString();
   }
 
   async findById(id: InventoryItemId): Promise<InventoryItem | null> {
@@ -112,6 +116,24 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
     return this.toDomain(document);
   }
 
+  async findBySupplierId(
+    tenantId: TenantId,
+    supplierId: SupplierId,
+  ): Promise<InventoryItem[]> {
+    const tenantObjectId = new Types.ObjectId(tenantId.toString());
+    const supplierObjectId = new Types.ObjectId(supplierId.toString());
+
+    const documents = await this.inventoryItemModel
+      .find({
+        tenantId: tenantObjectId,
+        supplierId: supplierObjectId,
+        deletedAt: null,
+      })
+      .sort({ createdAt: -1 });
+
+    return documents.map((document) => this.toDomain(document));
+  }
+
   async delete(id: InventoryItemId): Promise<void> {
     await this.inventoryItemModel.findByIdAndUpdate(id.toString(), {
       deletedAt: new Date(),
@@ -119,18 +141,27 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
   }
 
   private toDomain(document: InventoryItemDocument): InventoryItem {
-    return InventoryItem.reconstitute(
-      InventoryItemId.create(document._id.toString()),
-      TenantId.createFromString(document.tenantId.toString()),
-      PropertyId.create(document.propertyId.toString()),
-      document.sku,
-      document.name,
-      document.category,
-      document.unit,
-      document.minStock,
-      document.currentStock,
-      document.createdAt,
-      document.updatedAt,
-    );
+    return InventoryItem.reconstitute({
+      identity: {
+        id: InventoryItemId.create(document._id.toHexString()),
+        tenantId: TenantId.createFromString(document.tenantId.toHexString()),
+        propertyId: PropertyId.create(document.propertyId.toHexString()),
+      },
+      profile: {
+        sku: document.sku,
+        name: document.name,
+        category: document.category,
+        unit: document.unit,
+        minStock: document.minStock,
+        currentStock: document.currentStock,
+        supplierId: document.supplierId
+          ? SupplierId.create(document.supplierId.toHexString())
+          : null,
+      },
+      timestamps: {
+        createdAt: document.createdAt,
+        updatedAt: document.updatedAt,
+      },
+    });
   }
 }
