@@ -1,4 +1,9 @@
-import { User, UserId, UserRoleEnum, type RoleAssignment } from '@/domain/user/entities/user.entity';
+import {
+  User,
+  UserId,
+  UserRoleEnum,
+  type RoleAssignment,
+} from '@/domain/user/entities/user.entity';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
@@ -165,7 +170,7 @@ describe('User Entity - Extended Coverage', () => {
       // Set token with a very short expiration (1 second)
       const futureDate = new Date(Date.now() + 1000);
       user.setResetToken('expired-token', futureDate);
-      
+
       // Create a date that's after the token expiration
       const dateAfterExpiration = new Date(Date.now() + 2000);
 
@@ -219,8 +224,12 @@ describe('User Entity - Extended Coverage', () => {
       // Assert
       const passwordChangedAt = user.getPasswordChangedAt();
       expect(passwordChangedAt).toBeDefined();
-      expect(passwordChangedAt!.getTime()).toBeGreaterThanOrEqual(beforeChange.getTime());
-      expect(passwordChangedAt!.getTime()).toBeLessThanOrEqual(afterChange.getTime());
+      expect(passwordChangedAt!.getTime()).toBeGreaterThanOrEqual(
+        beforeChange.getTime(),
+      );
+      expect(passwordChangedAt!.getTime()).toBeLessThanOrEqual(
+        afterChange.getTime(),
+      );
     });
   });
 
@@ -243,7 +252,10 @@ describe('User Entity - Extended Coverage', () => {
     it('createStaff should create user with roleAssignments', () => {
       // Arrange
       const roleAssignments: RoleAssignment[] = [
-        { roleId: 'ADMIN', scope: { type: 'PROPERTY', resourceIds: ['prop-1'] } },
+        {
+          roleId: 'ADMIN',
+          scope: { type: 'PROPERTY', resourceIds: ['prop-1'] },
+        },
       ];
 
       // Act

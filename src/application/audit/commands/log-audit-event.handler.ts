@@ -6,6 +6,7 @@ import {
   type AuditLogRepository,
 } from '@/domain/audit/repositories/audit-log.repository';
 import { AuditLog } from '@/domain/audit/entities/audit-log.entity';
+import { getRequestAuditContext } from '@/infrastructure/audit/request-audit-context';
 
 @CommandHandler(LogAuditEventCommand)
 export class LogAuditEventHandler implements ICommandHandler<LogAuditEventCommand> {
@@ -18,6 +19,7 @@ export class LogAuditEventHandler implements ICommandHandler<LogAuditEventComman
 
   async execute(command: LogAuditEventCommand): Promise<void> {
     try {
+      const requestAuditContext = getRequestAuditContext();
       const log = AuditLog.create(
         command.tenantId,
         command.userId,
@@ -26,6 +28,9 @@ export class LogAuditEventHandler implements ICommandHandler<LogAuditEventComman
         command.entityType,
         command.entityId,
         command.metadata,
+        command.previousValue,
+        command.newValue,
+        command.ipAddress ?? requestAuditContext?.ipAddress,
       );
       await this.auditLogRepository.save(log);
     } catch (error) {

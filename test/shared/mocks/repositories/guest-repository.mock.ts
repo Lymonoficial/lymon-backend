@@ -6,6 +6,7 @@ export function createGuestRepositoryMock(): jest.Mocked<GuestRepository> {
     findById: jest.fn(),
     findByTenantId: jest.fn(),
     findByPrimaryEmail: jest.fn(),
+    findByDocumentNumber: jest.fn(),
     findByGuestAccountId: jest.fn(),
     findAllByGuestAccountId: jest.fn(),
     countByTenantId: jest.fn(),

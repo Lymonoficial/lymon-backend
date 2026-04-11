@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SendGuestMessageHandler } from '@/application/guest-email/commands/send-guest-message/send-guest-message.handler';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
@@ -35,12 +35,12 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
   const staffIdStr = '65f1a23b4c5d6e7f8a9b0c1f';
 
   beforeEach(async () => {
-    guestRepository = createGuestRepositoryMock() as jest.Mocked<GuestRepository>;
-    reservationRepository = createReservationRepositoryMock() as jest.Mocked<ReservationRepository>;
-    propertyRepository = createPropertyRepositoryMock() as jest.Mocked<PropertyRepository>;
-    guestEmailRepository = createGuestEmailRepositoryMock() as jest.Mocked<GuestEmailRepository>;
-    templateService = createEmailTemplateServiceMock() as jest.Mocked<EmailTemplateService>;
-    
+    guestRepository = createGuestRepositoryMock();
+    reservationRepository = createReservationRepositoryMock();
+    propertyRepository = createPropertyRepositoryMock();
+    guestEmailRepository = createGuestEmailRepositoryMock();
+    templateService = createEmailTemplateServiceMock();
+
     eventEmitter = {
       emit: jest.fn(),
     } as unknown as jest.Mocked<EventEmitter2>;
@@ -57,28 +57,40 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
 
   const mockGuest = Guest.create({
     tenantId: TenantId.createFromString(tenantIdStr),
-    identity: { documentNumber: '12345', documentType: 'DNI', countryCode: 'CO' },
+    identity: {
+      documentNumber: '12345',
+      documentType: 'DNI',
+      countryCode: 'CO',
+    },
     fullName: 'John Doe',
     primaryEmail: 'john@example.com',
   });
 
   describe('Flujo de envío asíncrono y placeholders', () => {
-    
     it('Caso 1: Envío Exitoso (Happy Path) - Se guarda en PENDING y emite evento', async () => {
       guestRepository.findById.mockResolvedValue(mockGuest);
       reservationRepository.findByGuestId.mockResolvedValue([]);
 
       const command = new SendGuestMessageCommand(
-        tenantIdStr, guestIdStr, 'Bienvenido', 'Mensaje de prueba', undefined, [], staffIdStr
+        tenantIdStr,
+        guestIdStr,
+        'Bienvenido',
+        'Mensaje de prueba',
+        undefined,
+        [],
+        staffIdStr,
       );
 
       const result = await handler.execute(command);
 
       expect(result).toBeDefined();
       expect(guestEmailRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ status: GuestEmailStatusEnum.PENDING })
+        expect.objectContaining({ status: GuestEmailStatusEnum.PENDING }),
       );
-      expect(eventEmitter.emit).toHaveBeenCalledWith('guest-email.created', expect.anything());
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'guest-email.created',
+        expect.anything(),
+      );
     });
 
     it('Caso 2: Validación de Placeholders (Datos completos) - Se resuelven correctamente nombre y propiedad', async () => {
@@ -86,12 +98,18 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
       reservationRepository.findByGuestId.mockResolvedValue([]);
 
       const command = new SendGuestMessageCommand(
-        tenantIdStr, guestIdStr, 'Asunto para {{guestName}}', 'Cuerpo con {{guestName}}', undefined, [], staffIdStr
+        tenantIdStr,
+        guestIdStr,
+        'Asunto para {{guestName}}',
+        'Cuerpo con {{guestName}}',
+        undefined,
+        [],
+        staffIdStr,
       );
 
       await handler.execute(command);
 
-      const event = eventEmitter.emit.mock.calls[0][1] as any;
+      const event = eventEmitter.emit.mock.calls[0][1];
       expect(event.subject).toBe('Asunto para John Doe');
       expect(event.body).toContain('Cuerpo con John Doe');
     });
@@ -101,12 +119,18 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
       reservationRepository.findByGuestId.mockResolvedValue([]);
 
       const command = new SendGuestMessageCommand(
-        tenantIdStr, guestIdStr, 'Asunto {{missing}}', 'Cuerpo {{missing}}', undefined, [], staffIdStr
+        tenantIdStr,
+        guestIdStr,
+        'Asunto {{missing}}',
+        'Cuerpo {{missing}}',
+        undefined,
+        [],
+        staffIdStr,
       );
 
       await handler.execute(command);
 
-      const event = eventEmitter.emit.mock.calls[0][1] as any;
+      const event = eventEmitter.emit.mock.calls[0][1];
       expect(event.body).toContain('Cuerpo ');
     });
 
@@ -115,7 +139,13 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
       reservationRepository.findByGuestId.mockResolvedValue([]);
 
       const command = new SendGuestMessageCommand(
-        tenantIdStr, guestIdStr, 'Auto', 'Hola', undefined, [], undefined
+        tenantIdStr,
+        guestIdStr,
+        'Auto',
+        'Hola',
+        undefined,
+        [],
+        undefined,
       );
 
       await handler.execute(command);
@@ -125,8 +155,18 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
     });
 
     it('Caso 5: Validación Estricta (Error 400) - Lanza excepción si falta cuerpo y plantilla', async () => {
-      const command = new SendGuestMessageCommand(tenantIdStr, guestIdStr, 'Sub', '', undefined, [], staffIdStr);
-      await expect(handler.execute(command)).rejects.toThrow(BadRequestException);
+      const command = new SendGuestMessageCommand(
+        tenantIdStr,
+        guestIdStr,
+        'Sub',
+        '',
+        undefined,
+        [],
+        staffIdStr,
+      );
+      await expect(handler.execute(command)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('Caso 6: Seguridad (Fuga de datos) - No se exponen datos sensibles', async () => {
@@ -134,12 +174,18 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
       reservationRepository.findByGuestId.mockResolvedValue([]);
 
       const command = new SendGuestMessageCommand(
-        tenantIdStr, guestIdStr, 'Seguridad', 'Pass: {{password}}', undefined, [], staffIdStr
+        tenantIdStr,
+        guestIdStr,
+        'Seguridad',
+        'Pass: {{password}}',
+        undefined,
+        [],
+        staffIdStr,
       );
 
       await handler.execute(command);
 
-      const event = eventEmitter.emit.mock.calls[0][1] as any;
+      const event = eventEmitter.emit.mock.calls[0][1];
       expect(event.body).not.toContain('{{password}}');
       expect(event.body).toContain('Pass: ');
     });
@@ -150,7 +196,13 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
 
       const attachments = [{ url: 'http://test.com/doc.pdf', name: 'doc.pdf' }];
       const command = new SendGuestMessageCommand(
-        tenantIdStr, guestIdStr, 'Adj', 'Txt', undefined, attachments, staffIdStr
+        tenantIdStr,
+        guestIdStr,
+        'Adj',
+        'Txt',
+        undefined,
+        attachments,
+        staffIdStr,
       );
 
       await handler.execute(command);
@@ -161,7 +213,7 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
 
     it('Caso 8: Validación de Emisión de Eventos - El evento lleva el senderName de la propiedad', async () => {
       guestRepository.findById.mockResolvedValue(mockGuest);
-      
+
       const mockReservation = {
         getPropertyId: () => ({ toString: () => 'prop123' }),
         getDateRange: () => ({
@@ -174,20 +226,36 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
       reservationRepository.findByGuestId.mockResolvedValue([mockReservation]);
       propertyRepository.findById.mockResolvedValue(mockProperty);
 
-      const command = new SendGuestMessageCommand(tenantIdStr, guestIdStr, 'Tu reserva', 'En {{propertyName}}', undefined, [], staffIdStr);
+      const command = new SendGuestMessageCommand(
+        tenantIdStr,
+        guestIdStr,
+        'Tu reserva',
+        'En {{propertyName}}',
+        undefined,
+        [],
+        staffIdStr,
+      );
 
       await handler.execute(command);
 
       expect(eventEmitter.emit).toHaveBeenCalledWith(
         'guest-email.created',
-        expect.objectContaining({ senderName: 'Hotel Paraíso' })
+        expect.objectContaining({ senderName: 'Hotel Paraíso' }),
       );
     });
 
     it('Caso 9: Verificación de Estado PENDING inicial - Fiabilidad de envío', async () => {
       guestRepository.findById.mockResolvedValue(mockGuest);
       reservationRepository.findByGuestId.mockResolvedValue([]);
-      const command = new SendGuestMessageCommand(tenantIdStr, guestIdStr, 'A', 'B', undefined, [], staffIdStr);
+      const command = new SendGuestMessageCommand(
+        tenantIdStr,
+        guestIdStr,
+        'A',
+        'B',
+        undefined,
+        [],
+        staffIdStr,
+      );
       await handler.execute(command);
       const savedEntity = guestEmailRepository.save.mock.calls[0][0];
       expect(savedEntity.getStatus()).toBe(GuestEmailStatusEnum.PENDING);
@@ -198,19 +266,30 @@ describe('SendGuestMessageHandler (Pruebas Completas de Mensajería)', () => {
       const checkInDate = new Date('2024-10-01T12:00:00Z');
       const mockReservation = {
         getPropertyId: () => ({ toString: () => 'prop123' }),
-        getDateRange: () => ({ getCheckIn: () => checkInDate, getCheckOut: () => new Date() }),
+        getDateRange: () => ({
+          getCheckIn: () => checkInDate,
+          getCheckOut: () => new Date(),
+        }),
       } as any;
       const mockProperty = { getName: () => 'Hostal Central' } as any;
 
       reservationRepository.findByGuestId.mockResolvedValue([mockReservation]);
       propertyRepository.findById.mockResolvedValue(mockProperty);
 
-      const command = new SendGuestMessageCommand(tenantIdStr, guestIdStr, 'D', 'Check-in: {{checkInDate}}', undefined, [], staffIdStr);
+      const command = new SendGuestMessageCommand(
+        tenantIdStr,
+        guestIdStr,
+        'D',
+        'Check-in: {{checkInDate}}',
+        undefined,
+        [],
+        staffIdStr,
+      );
 
       await handler.execute(command);
 
-      const emitCall = eventEmitter.emit.mock.calls[0][1] as any;
-      expect(emitCall.body).toContain(checkInDate.toLocaleDateString()); 
+      const emitCall = eventEmitter.emit.mock.calls[0][1];
+      expect(emitCall.body).toContain(checkInDate.toLocaleDateString());
     });
   });
 });

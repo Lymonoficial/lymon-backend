@@ -46,7 +46,10 @@ export class CreateReservationDto {
   @Type(() => Number)
   guestsCount: number;
 
-  @ApiProperty({ enum: ManualReservationSourceEnum, example: ManualReservationSourceEnum.MANUAL })
+  @ApiProperty({
+    enum: ManualReservationSourceEnum,
+    example: ManualReservationSourceEnum.MANUAL,
+  })
   @IsEnum(ManualReservationSourceEnum)
   source: ManualReservationSourceEnum;
 

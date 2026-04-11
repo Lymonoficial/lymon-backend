@@ -88,6 +88,15 @@ import {
 } from '@/infrastructure/persistence/schemas/guest-email.schema';
 import { GUEST_EMAIL_REPOSITORY } from '@/domain/guest-email/repositories/guest-email.repository';
 import { MongoGuestEmailRepository } from '@/infrastructure/persistence/repositories/mongo-guest-email.repository';
+import {
+  ShiftDocument,
+  ShiftSchema,
+} from '@/infrastructure/persistence/schemas/shift.schema';
+import { SHIFT_REPOSITORY } from '@/domain/shift/repositories/shift.repository';
+import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/mongo-shift.repository';
+import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
+import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
+import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
 
 @Module({
   imports: [
@@ -107,8 +116,10 @@ import { MongoGuestEmailRepository } from '@/infrastructure/persistence/reposito
         name: InventoryMovementDocument.name,
         schema: InventoryMovementSchema,
       },
+      { name: SupplierDocument.name, schema: SupplierSchema },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
+      { name: ShiftDocument.name, schema: ShiftSchema },
     ]),
   ],
   providers: [
@@ -169,12 +180,20 @@ import { MongoGuestEmailRepository } from '@/infrastructure/persistence/reposito
       useClass: MongoInventoryMovementRepository,
     },
     {
+      provide: SUPPLIER_REPOSITORY,
+      useClass: MongoSupplierRepository,
+    },
+    {
       provide: GUEST_NOTE_REPOSITORY,
       useClass: MongoGuestNoteRepository,
     },
     {
       provide: GUEST_EMAIL_REPOSITORY,
       useClass: MongoGuestEmailRepository,
+    },
+    {
+      provide: SHIFT_REPOSITORY,
+      useClass: MongoShiftRepository,
     },
     RoleSeedService,
   ],
@@ -193,8 +212,10 @@ import { MongoGuestEmailRepository } from '@/infrastructure/persistence/reposito
     GUEST_RESERVATIONS_READ_REPOSITORY,
     INVENTORY_ITEM_REPOSITORY,
     INVENTORY_MOVEMENT_REPOSITORY,
+    SUPPLIER_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
+    SHIFT_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { GuestEmail } from '@/domain/guest-email/entities/guest-email.entity';
+import { GuestEmailAttachment } from '@/domain/guest-email/entities/guest-email.types';
 import { GuestEmailRepository } from '@/domain/guest-email/repositories/guest-email.repository';
 import { GuestEmailId } from '@/domain/guest-email/value-objects/guest-email-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
@@ -24,7 +25,7 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
       subject: email.getSubject(),
       status: email.getStatus(),
       messageId: email.getMessageId(),
-      attachments: email.getAttachments().map(att => ({
+      attachments: email.getAttachments().map((att) => ({
         url: att.url,
         name: att.name,
         type: att.type,
@@ -33,7 +34,10 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
       createdAt: email.getCreatedAt(),
     };
 
-    await this.emailModel.findByIdAndUpdate(id, document, { upsert: true, new: true });
+    await this.emailModel.findByIdAndUpdate(id, document, {
+      upsert: true,
+      new: true,
+    });
   }
 
   async findById(id: GuestEmailId): Promise<GuestEmail | null> {
@@ -42,7 +46,10 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
     return this.toDomain(doc);
   }
 
-  async findByGuestId(tenantId: TenantId, guestId: GuestId): Promise<GuestEmail[]> {
+  async findByGuestId(
+    tenantId: TenantId,
+    guestId: GuestId,
+  ): Promise<GuestEmail[]> {
     const docs = await this.emailModel
       .find({
         tenantId: new Types.ObjectId(tenantId.toString()),
@@ -50,17 +57,18 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
       })
       .sort({ createdAt: -1 });
 
-    return docs.map(doc => this.toDomain(doc));
+    return docs.map((doc) => this.toDomain(doc));
   }
 
   private toDomain(doc: GuestEmailDocument): GuestEmail {
     return GuestEmail.reconstitute(
-      GuestEmailId.createFromString(doc._id as string),
+      GuestEmailId.createFromString(doc._id),
       TenantId.createFromString(doc.tenantId.toString()),
       GuestId.createFromString(doc.guestId.toString()),
       doc.subject,
-      doc.status as any,
-      doc.attachments as any,
+
+      doc.status,
+      doc.attachments as GuestEmailAttachment[],
       doc.messageId,
       doc.sentById,
       doc.createdAt,

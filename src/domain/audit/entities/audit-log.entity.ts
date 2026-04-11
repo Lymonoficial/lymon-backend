@@ -25,6 +25,9 @@ export interface AuditLogData {
   entityType: AuditEntityType;
   entityId?: string;
   metadata?: Record<string, unknown>;
+  previousValue?: Record<string, unknown>;
+  newValue?: Record<string, unknown>;
+  ipAddress?: string;
   createdAt: Date;
 }
 
@@ -41,6 +44,9 @@ export class AuditLog {
     private readonly entityType: AuditEntityType,
     private readonly entityId: string | undefined,
     private readonly metadata: Record<string, unknown> | undefined,
+    private readonly previousValue: Record<string, unknown> | undefined,
+    private readonly newValue: Record<string, unknown> | undefined,
+    private readonly ipAddress: string | undefined,
     private readonly createdAt: Date,
   ) {}
 
@@ -52,6 +58,9 @@ export class AuditLog {
     entityType: AuditEntityType,
     entityId?: string,
     metadata?: Record<string, unknown>,
+    previousValue?: Record<string, unknown>,
+    newValue?: Record<string, unknown>,
+    ipAddress?: string,
   ): AuditLog {
     return new AuditLog(
       null,
@@ -62,15 +71,15 @@ export class AuditLog {
       entityType,
       entityId,
       metadata,
+      previousValue,
+      newValue,
+      ipAddress,
       new Date(),
     );
   }
 
   // De 9 a 2 parametros.
-  static reconstitute(
-    id: AuditLogId,
-    data: AuditLogData,
-  ): AuditLog {
+  static reconstitute(id: AuditLogId, data: AuditLogData): AuditLog {
     return new AuditLog(
       id,
       data.tenantId,
@@ -80,6 +89,9 @@ export class AuditLog {
       data.entityType,
       data.entityId,
       data.metadata,
+      data.previousValue,
+      data.newValue,
+      data.ipAddress,
       data.createdAt,
     );
   }
@@ -114,6 +126,18 @@ export class AuditLog {
 
   getMetadata(): Record<string, unknown> | undefined {
     return this.metadata;
+  }
+
+  getPreviousValue(): Record<string, unknown> | undefined {
+    return this.previousValue;
+  }
+
+  getNewValue(): Record<string, unknown> | undefined {
+    return this.newValue;
+  }
+
+  getIpAddress(): string | undefined {
+    return this.ipAddress;
   }
 
   getCreatedAt(): Date {

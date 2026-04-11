@@ -64,11 +64,17 @@ export class ScopeDto {
 }
 
 export class RoleAssignmentDto {
-  @ApiProperty({ example: '64a1b2c3d4e5f6a7b8c9d0e1', description: 'ID of the role to assign' })
+  @ApiProperty({
+    example: '64a1b2c3d4e5f6a7b8c9d0e1',
+    description: 'ID of the role to assign',
+  })
   @IsString()
   roleId: string;
 
-  @ApiProperty({ type: ScopeDto, description: 'Scope at which this role applies' })
+  @ApiProperty({
+    type: ScopeDto,
+    description: 'Scope at which this role applies',
+  })
   @ValidateNested()
   @Type(() => ScopeDto)
   scope: ScopeDto;

@@ -13,13 +13,10 @@ import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @QueryHandler(GetGuestNotesByGuestIdQuery)
-export class GetGuestNotesByGuestIdHandler
-  implements
-    IQueryHandler<
-      GetGuestNotesByGuestIdQuery,
-      GetGuestNotesByGuestIdResult
-    >
-{
+export class GetGuestNotesByGuestIdHandler implements IQueryHandler<
+  GetGuestNotesByGuestIdQuery,
+  GetGuestNotesByGuestIdResult
+> {
   constructor(
     @Inject(GUEST_NOTE_REPOSITORY)
     private readonly guestNoteRepository: GuestNoteRepository,

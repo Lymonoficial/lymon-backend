@@ -1,7 +1,10 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetGuestBookingsQuery } from './get-guest-bookings.query';
-import { GetGuestBookingsResult, GuestBookingDto } from './get-guest-bookings.result';
+import {
+  GetGuestBookingsResult,
+  GuestBookingDto,
+} from './get-guest-bookings.result';
 import {
   RESERVATION_REPOSITORY,
   type ReservationRepository,
@@ -18,9 +21,10 @@ import {
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @QueryHandler(GetGuestBookingsQuery)
-export class GetGuestBookingsHandler
-  implements IQueryHandler<GetGuestBookingsQuery, GetGuestBookingsResult>
-{
+export class GetGuestBookingsHandler implements IQueryHandler<
+  GetGuestBookingsQuery,
+  GetGuestBookingsResult
+> {
   constructor(
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,
@@ -65,17 +69,14 @@ export class GetGuestBookingsHandler
 
     const items: GuestBookingDto[] = reservations
       .filter((res) => res.getTenantId().toString() === tenantId)
-      .sort(
-        (a, b) => b.getCreatedAt().getTime() - a.getCreatedAt().getTime(),
-      )
+      .sort((a, b) => b.getCreatedAt().getTime() - a.getCreatedAt().getTime())
       .map((res) => {
         const propertyId = res.getPropertyId().toString();
         const unitId = res.getUnitId().toString();
         const unit = units.find((item) => item.getId()?.toString() === unitId);
-        const resolvedPropertyId =
-          propertyNames.has(propertyId)
-            ? propertyId
-            : (unit?.getPropertyId().toString() ?? propertyId);
+        const resolvedPropertyId = propertyNames.has(propertyId)
+          ? propertyId
+          : (unit?.getPropertyId().toString() ?? propertyId);
 
         return {
           id: res.getId()!.toString(),

@@ -1,7 +1,6 @@
 import {
   User,
   UserId,
-  UserRoleEnum,
   type RoleAssignment,
 } from '@/domain/user/entities/user.entity';
 import { Email } from '@/domain/shared/value-objects/email.vo';

@@ -1,5 +1,4 @@
 import { GetSystemRolesQueryHandler } from '@/application/role/queries/GetSystemRoles/get-system-roles.query-handler';
-import { GetSystemRolesQuery } from '@/application/role/queries/GetSystemRoles/get-system-roles.query';
 import {
   GetSystemRolesResult,
   RoleDto,

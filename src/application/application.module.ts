@@ -25,6 +25,8 @@ import { InventoryApplicationModule } from '@/application/inventory/inventory-ap
 import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-application.module';
 import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
 import { UserApplicationModule } from '@/application/user/user-application.module';
+import { CreateShiftCommandHandler } from '@/application/shift/commands/create-shift/create-shift.handler';
+import { UpdateShiftCommandHandler } from '@/application/shift/commands/update-shift/update-shift.handler';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -36,6 +38,8 @@ const CommandHandlers = [
   VerifyEmailHandler,
   ChangePasswordHandler,
   InviteStaffHandler,
+  CreateShiftCommandHandler,
+  UpdateShiftCommandHandler,
 ];
 @Module({
   imports: [

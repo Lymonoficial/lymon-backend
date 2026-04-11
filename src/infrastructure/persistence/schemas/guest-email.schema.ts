@@ -43,11 +43,13 @@ export class GuestEmailDocument {
   messageId: string | null;
 
   @Prop({
-    type: [{
-      url: { type: String, required: true },
-      name: { type: String, required: true },
-      type: { type: String },
-    }],
+    type: [
+      {
+        url: { type: String, required: true },
+        name: { type: String, required: true },
+        type: { type: String },
+      },
+    ],
     default: [],
   })
   attachments: { url: string; name: string; type?: string }[];
@@ -66,7 +68,8 @@ export class GuestEmailDocument {
   updatedAt: Date;
 }
 
-export const GuestEmailSchema = SchemaFactory.createForClass(GuestEmailDocument);
+export const GuestEmailSchema =
+  SchemaFactory.createForClass(GuestEmailDocument);
 
 GuestEmailSchema.index({ tenantId: 1, guestId: 1, createdAt: -1 });
 GuestEmailSchema.index({ status: 1, createdAt: 1 });
