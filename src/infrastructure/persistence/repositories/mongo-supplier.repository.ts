@@ -8,6 +8,13 @@ import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
+type SupplierSortBy = 'name' | 'createdAt';
+type SupplierSortOrder = 'asc' | 'desc';
+type SupplierFindByTenantIdOptions = {
+  sortBy?: SupplierSortBy;
+  sortOrder?: SupplierSortOrder;
+};
+
 @Injectable()
 export class MongoSupplierRepository implements SupplierRepository {
   constructor(
@@ -63,6 +70,22 @@ export class MongoSupplierRepository implements SupplierRepository {
     return this.toDomain(document);
   }
 
+  async findByTenantId(
+    tenantId: TenantId,
+    options?: SupplierFindByTenantIdOptions,
+  ): Promise<Supplier[]> {
+    const sortBy = options?.sortBy ?? 'createdAt';
+    const sortOrder = options?.sortOrder ?? 'desc';
+    const documents = await this.supplierModel
+      .find({
+        tenantId: new Types.ObjectId(tenantId.toString()),
+        deletedAt: null,
+      })
+      .sort(this.buildSort(sortBy, sortOrder));
+
+    return documents.map((document) => this.toDomain(document));
+  }
+
   async findByNit(tenantId: TenantId, nit: string): Promise<Supplier | null> {
     const document = await this.supplierModel.findOne({
       tenantId: new Types.ObjectId(tenantId.toString()),
@@ -72,6 +95,13 @@ export class MongoSupplierRepository implements SupplierRepository {
 
     if (!document) return null;
     return this.toDomain(document);
+  }
+
+  async delete(id: SupplierId): Promise<void> {
+    await this.supplierModel.findByIdAndUpdate(id.toString(), {
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    });
   }
 
   private toDomain(document: SupplierDocument): Supplier {
@@ -88,5 +118,14 @@ export class MongoSupplierRepository implements SupplierRepository {
       updatedAt: document.updatedAt,
       deletedAt: document.deletedAt,
     });
+  }
+
+  private buildSort(
+    sortBy: SupplierSortBy,
+    sortOrder: SupplierSortOrder,
+  ): Record<string, 1 | -1> {
+    return {
+      [sortBy]: sortOrder === 'asc' ? 1 : -1,
+    };
   }
 }

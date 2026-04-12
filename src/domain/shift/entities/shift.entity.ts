@@ -19,11 +19,12 @@ export interface CreateShiftParams {
 }
 
 export interface UpdateShiftParams {
-  staffMemberId: UserId;
+  staffMemberIds: UserId[];
   propertyId: PropertyId;
-  shiftDate: Date;
-  startTime: string;
-  endTime: string;
+  startDate: Date;
+  endDate: Date | null;
+  startHour: string;
+  endHour: string;
   startMinutes: number;
   endMinutes: number;
   notes?: string;
@@ -192,42 +193,65 @@ export class Shift {
   }
 
   update(params: UpdateShiftParams, now: Date): void {
+    if (params.staffMemberIds.length === 0 && this.staffMemberIds.length > 0) {
+      // Allow removing all staff assignments from update flow.
+    }
+
     if (params.endMinutes <= params.startMinutes) {
       throw new Error('Shift end time must be after start time');
     }
 
-    const hasSchedulingChanges =
-      !this.getStaffMemberId().equals(params.staffMemberId) ||
+    if (
+      params.endDate &&
+      params.endDate.getTime() < params.startDate.getTime()
+    ) {
+      throw new Error('Shift end date cannot be before start date');
+    }
+
+    const hasImmutableChangesAfterStart =
+      !this.haveSameStaffMembers(params.staffMemberIds) ||
       !this.propertyId.equals(params.propertyId) ||
-      this.startDate.getTime() !== params.shiftDate.getTime() ||
-      this.startHour !== params.startTime ||
-      this.endHour !== params.endTime ||
-      this.startMinutes !== params.startMinutes ||
-      this.endMinutes !== params.endMinutes;
+      this.startDate.getTime() !== params.startDate.getTime();
 
     const shiftStartAt = new Date(
       this.startDate.getTime() + this.startMinutes * 60 * 1000,
     );
     const isPastOrActive = now.getTime() >= shiftStartAt.getTime();
 
-    if (isPastOrActive && hasSchedulingChanges) {
+    if (isPastOrActive && hasImmutableChangesAfterStart) {
       throw new Error(
-        'This shift already started or is in the past. Only notes can be edited.',
+        'This shift already started or is in the past. Only endDate, startHour, endHour, and notes can be edited.',
       );
     }
 
     if (!isPastOrActive) {
-      this.staffMemberIds = [params.staffMemberId];
+      this.staffMemberIds = params.staffMemberIds;
       this.propertyId = params.propertyId;
-      this.startDate = params.shiftDate;
-      this.endDate = params.shiftDate;
-      this.startHour = params.startTime;
-      this.endHour = params.endTime;
-      this.startMinutes = params.startMinutes;
-      this.endMinutes = params.endMinutes;
+      this.startDate = params.startDate;
     }
+
+    this.endDate = params.endDate;
+    this.startHour = params.startHour;
+    this.endHour = params.endHour;
+    this.startMinutes = params.startMinutes;
+    this.endMinutes = params.endMinutes;
 
     this.notes = params.notes?.trim() ?? null;
     this.updatedAt = new Date();
+  }
+
+  private haveSameStaffMembers(nextStaffMemberIds: UserId[]): boolean {
+    if (this.staffMemberIds.length !== nextStaffMemberIds.length) {
+      return false;
+    }
+
+    const currentIds = new Set(this.staffMemberIds.map((id) => id.toString()));
+    for (const staffId of nextStaffMemberIds) {
+      if (!currentIds.has(staffId.toString())) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

@@ -121,6 +121,22 @@ export class Supplier {
     return this.deletedAt;
   }
 
+  assertCanBeDeleted(
+    associatedItems: Array<{ name: string; sku: string }>,
+  ): void {
+    if (associatedItems.length === 0) {
+      return;
+    }
+
+    const dependencies = associatedItems
+      .map((item) => `${item.name} (${item.sku})`)
+      .join(', ');
+
+    throw new DomainException(
+      `Cannot delete supplier because it is associated with inventory items: ${dependencies}`,
+    );
+  }
+
   private static isValidEmail(value: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }

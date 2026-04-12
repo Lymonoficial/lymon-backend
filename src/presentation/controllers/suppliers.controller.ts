@@ -1,14 +1,19 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
+  Delete,
+  Get,
+  Patch,
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
-  Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -27,13 +32,65 @@ import { CreateSupplierResult } from '@/application/inventory/commands/create-su
 import { UpdateSupplierDto } from '@/presentation/dtos/update-supplier.dto';
 import { UpdateSupplierCommand } from '@/application/inventory/commands/update-supplier/update-supplier.command';
 import { UpdateSupplierResult } from '@/application/inventory/commands/update-supplier/update-supplier.result';
+import { DeleteSupplierCommand } from '@/application/inventory/commands/delete-supplier/delete-supplier.command';
+import {
+  GetSuppliersQuery,
+  type SupplierSortBy,
+  type SupplierSortOrder,
+} from '@/application/inventory/queries/get-suppliers/get-suppliers.query';
+import { GetSuppliersResult } from '@/application/inventory/queries/get-suppliers/get-suppliers.result';
+import { GetItemsBySupplierQuery } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.query';
+import { GetItemsBySupplierResult } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.result';
 
 @ApiTags('suppliers')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 @Controller('suppliers')
 export class SuppliersController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_VIEW)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get suppliers list' })
+  @ApiResponse({ status: 200, description: 'Suppliers retrieved successfully' })
+  async getSuppliers(
+    @CurrentUser() user: JwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: SupplierSortBy,
+    @Query('sortOrder') sortOrder?: SupplierSortOrder,
+  ) {
+    const result = await this.queryBus.execute<
+      GetSuppliersQuery,
+      GetSuppliersResult
+    >(
+      new GetSuppliersQuery(
+        user.tenantId,
+        page,
+        limit,
+        search,
+        sortBy ?? 'createdAt',
+        sortOrder ?? 'desc',
+      ),
+    );
+
+    return {
+      message: 'Suppliers retrieved successfully',
+      data: result.suppliers,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
+    };
+  }
 
   @Post()
   @UseGuards(PermissionGuard)
@@ -110,6 +167,63 @@ export class SuppliersController {
       message: 'Supplier updated successfully',
       data: {
         supplierId: result.supplierId,
+      },
+    };
+  }
+
+  @Delete(':supplierId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_EDIT)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a supplier' })
+  @ApiResponse({ status: 204, description: 'Supplier deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Supplier not found' })
+  @ApiResponse({
+    status: 409,
+    description: 'Supplier has associated inventory items',
+  })
+  async deleteSupplier(
+    @CurrentUser() user: JwtPayload,
+    @Param('supplierId') supplierId: string,
+  ) {
+    await this.commandBus.execute<DeleteSupplierCommand, void>(
+      new DeleteSupplierCommand(
+        String(user.tenantId),
+        supplierId,
+        String(user.userId),
+        String(user.email),
+      ),
+    );
+  }
+
+  @Get(':supplierId/items')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_VIEW)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get inventory items by supplier' })
+  @ApiResponse({
+    status: 200,
+    description: 'Supplier items retrieved successfully',
+  })
+  async getSupplierItems(
+    @CurrentUser() user: JwtPayload,
+    @Param('supplierId') supplierId: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const result: GetItemsBySupplierResult = await this.queryBus.execute<
+      GetItemsBySupplierQuery,
+      GetItemsBySupplierResult
+    >(new GetItemsBySupplierQuery(user.tenantId, supplierId, page, limit));
+
+    return {
+      message: 'Supplier items retrieved successfully',
+      data: result.items,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
       },
     };
   }

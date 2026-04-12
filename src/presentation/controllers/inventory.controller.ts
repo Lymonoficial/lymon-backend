@@ -30,6 +30,7 @@ import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CreateInventoryItemDto } from '@/presentation/dtos/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '@/presentation/dtos/update-inventory-item.dto';
 import { RecordInventoryMovementDto } from '@/presentation/dtos/record-inventory-movement.dto';
+import { UpdateInventoryItemSupplierDto } from '@/presentation/dtos/update-inventory-item-supplier.dto';
 import { CreateInventoryItemCommand } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.command';
 import { CreateInventoryItemResult } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.result';
 import { UpdateInventoryItemCommand } from '@/application/inventory/commands/update-inventory-item/update-inventory-item.command';
@@ -37,6 +38,10 @@ import { UpdateInventoryItemResult } from '@/application/inventory/commands/upda
 import { RecordInventoryMovementCommand } from '@/application/inventory/commands/record-inventory-movement/record-inventory-movement.command';
 import { RecordInventoryMovementResult } from '@/application/inventory/commands/record-inventory-movement/record-inventory-movement.result';
 import { DeleteInventoryItemCommand } from '@/application/inventory/commands/delete-inventory-item/delete-inventory-item.command';
+import { AssociateSupplierToItemCommand } from '@/application/inventory/commands/associate-supplier-to-item/associate-supplier-to-item.command';
+import { AssociateSupplierToItemResult } from '@/application/inventory/commands/associate-supplier-to-item/associate-supplier-to-item.result';
+import { RemoveSupplierFromItemCommand } from '@/application/inventory/commands/remove-supplier-from-item/remove-supplier-from-item.command';
+import { RemoveSupplierFromItemResult } from '@/application/inventory/commands/remove-supplier-from-item/remove-supplier-from-item.result';
 import { GetInventoryItemsByPropertyQuery } from '@/application/inventory/queries/get-inventory-items-by-property/get-inventory-items-by-property.query';
 import { GetInventoryItemsByPropertyResult } from '@/application/inventory/queries/get-inventory-items-by-property/get-inventory-items-by-property.result';
 import { GetLowStockItemsByPropertyQuery } from '@/application/inventory/queries/get-low-stock-items-by-property/get-low-stock-items-by-property.query';
@@ -252,5 +257,61 @@ export class InventoryController {
     await this.commandBus.execute<DeleteInventoryItemCommand, void>(
       new DeleteInventoryItemCommand(user.tenantId, propertyId, itemId),
     );
+  }
+
+  @Patch('items/:itemId/supplier')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_EDIT)
+  @ApiOperation({
+    summary: 'Associate or remove a supplier from an inventory item',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Inventory item supplier updated successfully',
+  })
+  async updateItemSupplier(
+    @CurrentUser() user: JwtPayload,
+    @Param('propertyId') propertyId: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateInventoryItemSupplierDto,
+  ) {
+    if (dto.supplierId === null) {
+      const result = await this.commandBus.execute<
+        RemoveSupplierFromItemCommand,
+        RemoveSupplierFromItemResult
+      >(
+        new RemoveSupplierFromItemCommand(
+          user.tenantId,
+          propertyId,
+          itemId,
+          user.userId,
+          user.email,
+        ),
+      );
+
+      return {
+        message: 'Inventory item supplier removed successfully',
+        data: result,
+      };
+    }
+
+    const result = await this.commandBus.execute<
+      AssociateSupplierToItemCommand,
+      AssociateSupplierToItemResult
+    >(
+      new AssociateSupplierToItemCommand(
+        user.tenantId,
+        propertyId,
+        itemId,
+        dto.supplierId,
+        user.userId,
+        user.email,
+      ),
+    );
+
+    return {
+      message: 'Inventory item supplier updated successfully',
+      data: result,
+    };
   }
 }

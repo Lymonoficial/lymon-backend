@@ -1,10 +1,12 @@
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SuppliersController } from '@/presentation/controllers/suppliers.controller';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
+import { DeleteSupplierCommand } from '@/application/inventory/commands/delete-supplier/delete-supplier.command';
 
 describe('SuppliersController', () => {
   let controller: SuppliersController;
   let commandBus: { execute: jest.Mock };
+  let queryBus: { execute: jest.Mock };
 
   const user = {
     userId: '65f1a1a2b3c4d5e6f7a8b9c1',
@@ -22,7 +24,60 @@ describe('SuppliersController', () => {
 
   beforeEach(() => {
     commandBus = { execute: jest.fn() };
-    controller = new SuppliersController(commandBus as unknown as CommandBus);
+    queryBus = { execute: jest.fn() };
+    controller = new SuppliersController(
+      commandBus as unknown as CommandBus,
+      queryBus as unknown as QueryBus,
+    );
+  });
+
+  it('gets suppliers list with pagination', async () => {
+    queryBus.execute.mockResolvedValue({
+      suppliers: [
+        {
+          supplierId: 'supplier-123',
+          name: 'Fresh Supplies Inc.',
+          contactEmail: 'contact@freshsupplies.com',
+          contactPhone: '+12025550123',
+          status: 'ACTIVE',
+          createdAt: '2026-04-10T10:00:00.000Z',
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 20,
+      totalPages: 1,
+    });
+
+    const result = await controller.getSuppliers(
+      user,
+      1,
+      20,
+      'fresh',
+      'name',
+      'asc',
+    );
+
+    expect(queryBus.execute).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      message: 'Suppliers retrieved successfully',
+      data: [
+        {
+          supplierId: 'supplier-123',
+          name: 'Fresh Supplies Inc.',
+          contactEmail: 'contact@freshsupplies.com',
+          contactPhone: '+12025550123',
+          status: 'ACTIVE',
+          createdAt: '2026-04-10T10:00:00.000Z',
+        },
+      ],
+      pagination: {
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      },
+    });
   });
 
   it('creates a supplier and returns supplier id', async () => {
@@ -42,5 +97,16 @@ describe('SuppliersController', () => {
       message: 'Supplier created successfully',
       data: { supplierId: 'supplier-123' },
     });
+  });
+
+  it('dispatches DeleteSupplierCommand for supplier delete', async () => {
+    commandBus.execute.mockResolvedValue(undefined);
+
+    await controller.deleteSupplier(user, 'supplier-123');
+
+    expect(commandBus.execute).toHaveBeenCalledTimes(1);
+    expect(commandBus.execute).toHaveBeenCalledWith(
+      expect.any(DeleteSupplierCommand),
+    );
   });
 });
