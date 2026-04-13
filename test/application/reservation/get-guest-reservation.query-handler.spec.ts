@@ -32,6 +32,8 @@ function makeGuestRecord(params: {
 }
 
 describe('GetGuestReservationHandler', () => {
+  const GUEST_ID = '65f1a1a2b3c4d5e6f7a8b9c5';
+
   let handler: GetGuestReservationHandler;
   let reservationRepository: ReturnType<typeof createReservationRepositoryMock>;
   let guestRepository: ReturnType<typeof createGuestRepositoryMock>;
@@ -56,12 +58,12 @@ describe('GetGuestReservationHandler', () => {
     const reservation = makeReservation({
       id: 'res-1',
       tenantId: 'tenant-1',
-      guestId: 'guest-1',
+      guestId: GUEST_ID,
       propertyId: 'property-1',
       unitId: 'unit-1',
     });
     const guest = makeGuestRecord({
-      id: 'guest-1',
+      id: GUEST_ID,
       tenantId: 'tenant-1',
       guestAccountId: 'guest-account-1',
     });
@@ -111,10 +113,10 @@ describe('GetGuestReservationHandler', () => {
     const reservation = makeReservation({
       id: 'res-1',
       tenantId: 'tenant-1',
-      guestId: 'guest-1',
+      guestId: GUEST_ID,
     });
     const guest = makeGuestRecord({
-      id: 'guest-1',
+      id: GUEST_ID,
       tenantId: 'tenant-1',
       guestAccountId: 'different-account',
     });

@@ -43,7 +43,7 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
     const guestId = GuestId.createFromString(command.guestId);
 
     const guest = await this.guestRepository.findById(guestId);
-    if (!guest || !guest.getTenantId().equals(tenantId)) {
+    if (!guest?.getTenantId()?.equals?.(tenantId)) {
       throw new NotFoundException('Huésped no encontrado');
     }
 

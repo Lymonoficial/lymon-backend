@@ -41,7 +41,12 @@ export class DeleteSupplierHandler implements ICommandHandler<
     const supplierId = SupplierId.create(command.supplierId);
 
     const supplier = await this.supplierRepository.findById(supplierId);
-    if (supplier?.getTenantId().toString() !== tenantId.toString()) {
+    const supplierTenantId = supplier?.getTenantId?.()?.toString?.();
+    if (
+      !supplier ||
+      !supplierTenantId ||
+      supplierTenantId !== tenantId.toString()
+    ) {
       throw new NotFoundException('Supplier not found');
     }
 
