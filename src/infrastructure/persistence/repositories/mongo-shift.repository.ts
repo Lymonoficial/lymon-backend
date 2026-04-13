@@ -53,7 +53,7 @@ export class MongoShiftRepository implements ShiftRepository {
       createdAt: shift.getCreatedAt(),
     });
 
-    return saved._id.toString();
+    return saved._id.toHexString();
   }
 
   async findById(id: ShiftId): Promise<Shift | null> {
@@ -131,35 +131,37 @@ export class MongoShiftRepository implements ShiftRepository {
   }
 
   private toDomain(doc: ShiftDocument): Shift {
-    const staffIds =
-      doc.staffMemberIds && doc.staffMemberIds.length > 0
-        ? doc.staffMemberIds
-        : doc.staffMemberId
-          ? [doc.staffMemberId]
-          : [];
+    let staffIds: Types.ObjectId[] = [];
+    if (doc.staffMemberIds && doc.staffMemberIds.length > 0) {
+      staffIds = doc.staffMemberIds;
+    } else if (doc.staffMemberId) {
+      staffIds = [doc.staffMemberId];
+    }
     const startDate = doc.startDate ?? doc.shiftDate;
-    const effectiveEndDate =
-      doc.endDate !== undefined && doc.endDate !== null
-        ? doc.endDate
-        : (doc.shiftDate ?? null);
+    const effectiveEndDate = doc.endDate ?? doc.shiftDate ?? null;
+    const docId = doc._id.toHexString();
+    const tenantId = doc.tenantId.toHexString();
+    const propertyId = doc.propertyId.toHexString();
 
-    return Shift.reconstitute(
-      ShiftId.createFromString(doc._id.toString()),
-      TenantId.createFromString(doc.tenantId.toString()),
-      staffIds.map((staffId) => UserId.createFromString(staffId.toString())),
-      PropertyId.create(doc.propertyId.toString()),
+    return Shift.reconstitute({
+      id: ShiftId.createFromString(docId),
+      tenantId: TenantId.createFromString(tenantId),
+      staffMemberIds: staffIds.map((staffId) =>
+        UserId.createFromString(staffId.toHexString()),
+      ),
+      propertyId: PropertyId.create(propertyId),
       startDate,
-      effectiveEndDate,
-      doc.startHour ?? doc.startTime,
-      doc.endHour ?? doc.endTime,
-      doc.startMinutes,
-      doc.endMinutes,
-      doc.notes ?? null,
-      doc.createdBy ?? null,
-      doc.createdByEmail ?? null,
-      doc.createdAt,
-      doc.updatedAt,
-    );
+      endDate: effectiveEndDate,
+      startHour: doc.startHour ?? doc.startTime,
+      endHour: doc.endHour ?? doc.endTime,
+      startMinutes: doc.startMinutes,
+      endMinutes: doc.endMinutes,
+      notes: doc.notes ?? null,
+      createdBy: doc.createdBy ?? null,
+      createdByEmail: doc.createdByEmail ?? null,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    });
   }
 
   private getOpenEndedUpperBound(): Date {
