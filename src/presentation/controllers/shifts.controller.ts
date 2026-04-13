@@ -3,6 +3,8 @@ import { CreateShiftCommand } from '@/application/shift/commands/create-shift/cr
 import { CreateShiftCommandResult } from '@/application/shift/commands/create-shift/create-shift.result';
 import { UpdateShiftCommand } from '@/application/shift/commands/update-shift/update-shift.command';
 import { UpdateShiftCommandResult } from '@/application/shift/commands/update-shift/update-shift.result';
+import { DeleteShiftCommand } from '@/application/shift/commands/delete-shift/delete-shift.command';
+import { DeleteShiftCommandResult } from '@/application/shift/commands/delete-shift/delete-shift.result';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
@@ -13,6 +15,7 @@ import { UpdateShiftDto } from '@/presentation/dtos/update-shift.dto';
 import {
   Body,
   Controller,
+  Delete,
   Param,
   Patch,
   Post,
@@ -95,6 +98,26 @@ export class ShiftsController {
 
     return {
       message: 'Shift updated successfully',
+      data: result,
+    };
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.TENANT_USERS_MANAGE)
+  @ApiOperation({ summary: 'Delete a work shift' })
+  @ApiResponse({ status: 200, description: 'Shift deleted successfully' })
+  async deleteShift(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') shiftId: string,
+  ) {
+    const result = await this.commandBus.execute<
+      DeleteShiftCommand,
+      DeleteShiftCommandResult
+    >(new DeleteShiftCommand(shiftId, user.tenantId, user.userId, user.email));
+
+    return {
+      message: 'Shift deleted successfully',
       data: result,
     };
   }
