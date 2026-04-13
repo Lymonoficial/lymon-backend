@@ -45,14 +45,14 @@ describe('SuppliersController', () => {
       ],
       total: 1,
       page: 1,
-      limit: 20,
+      limit: 10,
       totalPages: 1,
     });
 
     const result = await controller.getSuppliers(
       user,
       1,
-      20,
+      10,
       'fresh',
       'name',
       'asc',
@@ -74,10 +74,26 @@ describe('SuppliersController', () => {
       pagination: {
         total: 1,
         page: 1,
-        limit: 20,
+        limit: 10,
         totalPages: 1,
       },
     });
+  });
+
+  it('uses default pagination when page and limit are omitted', async () => {
+    queryBus.execute.mockResolvedValue({
+      suppliers: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+      totalPages: 0,
+    });
+
+    const result = await controller.getSuppliers(user);
+
+    expect(queryBus.execute).toHaveBeenCalledTimes(1);
+    expect(result.pagination.limit).toBe(10);
+    expect(result.pagination.page).toBe(1);
   });
 
   it('creates a supplier and returns supplier id', async () => {
