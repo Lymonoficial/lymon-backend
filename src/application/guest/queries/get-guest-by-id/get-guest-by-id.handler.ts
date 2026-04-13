@@ -31,7 +31,7 @@ export class GetGuestByIdHandler implements IQueryHandler<
 
     const guest = await this.guestRepository.findById(guestId);
 
-    if (!guest || !guest.getTenantId().equals(tenantId)) {
+    if (!guest?.getTenantId()?.equals(tenantId)) {
       return { item: null };
     }
 
