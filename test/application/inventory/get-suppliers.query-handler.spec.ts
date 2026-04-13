@@ -40,7 +40,7 @@ describe('GetSuppliersQueryHandler', () => {
     supplierRepository.findByTenantId.mockResolvedValue([]);
 
     const result = await handler.execute(
-      new GetSuppliersQuery('tenant-123', 1, 20),
+      new GetSuppliersQuery('tenant-123', 1, 10),
     );
 
     expect(result.total).toBe(0);
@@ -55,7 +55,7 @@ describe('GetSuppliersQueryHandler', () => {
     ]);
 
     const result = await handler.execute(
-      new GetSuppliersQuery('tenant-123', 1, 20, 'fresh'),
+      new GetSuppliersQuery('tenant-123', 1, 10, 'fresh'),
     );
 
     expect(result.total).toBe(1);
@@ -69,7 +69,7 @@ describe('GetSuppliersQueryHandler', () => {
     ]);
 
     const result = await handler.execute(
-      new GetSuppliersQuery('tenant-123', 1, 20, undefined, 'name', 'asc'),
+      new GetSuppliersQuery('tenant-123', 1, 10, undefined, 'name', 'asc'),
     );
 
     expect(result.suppliers.map((supplier) => supplier.name)).toEqual([
@@ -94,7 +94,7 @@ describe('GetSuppliersQueryHandler', () => {
       new GetSuppliersQuery(
         'tenant-123',
         1,
-        20,
+        10,
         undefined,
         'createdAt',
         'desc',
@@ -105,5 +105,17 @@ describe('GetSuppliersQueryHandler', () => {
       'Newer Supplier',
       'Older Supplier',
     ]);
+  });
+
+  it('defaults to page 1 and limit 10 when not provided', async () => {
+    supplierRepository.findByTenantId.mockResolvedValue([
+      makeSupplier({ name: 'Solo Supplier' }),
+    ]);
+
+    const result = await handler.execute(new GetSuppliersQuery('tenant-123'));
+
+    expect(result.page).toBe(1);
+    expect(result.limit).toBe(10);
+    expect(result.suppliers).toHaveLength(1);
   });
 });

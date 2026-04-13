@@ -16,6 +16,7 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
+  ApiQuery,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -57,11 +58,41 @@ export class SuppliersController {
   @RequirePermission(Permission.PROPERTY_VIEW)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get suppliers list' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search suppliers by name',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['name', 'createdAt'],
+    description: 'Sort field (default: createdAt)',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order (default: desc)',
+  })
   @ApiResponse({ status: 200, description: 'Suppliers retrieved successfully' })
   async getSuppliers(
     @CurrentUser() user: JwtPayload,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit?: number,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: SupplierSortBy,
     @Query('sortOrder') sortOrder?: SupplierSortOrder,

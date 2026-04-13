@@ -29,7 +29,7 @@ export class GetSuppliersQueryHandler implements IQueryHandler<
   async execute(query: GetSuppliersQuery): Promise<GetSuppliersResult> {
     const tenantId = TenantId.createFromString(query.tenantId);
     const page = query.page > 0 ? query.page : 1;
-    const limit = query.limit > 0 ? query.limit : 20;
+    const limit = query.limit > 0 ? query.limit : 10;
     const normalizedSearch = query.search?.trim().toLowerCase() ?? '';
 
     const suppliers: Supplier[] = await this.supplierRepository.findByTenantId(
