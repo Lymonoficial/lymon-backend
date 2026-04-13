@@ -56,6 +56,10 @@ export class MongoShiftRepository implements ShiftRepository {
     return saved._id.toString();
   }
 
+  async delete(id: ShiftId): Promise<void> {
+    await this.shiftModel.findByIdAndDelete(id.toString());
+  }
+
   async findById(id: ShiftId): Promise<Shift | null> {
     const doc = await this.shiftModel.findById(id.toString());
     return doc ? this.toDomain(doc) : null;

@@ -7,6 +7,7 @@ export const SHIFT_REPOSITORY = 'SHIFT_REPOSITORY';
 
 export interface ShiftRepository {
   save(shift: Shift): Promise<string>;
+  delete(id: ShiftId): Promise<void>;
   findById(id: ShiftId): Promise<Shift | null>;
   findOverlappingByStaffInRange(
     tenantId: TenantId,
