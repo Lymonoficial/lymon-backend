@@ -5,7 +5,15 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
-import { Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  UseGuards,
+  Post,
+  Body,
+  Param,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -13,7 +21,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
-import { Post, Body, Param } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
 import { CreateGuestNoteResult } from '@/application/guest-note/commands/create-guest-note.result';
