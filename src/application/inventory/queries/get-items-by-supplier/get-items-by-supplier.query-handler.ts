@@ -15,9 +15,10 @@ import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 import { toInventoryItemDto } from '@/application/inventory/queries/shared/inventory-item.dto';
 
 @QueryHandler(GetItemsBySupplierQuery)
-export class GetItemsBySupplierQueryHandler
-  implements IQueryHandler<GetItemsBySupplierQuery, GetItemsBySupplierResult>
-{
+export class GetItemsBySupplierQueryHandler implements IQueryHandler<
+  GetItemsBySupplierQuery,
+  GetItemsBySupplierResult
+> {
   constructor(
     @Inject(INVENTORY_ITEM_REPOSITORY)
     private readonly inventoryItemRepository: InventoryItemRepository,

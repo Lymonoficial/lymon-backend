@@ -5,23 +5,28 @@ import { UpdateShiftCommand } from '@/application/shift/commands/update-shift/up
 import { UpdateShiftCommandResult } from '@/application/shift/commands/update-shift/update-shift.result';
 import { DeleteShiftCommand } from '@/application/shift/commands/delete-shift/delete-shift.command';
 import { DeleteShiftCommandResult } from '@/application/shift/commands/delete-shift/delete-shift.result';
+import { GetShiftsQuery } from '@/application/shift/queries/get-shifts/get-shifts.query';
+import { type GetShiftsResult } from '@/application/shift/queries/get-shifts/get-shifts.result';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CreateShiftDto } from '@/presentation/dtos/create-shift.dto';
+import { GetShiftsDto } from '@/presentation/dtos/get-shifts.dto';
 import { UpdateShiftDto } from '@/presentation/dtos/update-shift.dto';
 import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -33,7 +38,40 @@ import {
 @ApiBearerAuth('JWT-auth')
 @Controller('shifts')
 export class ShiftsController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'List work shifts filtered by date and property' })
+  @ApiResponse({ status: 200, description: 'Shifts returned successfully' })
+  async getShifts(
+    @CurrentUser() user: JwtPayload,
+    @Query() dto: GetShiftsDto,
+  ): Promise<{ data: GetShiftsResult }> {
+    const canViewAllStaff =
+      user.isOwner ||
+      user.roleAssignments.some((assignment) =>
+        assignment.permissions.includes(Permission.TENANT_USERS_MANAGE),
+      );
+
+    const result = await this.queryBus.execute<GetShiftsQuery, GetShiftsResult>(
+      new GetShiftsQuery(
+        user.tenantId,
+        {
+          dateFrom: dto.dateFrom ? new Date(dto.dateFrom) : undefined,
+          dateTo: dto.dateTo ? new Date(dto.dateTo) : undefined,
+          propertyId: dto.propertyId,
+        },
+        user.userId,
+        canViewAllStaff,
+      ),
+    );
+
+    return { data: result };
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard, PermissionGuard)
