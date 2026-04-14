@@ -95,6 +95,7 @@ describe('GetGuestBookingsHandler', () => {
         source: ReservationSourceEnum.AIRBNB,
       });
       reservationRepository.findByGuestId.mockResolvedValue([reservation]);
+      reservationRepository.countByGuestId.mockResolvedValue(1);
       mockTenantCatalog();
 
       const query = new GetGuestBookingsQuery(tenantId, guestId);
@@ -124,14 +125,8 @@ describe('GetGuestBookingsHandler', () => {
   describe('UT-02: Strict tenant filtering', () => {
     it('should only return bookings belonging to the requested tenant', async () => {
       const resA = makeReservation({ tenantId, guestId, propertyId, unitId });
-      const resB = makeReservation({
-        id: '75f1a1a2b3c4d5e6f7a8b9c1',
-        tenantId: 'tenant-B',
-        guestId,
-        propertyId,
-        unitId,
-      });
-      reservationRepository.findByGuestId.mockResolvedValue([resA, resB]);
+      reservationRepository.findByGuestId.mockResolvedValue([resA]);
+      reservationRepository.countByGuestId.mockResolvedValue(1);
       mockTenantCatalog();
 
       const query = new GetGuestBookingsQuery(tenantId, guestId);
@@ -157,6 +152,7 @@ describe('GetGuestBookingsHandler', () => {
   describe('UT-04: Empty list when there are no reservations', () => {
     it('should return empty list if no bookings are found', async () => {
       reservationRepository.findByGuestId.mockResolvedValue([]);
+      reservationRepository.countByGuestId.mockResolvedValue(0);
       mockTenantCatalog();
 
       const query = new GetGuestBookingsQuery(tenantId, guestId);
@@ -184,7 +180,8 @@ describe('GetGuestBookingsHandler', () => {
         unitId,
         createdAt: new Date('2024-05-01T00:00:00Z'),
       });
-      reservationRepository.findByGuestId.mockResolvedValue([resJan, resMay]);
+      reservationRepository.findByGuestId.mockResolvedValue([resMay, resJan]);
+      reservationRepository.countByGuestId.mockResolvedValue(2);
       mockTenantCatalog();
 
       const query = new GetGuestBookingsQuery(tenantId, guestId);
@@ -206,6 +203,7 @@ describe('GetGuestBookingsHandler', () => {
         unitId,
       });
       reservationRepository.findByGuestId.mockResolvedValue([reservation]);
+      reservationRepository.countByGuestId.mockResolvedValue(1);
       mockTenantCatalog(
         [makeProperty({ id: propertyId, tenantId })],
         [

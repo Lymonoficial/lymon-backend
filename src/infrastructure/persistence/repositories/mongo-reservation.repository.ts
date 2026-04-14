@@ -149,17 +149,28 @@ export class MongoReservationRepository
     guestId: string,
     page: number,
     limit: number,
+    sortBy: 'checkIn' | 'createdAt' = 'createdAt',
+    sortDirection: 'asc' | 'desc' = 'desc',
   ): Promise<Reservation[]> {
     const skip = (page - 1) * limit;
+    const sortField = sortBy === 'checkIn' ? 'checkIn' : 'createdAt';
+    const sortOrder = sortDirection === 'asc' ? 1 : -1;
     const docs = await this.reservationModel
       .find({
         tenantId: new Types.ObjectId(tenantId),
         guestId: new Types.ObjectId(guestId),
       })
-      .sort({ createdAt: -1 })
+      .sort({ [sortField]: sortOrder })
       .skip(skip)
       .limit(limit);
     return docs.map((d) => this.toDomain(d));
+  }
+
+  async countByGuestId(tenantId: string, guestId: string): Promise<number> {
+    return this.reservationModel.countDocuments({
+      tenantId: new Types.ObjectId(tenantId),
+      guestId: new Types.ObjectId(guestId),
+    });
   }
 
   async findByGuestIds(
