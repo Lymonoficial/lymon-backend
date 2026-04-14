@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Shift } from '@/domain/shift/entities/shift.entity';
-import { ShiftRepository } from '@/domain/shift/repositories/shift.repository';
+import {
+  type ShiftFilters,
+  ShiftRepository,
+} from '@/domain/shift/repositories/shift.repository';
 import { ShiftId } from '@/domain/shift/value-objects/shift-id.vo';
 import { ShiftDocument } from '@/infrastructure/persistence/schemas/shift.schema';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -56,9 +59,64 @@ export class MongoShiftRepository implements ShiftRepository {
     return saved._id.toHexString();
   }
 
+  async delete(id: ShiftId): Promise<void> {
+    await this.shiftModel.findByIdAndDelete(id.toString());
+  }
+
   async findById(id: ShiftId): Promise<Shift | null> {
     const doc = await this.shiftModel.findById(id.toString());
     return doc ? this.toDomain(doc) : null;
+  }
+
+  async findByFilters(
+    tenantId: TenantId,
+    filters: ShiftFilters,
+    visibleStaffMemberId?: UserId,
+  ): Promise<Shift[]> {
+    const query: Record<string, unknown> = {
+      tenantId: new Types.ObjectId(tenantId.toString()),
+    };
+
+    if (filters.propertyId) {
+      query.propertyId = new Types.ObjectId(filters.propertyId.toString());
+    }
+
+    if (visibleStaffMemberId) {
+      query.$or = [
+        { staffMemberIds: new Types.ObjectId(visibleStaffMemberId.toString()) },
+        { staffMemberId: new Types.ObjectId(visibleStaffMemberId.toString()) },
+      ];
+    }
+
+    if (filters.dateFrom || filters.dateTo) {
+      const effectiveFrom =
+        filters.dateFrom ?? new Date('1970-01-01T00:00:00.000Z');
+      const effectiveTo = filters.dateTo ?? this.getOpenEndedUpperBound();
+
+      query.$and = [
+        {
+          $or: [
+            {
+              startDate: { $lte: effectiveTo },
+              $or: [
+                { endDate: null },
+                { endDate: { $exists: false } },
+                { endDate: { $gte: effectiveFrom } },
+              ],
+            },
+            {
+              shiftDate: { $gte: effectiveFrom, $lte: effectiveTo },
+            },
+          ],
+        },
+      ];
+    }
+
+    const docs = await this.shiftModel
+      .find(query)
+      .sort({ startDate: 1, startMinutes: 1 });
+
+    return docs.map((doc) => this.toDomain(doc));
   }
 
   async findOverlappingByStaff(

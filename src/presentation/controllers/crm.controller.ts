@@ -5,7 +5,15 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
-import { Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  UseGuards,
+  Post,
+  Body,
+  Param,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -13,8 +21,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
-import { Request } from '@nestjs/common';
-import { Post, Body, Param } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
 import { CreateGuestNoteResult } from '@/application/guest-note/commands/create-guest-note.result';
@@ -27,6 +33,9 @@ import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
 import { SendGuestMessageDto } from '@/presentation/dtos/send-guest-message.dto';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
+import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferences.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -174,6 +183,44 @@ export class CrmController {
       message: 'Tags assigned successfully',
     };
   }
+
+  @Patch('guests/:guestId/preferences')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Update free-text preference notes for a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest preferences updated successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Plan does not allow guest preferences management or insufficient permissions',
+  })
+  @ApiResponse({ status: 404, description: 'Guest not found' })
+  async updatePreferences(
+    @Param('guestId') guestId: string,
+    @Body() dto: SaveGuestPreferencesDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.commandBus.execute<
+      SaveGuestPreferencesCommand,
+      SaveGuestPreferencesResult
+    >(
+      new SaveGuestPreferencesCommand(
+        user.tenantId,
+        guestId,
+        dto.preferencesNotes,
+        user.activePlan,
+      ),
+    );
+
+    return {
+      message: 'Guest preferences updated successfully',
+      data: { guestId: result.guestId, wasCreated: result.wasCreated },
+    };
+  }
+
   @Get('guests/:guestId/emails')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)

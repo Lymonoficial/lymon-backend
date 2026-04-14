@@ -58,14 +58,24 @@ export class AssociateSupplierToItemHandler implements ICommandHandler<
     const supplierId = SupplierId.create(command.supplierId);
 
     const property = await this.propertyRepository.findById(propertyId);
-    if (property?.getTenantId().toString() !== tenantId.toString()) {
+    const propertyTenantId = property?.getTenantId?.()?.toString?.();
+    if (
+      !property ||
+      !propertyTenantId ||
+      propertyTenantId !== tenantId.toString()
+    ) {
       throw new NotFoundException('Property not found');
     }
 
     const item = await this.inventoryItemRepository.findById(itemId);
+    const itemTenantId = item?.getTenantId?.()?.toString?.();
+    const itemPropId = item?.getPropertyId?.()?.toString?.();
     if (
-      item?.getTenantId().toString() !== tenantId.toString() ||
-      item?.getPropertyId().toString() !== propertyId.toString()
+      !item ||
+      !itemTenantId ||
+      itemTenantId !== tenantId.toString() ||
+      !itemPropId ||
+      itemPropId !== propertyId.toString()
     ) {
       throw new NotFoundException('Inventory item not found');
     }
@@ -73,7 +83,12 @@ export class AssociateSupplierToItemHandler implements ICommandHandler<
     const inventoryItem = item as InventoryItemWithSupplierAssociation;
 
     const supplier = await this.supplierRepository.findById(supplierId);
-    if (supplier?.getTenantId().toString() !== tenantId.toString()) {
+    const supplierTenantId = supplier?.getTenantId?.()?.toString?.();
+    if (
+      !supplier ||
+      !supplierTenantId ||
+      supplierTenantId !== tenantId.toString()
+    ) {
       throw new NotFoundException('Supplier not found');
     }
 
