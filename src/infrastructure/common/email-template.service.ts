@@ -28,12 +28,40 @@ export class EmailTemplateService {
     variables: Record<string, unknown> = {},
   ): string {
     if (!text) return '';
-    return text.replaceAll(/\{\{(.+?)\}\}/g, (_match: string, key: string) => {
-      const value = variables[key.trim()];
-      return value !== undefined && value !== null
-        ? String(value as string | number | boolean)
-        : '';
-    });
+    if (!text.includes('{{')) {
+      return text;
+    }
+
+    const parts: string[] = [];
+    let cursor = 0;
+
+    while (cursor < text.length) {
+      const open = text.indexOf('{{', cursor);
+      if (open === -1) {
+        parts.push(text.slice(cursor));
+        break;
+      }
+
+      parts.push(text.slice(cursor, open));
+
+      const close = text.indexOf('}}', open + 2);
+      if (close === -1) {
+        parts.push(text.slice(open));
+        break;
+      }
+
+      const key = text.slice(open + 2, close).trim();
+      const value = key ? variables[key] : undefined;
+      parts.push(
+        value !== undefined && value !== null
+          ? String(value as string | number | boolean)
+          : '',
+      );
+
+      cursor = close + 2;
+    }
+
+    return parts.join('');
   }
 
   renderTemplate(
