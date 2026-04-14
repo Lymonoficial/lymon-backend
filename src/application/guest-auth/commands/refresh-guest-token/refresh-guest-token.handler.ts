@@ -21,7 +21,9 @@ export class RefreshGuestTokenHandler implements ICommandHandler<RefreshGuestTok
     try {
       payload = this.tokenService.verifyToken(command.refreshToken);
     } catch {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      return Promise.reject(
+        new UnauthorizedException('Invalid or expired refresh token'),
+      );
     }
 
     const cleanPayload: GuestJwtPayload = {

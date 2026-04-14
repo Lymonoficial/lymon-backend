@@ -31,18 +31,24 @@ export class DeleteInventoryItemHandler implements ICommandHandler<
     const itemId = InventoryItemId.create(command.itemId);
 
     const property = await this.propertyRepository.findById(propertyId);
+    const propertyTenantId = property?.getTenantId?.()?.toString?.();
     if (
       !property ||
-      property.getTenantId().toString() !== tenantId.toString()
+      !propertyTenantId ||
+      propertyTenantId !== tenantId.toString()
     ) {
       throw new NotFoundException('Property not found');
     }
 
     const item = await this.inventoryItemRepository.findById(itemId);
+    const itemTenantId = item?.getTenantId?.()?.toString?.();
+    const itemPropId = item?.getPropertyId?.()?.toString?.();
     if (
       !item ||
-      item.getTenantId().toString() !== tenantId.toString() ||
-      item.getPropertyId().toString() !== propertyId.toString()
+      !itemTenantId ||
+      itemTenantId !== tenantId.toString() ||
+      !itemPropId ||
+      itemPropId !== propertyId.toString()
     ) {
       throw new NotFoundException('Inventory item not found');
     }

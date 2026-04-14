@@ -6,6 +6,10 @@ import {
   type SupplierListItemDto,
 } from './get-suppliers.result';
 import {
+  type SupplierSortBy,
+  type SupplierSortOrder,
+} from './get-suppliers.query';
+import {
   SUPPLIER_REPOSITORY,
   type SupplierRepository,
 } from '@/domain/inventory/repositories/supplier.repository';
@@ -25,7 +29,7 @@ export class GetSuppliersQueryHandler implements IQueryHandler<
   async execute(query: GetSuppliersQuery): Promise<GetSuppliersResult> {
     const tenantId = TenantId.createFromString(query.tenantId);
     const page = query.page > 0 ? query.page : 1;
-    const limit = query.limit > 0 ? query.limit : 20;
+    const limit = query.limit > 0 ? query.limit : 10;
     const normalizedSearch = query.search?.trim().toLowerCase() ?? '';
 
     const suppliers: Supplier[] = await this.supplierRepository.findByTenantId(
@@ -41,10 +45,11 @@ export class GetSuppliersQueryHandler implements IQueryHandler<
           supplier.getName().toLowerCase().includes(normalizedSearch),
         )
       : suppliers;
+    const sorted = this.sortSuppliers(filtered, query.sortBy, query.sortOrder);
 
-    const total = filtered.length;
+    const total = sorted.length;
     const start = (page - 1) * limit;
-    const paginated = filtered.slice(start, start + limit);
+    const paginated = sorted.slice(start, start + limit);
 
     return new GetSuppliersResult(
       paginated.map((supplier) => this.toSupplierListItemDto(supplier)),
@@ -52,6 +57,22 @@ export class GetSuppliersQueryHandler implements IQueryHandler<
       page,
       limit,
     );
+  }
+
+  private sortSuppliers(
+    suppliers: Supplier[],
+    sortBy: SupplierSortBy,
+    sortOrder: SupplierSortOrder,
+  ): Supplier[] {
+    const sorted = [...suppliers].sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.getName().localeCompare(b.getName());
+      }
+
+      return a.getCreatedAt().getTime() - b.getCreatedAt().getTime();
+    });
+
+    return sortOrder === 'desc' ? sorted.reverse() : sorted;
   }
 
   private toSupplierListItemDto(supplier: Supplier): SupplierListItemDto {

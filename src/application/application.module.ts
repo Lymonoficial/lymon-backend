@@ -27,6 +27,8 @@ import { GuestEmailApplicationModule } from '@/application/guest-email/guest-ema
 import { UserApplicationModule } from '@/application/user/user-application.module';
 import { CreateShiftCommandHandler } from '@/application/shift/commands/create-shift/create-shift.handler';
 import { UpdateShiftCommandHandler } from '@/application/shift/commands/update-shift/update-shift.handler';
+import { DeleteShiftCommandHandler } from '@/application/shift/commands/delete-shift/delete-shift.handler';
+import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shifts.handler';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -40,7 +42,10 @@ const CommandHandlers = [
   InviteStaffHandler,
   CreateShiftCommandHandler,
   UpdateShiftCommandHandler,
+  DeleteShiftCommandHandler,
 ];
+
+const QueryHandlers = [GetShiftsHandler];
 @Module({
   imports: [
     CqrsModule,
@@ -61,7 +66,7 @@ const CommandHandlers = [
     GuestEmailApplicationModule,
     UserApplicationModule,
   ],
-  providers: [...CommandHandlers],
-  exports: [...CommandHandlers, GuestApplicationModule],
+  providers: [...CommandHandlers, ...QueryHandlers],
+  exports: [...CommandHandlers, ...QueryHandlers, GuestApplicationModule],
 })
 export class ApplicationModule {}

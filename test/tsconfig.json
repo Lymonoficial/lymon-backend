@@ -3,10 +3,8 @@
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "rootDir": "..",
     "types": ["jest", "node"]
   },
-  "include": [
-    "./**/*.ts",
-    "../src/**/*.ts"
-  ]
+  "include": ["./**/*.ts", "../src/**/*.ts"]
 }

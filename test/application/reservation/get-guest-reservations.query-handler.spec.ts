@@ -34,6 +34,9 @@ function makeGuestRecord(params: {
 }
 
 describe('GetGuestReservationsHandler', () => {
+  const GUEST_1_ID = '65f1a1a2b3c4d5e6f7a8b9c5';
+  const GUEST_2_ID = '65f1a1a2b3c4d5e6f7a8b9c6';
+
   let handler: GetGuestReservationsHandler;
   let guestReservationsReadRepository: ReturnType<
     typeof createGuestReservationsReadRepositoryMock
@@ -60,12 +63,12 @@ describe('GetGuestReservationsHandler', () => {
   it('returns paginated bookings for the guest account', async () => {
     const guestAccountId = 'guest-account-1';
     const guest1 = makeGuestRecord({
-      id: 'guest-1',
+      id: GUEST_1_ID,
       tenantId: 'tenant-1',
       guestAccountId,
     });
     const guest2 = makeGuestRecord({
-      id: 'guest-2',
+      id: GUEST_2_ID,
       tenantId: 'tenant-2',
       guestAccountId,
     });
@@ -78,7 +81,7 @@ describe('GetGuestReservationsHandler', () => {
     const booking1 = makeReservation({
       id: 'res-1',
       tenantId: 'tenant-1',
-      guestId: 'guest-1',
+      guestId: GUEST_1_ID,
       propertyId: 'property-1',
       unitId: 'unit-1',
       status: ReservationStatusEnum.CONFIRMED,
@@ -86,7 +89,7 @@ describe('GetGuestReservationsHandler', () => {
     const booking2 = makeReservation({
       id: 'res-2',
       tenantId: 'tenant-2',
-      guestId: 'guest-2',
+      guestId: GUEST_2_ID,
       propertyId: 'property-2',
       unitId: 'unit-2',
       status: ReservationStatusEnum.CHECKED_OUT,
@@ -126,7 +129,7 @@ describe('GetGuestReservationsHandler', () => {
     expect(result).toBeInstanceOf(GetGuestReservationsResult);
     expect(guestRepository.findAllByGuestAccountId).toHaveBeenCalledTimes(1);
     expect(guestReservationsReadRepository.findByGuestIds).toHaveBeenCalledWith(
-      ['guest-1', 'guest-2'],
+      [GUEST_1_ID, GUEST_2_ID],
       expect.objectContaining({ page: 1, limit: 10, sortBy: 'createdAt' }),
     );
     expect(result.total).toBe(2);

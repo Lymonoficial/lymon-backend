@@ -33,9 +33,11 @@ export class CreateInventoryItemHandler implements ICommandHandler<
     const propertyId = PropertyId.create(command.propertyId);
 
     const property = await this.propertyRepository.findById(propertyId);
+    const propertyTenantId = property?.getTenantId?.()?.toString?.();
     if (
       !property ||
-      property.getTenantId().toString() !== tenantId.toString()
+      !propertyTenantId ||
+      propertyTenantId !== tenantId.toString()
     ) {
       throw new NotFoundException('Property not found');
     }

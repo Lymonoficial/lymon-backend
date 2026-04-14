@@ -57,14 +57,24 @@ export class RemoveSupplierFromItemHandler implements ICommandHandler<
     const itemId = InventoryItemId.create(command.itemId);
 
     const property = await this.propertyRepository.findById(propertyId);
-    if (property?.getTenantId().toString() !== tenantId.toString()) {
+    const propertyTenantId = property?.getTenantId?.()?.toString?.();
+    if (
+      !property ||
+      !propertyTenantId ||
+      propertyTenantId !== tenantId.toString()
+    ) {
       throw new NotFoundException('Property not found');
     }
 
     const item = await this.inventoryItemRepository.findById(itemId);
+    const itemTenantId = item?.getTenantId?.()?.toString?.();
+    const itemPropId = item?.getPropertyId?.()?.toString?.();
     if (
-      item?.getTenantId().toString() !== tenantId.toString() ||
-      item?.getPropertyId().toString() !== propertyId.toString()
+      !item ||
+      !itemTenantId ||
+      itemTenantId !== tenantId.toString() ||
+      !itemPropId ||
+      itemPropId !== propertyId.toString()
     ) {
       throw new NotFoundException('Inventory item not found');
     }

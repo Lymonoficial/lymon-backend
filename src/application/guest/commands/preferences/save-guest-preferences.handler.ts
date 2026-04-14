@@ -13,10 +13,10 @@ const PLANS_WITH_PREFERENCES_ACCESS: string[] = [
 ];
 
 @CommandHandler(SaveGuestPreferencesCommand)
-export class SaveGuestPreferencesHandler
-  implements
-    ICommandHandler<SaveGuestPreferencesCommand, SaveGuestPreferencesResult>
-{
+export class SaveGuestPreferencesHandler implements ICommandHandler<
+  SaveGuestPreferencesCommand,
+  SaveGuestPreferencesResult
+> {
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly repository: GuestRepository,
