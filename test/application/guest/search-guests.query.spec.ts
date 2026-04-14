@@ -11,9 +11,7 @@ describe('SearchGuestsQuery', () => {
     mockRepository = {
       search: jest.fn().mockResolvedValue([]),
       findByTenantId: jest.fn().mockResolvedValue([]),
-      searchPaginated: jest
-        .fn()
-        .mockResolvedValue({ guests: [], total: 0 }),
+      searchPaginated: jest.fn().mockResolvedValue({ guests: [], total: 0 }),
       findByTenantIdPaginated: jest
         .fn()
         .mockResolvedValue({ guests: [], total: 0 }),
