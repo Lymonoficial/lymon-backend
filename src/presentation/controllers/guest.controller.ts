@@ -183,16 +183,16 @@ export class GuestController {
 
   @Patch(':guestId/tags')
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission(Permission.CRM_MANAGE) 
+  @RequirePermission(Permission.CRM_MANAGE)
   @ApiOperation({ summary: 'Assign tags to a specific guest' })
   @ApiResponse({ status: 200, description: 'Tags assigned successfully' })
   @ApiResponse({ status: 404, description: 'Guest not found' })
   async assignTags(
     @CurrentUser() user: JwtPayload,
     @Param('guestId') guestId: string,
-    @Body() dto: UpdateTagsDto, 
+    @Body() dto: UpdateTagsDto,
   ) {
-    await this.commandBus.execute(      
+    await this.commandBus.execute(
       new AssignGuestTagsCommand(guestId, dto.tags, user.tenantId),
     );
 
@@ -205,7 +205,8 @@ export class GuestController {
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.CRM_MANAGE)
   @ApiOperation({
-    summary: 'Guardar (crear o actualizar) las notas de preferencias de un huésped',
+    summary:
+      'Guardar (crear o actualizar) las notas de preferencias de un huésped',
   })
   @ApiResponse({
     status: 200,
