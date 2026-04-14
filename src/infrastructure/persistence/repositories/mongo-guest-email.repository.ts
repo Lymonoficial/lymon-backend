@@ -60,6 +60,27 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
     return docs.map((doc) => this.toDomain(doc));
   }
 
+  async findByGuestIdPaginated(
+    tenantId: TenantId,
+    guestId: GuestId,
+    page: number,
+    limit: number,
+  ): Promise<{ emails: GuestEmail[]; total: number }> {
+    const filter = {
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      guestId: new Types.ObjectId(guestId.toString()),
+    };
+    const [total, docs] = await Promise.all([
+      this.emailModel.countDocuments(filter),
+      this.emailModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+    ]);
+    return { emails: docs.map((doc) => this.toDomain(doc)), total };
+  }
+
   private toDomain(doc: GuestEmailDocument): GuestEmail {
     return GuestEmail.reconstitute(
       GuestEmailId.createFromString(doc._id),
