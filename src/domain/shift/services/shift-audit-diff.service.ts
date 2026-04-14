@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { UserId } from '@/domain/user/entities/user.entity';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+import {
+  type AuditDiffResult,
+  buildAuditDiff,
+} from '@/domain/shared/utils/audit-diff.util';
 
 export interface ShiftForAudit {
   getStaffMemberIds(): UserId[];
@@ -30,33 +34,8 @@ export class ShiftAuditDiffService {
   diff(
     previousSnapshot: Record<string, unknown>,
     nextSnapshot: Record<string, unknown>,
-  ): {
-    changedFields: string[];
-    previousValue?: Record<string, unknown>;
-    newValue?: Record<string, unknown>;
-  } {
-    const changedFields: string[] = [];
-    const previousValue: Record<string, unknown> = {};
-    const newValue: Record<string, unknown> = {};
-
-    for (const field of Object.keys(nextSnapshot)) {
-      const previousFieldValue = previousSnapshot[field];
-      const nextFieldValue = nextSnapshot[field];
-
-      if (previousFieldValue === nextFieldValue) {
-        continue;
-      }
-
-      changedFields.push(field);
-      previousValue[field] = previousFieldValue;
-      newValue[field] = nextFieldValue;
-    }
-
-    return {
-      changedFields,
-      previousValue: changedFields.length > 0 ? previousValue : undefined,
-      newValue: changedFields.length > 0 ? newValue : undefined,
-    };
+  ): AuditDiffResult {
+    return buildAuditDiff(previousSnapshot, nextSnapshot);
   }
 
   private formatDate(value: Date): string {
