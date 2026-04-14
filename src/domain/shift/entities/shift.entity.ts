@@ -22,13 +22,13 @@ export interface CreateShiftParams {
 }
 
 export interface UpdateShiftParams {
-  staffMemberIds?: UserId[] | null;
-  propertyId?: PropertyId | string | null;
+  staffMemberIds?: UserId[];
+  propertyId?: PropertyId | string;
   startDate?: string | Date | null;
   endDate?: string | Date | null;
-  startHour?: string | null;
-  endHour?: string | null;
-  notes?: string | null;
+  startHour?: string;
+  endHour?: string;
+  notes?: string;
 }
 
 export class Shift {
@@ -221,7 +221,7 @@ export class Shift {
   }
 
   private resolveStaffMemberIds(params: UpdateShiftParams): UserId[] {
-    if (params.staffMemberIds === undefined || params.staffMemberIds === null) {
+    if (params.staffMemberIds === undefined) {
       return this.staffMemberIds;
     }
 
@@ -233,7 +233,7 @@ export class Shift {
   }
 
   private resolvePropertyId(params: UpdateShiftParams): PropertyId {
-    if (params.propertyId === undefined || params.propertyId === null) {
+    if (params.propertyId === undefined) {
       return this.propertyId;
     }
 
