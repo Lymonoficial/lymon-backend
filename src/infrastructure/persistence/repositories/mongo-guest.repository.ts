@@ -170,7 +170,7 @@ export class MongoGuestRepository implements GuestRepository {
     page: number,
     limit: number,
   ): Promise<{ guests: Guest[]; total: number }> {
-    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedTerm = term.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
     const pattern = new RegExp(escapedTerm, 'i');
     const filter = {
       tenantId: new Types.ObjectId(tenantId.toString()),
@@ -196,7 +196,7 @@ export class MongoGuestRepository implements GuestRepository {
   }
 
   async search(tenantId: TenantId, term: string): Promise<Guest[]> {
-    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedTerm = term.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
     const pattern = new RegExp(escapedTerm, 'i');
 
     const documents = await this.guestModel
