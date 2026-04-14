@@ -100,9 +100,13 @@ export class GuestController {
   })
   @ApiResponse({ status: 200, description: 'Guests retrieved successfully' })
   async getAll(@CurrentUser() user: JwtPayload, @Query('q') term = '') {
-    const guests = await this.searchGuestsQuery.execute(
+    const { guests, total } = await this.searchGuestsQuery.execute(
       TenantId.createFromString(user.tenantId),
       term,
+      1,
+      1000,
+      'createdAt',
+      'desc',
     );
 
     return {
@@ -120,7 +124,7 @@ export class GuestController {
         createdAt: guest.getCreatedAt(),
         updatedAt: guest.getUpdatedAt(),
       })),
-      total: guests.length,
+      total,
     };
   }
 

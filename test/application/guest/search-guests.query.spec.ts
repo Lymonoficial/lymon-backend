@@ -11,6 +11,12 @@ describe('SearchGuestsQuery', () => {
     mockRepository = {
       search: jest.fn().mockResolvedValue([]),
       findByTenantId: jest.fn().mockResolvedValue([]),
+      searchPaginated: jest
+        .fn()
+        .mockResolvedValue({ guests: [], total: 0 }),
+      findByTenantIdPaginated: jest
+        .fn()
+        .mockResolvedValue({ guests: [], total: 0 }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -30,16 +36,27 @@ describe('SearchGuestsQuery', () => {
     const tenantId = TenantId.createFromString('hotel-123');
     const dirtyTerm = '  JUAN  ';
 
-    await query.execute(tenantId, dirtyTerm);
+    await query.execute(tenantId, dirtyTerm, 1, 10, 'createdAt', 'desc');
 
-    expect(mockRepository.search).toHaveBeenCalledWith(tenantId, 'juan');
+    expect(mockRepository.searchPaginated).toHaveBeenCalledWith(
+      tenantId,
+      'juan',
+      1,
+      10,
+    );
   });
 
-  it('should call findByTenantId if the term is empty', async () => {
+  it('should call findByTenantIdPaginated if the term is empty', async () => {
     const tenantId = TenantId.createFromString('hotel-123');
 
-    await query.execute(tenantId, '');
+    await query.execute(tenantId, '', 1, 10, 'createdAt', 'desc');
 
-    expect(mockRepository.findByTenantId).toHaveBeenCalledWith(tenantId);
+    expect(mockRepository.findByTenantIdPaginated).toHaveBeenCalledWith(
+      tenantId,
+      1,
+      10,
+      'createdAt',
+      'desc',
+    );
   });
 });
