@@ -30,13 +30,17 @@ export class GetGuestNotesByGuestIdHandler implements IQueryHandler<
     try {
       guestId = GuestId.createFromString(query.guestId);
     } catch {
-      return { items: [] };
+      return new GetGuestNotesByGuestIdResult([], 0, query.page, query.limit);
     }
 
-    const notes = await this.guestNoteRepository.findByGuestId(
-      guestId,
-      TenantId.createFromString(query.tenantId),
-    );
+    const tenantId = TenantId.createFromString(query.tenantId);
+    const { notes, total } =
+      await this.guestNoteRepository.findByGuestIdPaginated(
+        guestId,
+        tenantId,
+        query.page,
+        query.limit,
+      );
 
     const items: GuestNoteDto[] = notes.map((note) => ({
       id: note.getId()?.toString() ?? '',
@@ -49,6 +53,11 @@ export class GetGuestNotesByGuestIdHandler implements IQueryHandler<
       updatedAt: note.getUpdatedAt(),
     }));
 
-    return { items };
+    return new GetGuestNotesByGuestIdResult(
+      items,
+      total,
+      query.page,
+      query.limit,
+    );
   }
 }
