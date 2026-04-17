@@ -97,6 +97,12 @@ import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/
 import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
 import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
 import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
+import {
+  GuestPreferenceCatalogItemDocument,
+  GuestPreferenceCatalogItemSchema,
+} from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
+import { GUEST_PREFERENCE_CATALOG_REPOSITORY } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
+import { MongoGuestPreferenceCatalogRepository } from '@/infrastructure/persistence/repositories/mongo-guest-preference-catalog.repository';
 
 @Module({
   imports: [
@@ -120,6 +126,10 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
+      {
+        name: GuestPreferenceCatalogItemDocument.name,
+        schema: GuestPreferenceCatalogItemSchema,
+      },
     ]),
   ],
   providers: [
@@ -195,6 +205,10 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
       provide: SHIFT_REPOSITORY,
       useClass: MongoShiftRepository,
     },
+    {
+      provide: GUEST_PREFERENCE_CATALOG_REPOSITORY,
+      useClass: MongoGuestPreferenceCatalogRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -216,6 +230,7 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
+    GUEST_PREFERENCE_CATALOG_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
