@@ -25,6 +25,7 @@ import { InventoryApplicationModule } from '@/application/inventory/inventory-ap
 import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-application.module';
 import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
 import { UserApplicationModule } from '@/application/user/user-application.module';
+import { GuestPreferenceApplicationModule } from '@/application/guest-preference/guest-preference-application.module';
 import { CreateShiftCommandHandler } from '@/application/shift/commands/create-shift/create-shift.handler';
 import { UpdateShiftCommandHandler } from '@/application/shift/commands/update-shift/update-shift.handler';
 import { DeleteShiftCommandHandler } from '@/application/shift/commands/delete-shift/delete-shift.handler';
@@ -65,6 +66,7 @@ const QueryHandlers = [GetShiftsHandler];
     GuestNoteApplicationModule,
     GuestEmailApplicationModule,
     UserApplicationModule,
+    GuestPreferenceApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers, GuestApplicationModule],

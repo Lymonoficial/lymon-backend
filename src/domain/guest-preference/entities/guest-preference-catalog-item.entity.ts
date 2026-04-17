@@ -31,10 +31,10 @@ export class GuestPreferenceCatalogItem {
   private constructor(
     private readonly id: string | null,
     private readonly tenantId: TenantId,
-    private readonly category: GuestPreferenceCategoryEnum,
+    private category: GuestPreferenceCategoryEnum,
     private readonly source: GuestPreferenceSourceEnum,
     private readonly key: GuestPreferencePredefinedKeyEnum | null,
-    private readonly label: string | null,
+    private label: string | null,
     private isActive: boolean,
     private readonly createdAt: Date,
     private updatedAt: Date,
@@ -88,6 +88,16 @@ export class GuestPreferenceCatalogItem {
       data.createdAt,
       data.updatedAt,
     );
+  }
+
+  update(label: string, category: GuestPreferenceCategoryEnum): void {
+    const normalized = label.trim();
+    if (!normalized) {
+      throw new Error('Custom preference label cannot be empty');
+    }
+    this.label = normalized;
+    this.category = category;
+    this.touch();
   }
 
   activate(): void {
