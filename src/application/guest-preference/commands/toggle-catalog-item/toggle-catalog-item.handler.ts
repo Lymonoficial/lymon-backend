@@ -22,7 +22,7 @@ export class ToggleCatalogItemHandler implements ICommandHandler<
 
     const item = await this.repository.findById(command.itemId);
 
-    if (!item || item.getTenantId().toString() !== tenantId.toString()) {
+    if (item?.getTenantId().toString() !== tenantId.toString()) {
       throw new NotFoundException('Catalog item not found');
     }
 

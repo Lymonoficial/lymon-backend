@@ -53,7 +53,7 @@ export class GuestPreferenceCatalogItem {
     }
 
     if (params.source === GuestPreferenceSourceEnum.CUSTOM) {
-      if (!params.label || !params.label.trim()) {
+      if (!params.label?.trim()) {
         throw new Error('Custom preference must have a label');
       }
       if (params.key) {

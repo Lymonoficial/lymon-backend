@@ -7,12 +7,7 @@ import {
 } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
 import { GuestPreferenceSourceEnum } from '@/domain/guest-preference/entities/guest-preference-catalog-item.entity';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
-
-const PLANS_WITH_CUSTOM_CATALOG: string[] = [
-  PlanTypeEnum.LYMON_PLUS,
-  PlanTypeEnum.LYMON_PRIME,
-];
+import { PLANS_WITH_CUSTOM_CATALOG } from '@/application/guest-preference/guest-preference.constants';
 
 @CommandHandler(DeleteCustomCatalogItemCommand)
 export class DeleteCustomCatalogItemHandler implements ICommandHandler<
@@ -30,7 +25,7 @@ export class DeleteCustomCatalogItemHandler implements ICommandHandler<
     const tenantId = TenantId.createFromString(command.tenantId);
     const item = await this.repository.findById(command.itemId);
 
-    if (!item || item.getTenantId().toString() !== tenantId.toString()) {
+    if (item?.getTenantId().toString() !== tenantId.toString()) {
       throw new NotFoundException('Catalog item not found');
     }
 
@@ -42,7 +37,7 @@ export class DeleteCustomCatalogItemHandler implements ICommandHandler<
   }
 
   private validatePlanAccess(activePlan: string): void {
-    if (!PLANS_WITH_CUSTOM_CATALOG.includes(activePlan)) {
+    if (!PLANS_WITH_CUSTOM_CATALOG.has(activePlan)) {
       throw new ForbiddenException(
         'Custom preference management requires a LYMON_PLUS or LYMON_PRIME plan. Please upgrade your plan.',
       );

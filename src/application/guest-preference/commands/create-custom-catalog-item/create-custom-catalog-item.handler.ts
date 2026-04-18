@@ -10,12 +10,7 @@ import {
   GuestPreferenceSourceEnum,
 } from '@/domain/guest-preference/entities/guest-preference-catalog-item.entity';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
-
-const PLANS_WITH_CUSTOM_CATALOG: string[] = [
-  PlanTypeEnum.LYMON_PLUS,
-  PlanTypeEnum.LYMON_PRIME,
-];
+import { PLANS_WITH_CUSTOM_CATALOG } from '@/application/guest-preference/guest-preference.constants';
 
 @CommandHandler(CreateCustomCatalogItemCommand)
 export class CreateCustomCatalogItemHandler implements ICommandHandler<
@@ -43,7 +38,7 @@ export class CreateCustomCatalogItemHandler implements ICommandHandler<
   }
 
   private validatePlanAccess(activePlan: string): void {
-    if (!PLANS_WITH_CUSTOM_CATALOG.includes(activePlan)) {
+    if (!PLANS_WITH_CUSTOM_CATALOG.has(activePlan)) {
       throw new ForbiddenException(
         'Custom preference management requires a LYMON_PLUS or LYMON_PRIME plan. Please upgrade your plan.',
       );
