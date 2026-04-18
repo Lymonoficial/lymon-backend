@@ -4,16 +4,20 @@ import { CreateGuestCommand } from '@/application/guest/commands/create-guest.co
 import { CreateGuestResult } from '@/application/guest/commands/create-guest.result';
 import { Guest } from '@/domain/guest/entities/guest.entity';
 import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
+import { GuestPreferenceCatalogRepository } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
+import { createGuestPreferenceCatalogRepositoryMock } from '@test/shared/mocks/repositories/guest-preference-catalog-repository.mock';
 
 describe('CreateGuestHandler', () => {
   let handler: CreateGuestHandler;
   let guestRepository: jest.Mocked<GuestRepository>;
+  let catalogRepository: jest.Mocked<GuestPreferenceCatalogRepository>;
 
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
-    handler = new CreateGuestHandler(guestRepository);
+    catalogRepository = createGuestPreferenceCatalogRepositoryMock();
+    handler = new CreateGuestHandler(guestRepository, catalogRepository);
   });
 
   describe('when the primary email already exists in the tenant', () => {

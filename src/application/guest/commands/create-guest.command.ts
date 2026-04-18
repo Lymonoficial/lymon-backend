@@ -1,5 +1,3 @@
-import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
-
 export class CreateGuestCommand {
   constructor(
     public readonly tenantId: string,
@@ -19,6 +17,6 @@ export class CreateGuestCommand {
       isPrimary?: boolean;
     }>,
     public readonly tags?: string[],
-    public readonly preferences?: GuestPreferenceItem[],
+    public readonly preferences?: string[],
   ) {}
 }

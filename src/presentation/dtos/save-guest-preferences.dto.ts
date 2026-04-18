@@ -1,33 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { GuestPreferenceCategoryEnum } from '@/domain/guest-preference/value-objects/guest-preference-category.vo';
 
 export class GuestPreferenceItemDto {
-  @ApiProperty({ description: 'ID of the catalog item' })
+  @ApiProperty({
+    description: 'ID of the catalog item to assign as a preference',
+    example: '64a1f2b3c4d5e6f7a8b9c0d1',
+  })
   @IsString()
   @IsNotEmpty()
   catalogItemId: string;
-
-  @ApiProperty({ description: 'Label snapshot at the moment of assignment' })
-  @IsString()
-  @IsNotEmpty()
-  labelSnapshot: string;
-
-  @ApiProperty({ enum: GuestPreferenceCategoryEnum })
-  @IsEnum(GuestPreferenceCategoryEnum)
-  category: GuestPreferenceCategoryEnum;
 }
 
 export class SaveGuestPreferencesDto {
   @ApiProperty({
-    description: 'List of preference items to assign to the guest',
+    description:
+      'List of catalog item IDs to assign as preferences to the guest',
     type: [GuestPreferenceItemDto],
   })
   @IsArray()

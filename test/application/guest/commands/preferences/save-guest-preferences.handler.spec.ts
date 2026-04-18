@@ -3,38 +3,64 @@ import { SaveGuestPreferencesHandler } from '@/application/guest/commands/prefer
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
+import { GuestPreferenceCatalogRepository } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
 import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
 import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
+import { createGuestPreferenceCatalogRepositoryMock } from '@test/shared/mocks/repositories/guest-preference-catalog-repository.mock';
 import {
   makeGuest,
   GUEST_FIXTURE_DEFAULTS,
 } from '@test/shared/fixtures/guest.fixture';
-import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
+import {
+  GuestPreferenceCatalogItem,
+  GuestPreferenceSourceEnum,
+} from '@/domain/guest-preference/entities/guest-preference-catalog-item.entity';
 import { GuestPreferenceCategoryEnum } from '@/domain/guest-preference/value-objects/guest-preference-category.vo';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
 
 const GUEST_ID = GUEST_FIXTURE_DEFAULTS.id;
 const TENANT_ID = 'tenant-xyz-456';
 
-const SAMPLE_PREFERENCES: GuestPreferenceItem[] = [
-  {
-    catalogItemId: 'item-001',
-    labelSnapshot: 'Piso alto',
+const CATALOG_ITEM_ID_1 = 'item-001';
+const CATALOG_ITEM_ID_2 = 'item-002';
+
+function makeCatalogItem(
+  id: string,
+  label: string,
+  tenantId = TENANT_ID,
+): GuestPreferenceCatalogItem {
+  return GuestPreferenceCatalogItem.reconstitute({
+    id,
+    tenantId: TenantId.createFromString(tenantId),
     category: GuestPreferenceCategoryEnum.ROOM,
-  },
-];
+    source: GuestPreferenceSourceEnum.CUSTOM,
+    key: null,
+    label,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+}
+
+const EXISTING_PREFERENCE: GuestPreferenceItem = {
+  catalogItemId: CATALOG_ITEM_ID_1,
+  labelSnapshot: 'Piso alto',
+  category: GuestPreferenceCategoryEnum.ROOM,
+};
 
 function makeCommand(
   overrides: Partial<{
     tenantId: string;
     guestId: string;
-    preferences: GuestPreferenceItem[];
+    catalogItemIds: string[];
     activePlan: string;
   }> = {},
 ): SaveGuestPreferencesCommand {
   return new SaveGuestPreferencesCommand(
     overrides.tenantId ?? TENANT_ID,
     overrides.guestId ?? GUEST_ID,
-    overrides.preferences ?? SAMPLE_PREFERENCES,
+    overrides.catalogItemIds ?? [CATALOG_ITEM_ID_1],
     overrides.activePlan ?? PlanTypeEnum.LYMON_PLUS,
   );
 }
@@ -42,10 +68,15 @@ function makeCommand(
 describe('SaveGuestPreferencesHandler', () => {
   let handler: SaveGuestPreferencesHandler;
   let guestRepository: jest.Mocked<GuestRepository>;
+  let catalogRepository: jest.Mocked<GuestPreferenceCatalogRepository>;
 
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
-    handler = new SaveGuestPreferencesHandler(guestRepository);
+    catalogRepository = createGuestPreferenceCatalogRepositoryMock();
+    handler = new SaveGuestPreferencesHandler(
+      guestRepository,
+      catalogRepository,
+    );
   });
 
   describe('validatePlanAccess — falla rápida sin consulta a BD', () => {
@@ -95,12 +126,21 @@ describe('SaveGuestPreferencesHandler', () => {
       const setPreferencesSpy = jest.spyOn(guest, 'setPreferences');
       guestRepository.findById.mockResolvedValue(guest);
       guestRepository.save.mockResolvedValue(GUEST_ID);
+      catalogRepository.findByTenant.mockResolvedValue([
+        makeCatalogItem(CATALOG_ITEM_ID_1, 'Piso alto'),
+      ]);
 
       const result = await handler.execute(
-        makeCommand({ preferences: SAMPLE_PREFERENCES }),
+        makeCommand({ catalogItemIds: [CATALOG_ITEM_ID_1] }),
       );
 
-      expect(setPreferencesSpy).toHaveBeenCalledWith(SAMPLE_PREFERENCES);
+      expect(setPreferencesSpy).toHaveBeenCalledWith([
+        {
+          catalogItemId: CATALOG_ITEM_ID_1,
+          labelSnapshot: 'Piso alto',
+          category: GuestPreferenceCategoryEnum.ROOM,
+        },
+      ]);
       expect(guestRepository.save).toHaveBeenCalledWith(guest);
       expect(result).toBeInstanceOf(SaveGuestPreferencesResult);
       expect(result.guestId).toBe(GUEST_ID);
@@ -110,24 +150,28 @@ describe('SaveGuestPreferencesHandler', () => {
 
   describe('happy path — UPDATE (ya existían preferencias)', () => {
     it('retorna wasCreated:false cuando el guest ya tenía preferencias', async () => {
-      const newPreferences: GuestPreferenceItem[] = [
-        {
-          catalogItemId: 'item-002',
-          labelSnapshot: 'Habitación silenciosa',
-          category: GuestPreferenceCategoryEnum.ROOM,
-        },
-      ];
       const guest = makeGuest({ tenantId: TENANT_ID, id: GUEST_ID });
-      jest.spyOn(guest, 'getPreferences').mockReturnValue(SAMPLE_PREFERENCES);
+      jest
+        .spyOn(guest, 'getPreferences')
+        .mockReturnValue([EXISTING_PREFERENCE]);
       const setPreferencesSpy = jest.spyOn(guest, 'setPreferences');
       guestRepository.findById.mockResolvedValue(guest);
       guestRepository.save.mockResolvedValue(GUEST_ID);
+      catalogRepository.findByTenant.mockResolvedValue([
+        makeCatalogItem(CATALOG_ITEM_ID_2, 'Habitación silenciosa'),
+      ]);
 
       const result = await handler.execute(
-        makeCommand({ preferences: newPreferences }),
+        makeCommand({ catalogItemIds: [CATALOG_ITEM_ID_2] }),
       );
 
-      expect(setPreferencesSpy).toHaveBeenCalledWith(newPreferences);
+      expect(setPreferencesSpy).toHaveBeenCalledWith([
+        {
+          catalogItemId: CATALOG_ITEM_ID_2,
+          labelSnapshot: 'Habitación silenciosa',
+          category: GuestPreferenceCategoryEnum.ROOM,
+        },
+      ]);
       expect(guestRepository.save).toHaveBeenCalledWith(guest);
       expect(result).toBeInstanceOf(SaveGuestPreferencesResult);
       expect(result.guestId).toBe(GUEST_ID);
