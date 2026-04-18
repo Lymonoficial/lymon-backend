@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
+import { GuestPreferenceApplicationModule } from '@/application/guest-preference/guest-preference-application.module';
 import { SearchGuestsQuery } from './queries/search-guests.query';
 import { GetGuestByIdHandler } from './queries/get-guest-by-id/get-guest-by-id.handler';
 import { GetGuestBookingsHandler } from './queries/get-guest-bookings/get-guest-bookings.handler';
@@ -20,7 +21,7 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, PersistenceModule],
+  imports: [CqrsModule, PersistenceModule, GuestPreferenceApplicationModule],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers],
 })

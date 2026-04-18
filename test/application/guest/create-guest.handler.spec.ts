@@ -4,20 +4,21 @@ import { CreateGuestCommand } from '@/application/guest/commands/create-guest.co
 import { CreateGuestResult } from '@/application/guest/commands/create-guest.result';
 import { Guest } from '@/domain/guest/entities/guest.entity';
 import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
-import { GuestPreferenceCatalogRepository } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
+import { CatalogPreferenceBuilderService } from '@/application/guest-preference/services/catalog-preference-builder.service';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
-import { createGuestPreferenceCatalogRepositoryMock } from '@test/shared/mocks/repositories/guest-preference-catalog-repository.mock';
+import { createCatalogPreferenceBuilderMock } from '@test/shared/mocks/services/catalog-preference-builder.mock';
 
 describe('CreateGuestHandler', () => {
   let handler: CreateGuestHandler;
   let guestRepository: jest.Mocked<GuestRepository>;
-  let catalogRepository: jest.Mocked<GuestPreferenceCatalogRepository>;
+  let catalogPreferenceBuilder: jest.Mocked<CatalogPreferenceBuilderService>;
 
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
-    catalogRepository = createGuestPreferenceCatalogRepositoryMock();
-    handler = new CreateGuestHandler(guestRepository, catalogRepository);
+    catalogPreferenceBuilder = createCatalogPreferenceBuilderMock();
+    catalogPreferenceBuilder.build.mockResolvedValue([]);
+    handler = new CreateGuestHandler(guestRepository, catalogPreferenceBuilder);
   });
 
   describe('when the primary email already exists in the tenant', () => {

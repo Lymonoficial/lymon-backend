@@ -1,20 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { SaveGuestPreferencesCommand } from './save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from './save-guest-preferences.result';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import type { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
-import type { GuestPreferenceCatalogRepository } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
-import { GUEST_PREFERENCE_CATALOG_REPOSITORY } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import type { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
+import { CatalogPreferenceBuilderService } from '@/application/guest-preference/services/catalog-preference-builder.service';
 
 const PLANS_WITH_PREFERENCES_ACCESS: string[] = [
   PlanTypeEnum.LYMON_PLUS,
@@ -29,8 +21,7 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly repository: GuestRepository,
-    @Inject(GUEST_PREFERENCE_CATALOG_REPOSITORY)
-    private readonly catalogRepository: GuestPreferenceCatalogRepository,
+    private readonly catalogPreferenceBuilder: CatalogPreferenceBuilderService,
   ) {}
 
   async execute(
@@ -54,7 +45,7 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
       );
     }
 
-    const preferences = await this.buildPreferenceItems(
+    const preferences = await this.catalogPreferenceBuilder.build(
       tenantId,
       catalogItemIds,
     );
@@ -73,46 +64,5 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
         'Guest preferences management requires a LYMON_PLUS or LYMON_PRIME plan. Please upgrade your plan.',
       );
     }
-  }
-
-  private async buildPreferenceItems(
-    tenantId: string,
-    catalogItemIds: string[],
-  ): Promise<GuestPreferenceItem[]> {
-    if (catalogItemIds.length === 0) return [];
-
-    const catalogItems = await this.catalogRepository.findByTenant(
-      TenantId.createFromString(tenantId),
-    );
-
-    const catalogMap = new Map(
-      catalogItems.map((item) => [item.getId()!, item]),
-    );
-
-    const result: GuestPreferenceItem[] = [];
-
-    for (const id of catalogItemIds) {
-      const catalogItem = catalogMap.get(id);
-
-      if (!catalogItem) {
-        throw new BadRequestException(
-          `Preference catalog item '${id}' does not exist or does not belong to this tenant`,
-        );
-      }
-
-      if (!catalogItem.getIsActive()) {
-        throw new BadRequestException(
-          `Preference catalog item '${id}' is not active`,
-        );
-      }
-
-      result.push({
-        catalogItemId: id,
-        labelSnapshot: catalogItem.getLabel() ?? catalogItem.getKey() ?? '',
-        category: catalogItem.getCategory(),
-      });
-    }
-
-    return result;
   }
 }
