@@ -210,7 +210,7 @@ export class CrmController {
       new SaveGuestPreferencesCommand(
         user.tenantId,
         guestId,
-        dto.preferencesNotes,
+        dto.preferences,
         user.activePlan,
       ),
     );

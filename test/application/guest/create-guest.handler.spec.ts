@@ -106,7 +106,6 @@ describe('CreateGuestHandler', () => {
         ['jane.alt@example.com'],
         [{ number: '+12025550123', type: 'mobile', isPrimary: true }],
         ['vip'],
-        'Late check-in',
       );
 
       const result = await handler.execute(command);
@@ -145,7 +144,7 @@ describe('CreateGuestHandler', () => {
         { number: '+12025550123', type: 'mobile', isPrimary: true },
       ]);
       expect(savedGuest.getTags()).toEqual(['vip']);
-      expect(savedGuest.getPreferencesNotes()).toBe('Late check-in');
+      expect(savedGuest.getPreferences()).toEqual([]);
     });
   });
 });

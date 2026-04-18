@@ -72,7 +72,7 @@ function makeGuest(guestId: string, tenantId: string): Guest {
     [],
     GuestStatusEnum.ACTIVE,
     [],
-    '',
+    [],
     summary,
     new Date(),
     new Date(),

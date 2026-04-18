@@ -25,7 +25,7 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
   async execute(
     command: SaveGuestPreferencesCommand,
   ): Promise<SaveGuestPreferencesResult> {
-    const { tenantId, guestId, preferencesNotes, activePlan } = command;
+    const { tenantId, guestId, preferences, activePlan } = command;
 
     this.validatePlanAccess(activePlan);
 
@@ -43,9 +43,9 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
       );
     }
 
-    const wasCreated = !guest.getPreferencesNotes();
+    const wasCreated = guest.getPreferences().length === 0;
 
-    guest.setPreferencesNotes(preferencesNotes);
+    guest.setPreferences(preferences);
     await this.repository.save(guest);
 
     return new SaveGuestPreferencesResult(guestId, wasCreated);

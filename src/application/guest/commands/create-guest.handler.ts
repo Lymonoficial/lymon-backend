@@ -51,7 +51,7 @@ export class CreateGuestHandler implements ICommandHandler<CreateGuestCommand> {
       emails: command.emails,
       phones: command.phones,
       tags: command.tags,
-      preferencesNotes: command.preferencesNotes,
+      preferences: command.preferences,
     });
 
     const guestId = await this.guestRepository.save(guest);
