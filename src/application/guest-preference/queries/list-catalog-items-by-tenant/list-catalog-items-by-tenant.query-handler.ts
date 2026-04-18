@@ -27,9 +27,10 @@ export class ListCatalogItemsByTenantQueryHandler implements IQueryHandler<
   ): Promise<ListCatalogItemsByTenantResult> {
     const tenantId = TenantId.createFromString(query.tenantId);
     const items = await this.repository.findByTenant(tenantId);
+    const activeItems = items.filter((item) => item.getIsActive());
 
     return new ListCatalogItemsByTenantResult(
-      items.map((item) => this.toDto(item)),
+      activeItems.map((item) => this.toDto(item)),
     );
   }
 
