@@ -6,7 +6,10 @@ RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY nest-cli.json ./
+COPY tsconfig.json ./
+COPY tsconfig.build.json ./
+COPY src ./src
 RUN pnpm run build
 RUN pnpm prune --prod
 
