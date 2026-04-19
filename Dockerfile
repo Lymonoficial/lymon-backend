@@ -17,9 +17,9 @@ RUN pnpm prune --prod
 FROM node:20-alpine
 WORKDIR /app
 
-COPY --chown=node:node package.json ./
-COPY --chown=node:node --from=builder /app/node_modules ./node_modules
-COPY --chown=node:node --from=builder /app/dist ./dist
+COPY --chown=root:root --chmod=644 package.json ./
+COPY --chown=root:root --chmod=755 --from=builder /app/node_modules ./node_modules
+COPY --chown=root:root --chmod=755 --from=builder /app/dist ./dist
 
 EXPOSE 3000
 USER node
