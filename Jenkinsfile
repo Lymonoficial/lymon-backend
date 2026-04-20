@@ -6,6 +6,7 @@ pipeline {
   }
 
   environment {
+    APP_DIR = 'lymon-backend'
     NODE_ENV = 'test'
   }
 
@@ -18,7 +19,7 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        dir('lymon-backend') {
+        dir("${APP_DIR}") {
           sh 'corepack prepare pnpm@10.33.0 --activate'
           sh 'pnpm install --frozen-lockfile'
         }
@@ -27,7 +28,7 @@ pipeline {
 
     stage('Run Tests') {
       steps {
-        dir('lymon-backend') {
+        dir("${APP_DIR}") {
           sh 'pnpm run test:cov'
         }
       }
@@ -35,7 +36,7 @@ pipeline {
 
     stage('SonarQube Scan') {
       steps {
-        dir('lymon-backend') {
+        dir("${APP_DIR}") {
           withSonarQubeEnv('SonarQube') {
             script {
               def scannerHome = tool 'SonarScanner'
@@ -58,7 +59,7 @@ pipeline {
   post {
     always {
       publishHTML(target: [
-        reportDir: 'lymon-backend/coverage/lcov-report',
+        reportDir: "${APP_DIR}/coverage/lcov-report",
         reportFiles: 'index.html',
         reportName: 'Backend Coverage',
         keepAll: true,
