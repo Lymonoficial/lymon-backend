@@ -30,6 +30,7 @@ function createGuestReservationsReadRepositoryMock(): jest.Mocked<GuestReservati
   return {
     findByGuestIds: jest.fn(),
     countByGuestIds: jest.fn(),
+    getLifecycleStatusByGuestIds: jest.fn().mockResolvedValue(new Map()),
   };
 }
 
