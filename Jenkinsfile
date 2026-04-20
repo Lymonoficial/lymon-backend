@@ -20,7 +20,6 @@ pipeline {
     stage('Install Dependencies') {
       steps {
         dir("${APP_DIR}") {
-          sh 'corepack prepare pnpm@10.33.0 --activate'
           sh 'pnpm install --frozen-lockfile'
         }
       }
