@@ -35,12 +35,14 @@ pipeline {
 
     stage('SonarQube Scan') {
       steps {
-        dir("${APP_DIR}") {
-          withSonarQubeEnv('SonarQube') {
-            script {
-              def scannerHome = tool 'SonarScanner'
-              sh "${scannerHome}/bin/sonar-scanner"
-            }
+        withSonarQubeEnv('SonarQube') {
+          script {
+            def scannerHome = tool 'SonarScanner'
+            sh """
+              ${scannerHome}/bin/sonar-scanner \
+                -Dproject.settings=${WORKSPACE}/${APP_DIR}/sonar-project.properties \
+                -Dsonar.projectBaseDir=${WORKSPACE}/${APP_DIR}
+            """
           }
         }
       }
