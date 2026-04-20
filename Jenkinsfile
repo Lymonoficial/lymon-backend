@@ -40,8 +40,8 @@ pipeline {
             def scannerHome = tool 'SonarScanner'
             sh """
               ${scannerHome}/bin/sonar-scanner \
-                -Dproject.settings=${WORKSPACE}/${APP_DIR}/sonar-project.properties \
-                -Dsonar.projectBaseDir=${WORKSPACE}/${APP_DIR}
+                "-Dproject.settings=${WORKSPACE}/${APP_DIR}/sonar-project.properties" \
+                "-Dsonar.projectBaseDir=${WORKSPACE}/${APP_DIR}"
             """
           }
         }
