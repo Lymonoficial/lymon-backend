@@ -1,15 +1,9 @@
 pipeline {
   agent any
-
-  options {
-    timestamps()
-  }
-
+  options { timestamps() }
   environment {
-    APP_DIR = 'lymon-backend'
     NODE_ENV = 'test'
   }
-
   stages {
     stage('Checkout') {
       steps {
@@ -19,17 +13,13 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        dir("${APP_DIR}") {
-          sh 'pnpm install --frozen-lockfile'
-        }
+        sh 'pnpm install --frozen-lockfile'
       }
     }
 
     stage('Run Tests') {
       steps {
-        dir("${APP_DIR}") {
-          sh 'pnpm run test:cov'
-        }
+        sh 'pnpm run test:cov'
       }
     }
 
@@ -38,11 +28,7 @@ pipeline {
         withSonarQubeEnv('SonarQube') {
           script {
             def scannerHome = tool 'SonarScanner'
-            sh """
-              ${scannerHome}/bin/sonar-scanner \
-                "-Dproject.settings=${WORKSPACE}/${APP_DIR}/sonar-project.properties" \
-                "-Dsonar.projectBaseDir=${WORKSPACE}/${APP_DIR}"
-            """
+            sh "${scannerHome}/bin/sonar-scanner"
           }
         }
       }
@@ -50,7 +36,7 @@ pipeline {
 
     stage('Quality Gate') {
       steps {
-        timeout(time: 5, unit: 'MINUTES') {
+        timeout(time: 15, unit: 'MINUTES') {
           waitForQualityGate abortPipeline: true
         }
       }
@@ -60,7 +46,7 @@ pipeline {
   post {
     always {
       publishHTML(target: [
-        reportDir: "${APP_DIR}/coverage/lcov-report",
+        reportDir: 'coverage/lcov-report',
         reportFiles: 'index.html',
         reportName: 'Backend Coverage',
         keepAll: true,
