@@ -41,18 +41,21 @@ export class GetGuestBookingsHandler implements IQueryHandler<
     try {
       guestId = GuestId.createFromString(query.guestId);
     } catch {
-      return { items: [] };
+      return new GetGuestBookingsResult([], 0, query.page, query.limit);
     }
 
-    const reservations = await this.reservationRepository.findByGuestId(
-      tenantId,
-      guestId.toString(),
-      1,
-      100,
-    );
     const tenant = TenantId.createFromString(tenantId);
 
-    const [properties, units] = await Promise.all([
+    const [reservations, total, properties, units] = await Promise.all([
+      this.reservationRepository.findByGuestId(
+        tenantId,
+        guestId.toString(),
+        query.page,
+        query.limit,
+        query.sortBy,
+        query.sortDirection,
+      ),
+      this.reservationRepository.countByGuestId(tenantId, guestId.toString()),
       this.propertyRepository.findByTenantId(tenant),
       this.unitRepository.findByTenantId(tenant),
     ]);
@@ -67,39 +70,36 @@ export class GetGuestBookingsHandler implements IQueryHandler<
       units.map((unit) => [unit.getId()?.toString(), unit.getName()]),
     );
 
-    const items: GuestBookingDto[] = reservations
-      .filter((res) => res.getTenantId().toString() === tenantId)
-      .sort((a, b) => b.getCreatedAt().getTime() - a.getCreatedAt().getTime())
-      .map((res) => {
-        const propertyId = res.getPropertyId().toString();
-        const unitId = res.getUnitId().toString();
-        const unit = units.find((item) => item.getId()?.toString() === unitId);
-        const resolvedPropertyId = propertyNames.has(propertyId)
-          ? propertyId
-          : (unit?.getPropertyId().toString() ?? propertyId);
+    const items: GuestBookingDto[] = reservations.map((res) => {
+      const propertyId = res.getPropertyId().toString();
+      const unitId = res.getUnitId().toString();
+      const unit = units.find((item) => item.getId()?.toString() === unitId);
+      const resolvedPropertyId = propertyNames.has(propertyId)
+        ? propertyId
+        : (unit?.getPropertyId().toString() ?? propertyId);
 
-        return {
-          id: res.getId()!.toString(),
-          propertyId: resolvedPropertyId,
-          propertyName: propertyNames.get(resolvedPropertyId) ?? null,
-          unitId,
-          unitName: unitNames.get(unitId) ?? null,
-          checkIn: res.getDateRange().getCheckIn(),
-          checkOut: res.getDateRange().getCheckOut(),
-          status: res.getStatus().toString(),
-          totalAmount: res.getTotalPrice(),
-          source: res.getSource().toString(),
-          createdAt: res.getCreatedAt(),
-          nights: res.getDateRange().nights(),
-          guestsCount: res.getGuestsCount(),
-          notes: res.getNotes(),
-          cancelledAt: res.getCancelledAt(),
-          cancellationReason: res.getCancellationReason(),
-          checkInActualAt: res.getCheckInActualAt(),
-          checkOutActualAt: res.getCheckOutActualAt(),
-        };
-      });
+      return {
+        id: res.getId()!.toString(),
+        propertyId: resolvedPropertyId,
+        propertyName: propertyNames.get(resolvedPropertyId) ?? null,
+        unitId,
+        unitName: unitNames.get(unitId) ?? null,
+        checkIn: res.getDateRange().getCheckIn(),
+        checkOut: res.getDateRange().getCheckOut(),
+        status: res.getStatus().toString(),
+        totalAmount: res.getTotalPrice(),
+        source: res.getSource().toString(),
+        createdAt: res.getCreatedAt(),
+        nights: res.getDateRange().nights(),
+        guestsCount: res.getGuestsCount(),
+        notes: res.getNotes(),
+        cancelledAt: res.getCancelledAt(),
+        cancellationReason: res.getCancellationReason(),
+        checkInActualAt: res.getCheckInActualAt(),
+        checkOutActualAt: res.getCheckOutActualAt(),
+      };
+    });
 
-    return { items };
+    return new GetGuestBookingsResult(items, total, query.page, query.limit);
   }
 }

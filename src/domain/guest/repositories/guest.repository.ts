@@ -29,4 +29,17 @@ export interface GuestRepository {
   countByTenantId(tenantId: TenantId): Promise<number>;
   delete(id: GuestId): Promise<void>;
   search(tenantId: TenantId, term: string): Promise<Guest[]>;
+  findByTenantIdPaginated(
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+    sortBy: 'createdAt' | 'fullName' | 'status',
+    sortDirection: 'asc' | 'desc',
+  ): Promise<{ guests: Guest[]; total: number }>;
+  searchPaginated(
+    tenantId: TenantId,
+    term: string,
+    page: number,
+    limit: number,
+  ): Promise<{ guests: Guest[]; total: number }>;
 }
