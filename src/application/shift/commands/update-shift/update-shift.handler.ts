@@ -8,6 +8,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UpdateShiftCommand } from './update-shift.command';
 import { UpdateShiftCommandResult } from './update-shift.result';
+import { Shift } from '@/domain/shift/entities/shift.entity';
 import {
   SHIFT_REPOSITORY,
   type ShiftRepository,
@@ -20,10 +21,8 @@ import {
   PROPERTY_REPOSITORY,
   type PropertyRepository,
 } from '@/domain/property/repositories/property.repository';
-import {
-  EMAIL_SERVICE,
-  type IEmailService,
-} from '@/application/shared/services/email.service';
+import { ShiftNotificationService } from '@/application/shift/services/shift-notification.service';
+import { ShiftAuditDiffService } from '@/domain/shift/services/shift-audit-diff.service';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ShiftId } from '@/domain/shift/value-objects/shift-id.vo';
 import { UserId } from '@/domain/user/entities/user.entity';
@@ -46,8 +45,8 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     private readonly userRepository: UserRepository,
     @Inject(PROPERTY_REPOSITORY)
     private readonly propertyRepository: PropertyRepository,
-    @Inject(EMAIL_SERVICE)
-    private readonly emailService: IEmailService,
+    private readonly shiftNotificationService: ShiftNotificationService,
+    private readonly auditDiffService: ShiftAuditDiffService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -58,114 +57,45 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     const shiftId = ShiftId.createFromString(command.shiftId);
 
     const shift = await this.shiftRepository.findById(shiftId);
-    if (!shift || !shift.getTenantId().equals(tenantId)) {
+    if (!shift?.getTenantId?.()?.equals?.(tenantId)) {
       throw new NotFoundException('Shift not found for the tenant');
     }
+    const existingShift: Shift = shift;
 
-    const nextStaffMemberIds = shift.getStaffMemberIds();
-
-    const nextPropertyId = command.propertyId
-      ? PropertyId.create(command.propertyId)
-      : shift.getPropertyId();
-    const nextStartDate = command.startDate
-      ? this.parseShiftDate(command.startDate)
-      : shift.getStartDate();
-    const nextEndDate =
-      command.endDate !== undefined
-        ? command.endDate === null
-          ? null
-          : this.parseShiftDate(command.endDate)
-        : shift.getEndDate();
-    const nextStartTime = command.startHour ?? shift.getStartHour();
-    const nextEndTime = command.endHour ?? shift.getEndHour();
-    const nextStartMinutes = this.toMinutes(nextStartTime);
-    const nextEndMinutes = this.toMinutes(nextEndTime);
-    const previousSnapshot = this.getShiftSnapshot(shift);
-
-    if (nextEndDate && nextEndDate.getTime() < nextStartDate.getTime()) {
-      throw new BadRequestException(
-        'Shift end date cannot be before start date',
-      );
-    }
-
-    if (nextEndMinutes <= nextStartMinutes) {
-      throw new BadRequestException('Shift end time must be after start time');
-    }
+    const shiftData = this.resolveShiftData(command, existingShift);
+    this.validateShiftData(shiftData);
 
     this.validateObjectId(command.propertyId, 'property');
     const staffMembers = await this.getStaffMembers(
-      nextStaffMemberIds,
+      shiftData.nextStaffMemberIds,
       tenantId,
     );
 
-    const property = await this.propertyRepository.findById(nextPropertyId);
-    if (!property || !property.getTenantId().equals(tenantId)) {
+    const property = await this.propertyRepository.findById(
+      shiftData.nextPropertyId,
+    );
+    if (!property?.getTenantId?.()?.equals?.(tenantId)) {
       throw new NotFoundException('Property not found for the tenant');
     }
 
-    for (const staffMemberId of nextStaffMemberIds) {
-      const overlappingShift =
-        await this.shiftRepository.findOverlappingByStaffInRange(
-          tenantId,
-          staffMemberId,
-          nextStartDate,
-          nextEndDate,
-          nextStartMinutes,
-          nextEndMinutes,
-          shiftId,
-        );
+    await this.checkStaffMemberOverlaps(shiftData, tenantId, shiftId);
 
-      if (overlappingShift) {
-        throw new ConflictException(
-          `Staff member ${staffMemberId.toString()} already has an overlapping shift`,
-        );
-      }
-    }
+    const previousSnapshot = this.auditDiffService.snapshot(existingShift);
+    this.applyShiftUpdate(existingShift, shiftData);
+    const nextSnapshot = this.auditDiffService.snapshot(existingShift);
+    const auditDiff = this.auditDiffService.diff(
+      previousSnapshot,
+      nextSnapshot,
+    );
 
-    try {
-      shift.update(
-        {
-          staffMemberIds: nextStaffMemberIds,
-          propertyId: nextPropertyId,
-          startDate: nextStartDate,
-          endDate: nextEndDate,
-          startHour: nextStartTime,
-          endHour: nextEndTime,
-          startMinutes: nextStartMinutes,
-          endMinutes: nextEndMinutes,
-          notes: command.notes ?? shift.getNotes() ?? undefined,
-        },
-        new Date(),
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
-    }
-
-    const nextSnapshot = this.getShiftSnapshot(shift);
-    const auditDiff = this.buildAuditDiff(previousSnapshot, nextSnapshot);
-
-    const updatedShiftId = await this.shiftRepository.save(shift);
+    const updatedShiftId = await this.shiftRepository.save(existingShift);
 
     if (staffMembers.length > 0) {
-      await this.emailService.sendEmail({
-        to: staffMembers.map((staffMember) => ({
-          email: staffMember.getEmail().toString(),
-          name: staffMember.getEmail().toString(),
-        })),
-        subject: 'Shift updated',
-        htmlContent: `
-          <div style="font-family: sans-serif; line-height: 1.6;">
-            <p>Your shift has been updated.</p>
-            <p><strong>Date range:</strong> ${this.formatDate(shift.getStartDate())} - ${shift.getEndDate() ? this.formatDate(shift.getEndDate()!) : 'No end date'}</p>
-            <p><strong>Time:</strong> ${shift.getStartHour()} - ${shift.getEndHour()}</p>
-            <p><strong>Property:</strong> ${property.getName()}</p>
-            ${shift.getNotes() ? `<p><strong>Notes:</strong> ${shift.getNotes()}</p>` : ''}
-          </div>
-        `,
-      });
+      await this.shiftNotificationService.sendShiftUpdatedEmail(
+        staffMembers,
+        existingShift,
+        property,
+      );
     }
 
     if (command.actorId && command.actorEmail) {
@@ -191,6 +121,142 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
       updatedShiftId,
       'Shift updated successfully',
     );
+  }
+
+  private resolveShiftData(
+    command: UpdateShiftCommand,
+    shift: Shift,
+  ): {
+    nextStaffMemberIds: UserId[];
+    nextPropertyId: PropertyId;
+    nextStartDate: Date;
+    nextEndDate: Date | null;
+    nextStartTime: string;
+    nextEndTime: string;
+    nextStartMinutes: number;
+    nextEndMinutes: number;
+    notes: string | undefined;
+  } {
+    const propertyIdInput = this.getOptionalString(command.propertyId);
+    const startDateInput = this.getOptionalString(command.startDate);
+    const endDateInput = this.getNullableString(command.endDate);
+    const startHourInput = this.getOptionalString(command.startHour);
+    const endHourInput = this.getOptionalString(command.endHour);
+    const notesInput = this.getOptionalString(command.notes);
+
+    const nextStaffMemberIds = shift.getStaffMemberIds();
+    const nextPropertyId = propertyIdInput
+      ? PropertyId.create(propertyIdInput)
+      : shift.getPropertyId();
+    const nextStartDate = startDateInput
+      ? this.parseShiftDate(startDateInput)
+      : shift.getStartDate();
+    const nextEndDate = (() => {
+      if (endDateInput === undefined) {
+        return shift.getEndDate();
+      }
+      return endDateInput === null ? null : this.parseShiftDate(endDateInput);
+    })();
+    const nextStartTime = startHourInput ?? shift.getStartHour();
+    const nextEndTime = endHourInput ?? shift.getEndHour();
+
+    return {
+      nextStaffMemberIds,
+      nextPropertyId,
+      nextStartDate,
+      nextEndDate,
+      nextStartTime,
+      nextEndTime,
+      nextStartMinutes: this.toMinutes(nextStartTime),
+      nextEndMinutes: this.toMinutes(nextEndTime),
+      notes: notesInput ?? shift.getNotes() ?? undefined,
+    };
+  }
+
+  private validateShiftData(shiftData: {
+    nextEndDate: Date | null;
+    nextStartDate: Date;
+    nextEndMinutes: number;
+    nextStartMinutes: number;
+  }): void {
+    if (
+      shiftData.nextEndDate &&
+      shiftData.nextEndDate.getTime() < shiftData.nextStartDate.getTime()
+    ) {
+      throw new BadRequestException(
+        'Shift end date cannot be before start date',
+      );
+    }
+
+    if (shiftData.nextEndMinutes <= shiftData.nextStartMinutes) {
+      throw new BadRequestException('Shift end time must be after start time');
+    }
+  }
+
+  private async checkStaffMemberOverlaps(
+    shiftData: {
+      nextStaffMemberIds: UserId[];
+      nextStartDate: Date;
+      nextEndDate: Date | null;
+      nextStartMinutes: number;
+      nextEndMinutes: number;
+    },
+    tenantId: TenantId,
+    shiftId: ShiftId,
+  ): Promise<void> {
+    for (const staffMemberId of shiftData.nextStaffMemberIds) {
+      const overlappingShift: Shift | null =
+        await this.shiftRepository.findOverlappingByStaffInRange(
+          tenantId,
+          staffMemberId,
+          shiftData.nextStartDate,
+          shiftData.nextEndDate,
+          shiftData.nextStartMinutes,
+          shiftData.nextEndMinutes,
+          shiftId,
+        );
+
+      if (overlappingShift) {
+        throw new ConflictException(
+          `Staff member ${staffMemberId.toString()} already has an overlapping shift`,
+        );
+      }
+    }
+  }
+
+  private applyShiftUpdate(
+    shift: Shift,
+    shiftData: {
+      nextStaffMemberIds: UserId[];
+      nextPropertyId: PropertyId;
+      nextStartDate: Date;
+      nextEndDate: Date | null;
+      nextStartTime: string;
+      nextEndTime: string;
+      nextStartMinutes: number;
+      nextEndMinutes: number;
+      notes: string | undefined;
+    },
+  ): void {
+    try {
+      shift.update(
+        {
+          staffMemberIds: shiftData.nextStaffMemberIds,
+          propertyId: shiftData.nextPropertyId,
+          startDate: shiftData.nextStartDate,
+          endDate: shiftData.nextEndDate,
+          startHour: shiftData.nextStartTime,
+          endHour: shiftData.nextEndTime,
+          notes: shiftData.notes,
+        },
+        new Date(),
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
   }
 
   private toMinutes(value: string): number {
@@ -220,60 +286,15 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     return shiftDate;
   }
 
-  private formatDate(value: Date): string {
-    return value.toISOString().slice(0, 10);
+  private getOptionalString(value: unknown): string | undefined {
+    return typeof value === 'string' ? value : undefined;
   }
 
-  private getShiftSnapshot(shift: {
-    getStaffMemberIds(): UserId[];
-    getPropertyId(): PropertyId;
-    getStartDate(): Date;
-    getEndDate(): Date | null;
-    getStartHour(): string;
-    getEndHour(): string;
-    getNotes(): string | null;
-  }): Record<string, unknown> {
-    return {
-      staffMemberIds: shift.getStaffMemberIds().map((id) => id.toString()),
-      propertyId: shift.getPropertyId().toString(),
-      startDate: this.formatDate(shift.getStartDate()),
-      endDate: shift.getEndDate() ? this.formatDate(shift.getEndDate()!) : null,
-      startHour: shift.getStartHour(),
-      endHour: shift.getEndHour(),
-      notes: shift.getNotes(),
-    };
-  }
-
-  private buildAuditDiff(
-    previousSnapshot: Record<string, unknown>,
-    nextSnapshot: Record<string, unknown>,
-  ): {
-    changedFields: string[];
-    previousValue?: Record<string, unknown>;
-    newValue?: Record<string, unknown>;
-  } {
-    const changedFields: string[] = [];
-    const previousValue: Record<string, unknown> = {};
-    const newValue: Record<string, unknown> = {};
-
-    for (const field of Object.keys(nextSnapshot)) {
-      const previousFieldValue = previousSnapshot[field];
-      const nextFieldValue = nextSnapshot[field];
-
-      if (previousFieldValue === nextFieldValue) {
-        continue;
-      }
-
-      changedFields.push(field);
-      previousValue[field] = previousFieldValue;
-      newValue[field] = nextFieldValue;
+  private getNullableString(value: unknown): string | null | undefined {
+    if (value === null) {
+      return null;
     }
-
-    return {
-      changedFields,
-      previousValue: changedFields.length > 0 ? previousValue : undefined,
-      newValue: changedFields.length > 0 ? newValue : undefined,
-    };
+    return typeof value === 'string' ? value : undefined;
   }
 
   private validateObjectId(value: string | undefined, fieldName: string): void {
@@ -302,9 +323,8 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
       ),
     );
 
-    for (let index = 0; index < staffMembers.length; index += 1) {
-      const staffMember = staffMembers[index];
-      if (!staffMember || !staffMember.getTenantId().equals(tenantId)) {
+    for (const staffMember of staffMembers) {
+      if (!staffMember?.getTenantId?.()?.equals?.(tenantId)) {
         throw new NotFoundException('Staff member not found for the tenant');
       }
 
@@ -320,11 +340,5 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
       isOwner(): boolean;
       getEmail(): { toString(): string };
     }[];
-  }
-
-  private isInvalidEndDateType(endDate: unknown): boolean {
-    return (
-      endDate !== undefined && endDate !== null && typeof endDate !== 'string'
-    );
   }
 }

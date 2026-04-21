@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as path from 'path';
-import * as fs from 'fs';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
 @Injectable()
 export class EmailTemplateService {
@@ -28,12 +28,40 @@ export class EmailTemplateService {
     variables: Record<string, unknown> = {},
   ): string {
     if (!text) return '';
-    return text.replace(/\{\{(.+?)\}\}/g, (_match: string, key: string) => {
-      const value = variables[key.trim()];
-      return value !== undefined && value !== null
-        ? String(value as string | number | boolean)
-        : '';
-    });
+    if (!text.includes('{{')) {
+      return text;
+    }
+
+    const parts: string[] = [];
+    let cursor = 0;
+
+    while (cursor < text.length) {
+      const open = text.indexOf('{{', cursor);
+      if (open === -1) {
+        parts.push(text.slice(cursor));
+        break;
+      }
+
+      parts.push(text.slice(cursor, open));
+
+      const close = text.indexOf('}}', open + 2);
+      if (close === -1) {
+        parts.push(text.slice(open));
+        break;
+      }
+
+      const key = text.slice(open + 2, close).trim();
+      const value = key ? variables[key] : undefined;
+      parts.push(
+        value !== undefined && value !== null
+          ? String(value as string | number | boolean)
+          : '',
+      );
+
+      cursor = close + 2;
+    }
+
+    return parts.join('');
   }
 
   renderTemplate(
@@ -82,6 +110,28 @@ export class EmailTemplateService {
       minStock: variables.minStock.toString(),
       difference: Math.abs(variables.difference).toString(),
       supportUrl: this.supportUrl,
+    });
+  }
+
+  renderShiftUpdatedTemplate(variables: {
+    startDate: Date;
+    endDate: Date | null;
+    startHour: string;
+    endHour: string;
+    propertyName: string;
+    notes: string | null;
+  }): string {
+    return this.renderTemplate('shift-updated', {
+      startDate: variables.startDate.toISOString().slice(0, 10),
+      endDate: variables.endDate
+        ? variables.endDate.toISOString().slice(0, 10)
+        : 'No end date',
+      startHour: variables.startHour,
+      endHour: variables.endHour,
+      propertyName: variables.propertyName,
+      notesBlock: variables.notes
+        ? `<p><strong>Notes:</strong> ${variables.notes}</p>`
+        : '',
     });
   }
 }
