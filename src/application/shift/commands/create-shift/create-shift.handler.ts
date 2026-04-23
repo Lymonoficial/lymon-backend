@@ -72,10 +72,6 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
     const start = this.toMinutes(command.startHour);
     const end = this.toMinutes(command.endHour);
 
-    if (end <= start) {
-      throw new BadRequestException('Shift end time must be after start time');
-    }
-
     const overlapRepository = this.shiftRepository as {
       findOverlappingByStaffInRange: (
         tenantId: TenantId,
