@@ -357,40 +357,59 @@ export class Experience {
     blackoutRanges: ExperienceBlackoutRange[] | undefined,
     now: Date,
   ): void {
-    if (blackoutRanges?.length) {
-      for (const blackout of blackoutRanges) {
-        if (blackout.startAt >= blackout.endAt) {
-          throw new Error('Blackout range endAt must be after startAt');
-        }
-      }
-    }
+    Experience.validateBlackoutRanges(blackoutRanges);
 
     if (type.isRecurring()) {
-      if (!recurrence) {
-        throw new Error(
-          'Recurring availability requires recurrence configuration',
-        );
-      }
-
-      if (!recurrence.daysOfWeek?.length) {
-        throw new Error(
-          'Recurring availability requires at least one day of week',
-        );
-      }
-
-      if (recurrence.daysOfWeek.some((day) => day < 0 || day > 6)) {
-        throw new Error('Recurring daysOfWeek must be between 0 and 6');
-      }
-
-      if (!recurrence.startTime || !recurrence.endTime) {
-        throw new Error(
-          'Recurring availability requires startTime and endTime',
-        );
-      }
-
+      Experience.validateRecurringAvailability(recurrence);
       return;
     }
 
+    Experience.validateNonRecurringAvailability(startAt, endAt, now);
+  }
+
+  private static validateBlackoutRanges(
+    blackoutRanges: ExperienceBlackoutRange[] | undefined,
+  ): void {
+    if (!blackoutRanges?.length) {
+      return;
+    }
+
+    for (const blackout of blackoutRanges) {
+      if (blackout.startAt >= blackout.endAt) {
+        throw new Error('Blackout range endAt must be after startAt');
+      }
+    }
+  }
+
+  private static validateRecurringAvailability(
+    recurrence: ExperienceRecurrence | undefined,
+  ): void {
+    if (!recurrence) {
+      throw new Error(
+        'Recurring availability requires recurrence configuration',
+      );
+    }
+
+    if (!recurrence.daysOfWeek?.length) {
+      throw new Error(
+        'Recurring availability requires at least one day of week',
+      );
+    }
+
+    if (recurrence.daysOfWeek.some((day) => day < 0 || day > 6)) {
+      throw new Error('Recurring daysOfWeek must be between 0 and 6');
+    }
+
+    if (!recurrence.startTime || !recurrence.endTime) {
+      throw new Error('Recurring availability requires startTime and endTime');
+    }
+  }
+
+  private static validateNonRecurringAvailability(
+    startAt: Date | undefined,
+    endAt: Date | undefined,
+    now: Date,
+  ): void {
     if (!startAt || !endAt) {
       throw new Error('Non-recurring availability requires startAt and endAt');
     }
