@@ -97,6 +97,12 @@ import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/
 import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
 import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
 import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
+import {
+  ExperienceDocument,
+  ExperienceSchema,
+} from '@/infrastructure/persistence/schemas/experience.schema';
+import { EXPERIENCE_REPOSITORY } from '@/domain/experience/repositories/experience.repository';
+import { MongoExperienceRepository } from '@/infrastructure/persistence/repositories/mongo-experience.repository';
 
 @Module({
   imports: [
@@ -120,6 +126,7 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
+      { name: ExperienceDocument.name, schema: ExperienceSchema },
     ]),
   ],
   providers: [
@@ -195,6 +202,10 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
       provide: SHIFT_REPOSITORY,
       useClass: MongoShiftRepository,
     },
+    {
+      provide: EXPERIENCE_REPOSITORY,
+      useClass: MongoExperienceRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -216,6 +227,7 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
+    EXPERIENCE_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
