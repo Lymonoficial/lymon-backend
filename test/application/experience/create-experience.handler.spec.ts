@@ -24,8 +24,7 @@ function makeCommand(
   overrides?: Partial<CreateExperienceCommand>,
 ): CreateExperienceCommand {
   const hasPropertyIdOverride =
-    overrides !== undefined &&
-    Object.prototype.hasOwnProperty.call(overrides, 'propertyId');
+    overrides !== undefined && Object.hasOwn(overrides, 'propertyId');
 
   return new CreateExperienceCommand(
     overrides?.tenantId ?? 'tenant-123',
