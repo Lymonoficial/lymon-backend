@@ -30,6 +30,7 @@ export class MongoShiftRepository implements ShiftRepository {
         .getStaffMemberIds()
         .map((staffId) => new Types.ObjectId(staffId.toString())),
       propertyId: new Types.ObjectId(shift.getPropertyId().toString()),
+      name: shift.getName(),
       startDate,
       endDate,
       startHour: shift.getStartHour(),
@@ -208,6 +209,7 @@ export class MongoShiftRepository implements ShiftRepository {
         UserId.createFromString(staffId.toHexString()),
       ),
       propertyId: PropertyId.create(propertyId),
+      name: doc.name,
       startDate,
       endDate: effectiveEndDate,
       startHour: doc.startHour ?? doc.startTime,

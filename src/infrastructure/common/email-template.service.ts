@@ -114,6 +114,7 @@ export class EmailTemplateService {
   }
 
   renderShiftUpdatedTemplate(variables: {
+    name: string;
     startDate: Date;
     endDate: Date | null;
     startHour: string;
@@ -122,6 +123,7 @@ export class EmailTemplateService {
     notes: string | null;
   }): string {
     return this.renderTemplate('shift-updated', {
+      name: variables.name,
       startDate: variables.startDate.toISOString().slice(0, 10),
       endDate: variables.endDate
         ? variables.endDate.toISOString().slice(0, 10)

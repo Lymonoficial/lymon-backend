@@ -12,6 +12,7 @@ export interface StaffMember {
 }
 
 export interface ShiftForNotification {
+  getName(): string;
   getEndDate(): Date | null;
   getStartDate(): Date;
   getStartHour(): string;
@@ -37,6 +38,7 @@ export class ShiftNotificationService {
     property: PropertyForNotification,
   ): Promise<void> {
     const htmlContent = this.emailTemplateService.renderShiftUpdatedTemplate({
+      name: shift.getName(),
       startDate: shift.getStartDate(),
       endDate: shift.getEndDate(),
       startHour: shift.getStartHour(),

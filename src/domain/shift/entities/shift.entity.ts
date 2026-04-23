@@ -10,6 +10,7 @@ export interface CreateShiftParams {
   tenantId: TenantId;
   staffMemberIds: UserId[];
   propertyId: PropertyId;
+  name: string;
   startDate: Date;
   endDate?: Date | null;
   startHour: string;
@@ -24,6 +25,7 @@ export interface CreateShiftParams {
 export interface UpdateShiftParams {
   staffMemberIds?: UserId[];
   propertyId?: PropertyId | string;
+  name: string;
   startDate?: string | Date | null;
   endDate?: string | Date | null;
   startHour?: string;
@@ -37,6 +39,7 @@ export class Shift {
     private readonly tenantId: TenantId,
     private staffMemberIds: UserId[],
     private propertyId: PropertyId,
+    private name: string,
     private startDate: Date,
     private endDate: Date | null,
     private startHour: string,
@@ -67,6 +70,7 @@ export class Shift {
       params.tenantId,
       params.staffMemberIds,
       params.propertyId,
+      params.name.trim(),
       params.startDate,
       params.endDate ?? null,
       params.startHour,
@@ -87,6 +91,7 @@ export class Shift {
       data.tenantId,
       data.staffMemberIds,
       data.propertyId,
+      data.name,
       data.startDate,
       data.endDate,
       data.startHour,
@@ -119,6 +124,10 @@ export class Shift {
 
   getPropertyId(): PropertyId {
     return this.propertyId;
+  }
+
+  getName(): string {
+    return this.name;
   }
 
   getStartDate(): Date {
@@ -181,6 +190,7 @@ export class Shift {
     // Resolve parameters with fallback to current values
     const nextStaffMemberIds = this.resolveStaffMemberIds(params);
     const nextPropertyId = this.resolvePropertyId(params);
+    const nextName = params.name.trim();
     const nextStartDate = this.resolveStartDate(params);
     const nextEndDate = this.resolveEndDate(params);
     const nextStartHour = params.startHour ?? this.startHour;
@@ -200,6 +210,7 @@ export class Shift {
     this.validateImmutableChanges(
       nextStaffMemberIds,
       nextPropertyId,
+      nextName,
       nextStartDate,
       now,
     );
@@ -208,6 +219,7 @@ export class Shift {
     this.applyUpdates({
       staffMemberIds: nextStaffMemberIds,
       propertyId: nextPropertyId,
+      name: nextName,
       startDate: nextStartDate,
       endDate: nextEndDate,
       startHour: nextStartHour,
@@ -290,12 +302,14 @@ export class Shift {
   private validateImmutableChanges(
     nextStaffMemberIds: UserId[],
     nextPropertyId: PropertyId,
+    nextName: string,
     nextStartDate: Date,
     now: Date,
   ): void {
     const hasImmutableChangesAfterStart =
       !this.haveSameStaffMembers(nextStaffMemberIds) ||
       !this.propertyId.equals(nextPropertyId) ||
+      this.name !== nextName ||
       this.startDate.getTime() !== nextStartDate.getTime();
 
     const shiftStartAt = new Date(
@@ -317,6 +331,7 @@ export class Shift {
   private applyUpdates(updates: {
     staffMemberIds: UserId[];
     propertyId: PropertyId;
+    name: string;
     startDate: Date;
     endDate: Date | null;
     startHour: string;
@@ -334,6 +349,7 @@ export class Shift {
     if (canUpdateAllFields) {
       this.staffMemberIds = updates.staffMemberIds;
       this.propertyId = updates.propertyId;
+      this.name = updates.name;
       this.startDate = updates.startDate;
     }
 

@@ -9,6 +9,7 @@ import {
 export interface ShiftForAudit {
   getStaffMemberIds(): UserId[];
   getPropertyId(): PropertyId;
+  getName(): string;
   getStartDate(): Date;
   getEndDate(): Date | null;
   getStartHour(): string;
@@ -23,6 +24,7 @@ export class ShiftAuditDiffService {
     return {
       staffMemberIds: shift.getStaffMemberIds().map((id) => id.toString()),
       propertyId: shift.getPropertyId().toString(),
+      name: shift.getName(),
       startDate: this.formatDate(shift.getStartDate()),
       endDate: endDate ? this.formatDate(endDate) : null,
       startHour: shift.getStartHour(),
