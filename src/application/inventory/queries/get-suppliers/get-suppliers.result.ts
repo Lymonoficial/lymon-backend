@@ -3,6 +3,9 @@ export interface SupplierListItemDto {
   name: string;
   contactEmail: string;
   contactPhone: string;
+  country: string;
+  city: string;
+  nit: string;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
 }
