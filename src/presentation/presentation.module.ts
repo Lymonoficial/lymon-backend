@@ -17,6 +17,7 @@ import { GuestReservationController } from '@/presentation/controllers/guest-res
 import { InventoryController } from '@/presentation/controllers/inventory.controller';
 import { SuppliersController } from '@/presentation/controllers/suppliers.controller';
 import { ShiftsController } from '@/presentation/controllers/shifts.controller';
+import { ExperienceController } from '@/presentation/controllers/experience.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -37,6 +38,7 @@ import { ShiftsController } from '@/presentation/controllers/shifts.controller';
     InventoryController,
     SuppliersController,
     ShiftsController,
+    ExperienceController,
   ],
 })
 export class PresentationModule {}
