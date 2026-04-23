@@ -3,6 +3,7 @@ export interface ShiftListItemDto {
   tenantId: string;
   staffMemberIds: string[];
   propertyId: string;
+  name: string;
   startDate: string;
   endDate: string | null;
   startHour: string;

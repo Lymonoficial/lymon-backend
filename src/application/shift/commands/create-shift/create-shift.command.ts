@@ -7,6 +7,7 @@ export class CreateShiftCommand {
     public readonly endDate: string | null,
     public readonly startHour: string,
     public readonly endHour: string,
+    public readonly name: string,
     public readonly notes?: string,
     public readonly actorId?: string,
     public readonly actorEmail?: string,

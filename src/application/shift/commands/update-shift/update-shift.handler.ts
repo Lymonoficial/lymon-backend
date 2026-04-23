@@ -129,6 +129,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
   ): {
     nextStaffMemberIds: UserId[];
     nextPropertyId: PropertyId;
+    nextName: string;
     nextStartDate: Date;
     nextEndDate: Date | null;
     nextStartTime: string;
@@ -148,6 +149,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     const nextPropertyId = propertyIdInput
       ? PropertyId.create(propertyIdInput)
       : shift.getPropertyId();
+    const nextName = shift.getName();
     const nextStartDate = startDateInput
       ? this.parseShiftDate(startDateInput)
       : shift.getStartDate();
@@ -163,6 +165,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     return {
       nextStaffMemberIds,
       nextPropertyId,
+      nextName,
       nextStartDate,
       nextEndDate,
       nextStartTime,
@@ -229,6 +232,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     shiftData: {
       nextStaffMemberIds: UserId[];
       nextPropertyId: PropertyId;
+      nextName: string;
       nextStartDate: Date;
       nextEndDate: Date | null;
       nextStartTime: string;
@@ -243,6 +247,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
         {
           staffMemberIds: shiftData.nextStaffMemberIds,
           propertyId: shiftData.nextPropertyId,
+          name: shiftData.nextName,
           startDate: shiftData.nextStartDate,
           endDate: shiftData.nextEndDate,
           startHour: shiftData.nextStartTime,

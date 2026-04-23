@@ -8,6 +8,7 @@ export interface IShiftReconstituteData {
   tenantId: TenantId;
   staffMemberIds: UserId[];
   propertyId: PropertyId;
+  name: string;
   startDate: Date;
   endDate: Date | null;
   startHour: string;
