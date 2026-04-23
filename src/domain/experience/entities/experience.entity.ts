@@ -415,11 +415,11 @@ export class Experience {
     }
 
     if (!(startAt instanceof Date) || Number.isNaN(startAt.getTime())) {
-      throw new Error('Invalid startAt date');
+      throw new TypeError('Invalid startAt date');
     }
 
     if (!(endAt instanceof Date) || Number.isNaN(endAt.getTime())) {
-      throw new Error('Invalid endAt date');
+      throw new TypeError('Invalid endAt date');
     }
 
     if (startAt >= endAt) {
