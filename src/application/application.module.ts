@@ -26,6 +26,7 @@ import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-
 import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
 import { UserApplicationModule } from '@/application/user/user-application.module';
 import { ShiftApplicationModule } from '@/application/shift/shift-application.module';
+import { WorkflowApplicationModule } from '@/application/workflow/workflow-application.module';
 import { DeleteShiftCommandHandler } from '@/application/shift/commands/delete-shift/delete-shift.handler';
 import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shifts.handler';
 
@@ -63,6 +64,7 @@ const QueryHandlers = [GetShiftsHandler];
     GuestEmailApplicationModule,
     UserApplicationModule,
     ShiftApplicationModule,
+    WorkflowApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [
