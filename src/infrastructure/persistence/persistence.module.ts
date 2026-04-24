@@ -97,6 +97,18 @@ import { MongoShiftRepository } from '@/infrastructure/persistence/repositories/
 import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
 import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
 import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
+import {
+  WorkflowConfigDocument,
+  WorkflowConfigSchema,
+} from '@/infrastructure/persistence/schemas/workflow-config.schema';
+import {
+  WorkflowExecutionDocument,
+  WorkflowExecutionSchema,
+} from '@/infrastructure/persistence/schemas/workflow-execution.schema';
+import { WORKFLOW_CONFIG_REPOSITORY } from '@/domain/workflow/repositories/workflow-config.repository';
+import { MongoWorkflowConfigRepository } from '@/infrastructure/persistence/repositories/mongo-workflow-config.repository';
+import { WORKFLOW_EXECUTION_REPOSITORY } from '@/domain/workflow/repositories/workflow-execution.repository';
+import { MongoWorkflowExecutionRepository } from '@/infrastructure/persistence/repositories/mongo-workflow-execution.repository';
 
 @Module({
   imports: [
@@ -120,6 +132,8 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
+      { name: WorkflowConfigDocument.name, schema: WorkflowConfigSchema },
+      { name: WorkflowExecutionDocument.name, schema: WorkflowExecutionSchema },
     ]),
   ],
   providers: [
@@ -195,6 +209,14 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
       provide: SHIFT_REPOSITORY,
       useClass: MongoShiftRepository,
     },
+    {
+      provide: WORKFLOW_CONFIG_REPOSITORY,
+      useClass: MongoWorkflowConfigRepository,
+    },
+    {
+      provide: WORKFLOW_EXECUTION_REPOSITORY,
+      useClass: MongoWorkflowExecutionRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -216,6 +238,8 @@ import { MongoSupplierRepository } from './repositories/mongo-supplier.repositor
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
+    WORKFLOW_CONFIG_REPOSITORY,
+    WORKFLOW_EXECUTION_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
