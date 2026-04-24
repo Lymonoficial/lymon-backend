@@ -26,6 +26,10 @@ import {
   AuditLoggedEvent,
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  ReservationCheckedOutEvent,
+  RESERVATION_CHECKED_OUT_EVENT,
+} from '@/domain/reservation/events/reservation-checked-out.event';
 
 @CommandHandler(CheckOutCommand)
 export class CheckOutHandler implements ICommandHandler<CheckOutCommand> {
@@ -101,6 +105,18 @@ export class CheckOutHandler implements ICommandHandler<CheckOutCommand> {
         AuditAction.RESERVATION_CHECKED_OUT,
         AuditEntityType.RESERVATION,
         command.reservationId,
+      ),
+    );
+
+    this.eventEmitter.emit(
+      RESERVATION_CHECKED_OUT_EVENT,
+      new ReservationCheckedOutEvent(
+        command.tenantId,
+        command.reservationId,
+        reservation.getGuestId().toString(),
+        reservation.getUnitId().toString(),
+        reservation.getPropertyId().toString(),
+        checkOutActualAt,
       ),
     );
   }

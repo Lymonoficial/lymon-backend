@@ -15,6 +15,10 @@ import {
   AuditLoggedEvent,
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  ReservationConfirmedEvent,
+  RESERVATION_CONFIRMED_EVENT,
+} from '@/domain/reservation/events/reservation-confirmed.event';
 
 @CommandHandler(ConfirmReservationCommand)
 export class ConfirmReservationHandler implements ICommandHandler<ConfirmReservationCommand> {
@@ -55,6 +59,17 @@ export class ConfirmReservationHandler implements ICommandHandler<ConfirmReserva
         AuditAction.RESERVATION_CONFIRMED,
         AuditEntityType.RESERVATION,
         command.reservationId,
+      ),
+    );
+
+    this.eventEmitter.emit(
+      RESERVATION_CONFIRMED_EVENT,
+      new ReservationConfirmedEvent(
+        command.tenantId,
+        command.reservationId,
+        reservation.getGuestId().toString(),
+        reservation.getDateRange().getCheckIn(),
+        reservation.getDateRange().getCheckOut(),
       ),
     );
   }

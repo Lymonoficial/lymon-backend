@@ -15,6 +15,10 @@ import {
   AuditLoggedEvent,
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  ReservationCancelledEvent,
+  RESERVATION_CANCELLED_EVENT,
+} from '@/domain/reservation/events/reservation-cancelled.event';
 
 @CommandHandler(CancelReservationCommand)
 export class CancelReservationHandler implements ICommandHandler<CancelReservationCommand> {
@@ -56,6 +60,17 @@ export class CancelReservationHandler implements ICommandHandler<CancelReservati
         AuditEntityType.RESERVATION,
         command.reservationId,
         { reason: command.reason },
+      ),
+    );
+
+    this.eventEmitter.emit(
+      RESERVATION_CANCELLED_EVENT,
+      new ReservationCancelledEvent(
+        command.tenantId,
+        command.reservationId,
+        reservation.getGuestId().toString(),
+        new Date(),
+        command.reason ?? null,
       ),
     );
   }

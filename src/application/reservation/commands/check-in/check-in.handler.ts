@@ -15,6 +15,10 @@ import {
   AuditLoggedEvent,
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  ReservationCheckedInEvent,
+  RESERVATION_CHECKED_IN_EVENT,
+} from '@/domain/reservation/events/reservation-checked-in.event';
 
 @CommandHandler(CheckInCommand)
 export class CheckInHandler implements ICommandHandler<CheckInCommand> {
@@ -55,6 +59,18 @@ export class CheckInHandler implements ICommandHandler<CheckInCommand> {
         AuditAction.RESERVATION_CHECKED_IN,
         AuditEntityType.RESERVATION,
         command.reservationId,
+      ),
+    );
+
+    this.eventEmitter.emit(
+      RESERVATION_CHECKED_IN_EVENT,
+      new ReservationCheckedInEvent(
+        command.tenantId,
+        command.reservationId,
+        reservation.getGuestId().toString(),
+        reservation.getUnitId().toString(),
+        reservation.getPropertyId().toString(),
+        reservation.getCheckInActualAt() ?? new Date(),
       ),
     );
   }
