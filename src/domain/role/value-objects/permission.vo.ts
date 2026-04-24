@@ -48,6 +48,9 @@ export enum Permission {
   INCIDENT_REPORT_READ = 'INCIDENT_REPORT_READ',
   INCIDENT_REPORT_EDIT = 'INCIDENT_REPORT_EDIT',
   INCIDENT_REPORT_DELETE = 'INCIDENT_REPORT_DELETE',
+
+  // --- Workflows ---
+  WORKFLOW_MANAGE = 'WORKFLOW_MANAGE',
 }
 
 /** All permissions — assigned to OWNER */
@@ -76,6 +79,7 @@ export const ADMIN_PERMISSIONS: Permission[] = [
   Permission.INCIDENT_REPORT_READ,
   Permission.INCIDENT_REPORT_EDIT,
   Permission.INCIDENT_REPORT_DELETE,
+  Permission.WORKFLOW_MANAGE,
 ];
 
 /** Permissions for the built-in STAFF system role */
