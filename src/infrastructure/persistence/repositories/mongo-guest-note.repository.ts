@@ -47,6 +47,7 @@ export class MongoGuestNoteRepository implements GuestNoteRepository {
     const doc = await this.noteModel.findOne({
       _id: new Types.ObjectId(id.toString()),
       tenantId: new Types.ObjectId(tenantId.toString()),
+      deletedAt: null,
     });
 
     return doc ? this.toDomain(doc) : null;
@@ -90,10 +91,13 @@ export class MongoGuestNoteRepository implements GuestNoteRepository {
   }
 
   async delete(id: GuestNoteId, tenantId: TenantId): Promise<void> {
-    await this.noteModel.deleteOne({
-      _id: new Types.ObjectId(id.toString()),
-      tenantId: new Types.ObjectId(tenantId.toString()),
-    });
+    await this.noteModel.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(id.toString()),
+        tenantId: new Types.ObjectId(tenantId.toString()),
+      },
+      { deletedAt: new Date(), updatedAt: new Date() },
+    );
   }
 
   private toDomain(doc: GuestNoteDocument): GuestNote {
