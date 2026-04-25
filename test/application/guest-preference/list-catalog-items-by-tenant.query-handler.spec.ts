@@ -35,6 +35,10 @@ describe('ListCatalogItemsByTenantQueryHandler', () => {
   let repository: jest.Mocked<GuestPreferenceCatalogRepository>;
 
   const query = new ListCatalogItemsByTenantQuery(TENANT_ID);
+  const queryIncludeInactive = new ListCatalogItemsByTenantQuery(
+    TENANT_ID,
+    true,
+  );
 
   beforeEach(() => {
     repository = createGuestPreferenceCatalogRepositoryMock();
@@ -101,6 +105,38 @@ describe('ListCatalogItemsByTenantQueryHandler', () => {
       expect(dto.category).toBe(GuestPreferenceCategoryEnum.ROOM);
       expect(dto.source).toBe(GuestPreferenceSourceEnum.CUSTOM);
       expect(dto.isActive).toBe(true);
+    });
+  });
+
+  // ── Scenario 2: includeInactive flag ────────────────────────────────────────
+
+  describe('Scenario 2 — includeInactive flag', () => {
+    it('returns all items (active and inactive) when includeInactive=true', async () => {
+      const activeItem = makeCatalogItem('item-active-1', 'Piso alto', true);
+      const inactiveItem = makeCatalogItem(
+        'item-inactive-1',
+        'Opción obsoleta',
+        false,
+      );
+
+      repository.findByTenant.mockResolvedValue([activeItem, inactiveItem]);
+
+      const result = await handler.execute(queryIncludeInactive);
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items.map((i) => i.id)).toContain('item-active-1');
+      expect(result.items.map((i) => i.id)).toContain('item-inactive-1');
+    });
+
+    it('returns inactive items when includeInactive=true and all items are inactive', async () => {
+      const inactiveA = makeCatalogItem('item-inactive-a', 'Opción A', false);
+      const inactiveB = makeCatalogItem('item-inactive-b', 'Opción B', false);
+
+      repository.findByTenant.mockResolvedValue([inactiveA, inactiveB]);
+
+      const result = await handler.execute(queryIncludeInactive);
+
+      expect(result.items).toHaveLength(2);
     });
   });
 });

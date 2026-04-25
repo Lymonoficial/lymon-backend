@@ -7,12 +7,18 @@ import { RequirePermission } from '@/infrastructure/auth/decorators/require-perm
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import {
   Controller,
+  Delete,
   Get,
   Patch,
+  ParseBoolPipe,
+  DefaultValuePipe,
+  HttpCode,
+  HttpStatus,
   UseGuards,
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -36,6 +42,15 @@ import { SendGuestMessageDto } from '@/presentation/dtos/send-guest-message.dto'
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferences.dto';
+import { ListCatalogItemsByTenantQuery } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.query';
+import { ListCatalogItemsByTenantResult } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.result';
+import { CreateCustomCatalogItemCommand } from '@/application/guest-preference/commands/create-custom-catalog-item/create-custom-catalog-item.command';
+import { UpdateCustomCatalogItemCommand } from '@/application/guest-preference/commands/update-custom-catalog-item/update-custom-catalog-item.command';
+import { DeleteCustomCatalogItemCommand } from '@/application/guest-preference/commands/delete-custom-catalog-item/delete-custom-catalog-item.command';
+import { ToggleCatalogItemCommand } from '@/application/guest-preference/commands/toggle-catalog-item/toggle-catalog-item.command';
+import { CreateCatalogItemDto } from '@/presentation/dtos/create-catalog-item.dto';
+import { UpdateCatalogItemDto } from '@/presentation/dtos/update-catalog-item.dto';
+import { ToggleCatalogItemDto } from '@/presentation/dtos/toggle-catalog-item.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -280,5 +295,149 @@ export class CrmController {
       message: 'Message sent and recorded successfully',
       data: result,
     };
+  }
+
+  // ── Catalog endpoints ────────────────────────────────────────────────────────
+
+  @Get('catalog')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'List preference catalog items for the tenant' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalog items retrieved successfully',
+  })
+  async listCatalogItems(
+    @CurrentUser() user: JwtPayload,
+    @Query('includeInactive', new DefaultValuePipe(false), ParseBoolPipe)
+    includeInactive: boolean,
+  ) {
+    const result = await this.queryBus.execute<
+      ListCatalogItemsByTenantQuery,
+      ListCatalogItemsByTenantResult
+    >(new ListCatalogItemsByTenantQuery(user.tenantId, includeInactive));
+
+    return {
+      message: 'Catalog items retrieved successfully',
+      data: result.items,
+    };
+  }
+
+  @Patch('catalog/:itemId/toggle')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Activate or deactivate a catalog item' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalog item toggled successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Catalog item not found' })
+  async toggleCatalogItem(
+    @Param('itemId') itemId: string,
+    @Body() dto: ToggleCatalogItemDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new ToggleCatalogItemCommand(user.tenantId, itemId, dto.activate),
+    );
+
+    return { message: 'Catalog item toggled successfully' };
+  }
+
+  @Post('catalog')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Create a custom catalog item' })
+  @ApiResponse({
+    status: 201,
+    description: 'Catalog item created successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Plan does not allow custom catalog items',
+  })
+  async createCatalogItem(
+    @Body() dto: CreateCatalogItemDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const itemId = await this.commandBus.execute<
+      CreateCustomCatalogItemCommand,
+      string
+    >(
+      new CreateCustomCatalogItemCommand(
+        user.tenantId,
+        user.activePlan,
+        dto.category,
+        dto.label,
+      ),
+    );
+
+    return {
+      message: 'Catalog item created successfully',
+      data: { itemId },
+    };
+  }
+
+  @Patch('catalog/:itemId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a custom catalog item' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalog item updated successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Plan does not allow custom catalog management or item is not custom',
+  })
+  @ApiResponse({ status: 404, description: 'Catalog item not found' })
+  async updateCatalogItem(
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateCatalogItemDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new UpdateCustomCatalogItemCommand(
+        user.tenantId,
+        user.activePlan,
+        itemId,
+        dto.label,
+        dto.category,
+      ),
+    );
+
+    return { message: 'Catalog item updated successfully' };
+  }
+
+  @Delete('catalog/:itemId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete a custom catalog item' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalog item deleted successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Plan does not allow custom catalog management or item is not custom',
+  })
+  @ApiResponse({ status: 404, description: 'Catalog item not found' })
+  async deleteCatalogItem(
+    @Param('itemId') itemId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new DeleteCustomCatalogItemCommand(
+        user.tenantId,
+        user.activePlan,
+        itemId,
+      ),
+    );
+
+    return { message: 'Catalog item deleted successfully' };
   }
 }
