@@ -46,6 +46,7 @@ export class GetShiftsHandler implements IQueryHandler<
           .getStaffMemberIds()
           .map((staffMemberId) => staffMemberId.toString()),
         propertyId: shift.getPropertyId().toString(),
+        name: shift.getName(),
         startDate: shift.getStartDate().toISOString(),
         endDate: shift.getEndDate() ? shift.getEndDate()!.toISOString() : null,
         startHour: shift.getStartHour(),

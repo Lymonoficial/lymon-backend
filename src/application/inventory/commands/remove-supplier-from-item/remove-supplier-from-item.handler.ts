@@ -28,6 +28,7 @@ import {
   AUDIT_LOG_EVENT,
   AuditLoggedEvent,
 } from '@/infrastructure/audit/events/audit-logged.event';
+import { buildAuditDiff } from '@/domain/shared/utils/audit-diff.util';
 
 type InventoryItemWithSupplierAssociation = {
   getSupplierId(): SupplierId | null;
@@ -85,7 +86,7 @@ export class RemoveSupplierFromItemHandler implements ICommandHandler<
     const previousSnapshot = this.getItemSupplierSnapshot(inventoryItem);
     inventoryItem.removeSupplier();
     const nextSnapshot = this.getItemSupplierSnapshot(inventoryItem);
-    const auditDiff = this.buildAuditDiff(previousSnapshot, nextSnapshot);
+    const auditDiff = buildAuditDiff(previousSnapshot, nextSnapshot);
 
     await this.inventoryItemRepository.save(item);
 
@@ -135,38 +136,6 @@ export class RemoveSupplierFromItemHandler implements ICommandHandler<
   }): Record<string, unknown> {
     return {
       supplierId: item.getSupplierId()?.toString() ?? null,
-    };
-  }
-
-  private buildAuditDiff(
-    previousSnapshot: Record<string, unknown>,
-    nextSnapshot: Record<string, unknown>,
-  ): {
-    changedFields: string[];
-    previousValue?: Record<string, unknown>;
-    newValue?: Record<string, unknown>;
-  } {
-    const changedFields: string[] = [];
-    const previousValue: Record<string, unknown> = {};
-    const newValue: Record<string, unknown> = {};
-
-    for (const field of Object.keys(nextSnapshot)) {
-      const previousFieldValue = previousSnapshot[field];
-      const nextFieldValue = nextSnapshot[field];
-
-      if (previousFieldValue === nextFieldValue) {
-        continue;
-      }
-
-      changedFields.push(field);
-      previousValue[field] = previousFieldValue;
-      newValue[field] = nextFieldValue;
-    }
-
-    return {
-      changedFields,
-      previousValue: changedFields.length > 0 ? previousValue : undefined,
-      newValue: changedFields.length > 0 ? newValue : undefined,
     };
   }
 }

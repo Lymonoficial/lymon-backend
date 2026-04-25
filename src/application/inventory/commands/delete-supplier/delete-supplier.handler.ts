@@ -22,6 +22,7 @@ import {
   AuditLoggedEvent,
 } from '@/infrastructure/audit/events/audit-logged.event';
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
+import { buildAuditDiff } from '@/domain/shared/utils/audit-diff.util';
 
 @CommandHandler(DeleteSupplierCommand)
 export class DeleteSupplierHandler implements ICommandHandler<
@@ -75,7 +76,7 @@ export class DeleteSupplierHandler implements ICommandHandler<
       ...previousSnapshot,
       deletedAt,
     };
-    const auditDiff = this.buildAuditDiff(previousSnapshot, nextSnapshot);
+    const auditDiff = buildAuditDiff(previousSnapshot, nextSnapshot);
 
     await this.supplierRepository.delete(supplierId);
 
@@ -108,38 +109,6 @@ export class DeleteSupplierHandler implements ICommandHandler<
       city: supplier.getCity(),
       nit: supplier.getNit(),
       deletedAt: supplier.getDeletedAt(),
-    };
-  }
-
-  private buildAuditDiff(
-    previousSnapshot: Record<string, unknown>,
-    nextSnapshot: Record<string, unknown>,
-  ): {
-    changedFields: string[];
-    previousValue?: Record<string, unknown>;
-    newValue?: Record<string, unknown>;
-  } {
-    const changedFields: string[] = [];
-    const previousValue: Record<string, unknown> = {};
-    const newValue: Record<string, unknown> = {};
-
-    for (const field of Object.keys(nextSnapshot)) {
-      const previousFieldValue = previousSnapshot[field];
-      const nextFieldValue = nextSnapshot[field];
-
-      if (previousFieldValue === nextFieldValue) {
-        continue;
-      }
-
-      changedFields.push(field);
-      previousValue[field] = previousFieldValue;
-      newValue[field] = nextFieldValue;
-    }
-
-    return {
-      changedFields,
-      previousValue: changedFields.length > 0 ? previousValue : undefined,
-      newValue: changedFields.length > 0 ? newValue : undefined,
     };
   }
 }

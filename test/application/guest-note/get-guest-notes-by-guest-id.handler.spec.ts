@@ -13,6 +13,7 @@ function createGuestNoteRepositoryMock(): jest.Mocked<GuestNoteRepository> {
     save: jest.fn(),
     findById: jest.fn(),
     findByGuestId: jest.fn(),
+    findByGuestIdPaginated: jest.fn(),
     delete: jest.fn(),
   };
 }
@@ -65,7 +66,10 @@ describe('GetGuestNotesByGuestIdHandler', () => {
         status: GuestNoteStatusEnum.IS_PINNED,
         createdBy: 'staff-001',
       });
-      guestNoteRepository.findByGuestId.mockResolvedValue([note]);
+      guestNoteRepository.findByGuestIdPaginated.mockResolvedValue({
+        notes: [note],
+        total: 1,
+      });
 
       const query = new GetGuestNotesByGuestIdQuery(tenantId, guestId);
       const result = await handler.execute(query);
@@ -79,9 +83,12 @@ describe('GetGuestNotesByGuestIdHandler', () => {
         status: GuestNoteStatusEnum.IS_PINNED,
         createdBy: 'staff-001',
       });
-      expect(guestNoteRepository.findByGuestId).toHaveBeenCalledWith(
+      expect(result.total).toBe(1);
+      expect(guestNoteRepository.findByGuestIdPaginated).toHaveBeenCalledWith(
         expect.objectContaining({ toString: expect.any(Function) }),
         expect.objectContaining({ toString: expect.any(Function) }),
+        1,
+        10,
       );
     });
   });
@@ -95,13 +102,16 @@ describe('GetGuestNotesByGuestIdHandler', () => {
       const result = await handler.execute(query);
 
       expect(result.items).toEqual([]);
-      expect(guestNoteRepository.findByGuestId).not.toHaveBeenCalled();
+      expect(guestNoteRepository.findByGuestIdPaginated).not.toHaveBeenCalled();
     });
   });
 
   describe('when there are no guest notes', () => {
     it('returns an empty list', async () => {
-      guestNoteRepository.findByGuestId.mockResolvedValue([]);
+      guestNoteRepository.findByGuestIdPaginated.mockResolvedValue({
+        notes: [],
+        total: 0,
+      });
 
       const query = new GetGuestNotesByGuestIdQuery(tenantId, guestId);
       const result = await handler.execute(query);

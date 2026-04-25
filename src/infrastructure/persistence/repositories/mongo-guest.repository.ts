@@ -146,8 +146,59 @@ export class MongoGuestRepository implements GuestRepository {
     });
   }
 
+  async findByTenantIdPaginated(
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+    sortBy: 'createdAt' | 'fullName' | 'status',
+    sortDirection: 'asc' | 'desc',
+  ): Promise<{ guests: Guest[]; total: number }> {
+    const filter = { tenantId: new Types.ObjectId(tenantId.toString()) };
+    const sortOrder = sortDirection === 'asc' ? 1 : -1;
+    const [total, documents] = await Promise.all([
+      this.guestModel.countDocuments(filter),
+      this.guestModel
+        .find(filter)
+        .sort({ [sortBy]: sortOrder })
+        .skip((page - 1) * limit)
+        .limit(limit),
+    ]);
+    return { guests: documents.map((doc) => this.toDomain(doc)), total };
+  }
+
+  async searchPaginated(
+    tenantId: TenantId,
+    term: string,
+    page: number,
+    limit: number,
+  ): Promise<{ guests: Guest[]; total: number }> {
+    const escapedTerm = term.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+    const pattern = new RegExp(escapedTerm, 'i');
+    const filter = {
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      $or: [
+        { fullName: pattern },
+        { firstName: pattern },
+        { lastName: pattern },
+        { primaryEmail: pattern },
+        { emails: pattern },
+        { 'identity.documentNumber': pattern },
+        { 'phones.number': pattern },
+      ],
+    };
+    const [total, documents] = await Promise.all([
+      this.guestModel.countDocuments(filter),
+      this.guestModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+    ]);
+    return { guests: documents.map((doc) => this.toDomain(doc)), total };
+  }
+
   async search(tenantId: TenantId, term: string): Promise<Guest[]> {
-    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedTerm = term.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
     const pattern = new RegExp(escapedTerm, 'i');
 
     const documents = await this.guestModel

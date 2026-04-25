@@ -28,8 +28,10 @@ import { UserApplicationModule } from '@/application/user/user-application.modul
 import { GuestPreferenceApplicationModule } from '@/application/guest-preference/guest-preference-application.module';
 import { CreateShiftCommandHandler } from '@/application/shift/commands/create-shift/create-shift.handler';
 import { UpdateShiftCommandHandler } from '@/application/shift/commands/update-shift/update-shift.handler';
+import { ShiftApplicationModule } from '@/application/shift/shift-application.module';
 import { DeleteShiftCommandHandler } from '@/application/shift/commands/delete-shift/delete-shift.handler';
 import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shifts.handler';
+import { ExperienceApplicationModule } from '@/application/experience/experience-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -41,8 +43,6 @@ const CommandHandlers = [
   VerifyEmailHandler,
   ChangePasswordHandler,
   InviteStaffHandler,
-  CreateShiftCommandHandler,
-  UpdateShiftCommandHandler,
   DeleteShiftCommandHandler,
 ];
 
@@ -67,8 +67,15 @@ const QueryHandlers = [GetShiftsHandler];
     GuestEmailApplicationModule,
     UserApplicationModule,
     GuestPreferenceApplicationModule,
+    ShiftApplicationModule,
+    ExperienceApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
-  exports: [...CommandHandlers, ...QueryHandlers, GuestApplicationModule],
+  exports: [
+    ...CommandHandlers,
+    ...QueryHandlers,
+    GuestApplicationModule,
+    ShiftApplicationModule,
+  ],
 })
 export class ApplicationModule {}

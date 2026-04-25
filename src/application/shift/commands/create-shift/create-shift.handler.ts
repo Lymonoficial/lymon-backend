@@ -72,10 +72,6 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
     const start = this.toMinutes(command.startHour);
     const end = this.toMinutes(command.endHour);
 
-    if (end <= start) {
-      throw new BadRequestException('Shift end time must be after start time');
-    }
-
     const overlapRepository = this.shiftRepository as {
       findOverlappingByStaffInRange: (
         tenantId: TenantId,
@@ -109,6 +105,7 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
       tenantId,
       staffMemberIds,
       propertyId,
+      name: command.name,
       startDate,
       endDate,
       startHour: command.startHour,
@@ -131,6 +128,7 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
         subject: 'New shift assigned',
         htmlContent: `
             <div style="font-family: sans-serif; line-height: 1.6;">
+              <p><strong>Shift:</strong> ${command.name}</p>
               <p>A new shift has been assigned to you.</p>
               <p><strong>Date range:</strong> ${command.startDate} - ${command.endDate ?? 'No end date'}</p>
               <p><strong>Time:</strong> ${command.startHour} - ${command.endHour}</p>

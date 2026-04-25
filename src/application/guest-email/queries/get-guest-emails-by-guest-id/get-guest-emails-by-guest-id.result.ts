@@ -14,5 +14,14 @@ export class GuestEmailDto {
 }
 
 export class GetGuestEmailsByGuestIdResult {
-  items: GuestEmailDto[];
+  constructor(
+    public readonly items: GuestEmailDto[],
+    public readonly total: number,
+    public readonly page: number,
+    public readonly limit: number,
+  ) {}
+
+  get totalPages(): number {
+    return Math.ceil(this.total / this.limit);
+  }
 }

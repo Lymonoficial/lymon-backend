@@ -2,11 +2,15 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UserId } from '@/domain/user/entities/user.entity';
 import { ShiftId } from '@/domain/shift/value-objects/shift-id.vo';
+import { ShiftHour } from '@/domain/shift/value-objects/shift-hour.vo';
+import { ShiftDate } from '@/domain/shift/value-objects/shift-date.vo';
+import type { IShiftReconstituteData } from '@/domain/shift/interfaces/shift.interface';
 
 export interface CreateShiftParams {
   tenantId: TenantId;
   staffMemberIds: UserId[];
   propertyId: PropertyId;
+  name: string;
   startDate: Date;
   endDate?: Date | null;
   startHour: string;
@@ -19,14 +23,13 @@ export interface CreateShiftParams {
 }
 
 export interface UpdateShiftParams {
-  staffMemberIds: UserId[];
-  propertyId: PropertyId;
-  startDate: Date;
-  endDate: Date | null;
-  startHour: string;
-  endHour: string;
-  startMinutes: number;
-  endMinutes: number;
+  staffMemberIds?: UserId[];
+  propertyId?: PropertyId | string;
+  name: string;
+  startDate?: string | Date | null;
+  endDate?: string | Date | null;
+  startHour?: string;
+  endHour?: string;
   notes?: string;
 }
 
@@ -36,6 +39,7 @@ export class Shift {
     private readonly tenantId: TenantId,
     private staffMemberIds: UserId[],
     private propertyId: PropertyId,
+    private name: string,
     private startDate: Date,
     private endDate: Date | null,
     private startHour: string,
@@ -66,6 +70,7 @@ export class Shift {
       params.tenantId,
       params.staffMemberIds,
       params.propertyId,
+      params.name.trim(),
       params.startDate,
       params.endDate ?? null,
       params.startHour,
@@ -80,39 +85,24 @@ export class Shift {
     );
   }
 
-  static reconstitute(
-    id: ShiftId,
-    tenantId: TenantId,
-    staffMemberIds: UserId[],
-    propertyId: PropertyId,
-    startDate: Date,
-    endDate: Date | null,
-    startHour: string,
-    endHour: string,
-    startMinutes: number,
-    endMinutes: number,
-    notes: string | null,
-    createdBy: string | null,
-    createdByEmail: string | null,
-    createdAt: Date,
-    updatedAt: Date,
-  ): Shift {
+  static reconstitute(data: IShiftReconstituteData): Shift {
     return new Shift(
-      id,
-      tenantId,
-      staffMemberIds,
-      propertyId,
-      startDate,
-      endDate,
-      startHour,
-      endHour,
-      startMinutes,
-      endMinutes,
-      notes,
-      createdBy,
-      createdByEmail,
-      createdAt,
-      updatedAt,
+      data.id,
+      data.tenantId,
+      data.staffMemberIds,
+      data.propertyId,
+      data.name,
+      data.startDate,
+      data.endDate,
+      data.startHour,
+      data.endHour,
+      data.startMinutes,
+      data.endMinutes,
+      data.notes,
+      data.createdBy,
+      data.createdByEmail,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 
@@ -134,6 +124,10 @@ export class Shift {
 
   getPropertyId(): PropertyId {
     return this.propertyId;
+  }
+
+  getName(): string {
+    return this.name;
   }
 
   getStartDate(): Date {
@@ -193,51 +187,180 @@ export class Shift {
   }
 
   update(params: UpdateShiftParams, now: Date): void {
-    if (params.staffMemberIds.length === 0 && this.staffMemberIds.length > 0) {
-      // Allow removing all staff assignments from update flow.
+    // Resolve parameters with fallback to current values
+    const nextStaffMemberIds = this.resolveStaffMemberIds(params);
+    const nextPropertyId = this.resolvePropertyId(params);
+    const nextName = params.name.trim();
+    const nextStartDate = this.resolveStartDate(params);
+    const nextEndDate = this.resolveEndDate(params);
+    const nextStartHour = params.startHour ?? this.startHour;
+    const nextEndHour = params.endHour ?? this.endHour;
+
+    // Parse and validate time values
+    const startHourVO = ShiftHour.fromString(nextStartHour);
+    const endHourVO = ShiftHour.fromString(nextEndHour);
+    const nextStartMinutes = startHourVO.toMinutes();
+    const nextEndMinutes = endHourVO.toMinutes();
+
+    // Validate time invariants
+    this.validateTimeInvariants(nextStartMinutes, nextEndMinutes);
+    this.validateDateInvariants(nextStartDate, nextEndDate);
+
+    // Check for changes that cannot happen after shift starts
+    this.validateImmutableChanges(
+      nextStaffMemberIds,
+      nextPropertyId,
+      nextName,
+      nextStartDate,
+      now,
+    );
+
+    // Apply updates
+    this.applyUpdates({
+      staffMemberIds: nextStaffMemberIds,
+      propertyId: nextPropertyId,
+      name: nextName,
+      startDate: nextStartDate,
+      endDate: nextEndDate,
+      startHour: nextStartHour,
+      endHour: nextEndHour,
+      startMinutes: nextStartMinutes,
+      endMinutes: nextEndMinutes,
+      notes: params.notes,
+    });
+
+    this.updatedAt = new Date();
+  }
+
+  private resolveStaffMemberIds(params: UpdateShiftParams): UserId[] {
+    if (params.staffMemberIds === undefined) {
+      return this.staffMemberIds;
     }
 
-    if (params.endMinutes <= params.startMinutes) {
+    if (params.staffMemberIds.length === 0) {
+      return this.staffMemberIds;
+    }
+
+    return params.staffMemberIds;
+  }
+
+  private resolvePropertyId(params: UpdateShiftParams): PropertyId {
+    if (params.propertyId === undefined) {
+      return this.propertyId;
+    }
+
+    if (typeof params.propertyId === 'string') {
+      return PropertyId.create(params.propertyId);
+    }
+
+    return params.propertyId;
+  }
+
+  private resolveStartDate(params: UpdateShiftParams): Date {
+    if (params.startDate === undefined || params.startDate === null) {
+      return this.startDate;
+    }
+
+    if (typeof params.startDate === 'string') {
+      return ShiftDate.fromString(params.startDate).getDate();
+    }
+
+    return params.startDate;
+  }
+
+  private resolveEndDate(params: UpdateShiftParams): Date | null {
+    if (params.endDate === undefined) {
+      return this.endDate;
+    }
+
+    if (params.endDate === null) {
+      return null;
+    }
+
+    if (typeof params.endDate === 'string') {
+      return ShiftDate.fromString(params.endDate).getDate();
+    }
+
+    return params.endDate;
+  }
+
+  private validateTimeInvariants(
+    startMinutes: number,
+    endMinutes: number,
+  ): void {
+    if (endMinutes <= startMinutes) {
       throw new Error('Shift end time must be after start time');
     }
+  }
 
-    if (
-      params.endDate &&
-      params.endDate.getTime() < params.startDate.getTime()
-    ) {
+  private validateDateInvariants(startDate: Date, endDate: Date | null): void {
+    if (endDate && endDate.getTime() < startDate.getTime()) {
       throw new Error('Shift end date cannot be before start date');
     }
+  }
 
+  private validateImmutableChanges(
+    nextStaffMemberIds: UserId[],
+    nextPropertyId: PropertyId,
+    nextName: string,
+    nextStartDate: Date,
+    now: Date,
+  ): void {
     const hasImmutableChangesAfterStart =
-      !this.haveSameStaffMembers(params.staffMemberIds) ||
-      !this.propertyId.equals(params.propertyId) ||
-      this.startDate.getTime() !== params.startDate.getTime();
+      !this.haveSameStaffMembers(nextStaffMemberIds) ||
+      !this.propertyId.equals(nextPropertyId) ||
+      this.name !== nextName ||
+      this.startDate.getTime() !== nextStartDate.getTime();
 
     const shiftStartAt = new Date(
       this.startDate.getTime() + this.startMinutes * 60 * 1000,
     );
     const isPastOrActive = now.getTime() >= shiftStartAt.getTime();
 
-    if (isPastOrActive && hasImmutableChangesAfterStart) {
+    if (!isPastOrActive) {
+      return;
+    }
+
+    if (hasImmutableChangesAfterStart) {
       throw new Error(
         'This shift already started or is in the past. Only endDate, startHour, endHour, and notes can be edited.',
       );
     }
+  }
 
-    if (!isPastOrActive) {
-      this.staffMemberIds = params.staffMemberIds;
-      this.propertyId = params.propertyId;
-      this.startDate = params.startDate;
+  private applyUpdates(updates: {
+    staffMemberIds: UserId[];
+    propertyId: PropertyId;
+    name: string;
+    startDate: Date;
+    endDate: Date | null;
+    startHour: string;
+    endHour: string;
+    startMinutes: number;
+    endMinutes: number;
+    notes: string | null | undefined;
+  }): void {
+    const shiftStartAt = new Date(
+      this.startDate.getTime() + this.startMinutes * 60 * 1000,
+    );
+    const now = new Date();
+    const canUpdateAllFields = now.getTime() < shiftStartAt.getTime();
+
+    if (canUpdateAllFields) {
+      this.staffMemberIds = updates.staffMemberIds;
+      this.propertyId = updates.propertyId;
+      this.name = updates.name;
+      this.startDate = updates.startDate;
     }
 
-    this.endDate = params.endDate;
-    this.startHour = params.startHour;
-    this.endHour = params.endHour;
-    this.startMinutes = params.startMinutes;
-    this.endMinutes = params.endMinutes;
+    this.endDate = updates.endDate;
+    this.startHour = updates.startHour;
+    this.endHour = updates.endHour;
+    this.startMinutes = updates.startMinutes;
+    this.endMinutes = updates.endMinutes;
 
-    this.notes = params.notes?.trim() ?? null;
-    this.updatedAt = new Date();
+    const trimmedNotes = updates.notes?.trim() ?? null;
+    this.notes = trimmedNotes;
   }
 
   private haveSameStaffMembers(nextStaffMemberIds: UserId[]): boolean {

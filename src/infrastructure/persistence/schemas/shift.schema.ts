@@ -41,6 +41,9 @@ export class ShiftDocument extends Document {
   @Prop({ type: Date, default: null, index: true })
   endDate!: Date | null;
 
+  @Prop({ type: String, required: true })
+  name!: string;
+
   @Prop({ type: Date, required: false, index: true })
   shiftDate?: Date;
 

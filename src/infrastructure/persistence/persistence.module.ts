@@ -103,6 +103,11 @@ import {
 } from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
 import { GUEST_PREFERENCE_CATALOG_REPOSITORY } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
 import { MongoGuestPreferenceCatalogRepository } from '@/infrastructure/persistence/repositories/mongo-guest-preference-catalog.repository';
+  ExperienceDocument,
+  ExperienceSchema,
+} from '@/infrastructure/persistence/schemas/experience.schema';
+import { EXPERIENCE_REPOSITORY } from '@/domain/experience/repositories/experience.repository';
+import { MongoExperienceRepository } from '@/infrastructure/persistence/repositories/mongo-experience.repository';
 
 @Module({
   imports: [
@@ -130,6 +135,7 @@ import { MongoGuestPreferenceCatalogRepository } from '@/infrastructure/persiste
         name: GuestPreferenceCatalogItemDocument.name,
         schema: GuestPreferenceCatalogItemSchema,
       },
+      { name: ExperienceDocument.name, schema: ExperienceSchema },
     ]),
   ],
   providers: [
@@ -208,6 +214,8 @@ import { MongoGuestPreferenceCatalogRepository } from '@/infrastructure/persiste
     {
       provide: GUEST_PREFERENCE_CATALOG_REPOSITORY,
       useClass: MongoGuestPreferenceCatalogRepository,
+      provide: EXPERIENCE_REPOSITORY,
+      useClass: MongoExperienceRepository,
     },
     RoleSeedService,
   ],
@@ -231,6 +239,7 @@ import { MongoGuestPreferenceCatalogRepository } from '@/infrastructure/persiste
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
     GUEST_PREFERENCE_CATALOG_REPOSITORY,
+    EXPERIENCE_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

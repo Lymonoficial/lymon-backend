@@ -9,6 +9,15 @@ import {
 
 export class UpdateShiftDto {
   @ApiPropertyOptional({
+    example: 'Morning Front Desk',
+    description: 'Optional shift name',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  name?: string;
+
+  @ApiPropertyOptional({
     example: '680c79f38b4f98f4f6383b13',
     description: 'Property id where shift takes place',
   })
