@@ -125,8 +125,15 @@ export class GuestNote {
     this.touch();
   }
 
+  togglePin(): void {
+    this.status =
+      this.status === GuestNoteStatusEnum.IS_PINNED
+        ? GuestNoteStatusEnum.NOT_PINNED
+        : GuestNoteStatusEnum.IS_PINNED;
+    this.touch();
+  }
+
   softDelete(): void {
-    this.status = GuestNoteStatusEnum.IS_PINNED;
     this.deletedAt = new Date();
     this.touch();
   }

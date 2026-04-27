@@ -9,7 +9,10 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -28,7 +31,11 @@ import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-gues
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
 import { CreateGuestNoteResult } from '@/application/guest-note/commands/create-guest-note.result';
+import { UpdateGuestNoteCommand } from '@/application/guest-note/commands/update-guest-note.command';
+import { DeleteGuestNoteCommand } from '@/application/guest-note/commands/delete-guest-note.command';
+import { TogglePinGuestNoteCommand } from '@/application/guest-note/commands/toggle-pin-guest-note.command';
 import { CreateGuestNoteDto } from '@/presentation/dtos/create-guest-note.dto';
+import { UpdateGuestNoteDto } from '@/presentation/dtos/update-guest-note.dto';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
 import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.query';
@@ -139,6 +146,62 @@ export class CrmController {
       message: 'Internal note added successfully',
       data: result,
     };
+  }
+
+  @Patch('guests/:guestId/notes/:noteId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Edit a guest note' })
+  @ApiResponse({ status: 200, description: 'Guest note updated successfully' })
+  @ApiResponse({ status: 400, description: 'No fields provided or invalid type' })
+  @ApiResponse({ status: 404, description: 'Guest note not found' })
+  async updateGuestNote(
+    @Param('noteId') noteId: string,
+    @Body() dto: UpdateGuestNoteDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute<UpdateGuestNoteCommand, void>(
+      new UpdateGuestNoteCommand(
+        user.tenantId,
+        noteId,
+        user.userId,
+        dto.note,
+        dto.type,
+      ),
+    );
+    return { message: 'Guest note updated successfully' };
+  }
+
+  @Delete('guests/:guestId/notes/:noteId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Soft delete a guest note' })
+  @ApiResponse({ status: 204, description: 'Guest note deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Guest note not found' })
+  async deleteGuestNote(
+    @Param('noteId') noteId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute<DeleteGuestNoteCommand, void>(
+      new DeleteGuestNoteCommand(user.tenantId, noteId, user.userId),
+    );
+  }
+
+  @Patch('guests/:guestId/notes/:noteId/pin')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Toggle pin/unpin on a guest note' })
+  @ApiResponse({ status: 200, description: 'Guest note pin status toggled' })
+  @ApiResponse({ status: 404, description: 'Guest note not found' })
+  async togglePinGuestNote(
+    @Param('noteId') noteId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute<TogglePinGuestNoteCommand, void>(
+      new TogglePinGuestNoteCommand(user.tenantId, noteId, user.userId),
+    );
+    return { message: 'Guest note pin status toggled' };
   }
 
   @Get('guests/:guestId/notes')
