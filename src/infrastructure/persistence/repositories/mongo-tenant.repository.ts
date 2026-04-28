@@ -31,6 +31,7 @@ export class MongoTenantRepository implements TenantRepository {
       website: tenant.getWebsite(),
       logoUrl: tenant.getLogoUrl(),
       updatedAt: tenant.getUpdatedAt(),
+      deletedAt: tenant.getDeletedAt(),
     };
 
     if (id) {
@@ -46,18 +47,23 @@ export class MongoTenantRepository implements TenantRepository {
   }
 
   async findById(id: TenantId): Promise<Tenant | null> {
-    const doc = await this.tenantModel.findById(id.toString());
+    const doc = await this.tenantModel.findOne({
+      _id: id.toString(),
+      deletedAt: null,
+    });
     return doc ? this.toDomainEntity(doc) : null;
   }
   async findByOwnerEmail(email: Email): Promise<Tenant | null> {
     const doc = await this.tenantModel.findOne({
       ownerEmail: email.toString(),
+      deletedAt: null,
     });
     return doc ? this.toDomainEntity(doc) : null;
   }
   async exists(email: Email): Promise<boolean> {
     const count = await this.tenantModel.countDocuments({
       ownerEmail: email.toString(),
+      deletedAt: null,
     });
     return count > 0;
   }
@@ -75,6 +81,7 @@ export class MongoTenantRepository implements TenantRepository {
       logoUrl: doc.logoUrl ?? null,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
+      deletedAt: doc.deletedAt,
     };
     return Tenant.reconstitute(props);
   }

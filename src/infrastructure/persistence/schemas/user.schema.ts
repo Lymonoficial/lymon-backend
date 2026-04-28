@@ -40,9 +40,12 @@ export class UserDocument extends Document {
 
   @Prop()
   updatedAt: Date;
+
+  @Prop({ type: Date, default: null })
+  deletedAt: Date | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);
 
-UserSchema.index({ email: 1, tenantId: 1 }, { unique: true });
-UserSchema.index({ tenantId: 1 });
+UserSchema.index({ email: 1, tenantId: 1, deletedAt: 1 }, { unique: true });
+UserSchema.index({ tenantId: 1, deletedAt: 1 });

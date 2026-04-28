@@ -30,6 +30,7 @@ export class MongoUserRepository implements UserRepository {
         roleAssignments: user.getRoleAssignments(),
         emailVerified: user.isEmailVerified(),
         updatedAt: new Date(),
+        deletedAt: user.getDeletedAt(),
       };
 
       const resetPasswordToken = user.getResetPasswordToken();
@@ -83,18 +84,25 @@ export class MongoUserRepository implements UserRepository {
   }
 
   async findById(id: UserId): Promise<User | null> {
-    const doc = await this.userModel.findById(id.toString());
+    const doc = await this.userModel.findOne({
+      _id: id.toString(),
+      deletedAt: null,
+    });
     return doc ? this.toDomainEntity(doc) : null;
   }
 
   async findByEmail(email: Email): Promise<User | null> {
-    const doc = await this.userModel.findOne({ email: email.toString() });
+    const doc = await this.userModel.findOne({
+      email: email.toString(),
+      deletedAt: null,
+    });
     return doc ? this.toDomainEntity(doc) : null;
   }
 
   async findByTenantId(tenantId: TenantId): Promise<User[]> {
     const docList = await this.userModel.find({
       tenantId: tenantId.toString(),
+      deletedAt: null,
     });
     return docList.map((doc) => this.toDomainEntity(doc));
   }
@@ -106,6 +114,7 @@ export class MongoUserRepository implements UserRepository {
     const doc = await this.userModel.findOne({
       email: email.toString(),
       tenantId: tenantId.toString(),
+      deletedAt: null,
     });
     return doc ? this.toDomainEntity(doc) : null;
   }
@@ -113,6 +122,7 @@ export class MongoUserRepository implements UserRepository {
   async findByResetToken(hashedToken: string): Promise<User | null> {
     const doc = await this.userModel.findOne({
       resetPasswordToken: hashedToken,
+      deletedAt: null,
     });
     return doc ? this.toDomainEntity(doc) : null;
   }
@@ -131,6 +141,7 @@ export class MongoUserRepository implements UserRepository {
       resetPasswordToken: doc.resetPasswordToken,
       resetPasswordExpires: doc.resetPasswordExpires,
       passwordChangedAt: doc.passwordChangedAt,
+      deletedAt: doc.deletedAt,
     });
   }
 }

@@ -28,6 +28,7 @@ export interface UserReconstitutionData {
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   passwordChangedAt?: Date;
+  deletedAt?: Date | null;
 }
 
 /** Kept for OWNER identity checks only. Staff roles are managed via RoleAssignment. */
@@ -73,6 +74,7 @@ export class User {
     private resetPasswordToken?: string,
     private resetPasswordExpires?: Date,
     private passwordChangedAt?: Date,
+    private deletedAt: Date | null = null,
   ) {}
 
   static createOwner(
@@ -130,7 +132,21 @@ export class User {
       data.resetPasswordToken,
       data.resetPasswordExpires,
       data.passwordChangedAt,
+      data.deletedAt,
     );
+  }
+
+  delete(): void {
+    this.deletedAt = new Date();
+    this.updatedAt = new Date();
+  }
+
+  isDeleted(): boolean {
+    return this.deletedAt !== null;
+  }
+
+  getDeletedAt(): Date | null {
+    return this.deletedAt;
   }
 
   verifyEmail(): void {
