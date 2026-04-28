@@ -1,5 +1,7 @@
 import { CreateExperienceCommand } from '@/application/experience/commands/create-experience.command';
 import { CreateExperienceResult } from '@/application/experience/commands/create-experience.result';
+import { GetExperiencesByTenantQuery } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query';
+import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
@@ -7,12 +9,22 @@ import { RequirePermission } from '@/infrastructure/auth/decorators/require-perm
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CreateExperienceDto } from '@/presentation/dtos/create-experience.dto';
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBody,
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -21,7 +33,62 @@ import {
 @ApiBearerAuth('JWT-auth')
 @Controller('experiences')
 export class ExperienceController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_VIEW)
+  @ApiOperation({ summary: 'List all experiences for current tenant' })
+  @ApiQuery({
+    name: 'propertyId',
+    required: false,
+    type: String,
+    description: 'Optional property filter',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Experiences retrieved successfully',
+  })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  async getAll(
+    @CurrentUser() user: JwtPayload,
+    @Query('propertyId') propertyId: string | undefined,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const result = await this.queryBus.execute<
+      GetExperiencesByTenantQuery,
+      GetExperiencesByTenantResult
+    >(new GetExperiencesByTenantQuery(user.tenantId, page, limit, propertyId));
+
+    return {
+      message: 'Experiences retrieved successfully',
+      data: {
+        experiences: result.experiences,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
+      },
+    };
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard, PermissionGuard)

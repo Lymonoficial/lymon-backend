@@ -5,5 +5,6 @@ export function createExperienceRepositoryMock(): jest.Mocked<ExperienceReposito
     save: jest.fn(),
     findById: jest.fn(),
     existsByPropertyIdAndName: jest.fn(),
+    findByTenantIdPaginated: jest.fn(),
   };
 }

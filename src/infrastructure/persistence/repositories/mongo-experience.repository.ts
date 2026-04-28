@@ -108,6 +108,34 @@ export class MongoExperienceRepository implements ExperienceRepository {
     return !!matched;
   }
 
+  async findByTenantIdPaginated(
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+    propertyId?: PropertyId,
+  ): Promise<{ experiences: Experience[]; total: number }> {
+    const filter: Record<string, unknown> = {
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      deletedAt: null,
+    };
+
+    if (propertyId) {
+      filter.propertyId = new Types.ObjectId(propertyId.toString());
+    }
+
+    const total = await this.experienceModel.countDocuments(filter);
+    const documents = await this.experienceModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return {
+      experiences: documents.map((document) => this.toDomain(document)),
+      total,
+    };
+  }
+
   private toDomain(document: ExperienceDocument): Experience {
     return Experience.reconstitute({
       id: ExperienceId.create(document._id.toString()),
