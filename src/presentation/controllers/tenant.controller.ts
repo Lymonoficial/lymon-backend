@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Patch,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
@@ -23,6 +24,7 @@ import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { UpdateTenantProfileDto } from '@/presentation/dtos/update-tenant-profile.dto';
 import { UpdateTenantProfileCommand } from '@/application/tenant/commands/update-tenant-profile.command';
 import { UpdateTenantProfileResult } from '@/application/tenant/commands/update-tenant-profile.result';
+import { DeleteTenantCommand } from '@/application/tenant/commands/delete-tenant/delete-tenant.command';
 import { GetTenantProfileQuery } from '@/application/tenant/queries/GetTenantProfile/get-tenant-profile.query';
 import { GetTenantProfileResult } from '@/application/tenant/queries/GetTenantProfile/get-tenant-profile.result';
 
@@ -84,6 +86,25 @@ export class TenantController {
     return {
       message: 'Tenant profile updated successfully',
       data: { tenantId: result.tenantId },
+    };
+  }
+
+  @Delete()
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.TENANT_SETTINGS_EDIT)
+  @ApiOperation({
+    summary: 'Delete tenant and its users (Owner only/Soft delete)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Tenant deleted successfully',
+  })
+  async deleteTenant(@CurrentUser() user: JwtPayload) {
+    const command = new DeleteTenantCommand(user.tenantId);
+    await this.commandBus.execute(command);
+
+    return {
+      message: 'Tenant and associated users deleted successfully',
     };
   }
 }
