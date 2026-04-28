@@ -95,8 +95,8 @@ export class UnitDocument extends Document {
 export const UnitSchema = SchemaFactory.createForClass(UnitDocument);
 
 // Índices para optimizar consultas
-UnitSchema.index({ tenantId: 1, createdAt: -1 });
-UnitSchema.index({ propertyId: 1 });
+UnitSchema.index({ tenantId: 1, deletedAt: 1, createdAt: -1 });
+UnitSchema.index({ propertyId: 1, deletedAt: 1 });
 UnitSchema.index({ 'externalIds.airbnbId': 1 }, { sparse: true });
 UnitSchema.index({ 'externalIds.bookingId': 1 }, { sparse: true });
 UnitSchema.index({ 'externalIds.vrboId': 1 }, { sparse: true });

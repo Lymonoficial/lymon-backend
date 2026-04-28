@@ -76,4 +76,4 @@ export class PropertyDocument extends Document {
 
 export const PropertySchema = SchemaFactory.createForClass(PropertyDocument);
 
-PropertySchema.index({ tenantId: 1, createdAt: -1 });
+PropertySchema.index({ tenantId: 1, deletedAt: 1, createdAt: -1 });
