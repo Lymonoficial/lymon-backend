@@ -26,8 +26,6 @@ import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-
 import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
 import { UserApplicationModule } from '@/application/user/user-application.module';
 import { GuestPreferenceApplicationModule } from '@/application/guest-preference/guest-preference-application.module';
-import { CreateShiftCommandHandler } from '@/application/shift/commands/create-shift/create-shift.handler';
-import { UpdateShiftCommandHandler } from '@/application/shift/commands/update-shift/update-shift.handler';
 import { ShiftApplicationModule } from '@/application/shift/shift-application.module';
 import { DeleteShiftCommandHandler } from '@/application/shift/commands/delete-shift/delete-shift.handler';
 import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shifts.handler';
