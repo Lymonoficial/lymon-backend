@@ -7,6 +7,12 @@ export interface GuestEmailRepository {
   save(guestEmail: GuestEmail): Promise<void>;
   findById(id: GuestEmailId): Promise<GuestEmail | null>;
   findByGuestId(tenantId: TenantId, guestId: GuestId): Promise<GuestEmail[]>;
+  findByGuestIdPaginated(
+    tenantId: TenantId,
+    guestId: GuestId,
+    page: number,
+    limit: number,
+  ): Promise<{ emails: GuestEmail[]; total: number }>;
 }
 
 export const GUEST_EMAIL_REPOSITORY = Symbol('GuestEmailRepository');

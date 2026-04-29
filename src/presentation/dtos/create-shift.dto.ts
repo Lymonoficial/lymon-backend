@@ -9,6 +9,14 @@ import {
 } from 'class-validator';
 
 export class CreateShiftDto {
+  @ApiProperty({
+    example: 'Morning Front Desk',
+    description: 'Shift name',
+  })
+  @IsString()
+  @MaxLength(150)
+  name!: string;
+
   @ApiPropertyOptional({
     example: ['680c79f38b4f98f4f6383b12', '680c79f38b4f98f4f6383b14'],
     description: 'Optional assigned staff user ids. Can be empty on create.',

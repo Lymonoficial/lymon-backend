@@ -81,6 +81,9 @@ export class GetSuppliersQueryHandler implements IQueryHandler<
       name: supplier.getName(),
       contactEmail: supplier.getContactEmail(),
       contactPhone: supplier.getContactPhone(),
+      country: supplier.getCountry(),
+      city: supplier.getCity(),
+      nit: supplier.getNit(),
       status: supplier.getDeletedAt() ? 'INACTIVE' : 'ACTIVE',
       createdAt: supplier.getCreatedAt().toISOString(),
     };

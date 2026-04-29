@@ -33,6 +33,11 @@ export class TenantDocument extends Document {
 
   @Prop()
   updatedAt: Date;
+
+  @Prop({ type: Date, default: null })
+  deletedAt: Date | null;
 }
 
 export const TenantSchema = SchemaFactory.createForClass(TenantDocument);
+
+TenantSchema.index({ ownerEmail: 1, deletedAt: 1 }, { unique: true });

@@ -14,6 +14,7 @@ export interface TenantReconstitutionProps {
   logoUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 export class Tenant {
@@ -29,6 +30,7 @@ export class Tenant {
     private logoUrl: string | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
+    private deletedAt: Date | null = null,
   ) {}
 
   static create(name: string, ownerEmail: Email, plan: PlanType): Tenant {
@@ -64,7 +66,21 @@ export class Tenant {
       props.logoUrl,
       props.createdAt,
       props.updatedAt,
+      props.deletedAt,
     );
+  }
+
+  delete(): void {
+    this.deletedAt = new Date();
+    this.updatedAt = new Date();
+  }
+
+  isDeleted(): boolean {
+    return this.deletedAt !== null;
+  }
+
+  getDeletedAt(): Date | null {
+    return this.deletedAt;
   }
 
   verifyEmail(): void {

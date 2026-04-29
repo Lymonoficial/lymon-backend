@@ -31,7 +31,10 @@ export interface ReservationRepository {
     guestId: string,
     page: number,
     limit: number,
+    sortBy?: 'checkIn' | 'createdAt',
+    sortDirection?: 'asc' | 'desc',
   ): Promise<Reservation[]>;
+  countByGuestId(tenantId: string, guestId: string): Promise<number>;
   findByUnitAndDateRange(
     unitId: UnitId,
     dateRange: DateRange,

@@ -47,6 +47,7 @@ export class MongoGuestNoteRepository implements GuestNoteRepository {
     const doc = await this.noteModel.findOne({
       _id: new Types.ObjectId(id.toString()),
       tenantId: new Types.ObjectId(tenantId.toString()),
+      deletedAt: null,
     });
 
     return doc ? this.toDomain(doc) : null;
@@ -67,11 +68,36 @@ export class MongoGuestNoteRepository implements GuestNoteRepository {
     return docs.map((doc) => this.toDomain(doc));
   }
 
-  async delete(id: GuestNoteId, tenantId: TenantId): Promise<void> {
-    await this.noteModel.deleteOne({
-      _id: new Types.ObjectId(id.toString()),
+  async findByGuestIdPaginated(
+    guestId: GuestId,
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+  ): Promise<{ notes: GuestNote[]; total: number }> {
+    const filter = {
+      guestId: new Types.ObjectId(guestId.toString()),
       tenantId: new Types.ObjectId(tenantId.toString()),
-    });
+      deletedAt: null,
+    };
+    const [total, docs] = await Promise.all([
+      this.noteModel.countDocuments(filter),
+      this.noteModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+    ]);
+    return { notes: docs.map((doc) => this.toDomain(doc)), total };
+  }
+
+  async delete(id: GuestNoteId, tenantId: TenantId): Promise<void> {
+    await this.noteModel.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(id.toString()),
+        tenantId: new Types.ObjectId(tenantId.toString()),
+      },
+      { deletedAt: new Date(), updatedAt: new Date() },
+    );
   }
 
   private toDomain(doc: GuestNoteDocument): GuestNote {

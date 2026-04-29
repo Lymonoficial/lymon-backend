@@ -30,13 +30,16 @@ export class GetGuestEmailsByGuestIdHandler implements IQueryHandler<
       guestId = GuestId.createFromString(query.guestId);
       tenantId = TenantId.createFromString(query.tenantId);
     } catch {
-      return { items: [] };
+      return new GetGuestEmailsByGuestIdResult([], 0, query.page, query.limit);
     }
 
-    const emails = await this.guestEmailRepository.findByGuestId(
-      tenantId,
-      guestId,
-    );
+    const { emails, total } =
+      await this.guestEmailRepository.findByGuestIdPaginated(
+        tenantId,
+        guestId,
+        query.page,
+        query.limit,
+      );
 
     const items: GuestEmailDto[] = emails.map((email) => ({
       id: email.getId().toString(),
@@ -53,6 +56,11 @@ export class GetGuestEmailsByGuestIdHandler implements IQueryHandler<
       createdAt: email.getCreatedAt(),
     }));
 
-    return { items };
+    return new GetGuestEmailsByGuestIdResult(
+      items,
+      total,
+      query.page,
+      query.limit,
+    );
   }
 }

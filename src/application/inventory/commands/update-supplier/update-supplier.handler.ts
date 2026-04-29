@@ -23,6 +23,7 @@ import {
   AUDIT_LOG_EVENT,
   AuditLoggedEvent,
 } from '@/infrastructure/audit/events/audit-logged.event';
+import { buildAuditDiff } from '@/domain/shared/utils/audit-diff.util';
 
 @CommandHandler(UpdateSupplierCommand)
 export class UpdateSupplierHandler implements ICommandHandler<
@@ -88,7 +89,7 @@ export class UpdateSupplierHandler implements ICommandHandler<
     });
 
     const nextSnapshot = this.getSupplierSnapshot(updatedSupplier);
-    const auditDiff = this.buildAuditDiff(previousSnapshot, nextSnapshot);
+    const auditDiff = buildAuditDiff(previousSnapshot, nextSnapshot);
 
     await this.supplierRepository.save(updatedSupplier);
 
@@ -152,38 +153,6 @@ export class UpdateSupplierHandler implements ICommandHandler<
       country: supplier.getCountry(),
       city: supplier.getCity(),
       nit: supplier.getNit(),
-    };
-  }
-
-  private buildAuditDiff(
-    previousSnapshot: Record<string, unknown>,
-    nextSnapshot: Record<string, unknown>,
-  ): {
-    changedFields: string[];
-    previousValue?: Record<string, unknown>;
-    newValue?: Record<string, unknown>;
-  } {
-    const changedFields: string[] = [];
-    const previousValue: Record<string, unknown> = {};
-    const newValue: Record<string, unknown> = {};
-
-    for (const field of Object.keys(nextSnapshot)) {
-      const previousFieldValue = previousSnapshot[field];
-      const nextFieldValue = nextSnapshot[field];
-
-      if (previousFieldValue === nextFieldValue) {
-        continue;
-      }
-
-      changedFields.push(field);
-      previousValue[field] = previousFieldValue;
-      newValue[field] = nextFieldValue;
-    }
-
-    return {
-      changedFields,
-      previousValue: changedFields.length > 0 ? previousValue : undefined,
-      newValue: changedFields.length > 0 ? newValue : undefined,
     };
   }
 }

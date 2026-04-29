@@ -9,5 +9,11 @@ export interface GuestNoteRepository {
   save(guestNote: GuestNote): Promise<void>;
   findById(id: GuestNoteId, tenantId: TenantId): Promise<GuestNote | null>;
   findByGuestId(guestId: GuestId, tenantId: TenantId): Promise<GuestNote[]>;
+  findByGuestIdPaginated(
+    guestId: GuestId,
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+  ): Promise<{ notes: GuestNote[]; total: number }>;
   delete(id: GuestNoteId, tenantId: TenantId): Promise<void>;
 }
