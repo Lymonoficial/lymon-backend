@@ -1,3 +1,4 @@
+
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, ClientSession } from 'mongoose';
@@ -304,32 +305,42 @@ export class MongoReservationRepository
     return docs.map((d) => this.toDomain(d));
   }
 
-  async getLifecycleStatusByGuestIds(guestIds: string[]): Promise<Map<string, GuestLifecycleStatus>> {
+  async getLifecycleStatusByGuestIds(
+  guestIds: string[],
+): Promise<Map<string, GuestLifecycleStatus>> {
+  if (guestIds.length === 0) {
+    return new Map();
+  }
+
+  const guestObjectIds = guestIds.map((id) => new Types.ObjectId(id));
+
   const results = await this.reservationModel.aggregate([
     {
-      $match: { guestId: { $in: guestIds } }
+      $match: {
+        guestId: { $in: guestObjectIds },
+      },
     },
     {
       $group: {
         _id: '$guestId',
-        statuses: { $push: '$status' } 
-      }
-    }
+        statuses: { $push: '$status' },
+      },
+    },
   ]);
 
   const statusMap = new Map<string, GuestLifecycleStatus>();
 
-  results.forEach(res => {
-    const guestId = res._id;
-    const guestStatuses = res.statuses; 
+  results.forEach((res) => {
+    const guestId = res._id.toHexString(); // ObjectId → string
+    const guestStatuses: string[] = res.statuses;
 
     let finalStatus = GuestLifecycleStatus.NO_RESERVATION;
 
-    if (guestStatuses.includes('STAYING')) {
+    if (guestStatuses.includes(ReservationStatusEnum.CHECKED_IN)) {
       finalStatus = GuestLifecycleStatus.CHECKED_IN;
-    } else if (guestStatuses.includes('CONFIRMED')) {
+    } else if (guestStatuses.includes(ReservationStatusEnum.CONFIRMED)) {
       finalStatus = GuestLifecycleStatus.UPCOMING_STAY;
-    } else if (guestStatuses.includes('COMPLETED')) {
+    } else if (guestStatuses.includes(ReservationStatusEnum.CHECKED_OUT)) {
       finalStatus = GuestLifecycleStatus.PAST_GUEST;
     }
 
