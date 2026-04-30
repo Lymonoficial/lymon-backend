@@ -70,6 +70,9 @@ export default defineConfig({
       'villajaramillofelipe4@gmail.com',
     AUTH_PASSWORD:
       process.env.AUTH_PASSWORD || envVars.AUTH_PASSWORD || 'SecurePass123!',
-    PROPERTY_ID: process.env.PROPERTY_ID || envVars.PROPERTY_ID,
+    PROPERTY_ID:
+      process.env.PROPERTY_ID ||
+      envVars.PROPERTY_ID ||
+      '69d96bc1de51ea1f09cd03ae',
   },
 });
