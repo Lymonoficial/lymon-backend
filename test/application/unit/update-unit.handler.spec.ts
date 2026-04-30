@@ -143,7 +143,7 @@ describe('UpdateUnitHandler', () => {
 
   it('throws NotFoundException when unit belongs to a different tenant', async () => {
     unitRepository.findById.mockResolvedValue(
-      makeUnit({ tenantId: 'other-tenant-id' }),
+      makeUnit({ tenantId: '65f1a1a2b3c4d5e6f7a8b9c9' }),
     );
 
     await expect(

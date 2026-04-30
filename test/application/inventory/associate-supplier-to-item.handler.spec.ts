@@ -35,37 +35,37 @@ describe('AssociateSupplierToItemHandler', () => {
 
   it('associates a supplier to an inventory item', async () => {
     propertyRepository.findById.mockResolvedValue(
-      makeProperty({ id: 'property-123', tenantId: 'tenant-123' }),
+      makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
     );
     inventoryItemRepository.findById.mockResolvedValue(
       makeInventoryItem({
         id: 'item-123',
-        tenantId: 'tenant-123',
-        propertyId: 'property-123',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+        propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
       }),
     );
     supplierRepository.findById.mockResolvedValue(
-      makeSupplier({ id: 'supplier-123', tenantId: 'tenant-123' }),
+      makeSupplier({ id: '65f1a1a2b3c4d5e6f7a8b9c4', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
     );
     inventoryItemRepository.save.mockResolvedValue('item-123');
-    supplierRepository.save.mockResolvedValue('supplier-123');
+    supplierRepository.save.mockResolvedValue('65f1a1a2b3c4d5e6f7a8b9c4');
 
     const result = await handler.execute(
       new AssociateSupplierToItemCommand(
-        'tenant-123',
-        'property-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
+        '65f1a1a2b3c4d5e6f7a8b9c1',
         'item-123',
-        'supplier-123',
+        '65f1a1a2b3c4d5e6f7a8b9c4',
         'admin-user-id',
         'admin@example.com',
       ),
     );
 
     expect(result.itemId).toBe('item-123');
-    expect(result.supplierId).toBe('supplier-123');
+    expect(result.supplierId).toBe('65f1a1a2b3c4d5e6f7a8b9c4');
 
     const savedItem = inventoryItemRepository.save.mock.calls[0][0];
-    expect(savedItem.getSupplierId()?.toString()).toBe('supplier-123');
+    expect(savedItem.getSupplierId()?.toString()).toBe('65f1a1a2b3c4d5e6f7a8b9c4');
 
     expect(supplierRepository.save).toHaveBeenCalledTimes(1);
     expect(eventEmitter.emit).toHaveBeenCalledWith(
@@ -76,13 +76,13 @@ describe('AssociateSupplierToItemHandler', () => {
 
   it('throws NotFoundException when the supplier does not exist', async () => {
     propertyRepository.findById.mockResolvedValue(
-      makeProperty({ id: 'property-123', tenantId: 'tenant-123' }),
+      makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
     );
     inventoryItemRepository.findById.mockResolvedValue(
       makeInventoryItem({
         id: 'item-123',
-        tenantId: 'tenant-123',
-        propertyId: 'property-123',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+        propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
       }),
     );
     supplierRepository.findById.mockResolvedValue(null);
@@ -90,10 +90,10 @@ describe('AssociateSupplierToItemHandler', () => {
     await expect(
       handler.execute(
         new AssociateSupplierToItemCommand(
-          'tenant-123',
-          'property-123',
+          '65f1a1a2b3c4d5e6f7a8b9c0',
+          '65f1a1a2b3c4d5e6f7a8b9c1',
           'item-123',
-          'supplier-123',
+          '65f1a1a2b3c4d5e6f7a8b9c4',
           'admin-user-id',
           'admin@example.com',
         ),

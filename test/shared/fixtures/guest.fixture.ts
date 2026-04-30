@@ -4,8 +4,8 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestStatusEnum } from '@/domain/guest/entities/guest.types';
 
 export const GUEST_FIXTURE_DEFAULTS = {
-  id: '65f1a1a2b3c4d5e6f7a8b9c0',
-  tenantId: 'tenant-123',
+  id: '65f1a1a2b3c4d5e6f7a8b9c2',
+  tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
   fullName: 'John Doe',
   primaryEmail: 'john.doe@example.com',
   status: GuestStatusEnum.ACTIVE,

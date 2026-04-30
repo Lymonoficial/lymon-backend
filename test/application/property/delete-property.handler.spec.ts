@@ -33,8 +33,8 @@ describe('DeletePropertyHandler', () => {
       await expect(
         handler.execute(
           new DeletePropertyCommand(
-            'property-123',
-            'tenant-123',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
             'user-123',
             'user@example.com',
           ),
@@ -51,14 +51,14 @@ describe('DeletePropertyHandler', () => {
   describe('when property belongs to another tenant', () => {
     it('throws NotFoundException', async () => {
       propertyRepository.findById.mockResolvedValue(
-        makeProperty({ tenantId: 'other-tenant' }),
+        makeProperty({ tenantId: '65f1a1a2b3c4d5e6f7a8b9c9' }),
       );
 
       await expect(
         handler.execute(
           new DeletePropertyCommand(
-            'property-123',
-            'tenant-123',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
             'user-123',
             'user@example.com',
           ),
@@ -80,8 +80,8 @@ describe('DeletePropertyHandler', () => {
       await expect(
         handler.execute(
           new DeletePropertyCommand(
-            'property-123',
-            'tenant-123',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
             'user-123',
             'user@example.com',
           ),
@@ -100,8 +100,8 @@ describe('DeletePropertyHandler', () => {
       await expect(
         handler.execute(
           new DeletePropertyCommand(
-            'property-123',
-            'tenant-123',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
             'user-123',
             'user@example.com',
           ),
@@ -112,12 +112,12 @@ describe('DeletePropertyHandler', () => {
       expect(eventEmitter.emit).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          tenantId: 'tenant-123',
+          tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
           userId: 'user-123',
           userEmail: 'user@example.com',
           action: 'PROPERTY_DELETED',
           entityType: 'PROPERTY',
-          entityId: 'property-123',
+          entityId: '65f1a1a2b3c4d5e6f7a8b9c1',
         }),
       );
     });

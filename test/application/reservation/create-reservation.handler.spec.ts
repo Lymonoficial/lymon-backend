@@ -39,9 +39,9 @@ describe('CreateReservationHandler', () => {
 
   function makeUnit() {
     return Unit.reconstitute({
-      id: UnitId.create('unit-1'),
-      tenantId: TenantId.createFromString('tenant-1'),
-      propertyId: PropertyId.create('prop-1'),
+      id: UnitId.create('65f1a1a2b3c4d5e6f7a8b9c8'),
+      tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
+      propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
       basicInfo: {
         name: 'Unit 1',
         description: 'Nice unit',
@@ -77,7 +77,7 @@ describe('CreateReservationHandler', () => {
 
   function makeGuest() {
     return Guest.create({
-      tenantId: TenantId.createFromString('tenant-1'),
+      tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       fullName: 'John Doe',
       primaryEmail: 'john@example.com',
       identity: {},
@@ -88,9 +88,9 @@ describe('CreateReservationHandler', () => {
     unitRepository.findById.mockResolvedValue(null);
 
     const cmd = new CreateReservationCommand(
-      'tenant-1',
-      'prop-1',
-      'unit-1',
+      '65f1a1a2b3c4d5e6f7a8b9c0',
+      '65f1a1a2b3c4d5e6f7a8b9c1',
+      '65f1a1a2b3c4d5e6f7a8b9c8',
       '65f1a1a2b3c4d5e6f7a8b9d1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
       new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
@@ -111,9 +111,9 @@ describe('CreateReservationHandler', () => {
     guestRepository.findById.mockResolvedValue(null);
 
     const cmd = new CreateReservationCommand(
-      'tenant-1',
-      'prop-1',
-      'unit-1',
+      '65f1a1a2b3c4d5e6f7a8b9c0',
+      '65f1a1a2b3c4d5e6f7a8b9c1',
+      '65f1a1a2b3c4d5e6f7a8b9c8',
       '65f1a1a2b3c4d5e6f7a8b9d1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
       new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
@@ -149,8 +149,8 @@ describe('CreateReservationHandler', () => {
     );
 
     const cmd = new CreateReservationCommand(
-      'tenant-1',
-      'prop-1',
+      '65f1a1a2b3c4d5e6f7a8b9c0',
+      '65f1a1a2b3c4d5e6f7a8b9c1',
       unit.getId()!.toString(),
       '65f1a1a2b3c4d5e6f7a8b9d1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -172,11 +172,11 @@ describe('CreateReservationHandler', () => {
     unitRepository.findById.mockResolvedValue(unit);
     guestRepository.findById.mockResolvedValue(makeGuest());
     reservationRepository.findByUnitAndDateRange.mockResolvedValue([]);
-    reservationRepository.save.mockResolvedValue('res-1');
+    reservationRepository.save.mockResolvedValue('65f1a1a2b3c4d5e6f7a8b9c3');
 
     const cmd = new CreateReservationCommand(
-      'tenant-1',
-      'prop-1',
+      '65f1a1a2b3c4d5e6f7a8b9c0',
+      '65f1a1a2b3c4d5e6f7a8b9c1',
       unit.getId()!.toString(),
       '65f1a1a2b3c4d5e6f7a8b9d1',
       new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -192,7 +192,7 @@ describe('CreateReservationHandler', () => {
     const result = await handler.execute(cmd);
 
     expect(result).toBeInstanceOf(CreateReservationResult);
-    expect(result.reservationId).toBe('res-1');
+    expect(result.reservationId).toBe('65f1a1a2b3c4d5e6f7a8b9c3');
     expect(reservationRepository.save).toHaveBeenCalledTimes(1);
     expect(eventEmitter.emit).toHaveBeenCalled();
   });

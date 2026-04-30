@@ -33,7 +33,7 @@ describe('RefreshTokenHandler', () => {
     tokenService.verifyToken.mockReturnValue({
       userId: 'user-1',
       email: 'user@example.com',
-      tenantId: 'tenant-1',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
       activePlan: 'BASIC',
       isOwner: true,
       emailVerified: true,

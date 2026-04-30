@@ -25,23 +25,23 @@ describe('GetItemsBySupplierQueryHandler', () => {
 
   it('returns items for the supplier with pagination metadata', async () => {
     supplierRepository.findById.mockResolvedValue(
-      makeSupplier({ id: 'supplier-123', tenantId: 'tenant-123' }),
+      makeSupplier({ id: '65f1a1a2b3c4d5e6f7a8b9c4', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
     );
     inventoryItemRepository.findBySupplierId.mockResolvedValue([
       makeInventoryItem({
         id: 'item-1',
-        tenantId: 'tenant-123',
-        supplierId: 'supplier-123',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+        supplierId: '65f1a1a2b3c4d5e6f7a8b9c4',
       }),
       makeInventoryItem({
         id: 'item-2',
-        tenantId: 'tenant-123',
-        supplierId: 'supplier-123',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+        supplierId: '65f1a1a2b3c4d5e6f7a8b9c4',
       }),
     ]);
 
     const result = await handler.execute(
-      new GetItemsBySupplierQuery('tenant-123', 'supplier-123', 1, 10),
+      new GetItemsBySupplierQuery('65f1a1a2b3c4d5e6f7a8b9c0', '65f1a1a2b3c4d5e6f7a8b9c4', 1, 10),
     );
 
     expect(result.total).toBe(2);
@@ -57,7 +57,7 @@ describe('GetItemsBySupplierQueryHandler', () => {
 
     await expect(
       handler.execute(
-        new GetItemsBySupplierQuery('tenant-123', 'supplier-123', 1, 10),
+        new GetItemsBySupplierQuery('65f1a1a2b3c4d5e6f7a8b9c0', '65f1a1a2b3c4d5e6f7a8b9c4', 1, 10),
       ),
     ).rejects.toThrow(NotFoundException);
 

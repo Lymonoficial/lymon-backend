@@ -17,14 +17,14 @@ describe('GetPropertiesByTenantQueryHandler', () => {
   describe('when the tenant has properties', () => {
     it('returns paginated properties', async () => {
       const props = [
-        makeProperty({ id: 'prop-1' }),
-        makeProperty({ id: 'prop-2' }),
-        makeProperty({ id: 'prop-3' }),
+        makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1' }),
+        makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9cd' }),
+        makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9ce' }),
       ];
       propertyRepository.findByTenantId.mockResolvedValue(props);
 
       const result = await handler.execute(
-        new GetPropertiesByTenantQuery('tenant-123', 1, 2),
+        new GetPropertiesByTenantQuery('65f1a1a2b3c4d5e6f7a8b9c0', 1, 2),
       );
 
       expect(result).toBeInstanceOf(GetPropertiesByTenantResult);
@@ -36,14 +36,14 @@ describe('GetPropertiesByTenantQueryHandler', () => {
 
     it('returns second page correctly', async () => {
       const props = [
-        makeProperty({ id: 'prop-1' }),
-        makeProperty({ id: 'prop-2' }),
-        makeProperty({ id: 'prop-3' }),
+        makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1' }),
+        makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9cd' }),
+        makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9ce' }),
       ];
       propertyRepository.findByTenantId.mockResolvedValue(props);
 
       const result = await handler.execute(
-        new GetPropertiesByTenantQuery('tenant-123', 2, 2),
+        new GetPropertiesByTenantQuery('65f1a1a2b3c4d5e6f7a8b9c0', 2, 2),
       );
 
       expect(result.properties).toHaveLength(1);
@@ -57,7 +57,7 @@ describe('GetPropertiesByTenantQueryHandler', () => {
       propertyRepository.findByTenantId.mockResolvedValue([]);
 
       const result = await handler.execute(
-        new GetPropertiesByTenantQuery('tenant-123'),
+        new GetPropertiesByTenantQuery('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       expect(result).toBeInstanceOf(GetPropertiesByTenantResult);

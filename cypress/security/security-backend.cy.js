@@ -9,7 +9,7 @@ describe('Backend Security Tests', () => {
             email: AUTH_EMAIL,
             password: AUTH_PASSWORD,
         }).then((response) => {
-            expect(response.status).to.equal(200);
+            expect(response.status).to.equal(201);
             authToken = response.body.data.accessToken;
         });
     });

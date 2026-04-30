@@ -26,7 +26,7 @@ describe('GetSuppliersQueryHandler', () => {
     ]);
 
     const result = await handler.execute(
-      new GetSuppliersQuery('tenant-123', 1, 1),
+      new GetSuppliersQuery('65f1a1a2b3c4d5e6f7a8b9c0', 1, 1),
     );
 
     expect(result.total).toBe(2);
@@ -40,7 +40,7 @@ describe('GetSuppliersQueryHandler', () => {
     supplierRepository.findByTenantId.mockResolvedValue([]);
 
     const result = await handler.execute(
-      new GetSuppliersQuery('tenant-123', 1, 10),
+      new GetSuppliersQuery('65f1a1a2b3c4d5e6f7a8b9c0', 1, 10),
     );
 
     expect(result.total).toBe(0);
@@ -55,7 +55,7 @@ describe('GetSuppliersQueryHandler', () => {
     ]);
 
     const result = await handler.execute(
-      new GetSuppliersQuery('tenant-123', 1, 10, 'fresh'),
+      new GetSuppliersQuery('65f1a1a2b3c4d5e6f7a8b9c0', 1, 10, 'fresh'),
     );
 
     expect(result.total).toBe(1);
@@ -69,7 +69,7 @@ describe('GetSuppliersQueryHandler', () => {
     ]);
 
     const result = await handler.execute(
-      new GetSuppliersQuery('tenant-123', 1, 10, undefined, 'name', 'asc'),
+      new GetSuppliersQuery('65f1a1a2b3c4d5e6f7a8b9c0', 1, 10, undefined, 'name', 'asc'),
     );
 
     expect(result.suppliers.map((supplier) => supplier.name)).toEqual([
@@ -92,7 +92,7 @@ describe('GetSuppliersQueryHandler', () => {
 
     const result = await handler.execute(
       new GetSuppliersQuery(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         1,
         10,
         undefined,
@@ -112,7 +112,7 @@ describe('GetSuppliersQueryHandler', () => {
       makeSupplier({ name: 'Solo Supplier' }),
     ]);
 
-    const result = await handler.execute(new GetSuppliersQuery('tenant-123'));
+    const result = await handler.execute(new GetSuppliersQuery('65f1a1a2b3c4d5e6f7a8b9c0'));
 
     expect(result.page).toBe(1);
     expect(result.limit).toBe(10);

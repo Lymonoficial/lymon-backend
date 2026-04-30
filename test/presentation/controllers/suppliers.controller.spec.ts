@@ -35,7 +35,7 @@ describe('SuppliersController', () => {
     queryBus.execute.mockResolvedValue({
       suppliers: [
         {
-          supplierId: 'supplier-123',
+          supplierId: '65f1a1a2b3c4d5e6f7a8b9c4',
           name: 'Fresh Supplies Inc.',
           contactEmail: 'contact@freshsupplies.com',
           contactPhone: '+12025550123',
@@ -66,7 +66,7 @@ describe('SuppliersController', () => {
       message: 'Suppliers retrieved successfully',
       data: [
         {
-          supplierId: 'supplier-123',
+          supplierId: '65f1a1a2b3c4d5e6f7a8b9c4',
           name: 'Fresh Supplies Inc.',
           contactEmail: 'contact@freshsupplies.com',
           contactPhone: '+12025550123',
@@ -103,7 +103,7 @@ describe('SuppliersController', () => {
   });
 
   it('creates a supplier and returns supplier id', async () => {
-    commandBus.execute.mockResolvedValue({ supplierId: 'supplier-123' });
+    commandBus.execute.mockResolvedValue({ supplierId: '65f1a1a2b3c4d5e6f7a8b9c4' });
 
     const result = await controller.createSupplier(user, {
       name: 'Fresh Supplies Inc.',
@@ -117,14 +117,14 @@ describe('SuppliersController', () => {
     expect(commandBus.execute).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       message: 'Supplier created successfully',
-      data: { supplierId: 'supplier-123' },
+      data: { supplierId: '65f1a1a2b3c4d5e6f7a8b9c4' },
     });
   });
 
   it('dispatches DeleteSupplierCommand for supplier delete', async () => {
     commandBus.execute.mockResolvedValue(undefined);
 
-    await controller.deleteSupplier(user, 'supplier-123');
+    await controller.deleteSupplier(user, '65f1a1a2b3c4d5e6f7a8b9c4');
 
     expect(commandBus.execute).toHaveBeenCalledTimes(1);
     expect(commandBus.execute).toHaveBeenCalledWith(

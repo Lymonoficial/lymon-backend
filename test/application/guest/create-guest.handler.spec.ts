@@ -19,7 +19,7 @@ describe('CreateGuestHandler', () => {
   describe('when the primary email already exists in the tenant', () => {
     it('throws ConflictException', async () => {
       const existingGuest = Guest.create({
-        tenantId: TenantId.createFromString('tenant-123'),
+        tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         identity: {},
         fullName: 'Existing Guest',
         primaryEmail: 'existing@example.com',
@@ -27,7 +27,7 @@ describe('CreateGuestHandler', () => {
       guestRepository.findByPrimaryEmail.mockResolvedValue(existingGuest);
 
       const command = new CreateGuestCommand(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         'John Doe',
         'existing@example.com',
       );
@@ -44,7 +44,7 @@ describe('CreateGuestHandler', () => {
   describe('when the document number already exists in the tenant', () => {
     it('throws ConflictException', async () => {
       const existingGuest = Guest.create({
-        tenantId: TenantId.createFromString('tenant-123'),
+        tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         identity: { documentNumber: 'DOC123' },
         fullName: 'Existing Guest',
         primaryEmail: 'other@example.com',
@@ -53,7 +53,7 @@ describe('CreateGuestHandler', () => {
       guestRepository.findByDocumentNumber.mockResolvedValue(existingGuest);
 
       const command = new CreateGuestCommand(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         'John Doe',
         'john@example.com',
         { documentNumber: 'DOC123' },
@@ -74,7 +74,7 @@ describe('CreateGuestHandler', () => {
       guestRepository.save.mockResolvedValue('new-guest-id');
 
       const command = new CreateGuestCommand(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         'John Doe',
         'john@example.com',
       );
@@ -93,7 +93,7 @@ describe('CreateGuestHandler', () => {
       guestRepository.save.mockResolvedValue('new-guest-id');
 
       const command = new CreateGuestCommand(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         'Jane Smith',
         'JANE@example.com',
         {
@@ -119,7 +119,7 @@ describe('CreateGuestHandler', () => {
       expect(guestRepository.findByPrimaryEmail).toHaveBeenCalledTimes(1);
       const [calledTenantId] = guestRepository.findByPrimaryEmail.mock
         .calls[0] as [TenantId, string];
-      expect(calledTenantId.toString()).toBe('tenant-123');
+      expect(calledTenantId.toString()).toBe('65f1a1a2b3c4d5e6f7a8b9c0');
       expect(guestRepository.findByPrimaryEmail).toHaveBeenCalledWith(
         expect.any(TenantId),
         'JANE@example.com',
@@ -128,7 +128,7 @@ describe('CreateGuestHandler', () => {
       // Validates guest was saved with normalized and mapped values
       expect(guestRepository.save).toHaveBeenCalledTimes(1);
       const savedGuest: Guest = guestRepository.save.mock.calls[0][0];
-      expect(savedGuest.getTenantId().toString()).toBe('tenant-123');
+      expect(savedGuest.getTenantId().toString()).toBe('65f1a1a2b3c4d5e6f7a8b9c0');
       expect(savedGuest.getFullName()).toBe('Jane Smith');
       expect(savedGuest.getPrimaryEmail()).toBe('jane@example.com');
       expect(savedGuest.getEmails()).toEqual(
