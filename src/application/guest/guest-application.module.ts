@@ -7,6 +7,7 @@ import { GetGuestBookingsHandler } from './queries/get-guest-bookings/get-guest-
 import { CreateGuestHandler } from '@/application/guest/commands/create-guest.handler';
 import { AssignGuestTagsHandler } from './commands/assign-guest-tags.handler';
 import { SaveGuestPreferencesHandler } from './commands/preferences/save-guest-preferences.handler';
+import { GetGuestLifecycleStatusHandler } from './queries/get-guest-lifecycle-status/get-guest-lifecycle-status.handler';
 
 const CommandHandlers = [
   CreateGuestHandler,
@@ -17,6 +18,7 @@ const QueryHandlers = [
   SearchGuestsQuery,
   GetGuestByIdHandler,
   GetGuestBookingsHandler,
+  GetGuestLifecycleStatusHandler,
 ];
 
 @Module({

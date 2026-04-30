@@ -47,6 +47,9 @@ import { SendGuestMessageDto } from '@/presentation/dtos/send-guest-message.dto'
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferences.dto';
+import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
+import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
+import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -92,17 +95,29 @@ export class CrmController {
       sortDirection,
     );
 
+    const guestIds = guests.map((guest) => guest.getId()?.toString()).filter(Boolean) as string[];
+
+    const lifecycleStatuses = await this.queryBus.execute<
+      GetGuestLifecycleStatusQuery,
+      Map<string, GuestLifecycleStatus>
+    >(new GetGuestLifecycleStatusQuery(user.tenantId, guestIds));
+
     return {
       message: 'CRM guests retrieved successfully',
       data: {
-        items: guests.map((guest) => ({
-          guestId: guest.getId()?.toString(),
-          fullName: guest.getFullName(),
-          primaryEmail: guest.getPrimaryEmail(),
-          phones: guest.getPhones(),
-          status: guest.getStatus(),
-          tags: guest.getTags(),
-        })),
+        items: guests.map((guest) => {
+          const currentId = guest.getId()?.toString() || '';
+          
+          return {
+            guestId: currentId,
+            fullName: guest.getFullName(),
+            primaryEmail: guest.getPrimaryEmail(),
+            phones: guest.getPhones(),
+            status: guest.getStatus(),
+            tags: guest.getTags(),
+            lifecycleStatus: lifecycleStatuses.get(currentId) || GuestLifecycleStatus.NO_RESERVATION,
+          };
+        }),
         pagination: {
           total,
           page,
