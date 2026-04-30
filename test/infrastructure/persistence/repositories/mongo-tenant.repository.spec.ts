@@ -66,8 +66,8 @@ describe('MongoTenantRepository', () => {
     };
 
     const tenantModel: any = {
-      findById: jest.fn().mockResolvedValue(doc),
-      findOne: jest.fn(),
+      findById: jest.fn(),
+      findOne: jest.fn().mockResolvedValue(doc),
       countDocuments: jest.fn(),
     };
     const repo = new MongoTenantRepository(tenantModel);

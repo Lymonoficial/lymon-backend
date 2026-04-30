@@ -22,7 +22,7 @@ describe('GetGuestNotesByGuestIdHandler', () => {
   let handler: GetGuestNotesByGuestIdHandler;
   let guestNoteRepository: jest.Mocked<GuestNoteRepository>;
 
-  const tenantId = 'tenant-123';
+  const tenantId = '65f1a1a2b3c4d5e6f7a8b9c0';
   const guestId = '65f1a1a2b3c4d5e6f7a8b9c0';
 
   beforeEach(() => {

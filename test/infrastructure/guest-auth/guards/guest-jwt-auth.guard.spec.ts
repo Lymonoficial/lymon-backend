@@ -37,7 +37,7 @@ describe('GuestJwtAuthGuard', () => {
     } as unknown as Reflector;
 
     const guard = new GuestJwtAuthGuard(reflector);
-    const user = { guestAccountId: 'guest-account-1' };
+    const user = { guestAccountId: '65f1a1a2b3c4d5e6f7a8b9c5' };
 
     expect(guard.handleRequest(null, user)).toEqual(user);
   });

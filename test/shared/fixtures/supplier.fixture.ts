@@ -1,11 +1,10 @@
-import { randomUUID } from 'node:crypto';
 import { Supplier } from '@/domain/inventory/entities/supplier.entity';
 import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { TENANT_FIXTURE_DEFAULTS } from '@test/shared/fixtures/tenant.fixture';
 
 export const SUPPLIER_FIXTURE_DEFAULTS = {
-  id: randomUUID(),
+  id: '65f1a1a2b3c4d5e6f7a8b9c4',
   tenantId: TENANT_FIXTURE_DEFAULTS.id,
   name: 'Fresh Supplies Inc.',
   contactEmail: 'contact@freshsupplies.com',

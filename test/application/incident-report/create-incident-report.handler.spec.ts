@@ -5,7 +5,7 @@ import { IncidentReportRepository } from '@/domain/incident-report/repositories/
 import { createIncidentReportRepositoryMock } from '@test/shared/mocks/repositories/incident-report-repository.mock';
 import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitter.mock';
 
-const REPORT_ID = 'report-001';
+const REPORT_ID = '65f1a1a2b3c4d5e6f7a8b9c7';
 
 describe('CreateIncidentReportHandler', () => {
   let handler: CreateIncidentReportHandler;
@@ -28,12 +28,12 @@ describe('CreateIncidentReportHandler', () => {
 
       const result = await handler.execute(
         new CreateIncidentReportCommand(
-          'tenant-123',
-          'prop-001',
+          '65f1a1a2b3c4d5e6f7a8b9c0',
+          '65f1a1a2b3c4d5e6f7a8b9c1',
           'Broken window',
           'The window in room 3 is cracked',
           ['https://img.example.com/broken.jpg'],
-          'user-456',
+          '65f1a1a2b3c4d5e6f7a8b9c2',
           'owner@example.com',
         ),
       );
@@ -48,12 +48,12 @@ describe('CreateIncidentReportHandler', () => {
 
       await handler.execute(
         new CreateIncidentReportCommand(
-          'tenant-123',
-          'prop-001',
+          '65f1a1a2b3c4d5e6f7a8b9c0',
+          '65f1a1a2b3c4d5e6f7a8b9c1',
           'Broken window',
           'The window in room 3 is cracked',
           [],
-          'user-456',
+          '65f1a1a2b3c4d5e6f7a8b9c2',
           'owner@example.com',
         ),
       );

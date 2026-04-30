@@ -56,16 +56,16 @@ describe('GetGuestReservationHandler', () => {
 
   it('returns booking detail for the authenticated guest account', async () => {
     const reservation = makeReservation({
-      id: 'res-1',
-      tenantId: 'tenant-1',
+      id: '65f1a1a2b3c4d5e6f7a8b9c3',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
       guestId: GUEST_ID,
-      propertyId: 'property-1',
-      unitId: 'unit-1',
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
+      unitId: '65f1a1a2b3c4d5e6f7a8b9c8',
     });
     const guest = makeGuestRecord({
       id: GUEST_ID,
-      tenantId: 'tenant-1',
-      guestAccountId: 'guest-account-1',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      guestAccountId: '65f1a1a2b3c4d5e6f7a8b9c5',
     });
 
     reservationRepository.findById.mockResolvedValue(reservation as any);
@@ -78,15 +78,15 @@ describe('GetGuestReservationHandler', () => {
     } as any);
 
     const result = await handler.execute(
-      new GetGuestReservationQuery('res-1', 'guest-account-1'),
+      new GetGuestReservationQuery('65f1a1a2b3c4d5e6f7a8b9c3', '65f1a1a2b3c4d5e6f7a8b9c5'),
     );
 
     expect(result).toMatchObject({
-      id: 'res-1',
-      bookingReference: 'res-1',
-      propertyId: 'property-1',
+      id: '65f1a1a2b3c4d5e6f7a8b9c3',
+      bookingReference: '65f1a1a2b3c4d5e6f7a8b9c3',
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
       propertyName: 'Casa del lago',
-      unitId: 'unit-1',
+      unitId: '65f1a1a2b3c4d5e6f7a8b9c8',
       unitName: 'Ocean View Suite',
       serviceName: 'Ocean View Suite',
       notes: null,
@@ -104,20 +104,20 @@ describe('GetGuestReservationHandler', () => {
 
     await expect(
       handler.execute(
-        new GetGuestReservationQuery('res-404', 'guest-account-1'),
+        new GetGuestReservationQuery('65f1a1a2b3c4d5e6f7a8b9cf', '65f1a1a2b3c4d5e6f7a8b9c5'),
       ),
     ).rejects.toThrow(NotFoundException);
   });
 
   it('throws ForbiddenException when booking belongs to another guest account', async () => {
     const reservation = makeReservation({
-      id: 'res-1',
-      tenantId: 'tenant-1',
+      id: '65f1a1a2b3c4d5e6f7a8b9c3',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
       guestId: GUEST_ID,
     });
     const guest = makeGuestRecord({
       id: GUEST_ID,
-      tenantId: 'tenant-1',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
       guestAccountId: 'different-account',
     });
 
@@ -125,7 +125,7 @@ describe('GetGuestReservationHandler', () => {
     guestRepository.findById.mockResolvedValue(guest as any);
 
     await expect(
-      handler.execute(new GetGuestReservationQuery('res-1', 'guest-account-1')),
+      handler.execute(new GetGuestReservationQuery('65f1a1a2b3c4d5e6f7a8b9c3', '65f1a1a2b3c4d5e6f7a8b9c5')),
     ).rejects.toThrow(ForbiddenException);
   });
 });

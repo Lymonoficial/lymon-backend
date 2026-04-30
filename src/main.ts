@@ -28,6 +28,13 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Security headers
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    next();
+  });
+
   // Filtro global para errores de dominio
   app.useGlobalFilters(new DomainExceptionFilter());
 

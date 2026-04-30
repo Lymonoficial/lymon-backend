@@ -33,8 +33,8 @@ describe('DeleteInventoryItemHandler', () => {
       await expect(
         handler.execute(
           new DeleteInventoryItemCommand(
-            'tenant-123',
-            'property-123',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
             INVENTORY_ITEM_FIXTURE_DEFAULTS.id,
           ),
         ),
@@ -48,14 +48,14 @@ describe('DeleteInventoryItemHandler', () => {
   describe('when property belongs to a different tenant', () => {
     it('throws NotFoundException', async () => {
       propertyRepository.findById.mockResolvedValue(
-        makeProperty({ tenantId: 'other-tenant' }),
+        makeProperty({ tenantId: '65f1a1a2b3c4d5e6f7a8b9c9' }),
       );
 
       await expect(
         handler.execute(
           new DeleteInventoryItemCommand(
-            'tenant-123',
-            'property-123',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
             INVENTORY_ITEM_FIXTURE_DEFAULTS.id,
           ),
         ),
@@ -74,8 +74,8 @@ describe('DeleteInventoryItemHandler', () => {
       await expect(
         handler.execute(
           new DeleteInventoryItemCommand(
-            'tenant-123',
-            'property-123',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
             INVENTORY_ITEM_FIXTURE_DEFAULTS.id,
           ),
         ),
@@ -89,14 +89,14 @@ describe('DeleteInventoryItemHandler', () => {
     it('throws NotFoundException', async () => {
       propertyRepository.findById.mockResolvedValue(makeProperty());
       inventoryItemRepository.findById.mockResolvedValue(
-        makeInventoryItem({ tenantId: 'other-tenant' }),
+        makeInventoryItem({ tenantId: '65f1a1a2b3c4d5e6f7a8b9c9' }),
       );
 
       await expect(
         handler.execute(
           new DeleteInventoryItemCommand(
-            'tenant-123',
-            'property-123',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
             INVENTORY_ITEM_FIXTURE_DEFAULTS.id,
           ),
         ),
@@ -110,14 +110,14 @@ describe('DeleteInventoryItemHandler', () => {
     it('throws NotFoundException', async () => {
       propertyRepository.findById.mockResolvedValue(makeProperty());
       inventoryItemRepository.findById.mockResolvedValue(
-        makeInventoryItem({ propertyId: 'other-property' }),
+        makeInventoryItem({ propertyId: '65f1a1a2b3c4d5e6f7a8b9ca' }),
       );
 
       await expect(
         handler.execute(
           new DeleteInventoryItemCommand(
-            'tenant-123',
-            'property-123',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
             INVENTORY_ITEM_FIXTURE_DEFAULTS.id,
           ),
         ),
@@ -135,8 +135,8 @@ describe('DeleteInventoryItemHandler', () => {
       await expect(
         handler.execute(
           new DeleteInventoryItemCommand(
-            'tenant-123',
-            'property-123',
+            '65f1a1a2b3c4d5e6f7a8b9c0',
+            '65f1a1a2b3c4d5e6f7a8b9c1',
             INVENTORY_ITEM_FIXTURE_DEFAULTS.id,
           ),
         ),

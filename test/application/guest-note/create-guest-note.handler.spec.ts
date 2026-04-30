@@ -27,7 +27,7 @@ describe('CreateGuestNoteHandler', () => {
   let guestNoteRepository: jest.Mocked<GuestNoteRepository>;
 
   const defaultProps = {
-    tenantId: 'tenant-123',
+    tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
     guestId: '65f1a1a2b3c4d5e6f7a8b9d1',
     note: 'Valid note content for testing',
     type: GuestNoteTypeEnum.GENERAL,

@@ -9,9 +9,9 @@ import {
 } from '@/domain/unit/value-objects/bed-type.vo';
 
 describe('Unit Entity - COMPREHENSIVE COVERAGE', () => {
-  const UNIT_ID = 'unit-123';
-  const TENANT_ID = 'tenant-456';
-  const PROPERTY_ID = 'property-789';
+  const UNIT_ID = '65f1a1a2b3c4d5e6f7a8b9c8';
+  const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
+  const PROPERTY_ID = '65f1a1a2b3c4d5e6f7a8b9c1';
 
   // ─── Fixtures ────────────────────────────────────────────────────────────
 

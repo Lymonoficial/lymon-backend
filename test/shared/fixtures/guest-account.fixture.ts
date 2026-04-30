@@ -4,7 +4,7 @@ import { GuestAccountStatusEnum } from '@/domain/guest-account/value-objects/gue
 import { Email } from '@/domain/shared/value-objects/email.vo';
 
 export const GUEST_ACCOUNT_FIXTURE_DEFAULTS = {
-  id: 'guest-123',
+  id: '65f1a1a2b3c4d5e6f7a8b9c5',
   email: 'guest@example.com',
   passwordHash: 'hashed-password',
   fullName: 'John Doe',

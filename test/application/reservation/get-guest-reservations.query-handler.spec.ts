@@ -61,15 +61,15 @@ describe('GetGuestReservationsHandler', () => {
   });
 
   it('returns paginated bookings for the guest account', async () => {
-    const guestAccountId = 'guest-account-1';
+    const guestAccountId = '65f1a1a2b3c4d5e6f7a8b9c5';
     const guest1 = makeGuestRecord({
       id: GUEST_1_ID,
-      tenantId: 'tenant-1',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
       guestAccountId,
     });
     const guest2 = makeGuestRecord({
       id: GUEST_2_ID,
-      tenantId: 'tenant-2',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c9',
       guestAccountId,
     });
 
@@ -79,19 +79,19 @@ describe('GetGuestReservationsHandler', () => {
     ] as any);
 
     const booking1 = makeReservation({
-      id: 'res-1',
-      tenantId: 'tenant-1',
+      id: '65f1a1a2b3c4d5e6f7a8b9c3',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
       guestId: GUEST_1_ID,
-      propertyId: 'property-1',
-      unitId: 'unit-1',
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
+      unitId: '65f1a1a2b3c4d5e6f7a8b9c8',
       status: ReservationStatusEnum.CONFIRMED,
     });
     const booking2 = makeReservation({
       id: 'res-2',
-      tenantId: 'tenant-2',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c9',
       guestId: GUEST_2_ID,
-      propertyId: 'property-2',
-      unitId: 'unit-2',
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
+      unitId: '65f1a1a2b3c4d5e6f7a8b9cf',
       status: ReservationStatusEnum.CHECKED_OUT,
     });
 
@@ -101,14 +101,14 @@ describe('GetGuestReservationsHandler', () => {
     ] as any);
     guestReservationsReadRepository.countByGuestIds.mockResolvedValue(2 as any);
     propertyRepository.findByTenantId.mockImplementation((tenantId) => {
-      if (tenantId.toString() === 'tenant-1') {
+      if (tenantId.toString() === '65f1a1a2b3c4d5e6f7a8b9c0') {
         return Promise.resolve([
-          makeProperty({ id: 'property-1', tenantId: 'tenant-1' }),
+          makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
         ]);
       }
 
       return Promise.resolve([
-        makeProperty({ id: 'property-2', tenantId: 'tenant-2' }),
+        makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9cd', tenantId: '65f1a1a2b3c4d5e6f7a8b9c9' }),
       ]);
     });
     unitRepository.findByTenantId.mockImplementation(() => Promise.resolve([]));
@@ -135,15 +135,15 @@ describe('GetGuestReservationsHandler', () => {
     expect(result.total).toBe(2);
     expect(result.items).toHaveLength(2);
     expect(result.items[0]).toMatchObject({
-      id: 'res-1',
-      bookingReference: 'res-1',
-      propertyId: 'property-1',
+      id: '65f1a1a2b3c4d5e6f7a8b9c3',
+      bookingReference: '65f1a1a2b3c4d5e6f7a8b9c3',
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
       status: 'confirmed',
     });
     expect(result.items[1]).toMatchObject({
       id: 'res-2',
       bookingReference: 'res-2',
-      propertyId: 'property-2',
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
       status: 'completed',
     });
   });
@@ -152,7 +152,7 @@ describe('GetGuestReservationsHandler', () => {
     guestRepository.findAllByGuestAccountId.mockResolvedValue([] as any);
 
     const result = await handler.execute(
-      new GetGuestReservationsQuery('guest-account-1', 1, 10),
+      new GetGuestReservationsQuery('65f1a1a2b3c4d5e6f7a8b9c5', 1, 10),
     );
 
     expect(result).toEqual(new GetGuestReservationsResult([], 0, 1, 10));

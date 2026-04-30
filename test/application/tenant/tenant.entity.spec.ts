@@ -48,7 +48,7 @@ describe('Tenant Entity', () => {
 
   describe('reconstitute', () => {
     it('should reconstitute a tenant from props', () => {
-      const tenantId = TenantId.createFromString('tenant-123');
+      const tenantId = TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0');
       const createdAt = new Date('2024-01-01');
       const updatedAt = new Date('2024-01-02');
 
@@ -83,7 +83,7 @@ describe('Tenant Entity', () => {
     });
 
     it('should handle null optional fields during reconstitution', () => {
-      const tenantId = TenantId.createFromString('tenant-456');
+      const tenantId = TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0');
       const props: TenantReconstitutionProps = {
         id: tenantId,
         name: validName,
