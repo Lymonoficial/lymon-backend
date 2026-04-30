@@ -64,8 +64,12 @@ export default defineConfig({
   env: {
     BASE_URL:
       process.env.BASE_URL || envVars.BASE_URL || 'http://127.0.0.1:3000',
-    AUTH_EMAIL: process.env.AUTH_EMAIL || envVars.AUTH_EMAIL,
-    AUTH_PASSWORD: process.env.AUTH_PASSWORD || envVars.AUTH_PASSWORD,
+    AUTH_EMAIL:
+      process.env.AUTH_EMAIL ||
+      envVars.AUTH_EMAIL ||
+      'villajaramillofelipe4@gmail.com',
+    AUTH_PASSWORD:
+      process.env.AUTH_PASSWORD || envVars.AUTH_PASSWORD || 'SecurePass123!',
     PROPERTY_ID: process.env.PROPERTY_ID || envVars.PROPERTY_ID,
   },
 });
