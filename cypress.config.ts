@@ -44,7 +44,10 @@ export default defineConfig({
                     {
                       loader: 'ts-loader',
                       options: {
-                        configFile: path.resolve(__dirname, 'cypress/tsconfig.json'),
+                        configFile: path.resolve(
+                          __dirname,
+                          'cypress/tsconfig.json',
+                        ),
                         transpileOnly: true,
                       },
                     },
@@ -59,7 +62,8 @@ export default defineConfig({
     },
   },
   env: {
-    BASE_URL: process.env.BASE_URL || envVars.BASE_URL || 'http://localhost:3000',
+    BASE_URL:
+      process.env.BASE_URL || envVars.BASE_URL || 'http://127.0.0.1:3000',
     AUTH_EMAIL: process.env.AUTH_EMAIL || envVars.AUTH_EMAIL,
     AUTH_PASSWORD: process.env.AUTH_PASSWORD || envVars.AUTH_PASSWORD,
     PROPERTY_ID: process.env.PROPERTY_ID || envVars.PROPERTY_ID,
