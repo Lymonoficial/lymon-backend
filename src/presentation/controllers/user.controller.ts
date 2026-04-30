@@ -6,15 +6,21 @@ import {
   Post,
   UseGuards,
   Get,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
+import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
+import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { ChangePasswordCommand } from '@/application/user/commands/change-password/change-password.command';
@@ -24,6 +30,7 @@ import { InviteStaffDto } from '@/presentation/dtos/invite-staff.dto';
 import { InviteStaffCommand } from '@/application/user/commands/invite-staff/invite-staff.command';
 import { RoleAssignment } from '@/domain/user/entities/user.entity';
 import { GetStaffByTenantQuery } from '@/application/user/queries/get-staff-by-tenant/get-staff-by-tenant.query';
+import { DeleteUserCommand } from '@/application/user/commands/delete-user/delete-user.command';
 import type {
   GetStaffByTenantResult,
   StaffDto,
@@ -115,6 +122,25 @@ export class UserController {
       message: 'Staff retrieved successfully',
       data: items,
       total: items.length,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.TENANT_SETTINGS_EDIT)
+  @Delete(':id')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Delete staff member (Soft delete)' })
+  @ApiParam({ name: 'id', description: 'User ID to delete' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User deleted successfully',
+  })
+  async deleteUser(@Param('id') userId: string) {
+    const command = new DeleteUserCommand(userId);
+    await this.commandBus.execute(command);
+
+    return {
+      message: 'User deleted successfully',
     };
   }
 }
