@@ -103,6 +103,7 @@ import {
 } from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
 import { GUEST_PREFERENCE_CATALOG_REPOSITORY } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
 import { MongoGuestPreferenceCatalogRepository } from '@/infrastructure/persistence/repositories/mongo-guest-preference-catalog.repository';
+import {
   ExperienceDocument,
   ExperienceSchema,
 } from '@/infrastructure/persistence/schemas/experience.schema';
@@ -214,6 +215,8 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
     {
       provide: GUEST_PREFERENCE_CATALOG_REPOSITORY,
       useClass: MongoGuestPreferenceCatalogRepository,
+    },
+    {
       provide: EXPERIENCE_REPOSITORY,
       useClass: MongoExperienceRepository,
     },
