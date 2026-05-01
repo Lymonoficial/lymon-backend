@@ -13,9 +13,9 @@ import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
 import { UnitController } from '@/presentation/controllers/unit.controller';
 
-const UNIT_ID = 'unit-123';
-const TENANT_ID = 'tenant-456';
-const PROPERTY_ID = 'property-789';
+const UNIT_ID = '65f1a1a2b3c4d5e6f7a8b9c8';
+const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
+const PROPERTY_ID = '65f1a1a2b3c4d5e6f7a8b9c1';
 
 function makeUnit(overrides?: Partial<{ id: string }>): Unit {
   return Unit.reconstitute({

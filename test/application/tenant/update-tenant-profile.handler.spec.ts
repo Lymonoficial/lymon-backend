@@ -38,7 +38,7 @@ describe('UpdateTenantProfileHandler', () => {
             null,
             null,
             null,
-            'user-456',
+            '65f1a1a2b3c4d5e6f7a8b9c2',
             'owner@example.com',
           ),
         ),
@@ -58,7 +58,7 @@ describe('UpdateTenantProfileHandler', () => {
           'New Address 456',
           'https://updated.com',
           'https://logo.updated.com/img.png',
-          'user-456',
+          '65f1a1a2b3c4d5e6f7a8b9c2',
           'owner@example.com',
         ),
       );

@@ -25,9 +25,9 @@ describe('GetReservationsByTenantHandler', () => {
 
   it('returns paginated reservations for tenant', async () => {
     const r1 = Reservation.createConfirmed({
-      tenantId: TenantId.createFromString('tenant-1'),
-      propertyId: PropertyId.create('prop-1'),
-      unitId: UnitId.create('unit-1'),
+      tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
+      propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
+      unitId: UnitId.create('65f1a1a2b3c4d5e6f7a8b9c8'),
       guestId: GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9d1'),
       dateRange: DateRange.create(
         new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -37,12 +37,12 @@ describe('GetReservationsByTenantHandler', () => {
       guestsCount: 1,
       pricePerNight: 100,
     });
-    r1.setId(ReservationId.create('res-1'));
+    r1.setId(ReservationId.create('65f1a1a2b3c4d5e6f7a8b9c3'));
 
     const r2 = Reservation.createConfirmed({
-      tenantId: TenantId.createFromString('tenant-1'),
-      propertyId: PropertyId.create('prop-1'),
-      unitId: UnitId.create('unit-2'),
+      tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
+      propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
+      unitId: UnitId.create('65f1a1a2b3c4d5e6f7a8b9cf'),
       guestId: GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9d2'),
       dateRange: DateRange.create(
         new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
@@ -59,7 +59,7 @@ describe('GetReservationsByTenantHandler', () => {
     reservationRepository.countByTenantId.mockResolvedValue(3 as any);
 
     const result = await handler.execute(
-      new GetReservationsByTenantQuery('tenant-1', 1, 2),
+      new GetReservationsByTenantQuery('65f1a1a2b3c4d5e6f7a8b9c0', 1, 2),
     );
 
     expect(result).toBeInstanceOf(GetReservationsByTenantResult);
@@ -71,8 +71,8 @@ describe('GetReservationsByTenantHandler', () => {
 
   it("doesn't return tenant-2 reservations when queried by tenant-1", async () => {
     const r1 = Reservation.createConfirmed({
-      tenantId: TenantId.createFromString('tenant-1'),
-      propertyId: PropertyId.create('prop-1'),
+      tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
+      propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
       unitId: UnitId.create('unit-3'),
       guestId: GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9d3'),
       dateRange: DateRange.create(
@@ -86,8 +86,8 @@ describe('GetReservationsByTenantHandler', () => {
     r1.setId(ReservationId.create('res-3'));
 
     const r2 = Reservation.createConfirmed({
-      tenantId: TenantId.createFromString('tenant-2'),
-      propertyId: PropertyId.create('prop-2'),
+      tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c9'),
+      propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9cd'),
       unitId: UnitId.create('unit-4'),
       guestId: GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9d4'),
       dateRange: DateRange.create(
@@ -101,17 +101,17 @@ describe('GetReservationsByTenantHandler', () => {
     r2.setId(ReservationId.create('res-4'));
 
     reservationRepository.findByTenantId.mockImplementation((tenantId) => {
-      return Promise.resolve(tenantId === 'tenant-1' ? [r1] : [r2]);
+      return Promise.resolve(tenantId === '65f1a1a2b3c4d5e6f7a8b9c0' ? [r1] : [r2]);
     });
     reservationRepository.countByTenantId.mockImplementation((tenantId) => {
-      return Promise.resolve(tenantId === 'tenant-1' ? 1 : 1);
+      return Promise.resolve(tenantId === '65f1a1a2b3c4d5e6f7a8b9c0' ? 1 : 1);
     });
 
     const result = await handler.execute(
-      new GetReservationsByTenantQuery('tenant-1', 1, 10),
+      new GetReservationsByTenantQuery('65f1a1a2b3c4d5e6f7a8b9c0', 1, 10),
     );
 
     expect(result.items).toHaveLength(1);
-    expect(result.items[0].tenantId).toBe('tenant-1');
+    expect(result.items[0].tenantId).toBe('65f1a1a2b3c4d5e6f7a8b9c0');
   });
 });

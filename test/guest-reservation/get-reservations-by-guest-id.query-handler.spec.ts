@@ -138,17 +138,17 @@ describe('GetReservationsByGuestIdHandler', () => {
   });
 
   it('returns paginated reservations across all tenants for the guestAccountId', async () => {
-    const guest1 = makeGuest(GUEST_ID_1, 'tenant-1');
-    const guest2 = makeGuest(GUEST_ID_2, 'tenant-2');
+    const guest1 = makeGuest(GUEST_ID_1, '65f1a1a2b3c4d5e6f7a8b9c0');
+    const guest2 = makeGuest(GUEST_ID_2, '65f1a1a2b3c4d5e6f7a8b9c9');
     const res1 = makeReservation(
       '65f1a1a2b3c4d5e6f7a8b9e1',
       GUEST_ID_1,
-      'tenant-1',
+      '65f1a1a2b3c4d5e6f7a8b9c0',
     );
     const res2 = makeReservation(
       '65f1a1a2b3c4d5e6f7a8b9e2',
       GUEST_ID_2,
-      'tenant-2',
+      '65f1a1a2b3c4d5e6f7a8b9c9',
     );
 
     guestRepository.findAllByGuestAccountId.mockResolvedValue([guest1, guest2]);
@@ -174,7 +174,7 @@ describe('GetReservationsByGuestIdHandler', () => {
   });
 
   it('passes correct page and limit to the repository', async () => {
-    const guest = makeGuest(GUEST_ID_1, 'tenant-1');
+    const guest = makeGuest(GUEST_ID_1, '65f1a1a2b3c4d5e6f7a8b9c0');
 
     guestRepository.findAllByGuestAccountId.mockResolvedValue([guest]);
     guestReservationsReadRepository.findByGuestIds.mockResolvedValue([]);
@@ -194,11 +194,11 @@ describe('GetReservationsByGuestIdHandler', () => {
   });
 
   it('returns correct total when it exceeds the page limit', async () => {
-    const guest = makeGuest(GUEST_ID_1, 'tenant-1');
+    const guest = makeGuest(GUEST_ID_1, '65f1a1a2b3c4d5e6f7a8b9c0');
     const res = makeReservation(
       '65f1a1a2b3c4d5e6f7a8b9e1',
       GUEST_ID_1,
-      'tenant-1',
+      '65f1a1a2b3c4d5e6f7a8b9c0',
     );
 
     guestRepository.findAllByGuestAccountId.mockResolvedValue([guest]);

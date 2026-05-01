@@ -29,7 +29,7 @@ describe('RefreshGuestTokenHandler', () => {
   it('returns new tokens when refresh token is valid', async () => {
     tokenService.verifyToken.mockReturnValue({
       type: 'guest',
-      guestAccountId: 'guest-1',
+      guestAccountId: '65f1a1a2b3c4d5e6f7a8b9d0',
       email: 'guest@example.com',
       emailVerified: true,
     });

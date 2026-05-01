@@ -44,7 +44,7 @@ describe('User Entity - Full Coverage', () => {
     it('equals should return false for different values', () => {
       // Arrange
       const userId1 = UserId.createFromString('user-123');
-      const userId2 = UserId.createFromString('user-456');
+      const userId2 = UserId.createFromString('65f1a1a2b3c4d5e6f7a8b9c2');
 
       // Act & Assert
       expect(userId1.equals(userId2)).toBe(false);
@@ -57,7 +57,7 @@ describe('User Entity - Full Coverage', () => {
         // Arrange
         const email = Email.create('owner@example.com');
         const passwordHash = 'hashed-password';
-        const tenantId = TenantId.createFromString('tenant-123');
+        const tenantId = TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0');
 
         // Act
         const user = User.createOwner(email, passwordHash, tenantId);
@@ -79,15 +79,15 @@ describe('User Entity - Full Coverage', () => {
         // Arrange
         const email = Email.create('staff@example.com');
         const passwordHash = 'hashed-password';
-        const tenantId = TenantId.createFromString('tenant-456');
+        const tenantId = TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0');
         const roleAssignments: RoleAssignment[] = [
           {
             roleId: 'VIEWER',
-            scope: { type: 'PROPERTY', resourceIds: ['prop-1', 'prop-2'] },
+            scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1', '65f1a1a2b3c4d5e6f7a8b9cd'] },
           },
           {
             roleId: 'EDITOR',
-            scope: { type: 'UNIT', resourceIds: ['unit-1'] },
+            scope: { type: 'UNIT', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c8'] },
           },
         ];
 
@@ -114,7 +114,7 @@ describe('User Entity - Full Coverage', () => {
         const user = User.createStaff(
           Email.create('staff@example.com'),
           'password',
-          TenantId.createFromString('tenant-456'),
+          TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
           [],
         );
 
@@ -131,7 +131,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createStaff(
         Email.create('staff@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         [],
       );
 
@@ -151,13 +151,13 @@ describe('User Entity - Full Coverage', () => {
       const roleAssignments: RoleAssignment[] = [
         {
           roleId: 'VIEWER',
-          scope: { type: 'PROPERTY', resourceIds: ['prop-1'] },
+          scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1'] },
         },
       ];
       const user = User.createStaff(
         Email.create('staff@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         roleAssignments,
       );
 
@@ -165,7 +165,7 @@ describe('User Entity - Full Coverage', () => {
       const retrievedAssignments = user.getRoleAssignments();
       retrievedAssignments.push({
         roleId: 'EDITOR',
-        scope: { type: 'UNIT', resourceIds: ['unit-1'] },
+        scope: { type: 'UNIT', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c8'] },
       });
 
       // Assert - original should still have only one assignment
@@ -182,7 +182,7 @@ describe('User Entity - Full Coverage', () => {
         id: userId,
         email: Email.create('test@example.com'),
         passwordHash: 'password',
-        tenantId: TenantId.createFromString('tenant-123'),
+        tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         isOwnerFlag: true,
         roleAssignments: [],
         emailVerified: false,
@@ -204,7 +204,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         email,
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act & Assert
@@ -217,7 +217,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         passwordHash,
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act & Assert
@@ -242,13 +242,13 @@ describe('User Entity - Full Coverage', () => {
       const ownerUser = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       const staffUser = User.createStaff(
         Email.create('staff@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         [],
       );
 
@@ -262,7 +262,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Assert - initially false
@@ -282,7 +282,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       // Act
       user.verifyEmail();
@@ -296,7 +296,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act
@@ -314,7 +314,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'old-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       const beforeChange = new Date();
@@ -341,7 +341,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act & Assert
@@ -355,7 +355,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act & Assert
@@ -369,7 +369,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password1',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act
@@ -390,7 +390,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const futureDate = new Date(Date.now() + 3600000);
 
@@ -407,7 +407,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       user.setResetToken('token', new Date(Date.now() + 3600000));
 
@@ -424,7 +424,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'old-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const futureDate = new Date(Date.now() + 3600000);
       user.setResetToken('token', futureDate);
@@ -445,7 +445,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act & Assert
@@ -457,7 +457,7 @@ describe('User Entity - Full Coverage', () => {
       const user = User.createStaff(
         Email.create('staff@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         [],
       );
 
@@ -473,7 +473,7 @@ describe('User Entity - Full Coverage', () => {
         id: UserId.createFromString('user-id'),
         email: Email.create('test@example.com'),
         passwordHash: 'password',
-        tenantId: TenantId.createFromString('tenant-123'),
+        tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         isOwnerFlag: false,
         roleAssignments: [{ roleId: 'VIEWER', scope: { type: 'TENANT' } }],
         emailVerified: true,
@@ -503,15 +503,15 @@ describe('User Entity - Full Coverage', () => {
         { roleId: 'ADMIN', scope: { type: 'TENANT' } },
         {
           roleId: 'EDITOR',
-          scope: { type: 'PROPERTY', resourceIds: ['prop-1', 'prop-2'] },
+          scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1', '65f1a1a2b3c4d5e6f7a8b9cd'] },
         },
-        { roleId: 'VIEWER', scope: { type: 'UNIT', resourceIds: ['unit-1'] } },
+        { roleId: 'VIEWER', scope: { type: 'UNIT', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c8'] } },
       ];
 
       const user = User.createStaff(
         Email.create('staff@example.com'),
         'password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         roleAssignments,
       );
 
@@ -523,8 +523,8 @@ describe('User Entity - Full Coverage', () => {
       expect(retrieved[0].scope.type).toBe('TENANT');
       expect(retrieved[1].scope.type).toBe('PROPERTY');
       expect((retrieved[1].scope as any).resourceIds).toEqual([
-        'prop-1',
-        'prop-2',
+        '65f1a1a2b3c4d5e6f7a8b9c1',
+        '65f1a1a2b3c4d5e6f7a8b9cd',
       ]);
       expect(retrieved[2].scope.type).toBe('UNIT');
     });

@@ -26,7 +26,7 @@ describe('DeleteGuestNoteHandler', () => {
           new DeleteGuestNoteCommand(
             GUEST_NOTE_FIXTURE_DEFAULTS.tenantId,
             GUEST_NOTE_FIXTURE_DEFAULTS.id,
-            'user-456',
+            '65f1a1a2b3c4d5e6f7a8b9c2',
           ),
         ),
       ).rejects.toThrow(NotFoundException);
@@ -44,7 +44,7 @@ describe('DeleteGuestNoteHandler', () => {
           new DeleteGuestNoteCommand(
             GUEST_NOTE_FIXTURE_DEFAULTS.tenantId,
             GUEST_NOTE_FIXTURE_DEFAULTS.id,
-            'user-456',
+            '65f1a1a2b3c4d5e6f7a8b9c2',
           ),
         ),
       ).resolves.toBeUndefined();

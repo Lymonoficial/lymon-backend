@@ -33,7 +33,7 @@ describe('GuestAccount entity', () => {
 
   it('verifyEmail activates account and clears verification token data', () => {
     const account = GuestAccount.reconstitute({
-      id: GuestAccountId.createFromString('guest-123'),
+      id: GuestAccountId.createFromString('65f1a1a2b3c4d5e6f7a8b9c2'),
       email: Email.create('john@example.com'),
       passwordHash: 'hash',
       fullName: 'John Doe',

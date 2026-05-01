@@ -13,7 +13,7 @@ import { Email } from '@/domain/shared/value-objects/email.vo';
 describe('MongoGuestAccountRepository', () => {
   const makeAccount = () =>
     GuestAccount.reconstitute({
-      id: GuestAccountId.createFromString('guest-123'),
+      id: GuestAccountId.createFromString('65f1a1a2b3c4d5e6f7a8b9c2'),
       email: Email.create('guest@example.com'),
       passwordHash: 'hashed-password',
       fullName: 'John Doe',
@@ -40,7 +40,7 @@ describe('MongoGuestAccountRepository', () => {
     const id = await repo.save(makeAccount());
 
     expect(model.findByIdAndUpdate).toHaveBeenCalledTimes(1);
-    expect(id).toBe('guest-123');
+    expect(id).toBe('65f1a1a2b3c4d5e6f7a8b9c2');
   });
 
   it('creates new account and returns created id', async () => {
@@ -67,7 +67,7 @@ describe('MongoGuestAccountRepository', () => {
 
   it('finds account by email', async () => {
     const doc = {
-      _id: { toString: () => 'guest-123' },
+      _id: { toString: () => '65f1a1a2b3c4d5e6f7a8b9c2' },
       email: 'guest@example.com',
       passwordHash: 'hashed-password',
       fullName: 'John Doe',

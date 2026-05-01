@@ -180,7 +180,7 @@ describe('LoginHandler', () => {
         { roleId: 'role-admin', scope: { type: 'TENANT' } },
         {
           roleId: 'role-staff',
-          scope: { type: 'PROPERTY', resourceIds: ['prop-1'] },
+          scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1'] },
         },
         { roleId: 'role-deleted', scope: { type: 'TENANT' } },
       ];

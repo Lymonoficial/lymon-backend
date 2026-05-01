@@ -13,7 +13,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const hashedToken = 'reset-token-hash';
       const expiresAt = new Date(Date.now() + 3600000); // 1 hour
@@ -31,7 +31,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act & Assert
@@ -45,7 +45,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const pastDate = new Date(Date.now() - 3600000);
 
@@ -60,7 +60,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Assert
@@ -72,7 +72,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Assert
@@ -84,7 +84,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const expiresAt = new Date(Date.now() + 3600000);
       user.setResetToken('token', expiresAt);
@@ -102,7 +102,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Assert
@@ -114,7 +114,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const futureDate = new Date(Date.now() + 3600000);
       user.setResetToken('token', futureDate);
@@ -128,7 +128,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const futureDate = new Date(Date.now() + 1000); // 1 second in future
       user.setResetToken('token', futureDate);
@@ -145,7 +145,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'old-password-hash',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const futureDate = new Date(Date.now() + 3600000);
       user.setResetToken('valid-token', futureDate);
@@ -164,7 +164,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'old-password-hash',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       // Set token with a very short expiration (1 second)
       const futureDate = new Date(Date.now() + 1000);
@@ -184,7 +184,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'old-password-hash',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act & Assert
@@ -200,7 +200,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Assert
@@ -212,7 +212,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
       const beforeChange = new Date();
 
@@ -238,7 +238,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act
@@ -253,7 +253,7 @@ describe('User Entity - Extended Coverage', () => {
       const roleAssignments: RoleAssignment[] = [
         {
           roleId: 'ADMIN',
-          scope: { type: 'PROPERTY', resourceIds: ['prop-1'] },
+          scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1'] },
         },
       ];
 
@@ -261,7 +261,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createStaff(
         Email.create('staff@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         roleAssignments,
       );
 
@@ -278,7 +278,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createOwner(
         Email.create('owner@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       );
 
       // Act & Assert
@@ -290,7 +290,7 @@ describe('User Entity - Extended Coverage', () => {
       const user = User.createStaff(
         Email.create('staff@example.com'),
         'hashed-password',
-        TenantId.createFromString('tenant-123'),
+        TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
         [],
       );
 

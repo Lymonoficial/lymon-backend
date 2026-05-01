@@ -38,7 +38,7 @@ describe('CreateSupplierHandler', () => {
       supplierRepository.findByNit.mockResolvedValue(makeSupplier());
 
       const command = new CreateSupplierCommand(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         'Fresh Supplies Inc.',
         'contact@freshsupplies.com',
         '+12025550123',
@@ -64,7 +64,7 @@ describe('CreateSupplierHandler', () => {
       supplierRepository.findByNit.mockResolvedValue(null);
 
       const command = new CreateSupplierCommand(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         '   ',
         'contact@freshsupplies.com',
         '+12025550123',
@@ -87,7 +87,7 @@ describe('CreateSupplierHandler', () => {
       supplierRepository.findByNit.mockResolvedValue(null);
 
       const command = new CreateSupplierCommand(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         'Fresh Supplies Inc.',
         'invalid-email',
         '+12025550123',
@@ -111,7 +111,7 @@ describe('CreateSupplierHandler', () => {
       supplierRepository.save.mockResolvedValue('new-supplier-id');
 
       const command = new CreateSupplierCommand(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
         'Fresh Supplies Inc.',
         'CONTACT@freshsupplies.com',
         '+12025550123',
@@ -129,7 +129,7 @@ describe('CreateSupplierHandler', () => {
 
       expect(supplierRepository.findByNit).toHaveBeenCalledTimes(1);
       expect(supplierRepository.findByNit.mock.calls[0][0].toString()).toBe(
-        'tenant-123',
+        '65f1a1a2b3c4d5e6f7a8b9c0',
       );
       expect(supplierRepository.findByNit).toHaveBeenCalledWith(
         expect.any(TenantId),
@@ -138,7 +138,7 @@ describe('CreateSupplierHandler', () => {
 
       expect(supplierRepository.save).toHaveBeenCalledTimes(1);
       const savedSupplier = supplierRepository.save.mock.calls[0][0];
-      expect(savedSupplier.getTenantId().toString()).toBe('tenant-123');
+      expect(savedSupplier.getTenantId().toString()).toBe('65f1a1a2b3c4d5e6f7a8b9c0');
       expect(savedSupplier.getName()).toBe('Fresh Supplies Inc.');
       expect(savedSupplier.getContactEmail()).toBe('contact@freshsupplies.com');
       expect(savedSupplier.getContactPhone()).toBe('+12025550123');

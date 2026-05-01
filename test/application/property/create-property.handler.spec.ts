@@ -16,14 +16,14 @@ import { makeTenant } from '@test/shared/fixtures/tenant.fixture';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
-const PROPERTY_ID = 'property-123';
+const PROPERTY_ID = '65f1a1a2b3c4d5e6f7a8b9c1';
 const UNIT_ID = 'unit-456';
 
 function makeCommand(
   overrides?: Partial<CreatePropertyCommand>,
 ): CreatePropertyCommand {
   return new CreatePropertyCommand(
-    'tenant-123',
+    '65f1a1a2b3c4d5e6f7a8b9c0',
     'Casa del lago',
     'Una hermosa casa',
     overrides?.propertyType ?? PropertyTypeEnum.CASA,
@@ -39,7 +39,7 @@ function makeCommand(
     '+573001234567',
     'host@example.com',
     overrides?.autoCreateUnit ?? false,
-    'user-456',
+    '65f1a1a2b3c4d5e6f7a8b9c2',
     'owner@example.com',
   );
 }

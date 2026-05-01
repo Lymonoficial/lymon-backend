@@ -34,7 +34,7 @@ describe('UpdatePropertyHandler', () => {
       overrides?.cancellationPolicy,
       overrides?.hostPhone,
       overrides?.hostEmail,
-      overrides?.actorId ?? 'user-456',
+      overrides?.actorId ?? '65f1a1a2b3c4d5e6f7a8b9c2',
       overrides?.actorEmail ?? 'owner@example.com',
     );
   }
@@ -70,7 +70,7 @@ describe('UpdatePropertyHandler', () => {
   describe('when property belongs to a different tenant', () => {
     it('throws NotFoundException', async () => {
       propertyRepository.findById.mockResolvedValue(
-        makeProperty({ tenantId: 'other-tenant' }),
+        makeProperty({ tenantId: '65f1a1a2b3c4d5e6f7a8b9c9' }),
       );
 
       await expect(

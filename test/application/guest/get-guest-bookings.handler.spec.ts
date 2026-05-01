@@ -195,7 +195,7 @@ describe('GetGuestBookingsHandler', () => {
 
   describe('UT-06: Fallback to the unit propertyId', () => {
     it('should resolve propertyName from unit property when reservation propertyId is stale', async () => {
-      const stalePropertyId = 'stale-property-id';
+      const stalePropertyId = '65f1a1a2b3c4d5e6f7a8b9d9';
       const reservation = makeReservation({
         tenantId,
         guestId,

@@ -19,6 +19,17 @@
     "test:cov:scope": "jest --coverage --coverageDirectory=coverage/scope --testPathPatterns=\"test/application/(incident-report/(create-incident-report|get-incident-reports-by-property|update-incident-report)|tenant/(update-tenant-profile|get-tenant-profile)|auth/login|property/(create-property|get-properties-by-tenant)|tenant/register-tenant|user/verify-email|role/get-system-roles|guest-auth/(recover-guest-password|verify-guest-email|login-guest|register-guest-account))|test/infrastructure/(auth/guards/(jwt-auth|permission)|persistence/repositories/(mongo-incident-report|mongo-tenant|mongo-role|mongo-guest-account))|test/presentation/controllers/(incident-report|tenant|role|guest-auth)|test/domain/(tenant/value-objects/plan-type|guest-account/entities/guest-account.entity|guest-account/value-objects/guest-account-id)\"",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:security": "cypress run --spec 'cypress/security/**/*.cy.ts'",
+    "test:security:open": "cypress open",
+    "test:perf:properties": "node performance/k6/dist/run-k6.mjs performance/k6/dist/load-properties.js",
+    "test:perf:units": "node performance/k6/dist/run-k6.mjs performance/k6/dist/load-units.js",
+    "test:perf:inventory": "node performance/k6/dist/run-k6.mjs performance/k6/dist/load-inventory-items.js",
+    "test:perf:audit-logs": "node performance/k6/dist/run-k6.mjs performance/k6/dist/load-audit-logs.js",
+    "test:perf:incident-reports": "node performance/k6/dist/run-k6.mjs performance/k6/dist/load-incident-reports.js",
+    "test:perf:reservations": "node performance/k6/dist/run-k6.mjs performance/k6/dist/load-reservations-list.js",
+    "test:perf:smoke": "node performance/k6/dist/run-k6.mjs performance/k6/dist/smoke-auth-login.js",
+    "test:performance": "pnpm run test:perf:smoke && pnpm run test:perf:properties && pnpm run test:perf:units && pnpm run test:perf:inventory && pnpm run test:perf:audit-logs && pnpm run test:perf:incident-reports && pnpm run test:perf:reservations",
+    "test:all": "pnpm run test && pnpm run test:security && pnpm run test:performance",
     "sonar": "jest --coverage && node -e \"const { execSync } = require('child_process'); execSync('docker run --rm -v ' + process.cwd() + ':/usr/src sonarsource/sonar-scanner-cli', {stdio: 'inherit'})\""
   },
   "dependencies": {
@@ -51,6 +62,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@cypress/webpack-preprocessor": "^7.1.0",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -64,6 +76,7 @@
     "@types/passport-local": "^1.0.38",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^11.0.0",
+    "cypress": "^15.14.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",

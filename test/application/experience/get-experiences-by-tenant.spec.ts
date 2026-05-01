@@ -16,7 +16,7 @@ import { GetExperiencesByTenantQuery } from '@/application/experience/queries/Ge
 import { GetExperiencesByTenantQueryHandler } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query-handler';
 import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
 
-const TENANT_ID = 'tenant-123';
+const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
 const EXPERIENCE_ID = 'experience-123';
 
 function makeExperience(overrides?: Partial<{ id: string }>) {
@@ -24,8 +24,8 @@ function makeExperience(overrides?: Partial<{ id: string }>) {
     id: ExperienceId.create(overrides?.id ?? EXPERIENCE_ID),
     tenantId: TenantId.createFromString(TENANT_ID),
     scope: ExperienceScope.create('PROPERTY'),
-    propertyId: PropertyId.create('property-123'),
-    unitIds: [UnitId.create('unit-123')],
+    propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
+    unitIds: [UnitId.create('65f1a1a2b3c4d5e6f7a8b9c8')],
     name: 'Airport transfer',
     description: 'Private transfer service',
     category: ExperienceCategory.create('TRANSPORTATION'),

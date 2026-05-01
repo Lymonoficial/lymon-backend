@@ -27,9 +27,9 @@ function makeCommand(
     overrides !== undefined && Object.hasOwn(overrides, 'propertyId');
 
   return new CreateExperienceCommand(
-    overrides?.tenantId ?? 'tenant-123',
+    overrides?.tenantId ?? '65f1a1a2b3c4d5e6f7a8b9c0',
     overrides?.scope ?? ExperienceScopeEnum.PROPERTY,
-    hasPropertyIdOverride ? overrides?.propertyId : 'property-123',
+    hasPropertyIdOverride ? overrides?.propertyId : '65f1a1a2b3c4d5e6f7a8b9c1',
     overrides?.unitIds,
     overrides?.name ?? 'Airport transfer',
     overrides?.description ?? 'Roundtrip transportation service',
@@ -97,7 +97,7 @@ describe('CreateExperienceHandler', () => {
     const command = makeCommand({
       scope: ExperienceScopeEnum.TENANT,
       propertyId: undefined,
-      unitIds: ['unit-1'],
+      unitIds: ['65f1a1a2b3c4d5e6f7a8b9c8'],
     });
 
     await expect(handler.execute(command)).rejects.toThrow(BadRequestException);

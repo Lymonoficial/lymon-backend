@@ -13,7 +13,7 @@ describe('User Entity - Refactored reconstitute method', () => {
       // Arrange
       const userId = UserId.createFromString('user-123');
       const email = Email.create('test@example.com');
-      const tenantId = TenantId.createFromString('tenant-123');
+      const tenantId = TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0');
       const roleAssignments: RoleAssignment[] = [];
       const now = new Date();
       const resetToken = 'token-123';
@@ -50,13 +50,13 @@ describe('User Entity - Refactored reconstitute method', () => {
 
     it('should successfully reconstitute a user without optional parameters', () => {
       // Arrange
-      const userId = UserId.createFromString('user-456');
+      const userId = UserId.createFromString('65f1a1a2b3c4d5e6f7a8b9c2');
       const email = Email.create('staff@example.com');
-      const tenantId = TenantId.createFromString('tenant-456');
+      const tenantId = TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0');
       const roleAssignments: RoleAssignment[] = [
         {
           roleId: 'ADMIN',
-          scope: { type: 'PROPERTY', resourceIds: ['prop-1'] },
+          scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1'] },
         },
       ];
       const now = new Date();
