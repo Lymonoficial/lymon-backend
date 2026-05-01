@@ -1,4 +1,4 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetGuestByIdQuery } from './get-guest-by-id.query';
 import type { GetGuestByIdResult } from './get-guest-by-id.result';
@@ -8,6 +8,10 @@ import {
 } from '@/domain/guest/repositories/guest.repository';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { GetGuestLifecycleStatusHandler } from '../get-guest-lifecycle-status/get-guest-lifecycle-status.handler';
+import { GetGuestLifecycleStatusQuery } from '../get-guest-lifecycle-status/get-guest-lifecycle-status.query';
+import { Guest } from '@/domain/guest/entities/guest.entity';
+import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 
 @QueryHandler(GetGuestByIdQuery)
 export class GetGuestByIdHandler implements IQueryHandler<
@@ -17,6 +21,7 @@ export class GetGuestByIdHandler implements IQueryHandler<
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
+    private readonly queryBus: QueryBus,
   ) {}
 
   async execute(query: GetGuestByIdQuery): Promise<GetGuestByIdResult> {
@@ -34,6 +39,11 @@ export class GetGuestByIdHandler implements IQueryHandler<
     if (!guest?.getTenantId()?.equals(tenantId)) {
       return { item: null };
     }
+
+    const lifecycleStatuses = await this.queryBus.execute<
+    GetGuestLifecycleStatusQuery, 
+    Map<string, GuestLifecycleStatus>
+    >(new GetGuestLifecycleStatusQuery(query.tenantId, [query.guestId]));
 
     return {
       item: {
@@ -64,6 +74,7 @@ export class GetGuestByIdHandler implements IQueryHandler<
           : null,
         createdAt: guest.getCreatedAt().toISOString(),
         updatedAt: guest.getUpdatedAt().toISOString(),
+        lifecycleStatus: lifecycleStatuses.get(query.guestId) || GuestLifecycleStatus.NO_RESERVATION,
       },
     };
   }

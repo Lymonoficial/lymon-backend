@@ -1,4 +1,5 @@
 import { GuestStatusEnum } from '@/domain/guest/entities/guest.types';
+import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 
 export interface GuestDto {
   id: string;
@@ -25,6 +26,7 @@ export interface GuestDto {
   } | null;
   createdAt: string;
   updatedAt: string;
+  lifecycleStatus: GuestLifecycleStatus;
 }
 
 export interface GetGuestByIdResult {
