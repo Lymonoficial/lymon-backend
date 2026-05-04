@@ -7,8 +7,10 @@ import { UpdateExperienceHandler } from '@/application/experience/commands/updat
 import { UpdateExperienceCommand } from '@/application/experience/commands/update-experience/update-experience.command';
 import { Experience } from '@/domain/experience/entities/experience.entity';
 import { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
-import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
-import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
+import {
+  ExperienceAvailabilityType,
+  ExperienceAvailabilityTypeEnum,
+} from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
@@ -93,7 +95,10 @@ describe('UpdateExperienceHandler', () => {
   beforeEach(() => {
     experienceRepository = createExperienceRepositoryMock();
     eventEmitter = createEventEmitterMock();
-    handler = new UpdateExperienceHandler(experienceRepository, eventEmitter as any);
+    handler = new UpdateExperienceHandler(
+      experienceRepository,
+      eventEmitter as any,
+    );
   });
 
   it('throws BadRequestException when no updatable field provided', async () => {

@@ -2,6 +2,7 @@ export enum ExperienceAvailabilityTypeEnum {
   ONE_TIME = 'ONE_TIME',
   DATE_RANGE = 'DATE_RANGE',
   RECURRING = 'RECURRING',
+  create = "create",
 }
 
 export class ExperienceAvailabilityType {
