@@ -19,7 +19,7 @@ class UpdateBedDto {
     description: 'Type of bed',
   })
   @IsEnum(BedTypeEnum)
-  type: BedTypeEnum;
+  type!: BedTypeEnum;
 
   @ApiPropertyOptional({
     example: 2,
@@ -28,7 +28,7 @@ class UpdateBedDto {
   })
   @IsNumber()
   @Min(1)
-  count: number;
+  count!: number;
 }
 
 class UpdateBedroomDto {
@@ -37,7 +37,7 @@ class UpdateBedroomDto {
     description: 'Name of the bedroom',
   })
   @IsString()
-  roomName: string;
+  roomName!: string;
 
   @ApiPropertyOptional({
     type: [UpdateBedDto],
@@ -46,7 +46,7 @@ class UpdateBedroomDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => UpdateBedDto)
-  beds: UpdateBedDto[];
+  beds!: UpdateBedDto[];
 }
 
 class UpdateExternalIdsDto {
