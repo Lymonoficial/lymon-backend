@@ -157,7 +157,7 @@ export class CreateUnitDto {
   amenities: string[];
 
   @ApiProperty({
-    example: 150.0,
+    example: 150,
     description: 'Price per night in USD',
     minimum: 0,
   })
