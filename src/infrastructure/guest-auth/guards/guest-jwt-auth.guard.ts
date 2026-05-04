@@ -11,7 +11,7 @@ export const GUEST_PUBLIC_KEY = 'isGuestPublic';
 
 @Injectable()
 export class GuestJwtAuthGuard extends AuthGuard('guest-jwt') {
-  constructor(private reflector: Reflector) {
+  constructor(private readonly reflector: Reflector) {
     super();
   }
 

@@ -31,7 +31,7 @@ export class GuestEmailCreatedListener {
 
       if (
         !guestEmail ||
-        guestEmail.getStatus() !== GuestEmailStatusEnum.PENDING
+        guestEmail?.getStatus() !== GuestEmailStatusEnum.PENDING
       ) {
         return;
       }
