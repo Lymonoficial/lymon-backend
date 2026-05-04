@@ -76,6 +76,25 @@ export interface ExperienceReconstituteData {
   deletedAt?: Date | null;
 }
 
+export interface ExperienceUpdateData {
+  name: string;
+  description: string;
+  priceCop: number;
+  durationHours: number;
+  capacity: number;
+  coverImageUrl: string;
+  location: ExperienceLocation;
+  availabilityType: ExperienceAvailabilityType;
+  startAt: Date | undefined;
+  endAt: Date | undefined;
+  recurrence: ExperienceRecurrence | undefined;
+  blackoutRanges: ExperienceBlackoutRange[];
+  allowStandalonePurchase: boolean;
+  allowReservationPurchase: boolean;
+  minNoticeHours: number;
+  purchaseCutoffHours: number;
+}
+
 export class Experience {
   private constructor(
     private readonly id: ExperienceId | null,
@@ -83,26 +102,26 @@ export class Experience {
     private readonly scope: ExperienceScope,
     private readonly propertyId: PropertyId | null,
     private readonly unitIds: UnitId[],
-    private readonly name: string,
-    private readonly description: string,
+    private name: string,
+    private description: string,
     private readonly category: ExperienceCategory,
-    private readonly priceCop: number,
-    private readonly durationHours: number,
-    private readonly capacity: number,
-    private readonly coverImageUrl: string,
-    private readonly location: ExperienceLocation,
-    private readonly availabilityType: ExperienceAvailabilityType,
-    private readonly startAt: Date | null,
-    private readonly endAt: Date | null,
-    private readonly recurrence: ExperienceRecurrence | null,
-    private readonly blackoutRanges: ExperienceBlackoutRange[],
-    private readonly allowStandalonePurchase: boolean,
-    private readonly allowReservationPurchase: boolean,
-    private readonly minNoticeHours: number,
-    private readonly purchaseCutoffHours: number,
+    private priceCop: number,
+    private durationHours: number,
+    private capacity: number,
+    private coverImageUrl: string,
+    private location: ExperienceLocation,
+    private availabilityType: ExperienceAvailabilityType,
+    private startAt: Date | null,
+    private endAt: Date | null,
+    private recurrence: ExperienceRecurrence | null,
+    private blackoutRanges: ExperienceBlackoutRange[],
+    private allowStandalonePurchase: boolean,
+    private allowReservationPurchase: boolean,
+    private minNoticeHours: number,
+    private purchaseCutoffHours: number,
     private readonly status: ExperienceStatus,
     private readonly createdAt: Date,
-    private readonly updatedAt: Date,
+    private updatedAt: Date,
     private readonly deletedAt: Date | null,
   ) {}
 
@@ -325,6 +344,71 @@ export class Experience {
 
   getDeletedAt(): Date | null {
     return this.deletedAt;
+  }
+
+  update(data: ExperienceUpdateData): void {
+    const name = data.name?.trim();
+    if (!name) {
+      throw new Error('Experience name cannot be empty');
+    }
+
+    const description = data.description?.trim();
+    if (!description) {
+      throw new Error('Experience description cannot be empty');
+    }
+
+    if (description.length > 5000) {
+      throw new Error('Experience description cannot exceed 5000 characters');
+    }
+
+    if (!Number.isFinite(data.priceCop) || data.priceCop <= 0) {
+      throw new Error('Experience price must be greater than zero');
+    }
+
+    if (!Number.isFinite(data.durationHours) || data.durationHours <= 0) {
+      throw new Error('Experience duration must be greater than zero');
+    }
+
+    if (!Number.isInteger(data.capacity) || data.capacity <= 0) {
+      throw new Error('Experience capacity must be a positive integer');
+    }
+
+    if (!data.allowStandalonePurchase && !data.allowReservationPurchase) {
+      throw new Error('Experience must be purchasable in at least one mode');
+    }
+
+    Experience.validateLocation(data.location);
+    Experience.validateAvailability(
+      data.availabilityType,
+      data.startAt,
+      data.endAt,
+      data.recurrence,
+      data.blackoutRanges,
+      new Date(),
+    );
+
+    this.name = name;
+    this.description = description;
+    this.priceCop = data.priceCop;
+    this.durationHours = data.durationHours;
+    this.capacity = data.capacity;
+    this.coverImageUrl = data.coverImageUrl;
+    this.location = {
+      label: data.location.label.trim(),
+      address: data.location.address?.trim() || undefined,
+      lat: data.location.lat,
+      lng: data.location.lng,
+    };
+    this.availabilityType = data.availabilityType;
+    this.startAt = data.startAt ?? null;
+    this.endAt = data.endAt ?? null;
+    this.recurrence = data.recurrence ?? null;
+    this.blackoutRanges = data.blackoutRanges;
+    this.allowStandalonePurchase = data.allowStandalonePurchase;
+    this.allowReservationPurchase = data.allowReservationPurchase;
+    this.minNoticeHours = data.minNoticeHours;
+    this.purchaseCutoffHours = data.purchaseCutoffHours;
+    this.updatedAt = new Date();
   }
 
   private static validateLocation(location: ExperienceLocation): void {

@@ -1,5 +1,6 @@
 import { CreateExperienceCommand } from '@/application/experience/commands/create-experience.command';
 import { CreateExperienceResult } from '@/application/experience/commands/create-experience.result';
+import { UpdateExperienceCommand } from '@/application/experience/commands/update-experience/update-experience.command';
 import { GetExperiencesByTenantQuery } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query';
 import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
@@ -9,12 +10,15 @@ import { RequirePermission } from '@/infrastructure/auth/decorators/require-perm
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CreateExperienceDto } from '@/presentation/dtos/create-experience.dto';
+import { UpdateExperienceDto } from '@/presentation/dtos/update-experience.dto';
 import {
   Body,
   Controller,
   DefaultValuePipe,
   Get,
+  Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -213,5 +217,44 @@ export class ExperienceController {
         experienceId: result.experienceId,
       },
     };
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.EXPERIENCE_EDIT)
+  @ApiOperation({ summary: 'Update an existing experience' })
+  @ApiResponse({ status: 200, description: 'Experience updated successfully' })
+  @ApiResponse({ status: 400, description: 'Validation error or no fields provided' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions or not the owner' })
+  @ApiResponse({ status: 404, description: 'Experience not found' })
+  async update(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: UpdateExperienceDto,
+  ) {
+    await this.commandBus.execute(
+      new UpdateExperienceCommand(
+        id,
+        user.tenantId,
+        dto.name,
+        dto.description,
+        dto.priceCop,
+        dto.durationHours,
+        dto.capacity,
+        dto.coverImageUrl,
+        dto.location,
+        dto.availabilityType,
+        dto.startAt,
+        dto.endAt,
+        dto.recurrence,
+        dto.blackoutRanges,
+        dto.allowStandalonePurchase,
+        dto.allowReservationPurchase,
+        user.userId,
+        user.email,
+      ),
+    );
+
+    return { message: 'Experience updated successfully' };
   }
 }
