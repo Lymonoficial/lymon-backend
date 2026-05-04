@@ -50,25 +50,25 @@ export function makeReservation(
 ): Reservation {
   const merged = { ...RESERVATION_FIXTURE_DEFAULTS, ...overrides };
 
-  return Reservation.reconstitute(
-    merged.id,
-    TenantId.createFromString(merged.tenantId),
-    PropertyId.create(merged.propertyId),
-    UnitId.create(merged.unitId),
-    GuestId.createFromString(merged.guestId),
-    DateRange.create(merged.checkIn, merged.checkOut),
-    ReservationSource.create(merged.source),
-    ReservationStatus.create(merged.status),
-    merged.guestsCount,
-    merged.pricePerNight,
-    merged.totalPrice,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    merged.createdAt,
-    merged.updatedAt,
-  );
+  return Reservation.reconstitute({
+    id: merged.id,
+    tenantId: TenantId.createFromString(merged.tenantId),
+    propertyId: PropertyId.create(merged.propertyId),
+    unitId: UnitId.create(merged.unitId),
+    guestId: GuestId.createFromString(merged.guestId),
+    dateRange: DateRange.create(merged.checkIn, merged.checkOut),
+    source: ReservationSource.create(merged.source),
+    status: ReservationStatus.create(merged.status),
+    guestsCount: merged.guestsCount,
+    pricePerNight: merged.pricePerNight,
+    totalPrice: merged.totalPrice,
+    notes: null,
+    externalReservationId: null,
+    cancelledAt: null,
+    cancellationReason: null,
+    checkInActualAt: null,
+    checkOutActualAt: null,
+    createdAt: merged.createdAt,
+    updatedAt: merged.updatedAt,
+  });
 }
