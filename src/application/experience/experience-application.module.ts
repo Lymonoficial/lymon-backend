@@ -3,9 +3,13 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 import { CreateExperienceHandler } from '@/application/experience/commands/create-experience.handler';
 import { GetExperiencesByTenantQueryHandler } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query-handler';
+import { GetAvailableExperiencesQueryHandler } from '@/application/experience/queries/GetAvailableExperiences/get-available-experiences.query-handler';
 
 const CommandHandlers = [CreateExperienceHandler];
-const QueryHandlers = [GetExperiencesByTenantQueryHandler];
+const QueryHandlers = [
+  GetExperiencesByTenantQueryHandler,
+  GetAvailableExperiencesQueryHandler,
+];
 
 @Module({
   imports: [CqrsModule, PersistenceModule],

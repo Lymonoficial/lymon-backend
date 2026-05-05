@@ -1,5 +1,8 @@
 import { Experience } from '@/domain/experience/entities/experience.entity';
-import { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
+import {
+  AvailableExperienceFilters,
+  ExperienceRepository,
+} from '@/domain/experience/repositories/experience.repository';
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
@@ -129,6 +132,43 @@ export class MongoExperienceRepository implements ExperienceRepository {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
+
+    return {
+      experiences: documents.map((document) => this.toDomain(document)),
+      total,
+    };
+  }
+
+  async findAvailableForGuestPaginated(
+    filters: AvailableExperienceFilters,
+    page: number,
+    limit: number,
+  ): Promise<{ experiences: Experience[]; total: number }> {
+    const query: Record<string, unknown> = {
+      status: ExperienceStatus.active().toString(),
+      deletedAt: null,
+    };
+
+    if (filters.tenantId) {
+      query.tenantId = new Types.ObjectId(filters.tenantId.toString());
+    }
+
+    if (filters.propertyId) {
+      query.propertyId = new Types.ObjectId(filters.propertyId.toString());
+    }
+
+    if (filters.category) {
+      query.category = filters.category.toString();
+    }
+
+    const [documents, total] = await Promise.all([
+      this.experienceModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      this.experienceModel.countDocuments(query),
+    ]);
 
     return {
       experiences: documents.map((document) => this.toDomain(document)),
