@@ -187,7 +187,7 @@ export class AssignStaffToShiftCommandHandler implements ICommandHandler<AssignS
 
     for (let index = 0; index < staffMembers.length; index += 1) {
       const staffMember = staffMembers[index];
-      if (!staffMember || !staffMember.getTenantId().equals(tenantId)) {
+      if (!staffMember?.getTenantId()?.equals(tenantId)) {
         throw new NotFoundException('Staff member not found for the tenant');
       }
 
