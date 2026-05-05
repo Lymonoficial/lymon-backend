@@ -14,12 +14,14 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { GuestStatusEnum } from '@/domain/guest/entities/guest.types';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -76,12 +78,18 @@ export class CrmController {
     enum: ['createdAt', 'fullName', 'status'],
   })
   @ApiQuery({ name: 'sortDirection', required: false, enum: ['asc', 'desc'] })
+  @ApiQuery({ name: 'status', required: false, enum: GuestStatusEnum, isArray: true })
+  @ApiQuery({ name: 'tags', required: false, type: String, isArray: true })
   async getGuests(
     @CurrentUser() user: JwtPayload,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('sortBy') sortBy: 'createdAt' | 'fullName' | 'status' = 'createdAt',
     @Query('sortDirection') sortDirection: 'asc' | 'desc' = 'desc',
+    @Query('status', new ParseArrayPipe({ optional: true, separator: ',' }))
+    statuses: GuestStatusEnum[] = [],
+    @Query('tags', new ParseArrayPipe({ optional: true, separator: ',' }))
+    tags: string[] = [],
   ) {
     const { guests, total } = await this.searchGuestsQuery.execute(
       TenantId.createFromString(user.tenantId),
@@ -90,6 +98,8 @@ export class CrmController {
       limit,
       sortBy,
       sortDirection,
+      tags,
+      statuses,
     );
 
     return {

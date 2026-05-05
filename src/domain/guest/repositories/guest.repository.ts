@@ -1,10 +1,16 @@
 import { Guest } from '@/domain/guest/entities/guest.entity';
+import { GuestStatusEnum } from '@/domain/guest/entities/guest.types';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
 export const GUEST_REPOSITORY = 'GUEST_REPOSITORY';
+
+export interface GuestFilters {
+  statuses?: GuestStatusEnum[];
+  tagIds?: string[];
+}
 
 export interface GuestRepository {
   save(
@@ -35,11 +41,13 @@ export interface GuestRepository {
     limit: number,
     sortBy: 'createdAt' | 'fullName' | 'status',
     sortDirection: 'asc' | 'desc',
+    filters?: GuestFilters,
   ): Promise<{ guests: Guest[]; total: number }>;
   searchPaginated(
     tenantId: TenantId,
     term: string,
     page: number,
     limit: number,
+    filters?: GuestFilters,
   ): Promise<{ guests: Guest[]; total: number }>;
 }

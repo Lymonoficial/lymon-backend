@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model, Types } from 'mongoose';
 import { Guest } from '@/domain/guest/entities/guest.entity';
-import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
+import {
+  GuestFilters,
+  GuestRepository,
+} from '@/domain/guest/repositories/guest.repository';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
@@ -172,8 +175,15 @@ export class MongoGuestRepository implements GuestRepository {
     limit: number,
     sortBy: 'createdAt' | 'fullName' | 'status',
     sortDirection: 'asc' | 'desc',
+    filters?: GuestFilters,
   ): Promise<{ guests: Guest[]; total: number }> {
-    const filter = { tenantId: new Types.ObjectId(tenantId.toString()) };
+    const filter = {
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      ...(filters?.statuses?.length ? { status: { $in: filters.statuses } } : {}),
+      ...(filters?.tagIds?.length
+        ? { tags: { $in: filters.tagIds.map((id) => new Types.ObjectId(id)) } }
+        : {}),
+    };
     const sortOrder = sortDirection === 'asc' ? 1 : -1;
     const [total, documents] = await Promise.all([
       this.guestModel.countDocuments(filter),
@@ -197,6 +207,7 @@ export class MongoGuestRepository implements GuestRepository {
     term: string,
     page: number,
     limit: number,
+    filters?: GuestFilters,
   ): Promise<{ guests: Guest[]; total: number }> {
     const escapedTerm = term.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
     const pattern = new RegExp(escapedTerm, 'i');
@@ -211,6 +222,10 @@ export class MongoGuestRepository implements GuestRepository {
         { 'identity.documentNumber': pattern },
         { 'phones.number': pattern },
       ],
+      ...(filters?.statuses?.length ? { status: { $in: filters.statuses } } : {}),
+      ...(filters?.tagIds?.length
+        ? { tags: { $in: filters.tagIds.map((id) => new Types.ObjectId(id)) } }
+        : {}),
     };
     const [total, documents] = await Promise.all([
       this.guestModel.countDocuments(filter),
