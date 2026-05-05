@@ -21,6 +21,9 @@ export enum Permission {
   UNIT_EDIT = 'UNIT_EDIT',
   UNIT_DELETE = 'UNIT_DELETE',
 
+  // --- Experience ---
+  EXPERIENCE_DELETE = 'EXPERIENCE_DELETE',
+
   // --- Reservations ---
   RESERVATION_VIEW = 'RESERVATION_VIEW',
   RESERVATION_CREATE = 'RESERVATION_CREATE',

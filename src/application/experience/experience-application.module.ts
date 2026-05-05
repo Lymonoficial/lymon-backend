@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 import { CreateExperienceHandler } from '@/application/experience/commands/create-experience.handler';
+import { DeleteExperienceHandler } from '@/application/experience/commands/delete-experience.handler';
 import { GetExperiencesByTenantQueryHandler } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query-handler';
 
-const CommandHandlers = [CreateExperienceHandler];
+const CommandHandlers = [CreateExperienceHandler, DeleteExperienceHandler];
 const QueryHandlers = [GetExperiencesByTenantQueryHandler];
 
 @Module({

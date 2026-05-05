@@ -22,4 +22,5 @@ export interface ExperienceRepository {
     limit: number,
     propertyId?: PropertyId,
   ): Promise<{ experiences: Experience[]; total: number }>;
+  delete(id: ExperienceId): Promise<void>;
 }
