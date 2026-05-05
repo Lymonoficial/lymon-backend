@@ -49,6 +49,7 @@ import { SendGuestMessageDto } from '@/presentation/dtos/send-guest-message.dto'
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferences.dto';
+import { UpdateTagsDto } from '@/presentation/dtos/update-tags.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -309,17 +310,15 @@ export class CrmController {
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_MANAGE)
   @ApiOperation({ summary: 'Assign tags to a guest' })
-  @ApiResponse({
-    status: 200,
-    description: 'Tags assigned successfully',
-  })
+  @ApiResponse({ status: 200, description: 'Tags assigned successfully' })
+  @ApiResponse({ status: 404, description: 'Guest not found' })
   async assignTags(
     @Param('guestId') guestId: string,
-    @Body('tags') tags: string[],
+    @Body() dto: UpdateTagsDto,
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute(
-      new AssignGuestTagsCommand(guestId, tags, user.tenantId),
+      new AssignGuestTagsCommand(guestId, dto.tags, user.tenantId),
     );
 
     return {
