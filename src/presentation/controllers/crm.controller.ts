@@ -101,7 +101,7 @@ export class CrmController {
           primaryEmail: guest.getPrimaryEmail(),
           phones: guest.getPhones(),
           status: guest.getStatus(),
-          tags: guest.getTags(),
+          tags: guest.getTags().map((t) => t.getName()),
         })),
         pagination: {
           total,

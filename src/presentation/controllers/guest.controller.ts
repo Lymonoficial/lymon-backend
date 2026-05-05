@@ -120,7 +120,7 @@ export class GuestController {
         emails: guest.getEmails(),
         phones: guest.getPhones(),
         status: guest.getStatus(),
-        tags: guest.getTags(),
+        tags: guest.getTags().map((t) => t.getName()),
         createdAt: guest.getCreatedAt(),
         updatedAt: guest.getUpdatedAt(),
       })),

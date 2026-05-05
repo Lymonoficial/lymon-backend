@@ -144,7 +144,7 @@ describe('CreateGuestHandler', () => {
       expect(savedGuest.getPhones()).toEqual([
         { number: '+12025550123', type: 'mobile', isPrimary: true },
       ]);
-      expect(savedGuest.getTags()).toEqual(['vip']);
+      expect(savedGuest.getTags()).toEqual([]);
       expect(savedGuest.getPreferencesNotes()).toBe('Late check-in');
     });
   });

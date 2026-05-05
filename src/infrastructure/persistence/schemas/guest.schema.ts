@@ -73,8 +73,11 @@ export class GuestDocument extends Document {
   })
   status: GuestStatusEnum;
 
-  @Prop({ type: [String], default: [] })
-  tags: string[];
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'GuestTagDocument' }],
+    default: [],
+  })
+  tags: Types.ObjectId[];
 
   @Prop({ default: '' })
   preferencesNotes: string;

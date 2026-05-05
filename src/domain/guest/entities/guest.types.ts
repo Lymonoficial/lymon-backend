@@ -41,6 +41,5 @@ export interface CreateGuestParams {
   emails?: string[];
   phones?: GuestPhone[];
   status?: GuestStatusEnum;
-  tags?: string[];
   preferencesNotes?: string;
 }
