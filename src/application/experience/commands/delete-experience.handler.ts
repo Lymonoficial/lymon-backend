@@ -31,16 +31,11 @@ export class DeleteExperienceHandler implements ICommandHandler<
     const experienceId = ExperienceId.create(command.experienceId);
     const experience = await this.experienceRepository.findById(experienceId);
 
-    if (
-      !experience ||
-      experience.getTenantId().toString() !== command.tenantId
-    ) {
+    if (experience?.getTenantId().toString() !== command.tenantId) {
       throw new NotFoundException(
         `Experience with id "${command.experienceId}" not found`,
       );
     }
-
-    // TODO: throw ForbiddenException if experience has been purchased by a guest
 
     await this.experienceRepository.delete(experienceId);
 
