@@ -6,6 +6,7 @@ import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import type { GuestRepository } from '@/domain/guest/repositories/guest.repository';
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
+import { CatalogPreferenceBuilderService } from '@/application/guest-preference/services/catalog-preference-builder.service';
 
 const PLANS_WITH_PREFERENCES_ACCESS: string[] = [
   PlanTypeEnum.LYMON_PLUS,
@@ -20,12 +21,13 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly repository: GuestRepository,
+    private readonly catalogPreferenceBuilder: CatalogPreferenceBuilderService,
   ) {}
 
   async execute(
     command: SaveGuestPreferencesCommand,
   ): Promise<SaveGuestPreferencesResult> {
-    const { tenantId, guestId, preferencesNotes, activePlan } = command;
+    const { tenantId, guestId, catalogItemIds, activePlan } = command;
 
     this.validatePlanAccess(activePlan);
 
@@ -43,9 +45,14 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
       );
     }
 
-    const wasCreated = !guest.getPreferencesNotes();
+    const preferences = await this.catalogPreferenceBuilder.build(
+      tenantId,
+      catalogItemIds,
+    );
 
-    guest.setPreferencesNotes(preferencesNotes);
+    const wasCreated = guest.getPreferences().length === 0;
+
+    guest.setPreferences(preferences);
     await this.repository.save(guest);
 
     return new SaveGuestPreferencesResult(guestId, wasCreated);

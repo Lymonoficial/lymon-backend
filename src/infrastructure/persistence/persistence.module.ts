@@ -98,6 +98,12 @@ import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
 import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
 import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
 import {
+  GuestPreferenceCatalogItemDocument,
+  GuestPreferenceCatalogItemSchema,
+} from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
+import { GUEST_PREFERENCE_CATALOG_REPOSITORY } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
+import { MongoGuestPreferenceCatalogRepository } from '@/infrastructure/persistence/repositories/mongo-guest-preference-catalog.repository';
+import {
   ExperienceDocument,
   ExperienceSchema,
 } from '@/infrastructure/persistence/schemas/experience.schema';
@@ -126,6 +132,10 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
+      {
+        name: GuestPreferenceCatalogItemDocument.name,
+        schema: GuestPreferenceCatalogItemSchema,
+      },
       { name: ExperienceDocument.name, schema: ExperienceSchema },
     ]),
   ],
@@ -203,6 +213,10 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
       useClass: MongoShiftRepository,
     },
     {
+      provide: GUEST_PREFERENCE_CATALOG_REPOSITORY,
+      useClass: MongoGuestPreferenceCatalogRepository,
+    },
+    {
       provide: EXPERIENCE_REPOSITORY,
       useClass: MongoExperienceRepository,
     },
@@ -227,6 +241,7 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
+    GUEST_PREFERENCE_CATALOG_REPOSITORY,
     EXPERIENCE_REPOSITORY,
   ],
 })

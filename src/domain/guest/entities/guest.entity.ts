@@ -8,6 +8,7 @@ import {
   GuestStatusEnum,
   GuestSummary,
 } from '@/domain/guest/entities/guest.types';
+import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
 
 export class Guest {
   private constructor(
@@ -23,7 +24,7 @@ export class Guest {
     private phones: GuestPhone[],
     private status: GuestStatusEnum,
     private tags: string[],
-    private preferencesNotes: string,
+    private preferences: GuestPreferenceItem[],
     private summary: GuestSummary,
     private readonly createdAt: Date,
     private updatedAt: Date,
@@ -52,7 +53,7 @@ export class Guest {
       phones,
       params.status ?? GuestStatusEnum.ACTIVE,
       Guest.uniqueStrings(params.tags ?? []),
-      params.preferencesNotes?.trim() ?? '',
+      params.preferences ?? [],
       {
         totalBookings: 0,
         totalNights: 0,
@@ -79,7 +80,7 @@ export class Guest {
     phones: GuestPhone[],
     status: GuestStatusEnum,
     tags: string[],
-    preferencesNotes: string,
+    preferences: GuestPreferenceItem[],
     summary: GuestSummary,
     createdAt: Date,
     updatedAt: Date,
@@ -97,7 +98,7 @@ export class Guest {
       phones,
       status,
       Guest.uniqueStrings(tags),
-      preferencesNotes,
+      preferences,
       summary,
       createdAt,
       updatedAt,
@@ -151,8 +152,8 @@ export class Guest {
     this.touch();
   }
 
-  setPreferencesNotes(notes: string): void {
-    this.preferencesNotes = notes.trim();
+  setPreferences(items: GuestPreferenceItem[]): void {
+    this.preferences = items;
     this.touch();
   }
 
@@ -222,8 +223,8 @@ export class Guest {
     return [...this.tags];
   }
 
-  getPreferencesNotes(): string {
-    return this.preferencesNotes;
+  getPreferences(): GuestPreferenceItem[] {
+    return [...this.preferences];
   }
 
   getSummary(): GuestSummary {
