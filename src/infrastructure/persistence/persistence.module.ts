@@ -109,6 +109,13 @@ import {
 } from '@/infrastructure/persistence/schemas/experience.schema';
 import { EXPERIENCE_REPOSITORY } from '@/domain/experience/repositories/experience.repository';
 import { MongoExperienceRepository } from '@/infrastructure/persistence/repositories/mongo-experience.repository';
+import {
+  GuestTagDocument,
+  GuestTagSchema,
+} from '@/infrastructure/persistence/schemas/guest-tag.schema';
+import { GUEST_TAG_REPOSITORY } from '@/domain/guest-tag/repositories/guest-tag.repository';
+import { MongoGuestTagRepository } from '@/infrastructure/persistence/repositories/mongo-guest-tag.repository';
+import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-tag-seed.service';
 
 @Module({
   imports: [
@@ -137,6 +144,7 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
         schema: GuestPreferenceCatalogItemSchema,
       },
       { name: ExperienceDocument.name, schema: ExperienceSchema },
+      { name: GuestTagDocument.name, schema: GuestTagSchema },
     ]),
   ],
   providers: [
@@ -221,6 +229,11 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
       useClass: MongoExperienceRepository,
     },
     RoleSeedService,
+    {
+      provide: GUEST_TAG_REPOSITORY,
+      useClass: MongoGuestTagRepository,
+    },
+    GuestTagSeedService,
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -243,6 +256,7 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
     SHIFT_REPOSITORY,
     GUEST_PREFERENCE_CATALOG_REPOSITORY,
     EXPERIENCE_REPOSITORY,
+    GUEST_TAG_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

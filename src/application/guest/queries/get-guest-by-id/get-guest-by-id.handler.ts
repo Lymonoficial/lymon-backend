@@ -49,7 +49,7 @@ export class GetGuestByIdHandler implements IQueryHandler<
           isPrimary: p.isPrimary,
         })),
         status: guest.getStatus(),
-        tags: guest.getTags(),
+        tags: guest.getTags().map((t) => t.getName()),
         preferences: guest.getPreferences(),
         summary: guest.getSummary()
           ? {

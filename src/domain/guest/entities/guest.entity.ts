@@ -8,6 +8,7 @@ import {
   GuestStatusEnum,
   GuestSummary,
 } from '@/domain/guest/entities/guest.types';
+import { GuestTag } from '@/domain/guest-tag/entities/guest-tag.entity';
 import { IGuestData } from '../interfaces/guest.interface';
 import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
 
@@ -24,7 +25,7 @@ export class Guest {
     private emails: string[],
     private phones: GuestPhone[],
     private status: GuestStatusEnum,
-    private tags: string[],
+    private tags: GuestTag[],
     private preferences: GuestPreferenceItem[],
     private summary: GuestSummary,
     private readonly createdAt: Date,
@@ -53,7 +54,7 @@ export class Guest {
       emails,
       phones,
       params.status ?? GuestStatusEnum.ACTIVE,
-      Guest.uniqueStrings(params.tags ?? []),
+      [],
       params.preferences ?? [],
       {
         totalBookings: 0,
@@ -81,7 +82,7 @@ export class Guest {
       Guest.buildEmails(data.primaryEmail, data.emails),
       data.phones,
       data.status,
-      Guest.uniqueStrings(data.tags),
+      Guest.uniqueTags(data.tags),
       data.preferences,
       data.summary,
       data.createdAt,
@@ -131,8 +132,8 @@ export class Guest {
     this.touch();
   }
 
-  setTags(tags: string[]): void {
-    this.tags = Guest.uniqueStrings(tags);
+  setTags(tags: GuestTag[]): void {
+    this.tags = Guest.uniqueTags(tags);
     this.touch();
   }
 
@@ -203,7 +204,7 @@ export class Guest {
     return this.status;
   }
 
-  getTags(): string[] {
+  getTags(): GuestTag[] {
     return [...this.tags];
   }
 
@@ -247,12 +248,14 @@ export class Guest {
     return [...new Set(all)];
   }
 
-  private static uniqueStrings(values: string[]): string[] {
-    const normalized = values
-      .map((value) => value.trim().toLowerCase())
-      .filter((value) => value.length > 0);
-
-    return [...new Set(normalized)];
+  private static uniqueTags(tags: GuestTag[]): GuestTag[] {
+    const seen = new Set<string>();
+    return tags.filter((t) => {
+      const name = t.getName();
+      if (seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    });
   }
 
   private static normalizeOptionalString(value?: string | null): string | null {

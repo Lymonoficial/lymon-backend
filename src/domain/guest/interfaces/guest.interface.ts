@@ -8,6 +8,7 @@ import {
 } from '@/domain/guest/entities/guest.types';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
+import { GuestTag } from '@/domain/guest-tag/entities/guest-tag.entity';
 
 export interface IGuestData {
   id: GuestId;
@@ -21,7 +22,7 @@ export interface IGuestData {
   emails: string[];
   phones: GuestPhone[];
   status: GuestStatusEnum;
-  tags: string[];
+  tags: GuestTag[];
   preferences: GuestPreferenceItem[];
   summary: GuestSummary;
   createdAt: Date;
