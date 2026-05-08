@@ -18,6 +18,7 @@ import { InventoryController } from '@/presentation/controllers/inventory.contro
 import { SuppliersController } from '@/presentation/controllers/suppliers.controller';
 import { ShiftsController } from '@/presentation/controllers/shifts.controller';
 import { ExperienceController } from '@/presentation/controllers/experience.controller';
+import { MetricsController } from '@/presentation/controllers/metrics.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -39,6 +40,7 @@ import { ExperienceController } from '@/presentation/controllers/experience.cont
     SuppliersController,
     ShiftsController,
     ExperienceController,
+    MetricsController,
   ],
 })
 export class PresentationModule {}

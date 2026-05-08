@@ -103,6 +103,8 @@ import {
 } from '@/infrastructure/persistence/schemas/experience.schema';
 import { EXPERIENCE_REPOSITORY } from '@/domain/experience/repositories/experience.repository';
 import { MongoExperienceRepository } from '@/infrastructure/persistence/repositories/mongo-experience.repository';
+import { METRICS_READ_REPOSITORY } from '@/domain/metrics/repositories/metrics-read.repository';
+import { MongoMetricsReadRepository } from '@/infrastructure/persistence/repositories/mongo-metrics-read.repository';
 
 @Module({
   imports: [
@@ -206,6 +208,10 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
       provide: EXPERIENCE_REPOSITORY,
       useClass: MongoExperienceRepository,
     },
+    {
+      provide: METRICS_READ_REPOSITORY,
+      useClass: MongoMetricsReadRepository,
+    },
     RoleSeedService,
   ],
   exports: [
@@ -228,6 +234,7 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
     EXPERIENCE_REPOSITORY,
+    METRICS_READ_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
