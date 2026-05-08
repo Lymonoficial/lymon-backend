@@ -17,6 +17,6 @@ export class CreateGuestCommand {
       isPrimary?: boolean;
     }>,
     public readonly tags?: string[],
-    public readonly preferencesNotes?: string,
+    public readonly preferences?: string[],
   ) {}
 }

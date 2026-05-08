@@ -4,6 +4,7 @@ import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationError } from 'class-validator';
+import { Request, Response, NextFunction } from 'express';
 import { DomainExceptionFilter } from './presentation/common/filters/domain-exception.filter';
 import { HttpLoggingInterceptor } from './presentation/common/interceptors/http-logging.interceptor';
 
@@ -29,7 +30,7 @@ async function bootstrap() {
   });
 
   // Security headers
-  app.use((_req, res, next) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     next();

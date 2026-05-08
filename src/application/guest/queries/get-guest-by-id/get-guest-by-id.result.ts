@@ -1,4 +1,5 @@
 import { GuestStatusEnum } from '@/domain/guest/entities/guest.types';
+import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
 
 export interface GuestDto {
   id: string;
@@ -14,7 +15,7 @@ export interface GuestDto {
   }>;
   status: GuestStatusEnum;
   tags: string[];
-  preferencesNotes: string | null;
+  preferences: GuestPreferenceItem[];
   summary: {
     totalBookings: number;
     totalNights: number;

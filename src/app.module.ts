@@ -13,6 +13,7 @@ import { AuditInfrastructureModule } from '@/infrastructure/audit/audit-infrastr
 import { ScheduleModule } from '@nestjs/schedule';
 import { ReservationInfrastructureModule } from '@/infrastructure/reservation/reservation-infrastructure.module';
 import { InventoryInfrastructureModule } from '@/infrastructure/inventory/inventory-infrastructure.module';
+import { GuestPreferenceInfrastructureModule } from '@/infrastructure/guest-preference/guest-preference-infrastructure.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { InventoryInfrastructureModule } from '@/infrastructure/inventory/invent
     AuditInfrastructureModule,
     ReservationInfrastructureModule,
     InventoryInfrastructureModule,
+    GuestPreferenceInfrastructureModule,
   ],
   controllers: [AppController],
   providers: [

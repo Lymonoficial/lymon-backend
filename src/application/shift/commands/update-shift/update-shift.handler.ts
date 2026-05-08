@@ -57,15 +57,14 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     const shiftId = ShiftId.createFromString(command.shiftId);
 
     const shift = await this.shiftRepository.findById(shiftId);
-    if (!shift?.getTenantId?.()?.equals?.(tenantId)) {
+    if (!shift?.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Shift not found for the tenant');
     }
-    const existingShift: Shift = shift;
 
-    const shiftData = this.resolveShiftData(command, existingShift);
+    const shiftData = this.resolveShiftData(command, shift);
     this.validateShiftData(shiftData);
-
     this.validateObjectId(command.propertyId, 'property');
+
     const staffMembers = await this.getStaffMembers(
       shiftData.nextStaffMemberIds,
       tenantId,
@@ -74,26 +73,26 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     const property = await this.propertyRepository.findById(
       shiftData.nextPropertyId,
     );
-    if (!property?.getTenantId?.()?.equals?.(tenantId)) {
+    if (!property?.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Property not found for the tenant');
     }
 
     await this.checkStaffMemberOverlaps(shiftData, tenantId, shiftId);
 
-    const previousSnapshot = this.auditDiffService.snapshot(existingShift);
-    this.applyShiftUpdate(existingShift, shiftData);
-    const nextSnapshot = this.auditDiffService.snapshot(existingShift);
+    const previousSnapshot = this.auditDiffService.snapshot(shift);
+    this.applyShiftUpdate(shift, shiftData);
+    const nextSnapshot = this.auditDiffService.snapshot(shift);
     const auditDiff = this.auditDiffService.diff(
       previousSnapshot,
       nextSnapshot,
     );
 
-    const updatedShiftId = await this.shiftRepository.save(existingShift);
+    const updatedShiftId = await this.shiftRepository.save(shift);
 
     if (staffMembers.length > 0) {
       await this.shiftNotificationService.sendShiftUpdatedEmail(
         staffMembers,
-        existingShift,
+        shift,
         property,
       );
     }
@@ -291,6 +290,45 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     return shiftDate;
   }
 
+  private formatDate(value: Date): string {
+    return value.toISOString().slice(0, 10);
+  }
+
+  private resolveNextEndDate(
+    endDate: string | null | undefined,
+    currentEndDate: Date | null,
+  ): Date | null {
+    if (endDate === undefined) {
+      return currentEndDate;
+    }
+
+    if (endDate === null) {
+      return null;
+    }
+
+    return this.parseShiftDate(endDate);
+  }
+
+  private getShiftSnapshot(shift: {
+    getStaffMemberIds(): UserId[];
+    getPropertyId(): PropertyId;
+    getStartDate(): Date;
+    getEndDate(): Date | null;
+    getStartHour(): string;
+    getEndHour(): string;
+    getNotes(): string | null;
+  }): Record<string, unknown> {
+    return {
+      staffMemberIds: shift.getStaffMemberIds().map((id) => id.toString()),
+      propertyId: shift.getPropertyId().toString(),
+      startDate: this.formatDate(shift.getStartDate()),
+      endDate: shift.getEndDate() ? this.formatDate(shift.getEndDate()!) : null,
+      startHour: shift.getStartHour(),
+      endHour: shift.getEndHour(),
+      notes: shift.getNotes(),
+    };
+  }
+
   private getOptionalString(value: unknown): string | undefined {
     return typeof value === 'string' ? value : undefined;
   }
@@ -328,8 +366,9 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
       ),
     );
 
-    for (const staffMember of staffMembers) {
-      if (!staffMember?.getTenantId?.()?.equals?.(tenantId)) {
+    for (const element of staffMembers) {
+      const staffMember = element;
+      if (!staffMember?.getTenantId().equals(tenantId)) {
         throw new NotFoundException('Staff member not found for the tenant');
       }
 

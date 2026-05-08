@@ -115,7 +115,7 @@ export class HttpLoggingInterceptor implements NestInterceptor {
       .split(',')
       .map((entry) => entry.trim())
       .flatMap((entry) => {
-        const match = entry.match(/for=(?:"?\[?)([^";\]]+)(?:\]?"?)/i);
+        const match = new RegExp(/for=(?:"?\[?)([^";\]]+)(?:\]?"?)/i).exec(entry);
         return match?.[1] ? [match[1]] : [];
       });
   }

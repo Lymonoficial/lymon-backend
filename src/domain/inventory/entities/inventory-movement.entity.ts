@@ -3,6 +3,7 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { InventoryItemId } from '@/domain/inventory/value-objects/inventory-item-id.vo';
 import { InventoryMovementId } from '@/domain/inventory/value-objects/inventory-movement-id.vo';
 import { InventoryMovementType } from '@/domain/inventory/value-objects/inventory-movement-type.vo';
+import { IInventoryMovementData } from '../interfaces/inventory-movement.interface';
 
 export class InventoryMovement {
   private constructor(
@@ -45,31 +46,19 @@ export class InventoryMovement {
     );
   }
 
-  static reconstitute(
-    id: InventoryMovementId,
-    tenantId: TenantId,
-    propertyId: PropertyId,
-    itemId: InventoryItemId,
-    type: InventoryMovementType,
-    quantity: number,
-    reason: string,
-    reference: string | null,
-    actorId: string,
-    actorEmail: string,
-    createdAt: Date,
-  ): InventoryMovement {
+  static reconstitute(data: IInventoryMovementData): InventoryMovement {
     return new InventoryMovement(
-      id,
-      tenantId,
-      propertyId,
-      itemId,
-      type,
-      quantity,
-      reason,
-      reference,
-      actorId,
-      actorEmail,
-      createdAt,
+      data.id,
+      data.tenantId,
+      data.propertyId,
+      data.itemId,
+      data.type,
+      data.quantity,
+      data.reason,
+      data.reference,
+      data.actorId,
+      data.actorEmail,
+      data.createdAt,
     );
   }
 

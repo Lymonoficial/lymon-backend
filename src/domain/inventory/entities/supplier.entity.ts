@@ -138,6 +138,26 @@ export class Supplier {
   }
 
   private static isValidEmail(value: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    if (value.length === 0 || value.includes(' ')) {
+      return false;
+    }
+
+    const atIndex = value.indexOf('@');
+    if (atIndex <= 0 || atIndex !== value.lastIndexOf('@')) {
+      return false;
+    }
+
+    const localPart = value.slice(0, atIndex);
+    const domainPart = value.slice(atIndex + 1);
+    if (!localPart || !domainPart) {
+      return false;
+    }
+
+    const dotIndex = domainPart.lastIndexOf('.');
+    if (dotIndex <= 0 || dotIndex === domainPart.length - 1) {
+      return false;
+    }
+
+    return true;
   }
 }

@@ -35,7 +35,7 @@ export class GetLowStockItemsByPropertyQueryHandler implements IQueryHandler<
     const property = await this.propertyRepository.findById(propertyId);
     if (
       !property ||
-      property.getTenantId().toString() !== tenantId.toString()
+      property?.getTenantId().toString() !== tenantId.toString()
     ) {
       throw new NotFoundException('Property not found');
     }

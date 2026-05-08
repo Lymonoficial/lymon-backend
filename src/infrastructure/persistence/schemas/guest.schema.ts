@@ -79,8 +79,21 @@ export class GuestDocument extends Document {
   })
   tags: Types.ObjectId[];
 
-  @Prop({ default: '' })
-  preferencesNotes: string;
+  @Prop({
+    type: [
+      {
+        catalogItemId: { type: String, required: true },
+        labelSnapshot: { type: String, required: true },
+        category: { type: String, required: true },
+      },
+    ],
+    default: [],
+  })
+  preferences: Array<{
+    catalogItemId: string;
+    labelSnapshot: string;
+    category: string;
+  }>;
 
   @Prop({
     type: {

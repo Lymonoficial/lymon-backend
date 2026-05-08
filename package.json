@@ -30,7 +30,7 @@
     "test:perf:smoke": "node performance/k6/dist/run-k6.mjs performance/k6/dist/smoke-auth-login.js",
     "test:performance": "pnpm run test:perf:smoke && pnpm run test:perf:properties && pnpm run test:perf:units && pnpm run test:perf:inventory && pnpm run test:perf:audit-logs && pnpm run test:perf:incident-reports && pnpm run test:perf:reservations",
     "test:all": "pnpm run test && pnpm run test:security && pnpm run test:performance",
-    "sonar": "jest --coverage && node -e \"const { execSync } = require('child_process'); execSync('docker run --rm -v ' + process.cwd() + ':/usr/src sonarsource/sonar-scanner-cli', {stdio: 'inherit'})\""
+    "sonar": "pnpm run test:cov && sonar-scanner"
   },
   "dependencies": {
     "@getbrevo/brevo": "^4.0.1",
@@ -117,40 +117,10 @@
       "^@test/(.*)$": "<rootDir>/test/$1"
     },
     "collectCoverageFrom": [
-      "src/application/incident-report/commands/create-incident-report.handler.ts",
-      "src/application/incident-report/commands/update-incident-report.handler.ts",
-      "src/application/incident-report/queries/GetIncidentReportsByProperty/get-incident-reports-by-property.query-handler.ts",
-      "src/application/tenant/commands/update-tenant-profile.handler.ts",
-      "src/application/tenant/queries/GetTenantProfile/get-tenant-profile.query-handler.ts",
-      "src/application/role/queries/GetSystemRoles/get-system-roles.query-handler.ts",
-      "src/application/guest-auth/commands/recover-guest-password/recover-guest-password.handler.ts",
-      "src/application/guest-auth/commands/verify-guest-email/verify-guest-email.handler.ts",
-      "src/application/guest-auth/commands/login-guest/login-guest.handler.ts",
-      "src/application/guest-auth/commands/register-guest-account/register-guest-account.handler.ts",
-      "src/domain/role/entities/role.entity.ts",
-      "src/domain/role/repositories/role.repository.ts",
-      "src/domain/role/value-objects/permission.vo.ts",
-      "src/domain/guest-account/entities/guest-account.entity.ts",
-      "src/domain/guest-account/repositories/guest-account.repository.ts",
-      "src/domain/guest-account/value-objects/guest-account-id.vo.ts",
-      "src/domain/guest-account/value-objects/guest-account-status.vo.ts",
-      "src/infrastructure/persistence/repositories/mongo-role.repository.ts",
-      "src/infrastructure/persistence/repositories/mongo-guest-account.repository.ts",
-      "src/presentation/controllers/role.controller.ts",
-      "src/presentation/controllers/guest-auth.controller.ts",
-      "src/domain/incident-report/entities/incident-report.entity.ts",
-      "src/domain/incident-report/repositories/incident-report.repository.ts",
-      "src/domain/incident-report/value-objects/incident-report-id.vo.ts",
-      "src/domain/tenant/entities/tenant.entity.ts",
-      "src/domain/tenant/repositories/tenant.repository.ts",
-      "src/domain/tenant/value-objects/tenant-id.vo.ts",
-      "src/domain/tenant/value-objects/plan-type.vo.ts",
-      "src/infrastructure/persistence/repositories/mongo-incident-report.repository.ts",
-      "src/infrastructure/persistence/repositories/mongo-tenant.repository.ts",
-      "src/presentation/controllers/incident-report.controller.ts",
-      "src/presentation/controllers/tenant.controller.ts",
-      "src/infrastructure/auth/guards/jwt-auth.guard.ts",
-      "src/infrastructure/auth/guards/permission.guard.ts"
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/main.ts",
+      "!src/**/*.module.ts"
     ],
     "coverageDirectory": "./coverage",
     "coverageReporters": [

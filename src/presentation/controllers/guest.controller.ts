@@ -77,7 +77,7 @@ export class GuestController {
         dto.emails,
         dto.phones,
         dto.tags,
-        dto.preferencesNotes,
+        dto.preferences?.map((p) => p.catalogItemId),
       ),
     );
 
@@ -233,7 +233,7 @@ export class GuestController {
       new SaveGuestPreferencesCommand(
         user.tenantId,
         guestId,
-        dto.preferencesNotes,
+        dto.preferences.map((p) => p.catalogItemId),
         user.activePlan,
       ),
     );

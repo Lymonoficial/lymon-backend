@@ -9,7 +9,16 @@ import { ConfirmRecoverPasswordCommand } from '@/application/auth/commands/confi
 import { ConfirmRecoverPasswordResult } from '@/application/auth/commands/confirm-recover-password.handler';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterTenantDto } from '@/presentation/dtos/register-tenant.dto';
@@ -59,6 +68,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with email and password' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   async login(@Body() dto: LoginDto) {

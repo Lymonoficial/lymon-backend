@@ -82,17 +82,16 @@ export class MongoGuestEmailRepository implements GuestEmailRepository {
   }
 
   private toDomain(doc: GuestEmailDocument): GuestEmail {
-    return GuestEmail.reconstitute(
-      GuestEmailId.createFromString(doc._id),
-      TenantId.createFromString(doc.tenantId.toString()),
-      GuestId.createFromString(doc.guestId.toString()),
-      doc.subject,
-
-      doc.status,
-      doc.attachments as GuestEmailAttachment[],
-      doc.messageId,
-      doc.sentById,
-      doc.createdAt,
-    );
+    return GuestEmail.reconstitute({
+      id: GuestEmailId.createFromString(doc._id),
+      tenantId: TenantId.createFromString(doc.tenantId.toString()),
+      guestId: GuestId.createFromString(doc.guestId.toString()),
+      subject: doc.subject,
+      status: doc.status,
+      attachments: doc.attachments as GuestEmailAttachment[],
+      messageId: doc.messageId,
+      sentById: doc.sentById,
+      createdAt: doc.createdAt,
+    });
   }
 }

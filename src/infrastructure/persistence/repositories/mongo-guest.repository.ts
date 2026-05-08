@@ -13,6 +13,8 @@ import { GuestDocument } from '@/infrastructure/persistence/schemas/guest.schema
 import { GuestTag } from '@/domain/guest-tag/entities/guest-tag.entity';
 import { GuestTagId } from '@/domain/guest-tag/value-objects/guest-tag-id.vo';
 import { GuestTagDocument } from '@/infrastructure/persistence/schemas/guest-tag.schema';
+import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
+import { GuestPreferenceCategoryEnum } from '@/domain/guest-preference/value-objects/guest-preference-category.vo';
 
 type PopulatedGuestDocument = Omit<GuestDocument, 'tags'> & {
   tags: GuestTagDocument[];
@@ -50,7 +52,7 @@ export class MongoGuestRepository implements GuestRepository {
         .getTags()
         .filter((t) => t.getId() !== null)
         .map((t) => new Types.ObjectId(t.getId()!.toString())),
-      preferencesNotes: guest.getPreferencesNotes(),
+      preferences: guest.getPreferences(),
       summary: {
         totalBookings: summary.totalBookings,
         totalNights: summary.totalNights,
@@ -266,27 +268,33 @@ export class MongoGuestRepository implements GuestRepository {
       ),
     );
 
-    return Guest.reconstitute(
-      GuestId.createFromString(document._id.toString()),
-      TenantId.createFromString(document.tenantId.toString()),
-      document.guestAccountId
+    return Guest.reconstitute({
+      id: GuestId.createFromString(document._id.toString()),
+      tenantId: TenantId.createFromString(document.tenantId.toString()),
+      guestAccountId: document.guestAccountId
         ? GuestAccountId.createFromString(document.guestAccountId.toString())
         : null,
-      {
+      identity: {
         documentType: document.identity?.documentType,
         documentNumber: document.identity?.documentNumber,
         countryCode: document.identity?.countryCode,
       },
-      document.firstName,
-      document.lastName,
-      document.fullName,
-      document.primaryEmail,
-      document.emails ?? [],
-      document.phones ?? [],
-      document.status,
+      firstName: document.firstName,
+      lastName: document.lastName,
+      fullName: document.fullName,
+      primaryEmail: document.primaryEmail,
+      emails: document.emails ?? [],
+      phones: document.phones ?? [],
+      status: document.status,
       tags,
-      document.preferencesNotes ?? '',
-      {
+      preferences: (document.preferences ?? []).map(
+        (p): GuestPreferenceItem => ({
+          catalogItemId: p.catalogItemId,
+          labelSnapshot: p.labelSnapshot,
+          category: p.category as GuestPreferenceCategoryEnum,
+        }),
+      ),
+      summary: {
         totalBookings: document.summary?.totalBookings ?? 0,
         totalNights: document.summary?.totalNights ?? 0,
         totalSpend: document.summary?.totalSpend ?? 0,
@@ -298,8 +306,8 @@ export class MongoGuestRepository implements GuestRepository {
           ? UnitId.create(document.summary.lastUnitId.toString())
           : null,
       },
-      document.createdAt,
-      document.updatedAt,
-    );
+      createdAt: document.createdAt,
+      updatedAt: document.updatedAt,
+    });
   }
 }
