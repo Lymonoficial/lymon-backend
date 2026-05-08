@@ -2,6 +2,7 @@ import {
   AuditAction,
   AuditEntityType,
 } from '@/domain/audit/value-objects/audit-action.vo';
+import type { AuditLogData } from '../interfaces/audit-log.interface';
 
 export class AuditLogId {
   private constructor(private readonly value: string) {}
@@ -13,22 +14,6 @@ export class AuditLogId {
   toString(): string {
     return this.value;
   }
-}
-
-//Refactorizacion para reconstitute no reciba 9 parametros sino 2, porque
-//los maximos parametros permitidos son 7.
-export interface AuditLogData {
-  tenantId: string;
-  userId: string;
-  userEmail: string;
-  action: AuditAction;
-  entityType: AuditEntityType;
-  entityId?: string;
-  metadata?: Record<string, unknown>;
-  previousValue?: Record<string, unknown>;
-  newValue?: Record<string, unknown>;
-  ipAddress?: string;
-  createdAt: Date;
 }
 
 /**
@@ -50,35 +35,23 @@ export class AuditLog {
     private readonly createdAt: Date,
   ) {}
 
-  static create(
-    tenantId: string,
-    userId: string,
-    userEmail: string,
-    action: AuditAction,
-    entityType: AuditEntityType,
-    entityId?: string,
-    metadata?: Record<string, unknown>,
-    previousValue?: Record<string, unknown>,
-    newValue?: Record<string, unknown>,
-    ipAddress?: string,
-  ): AuditLog {
+  static create(data: AuditLogData): AuditLog {
     return new AuditLog(
       null,
-      tenantId,
-      userId,
-      userEmail,
-      action,
-      entityType,
-      entityId,
-      metadata,
-      previousValue,
-      newValue,
-      ipAddress,
+      data.tenantId,
+      data.userId,
+      data.userEmail,
+      data.action,
+      data.entityType,
+      data.entityId,
+      data.metadata,
+      data.previousValue,
+      data.newValue,
+      data.ipAddress,
       new Date(),
     );
   }
 
-  // De 9 a 2 parametros.
   static reconstitute(id: AuditLogId, data: AuditLogData): AuditLog {
     return new AuditLog(
       id,

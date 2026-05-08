@@ -8,7 +8,6 @@ import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import {
   Body,
   Controller,
-  Delete,
   DefaultValuePipe,
   Delete,
   Get,

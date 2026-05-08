@@ -8,6 +8,7 @@ import {
   GuestStatusEnum,
   GuestSummary,
 } from '@/domain/guest/entities/guest.types';
+import { IGuestData } from '../interfaces/guest.interface';
 import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
 
 export class Guest {
@@ -67,41 +68,24 @@ export class Guest {
     );
   }
 
-  static reconstitute(
-    id: GuestId,
-    tenantId: TenantId,
-    guestAccountId: GuestAccountId | null,
-    identity: GuestIdentity,
-    firstName: string | null,
-    lastName: string | null,
-    fullName: string,
-    primaryEmail: string,
-    emails: string[],
-    phones: GuestPhone[],
-    status: GuestStatusEnum,
-    tags: string[],
-    preferences: GuestPreferenceItem[],
-    summary: GuestSummary,
-    createdAt: Date,
-    updatedAt: Date,
-  ): Guest {
+  static reconstitute(data: IGuestData): Guest {
     return new Guest(
-      id,
-      tenantId,
-      guestAccountId,
-      identity,
-      firstName,
-      lastName,
-      fullName,
-      Guest.normalizeEmail(primaryEmail),
-      Guest.buildEmails(primaryEmail, emails),
-      phones,
-      status,
-      Guest.uniqueStrings(tags),
-      preferences,
-      summary,
-      createdAt,
-      updatedAt,
+      data.id,
+      data.tenantId,
+      data.guestAccountId,
+      data.identity,
+      data.firstName,
+      data.lastName,
+      data.fullName,
+      Guest.normalizeEmail(data.primaryEmail),
+      Guest.buildEmails(data.primaryEmail, data.emails),
+      data.phones,
+      data.status,
+      Guest.uniqueStrings(data.tags),
+      data.preferences,
+      data.summary,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 

@@ -10,6 +10,7 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
+import { IReservationData } from '../interfaces/reservation.interface';
 
 interface CreateReservationParams {
   tenantId: TenantId;
@@ -80,47 +81,27 @@ export class Reservation {
     return reservation;
   }
 
-  static reconstitute(
-    id: string,
-    tenantId: TenantId,
-    propertyId: PropertyId,
-    unitId: UnitId,
-    guestId: GuestId,
-    dateRange: DateRange,
-    source: ReservationSource,
-    status: ReservationStatus,
-    guestsCount: number,
-    pricePerNight: number,
-    totalPrice: number,
-    notes: string | null,
-    externalReservationId: string | null,
-    cancelledAt: Date | null,
-    cancellationReason: string | null,
-    checkInActualAt: Date | null,
-    checkOutActualAt: Date | null,
-    createdAt: Date,
-    updatedAt: Date,
-  ): Reservation {
+  static reconstitute(data: IReservationData): Reservation {
     return new Reservation(
-      ReservationId.create(id),
-      tenantId,
-      propertyId,
-      unitId,
-      guestId,
-      dateRange,
-      source,
-      status,
-      guestsCount,
-      pricePerNight,
-      totalPrice,
-      notes,
-      externalReservationId,
-      cancelledAt,
-      cancellationReason,
-      checkInActualAt,
-      checkOutActualAt,
-      createdAt,
-      updatedAt,
+      ReservationId.create(data.id),
+      data.tenantId,
+      data.propertyId,
+      data.unitId,
+      data.guestId,
+      data.dateRange,
+      data.source,
+      data.status,
+      data.guestsCount,
+      data.pricePerNight,
+      data.totalPrice,
+      data.notes,
+      data.externalReservationId,
+      data.cancelledAt,
+      data.cancellationReason,
+      data.checkInActualAt,
+      data.checkOutActualAt,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 

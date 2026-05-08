@@ -224,33 +224,33 @@ export class MongoGuestRepository implements GuestRepository {
   }
 
   private toDomain(document: GuestDocument): Guest {
-    return Guest.reconstitute(
-      GuestId.createFromString(document._id.toString()),
-      TenantId.createFromString(document.tenantId.toString()),
-      document.guestAccountId
+    return Guest.reconstitute({
+      id: GuestId.createFromString(document._id.toString()),
+      tenantId: TenantId.createFromString(document.tenantId.toString()),
+      guestAccountId: document.guestAccountId
         ? GuestAccountId.createFromString(document.guestAccountId.toString())
         : null,
-      {
+      identity: {
         documentType: document.identity?.documentType,
         documentNumber: document.identity?.documentNumber,
         countryCode: document.identity?.countryCode,
       },
-      document.firstName,
-      document.lastName,
-      document.fullName,
-      document.primaryEmail,
-      document.emails ?? [],
-      document.phones ?? [],
-      document.status,
-      document.tags ?? [],
-      (document.preferences ?? []).map(
+      firstName: document.firstName,
+      lastName: document.lastName,
+      fullName: document.fullName,
+      primaryEmail: document.primaryEmail,
+      emails: document.emails ?? [],
+      phones: document.phones ?? [],
+      status: document.status,
+      tags: document.tags ?? [],
+      preferences: (document.preferences ?? []).map(
         (p): GuestPreferenceItem => ({
           catalogItemId: p.catalogItemId,
           labelSnapshot: p.labelSnapshot,
           category: p.category as GuestPreferenceCategoryEnum,
         }),
       ),
-      {
+      summary: {
         totalBookings: document.summary?.totalBookings ?? 0,
         totalNights: document.summary?.totalNights ?? 0,
         totalSpend: document.summary?.totalSpend ?? 0,
@@ -262,8 +262,8 @@ export class MongoGuestRepository implements GuestRepository {
           ? UnitId.create(document.summary.lastUnitId.toString())
           : null,
       },
-      document.createdAt,
-      document.updatedAt,
-    );
+      createdAt: document.createdAt,
+      updatedAt: document.updatedAt,
+    });
   }
 }

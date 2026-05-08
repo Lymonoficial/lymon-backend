@@ -20,16 +20,16 @@ export function makeGuestNote(
 ): GuestNote {
   const merged = { ...GUEST_NOTE_FIXTURE_DEFAULTS, ...overrides };
 
-  return GuestNote.reconstitute(
-    GuestNoteId.createFromString(merged.id),
-    TenantId.createFromString(merged.tenantId),
-    GuestId.createFromString(merged.guestId),
-    merged.note,
-    merged.type,
-    merged.status,
-    merged.createdBy,
-    new Date(),
-    new Date(),
-    null,
-  );
+  return GuestNote.reconstitute({
+    id: GuestNoteId.createFromString(merged.id),
+    tenantId: TenantId.createFromString(merged.tenantId),
+    guestId: GuestId.createFromString(merged.guestId),
+    note: merged.note,
+    type: merged.type,
+    status: merged.status,
+    createdBy: merged.createdBy,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: null,
+  });
 }

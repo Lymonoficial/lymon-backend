@@ -8,10 +8,10 @@ import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
 import { CatalogPreferenceBuilderService } from '@/application/guest-preference/services/catalog-preference-builder.service';
 
-const PLANS_WITH_PREFERENCES_ACCESS: string[] = [
+const PLANS_WITH_PREFERENCES_ACCESS = new Set<string>([
   PlanTypeEnum.LYMON_PLUS,
   PlanTypeEnum.LYMON_PRIME,
-];
+]);
 
 @CommandHandler(SaveGuestPreferencesCommand)
 export class SaveGuestPreferencesHandler implements ICommandHandler<
@@ -59,7 +59,7 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
   }
 
   private validatePlanAccess(activePlan: string): void {
-    if (!PLANS_WITH_PREFERENCES_ACCESS.includes(activePlan)) {
+    if (!PLANS_WITH_PREFERENCES_ACCESS.has(activePlan)) {
       throw new ForbiddenException(
         'Guest preferences management requires a LYMON_PLUS or LYMON_PRIME plan. Please upgrade your plan.',
       );
