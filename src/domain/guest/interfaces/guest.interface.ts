@@ -7,6 +7,7 @@ import {
   GuestSummary,
 } from '@/domain/guest/entities/guest.types';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
 
 export interface IGuestData {
   id: GuestId;
@@ -21,7 +22,7 @@ export interface IGuestData {
   phones: GuestPhone[];
   status: GuestStatusEnum;
   tags: string[];
-  preferencesNotes: string;
+  preferences: GuestPreferenceItem[];
   summary: GuestSummary;
   createdAt: Date;
   updatedAt: Date;

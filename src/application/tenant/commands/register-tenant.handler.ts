@@ -32,6 +32,10 @@ import {
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
 import {
+  TENANT_REGISTERED_EVENT,
+  TenantRegisteredEvent,
+} from '@/application/tenant/events/tenant-registered.event';
+import {
   AuditAction,
   AuditEntityType,
 } from '@/domain/audit/value-objects/audit-action.vo';
@@ -114,6 +118,11 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
     await this.emailService.sendVerificationEmail(
       email.toString(),
       verificationToken,
+    );
+
+    this.eventEmitter.emit(
+      TENANT_REGISTERED_EVENT,
+      new TenantRegisteredEvent(savedTenant.getId()!.toString()),
     );
 
     this.eventEmitter.emit(

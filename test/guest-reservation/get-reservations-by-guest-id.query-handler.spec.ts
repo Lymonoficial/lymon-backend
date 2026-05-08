@@ -72,7 +72,7 @@ function makeGuest(guestId: string, tenantId: string): Guest {
     phones: [],
     status: GuestStatusEnum.ACTIVE,
     tags: [],
-    preferencesNotes: '',
+    preferences: [],
     summary,
     createdAt: new Date(),
     updatedAt: new Date(),

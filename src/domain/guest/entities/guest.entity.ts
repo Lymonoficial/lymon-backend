@@ -9,6 +9,7 @@ import {
   GuestSummary,
 } from '@/domain/guest/entities/guest.types';
 import { IGuestData } from '../interfaces/guest.interface';
+import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
 
 export class Guest {
   private constructor(
@@ -24,7 +25,7 @@ export class Guest {
     private phones: GuestPhone[],
     private status: GuestStatusEnum,
     private tags: string[],
-    private preferencesNotes: string,
+    private preferences: GuestPreferenceItem[],
     private summary: GuestSummary,
     private readonly createdAt: Date,
     private updatedAt: Date,
@@ -53,7 +54,7 @@ export class Guest {
       phones,
       params.status ?? GuestStatusEnum.ACTIVE,
       Guest.uniqueStrings(params.tags ?? []),
-      params.preferencesNotes?.trim() ?? '',
+      params.preferences ?? [],
       {
         totalBookings: 0,
         totalNights: 0,
@@ -81,7 +82,7 @@ export class Guest {
       data.phones,
       data.status,
       Guest.uniqueStrings(data.tags),
-      data.preferencesNotes,
+      data.preferences,
       data.summary,
       data.createdAt,
       data.updatedAt,
@@ -135,8 +136,8 @@ export class Guest {
     this.touch();
   }
 
-  setPreferencesNotes(notes: string): void {
-    this.preferencesNotes = notes.trim();
+  setPreferences(items: GuestPreferenceItem[]): void {
+    this.preferences = items;
     this.touch();
   }
 
@@ -206,8 +207,8 @@ export class Guest {
     return [...this.tags];
   }
 
-  getPreferencesNotes(): string {
-    return this.preferencesNotes;
+  getPreferences(): GuestPreferenceItem[] {
+    return [...this.preferences];
   }
 
   getSummary(): GuestSummary {

@@ -50,7 +50,7 @@ export class GetGuestByIdHandler implements IQueryHandler<
         })),
         status: guest.getStatus(),
         tags: guest.getTags(),
-        preferencesNotes: guest.getPreferencesNotes() || null,
+        preferences: guest.getPreferences(),
         summary: guest.getSummary()
           ? {
               totalBookings: guest.getSummary().totalBookings,

@@ -10,6 +10,8 @@ import { TransactionContextData } from '@/domain/shared/transaction-manager.inte
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { GuestDocument } from '@/infrastructure/persistence/schemas/guest.schema';
+import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
+import { GuestPreferenceCategoryEnum } from '@/domain/guest-preference/value-objects/guest-preference-category.vo';
 
 @Injectable()
 export class MongoGuestRepository implements GuestRepository {
@@ -40,7 +42,7 @@ export class MongoGuestRepository implements GuestRepository {
       phones: guest.getPhones(),
       status: guest.getStatus(),
       tags: guest.getTags(),
-      preferencesNotes: guest.getPreferencesNotes(),
+      preferences: guest.getPreferences(),
       summary: {
         totalBookings: summary.totalBookings,
         totalNights: summary.totalNights,
@@ -241,7 +243,13 @@ export class MongoGuestRepository implements GuestRepository {
       phones: document.phones ?? [],
       status: document.status,
       tags: document.tags ?? [],
-      preferencesNotes: document.preferencesNotes ?? '',
+      preferences: (document.preferences ?? []).map(
+        (p): GuestPreferenceItem => ({
+          catalogItemId: p.catalogItemId,
+          labelSnapshot: p.labelSnapshot,
+          category: p.category as GuestPreferenceCategoryEnum,
+        }),
+      ),
       summary: {
         totalBookings: document.summary?.totalBookings ?? 0,
         totalNights: document.summary?.totalNights ?? 0,
