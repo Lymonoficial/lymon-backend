@@ -1,7 +1,10 @@
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
-import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
+import {
+  ExperienceAvailabilityType,
+  ExperienceAvailabilityTypeEnum,
+} from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
@@ -76,23 +79,21 @@ export interface ExperienceReconstituteData {
   deletedAt?: Date | null;
 }
 
-export interface ExperienceUpdateData {
-  name: string;
-  description: string;
-  priceCop: number;
-  durationHours: number;
-  capacity: number;
-  coverImageUrl: string;
-  location: ExperienceLocation;
-  availabilityType: ExperienceAvailabilityType;
-  startAt: Date | undefined;
-  endAt: Date | undefined;
-  recurrence: ExperienceRecurrence | undefined;
-  blackoutRanges: ExperienceBlackoutRange[];
-  allowStandalonePurchase: boolean;
-  allowReservationPurchase: boolean;
-  minNoticeHours: number;
-  purchaseCutoffHours: number;
+export interface ExperienceChanges {
+  name?: string;
+  description?: string;
+  priceCop?: number;
+  durationHours?: number;
+  capacity?: number;
+  coverImageUrl?: string;
+  location?: ExperienceLocation;
+  availabilityType?: ExperienceAvailabilityTypeEnum;
+  startAt?: Date;
+  endAt?: Date;
+  recurrence?: ExperienceRecurrence;
+  blackoutRanges?: ExperienceBlackoutRange[];
+  allowStandalonePurchase?: boolean;
+  allowReservationPurchase?: boolean;
 }
 
 export class Experience {
@@ -346,13 +347,13 @@ export class Experience {
     return this.deletedAt;
   }
 
-  update(data: ExperienceUpdateData): void {
-    const name = data.name?.trim();
+  update(changes: ExperienceChanges): void {
+    const name = (changes.name ?? this.name)?.trim();
     if (!name) {
       throw new Error('Experience name cannot be empty');
     }
 
-    const description = data.description?.trim();
+    const description = (changes.description ?? this.description)?.trim();
     if (!description) {
       throw new Error('Experience description cannot be empty');
     }
@@ -361,53 +362,75 @@ export class Experience {
       throw new Error('Experience description cannot exceed 5000 characters');
     }
 
-    if (!Number.isFinite(data.priceCop) || data.priceCop <= 0) {
+    const priceCop = changes.priceCop ?? this.priceCop;
+    if (!Number.isFinite(priceCop) || priceCop <= 0) {
       throw new Error('Experience price must be greater than zero');
     }
 
-    if (!Number.isFinite(data.durationHours) || data.durationHours <= 0) {
+    const durationHours = changes.durationHours ?? this.durationHours;
+    if (!Number.isFinite(durationHours) || durationHours <= 0) {
       throw new Error('Experience duration must be greater than zero');
     }
 
-    if (!Number.isInteger(data.capacity) || data.capacity <= 0) {
+    const capacity = changes.capacity ?? this.capacity;
+    if (!Number.isInteger(capacity) || capacity <= 0) {
       throw new Error('Experience capacity must be a positive integer');
     }
 
-    if (!data.allowStandalonePurchase && !data.allowReservationPurchase) {
+    const allowStandalonePurchase =
+      changes.allowStandalonePurchase ?? this.allowStandalonePurchase;
+    const allowReservationPurchase =
+      changes.allowReservationPurchase ?? this.allowReservationPurchase;
+    if (!allowStandalonePurchase && !allowReservationPurchase) {
       throw new Error('Experience must be purchasable in at least one mode');
     }
 
-    Experience.validateLocation(data.location);
+    const location = changes.location ?? this.location;
+    Experience.validateLocation(location);
+
+    const availabilityType = changes.availabilityType
+      ? ExperienceAvailabilityType.create(changes.availabilityType)
+      : this.availabilityType;
+    const startAt =
+      changes.startAt !== undefined
+        ? changes.startAt
+        : (this.startAt ?? undefined);
+    const endAt =
+      changes.endAt !== undefined ? changes.endAt : (this.endAt ?? undefined);
+    const recurrence =
+      changes.recurrence !== undefined
+        ? changes.recurrence
+        : (this.recurrence ?? undefined);
+    const blackoutRanges = changes.blackoutRanges ?? this.blackoutRanges;
+
     Experience.validateAvailability(
-      data.availabilityType,
-      data.startAt,
-      data.endAt,
-      data.recurrence,
-      data.blackoutRanges,
+      availabilityType,
+      startAt,
+      endAt,
+      recurrence,
+      blackoutRanges,
       new Date(),
     );
 
     this.name = name;
     this.description = description;
-    this.priceCop = data.priceCop;
-    this.durationHours = data.durationHours;
-    this.capacity = data.capacity;
-    this.coverImageUrl = data.coverImageUrl;
+    this.priceCop = priceCop;
+    this.durationHours = durationHours;
+    this.capacity = capacity;
+    this.coverImageUrl = changes.coverImageUrl ?? this.coverImageUrl;
     this.location = {
-      label: data.location.label.trim(),
-      address: data.location.address?.trim() || undefined,
-      lat: data.location.lat,
-      lng: data.location.lng,
+      label: location.label.trim(),
+      address: location.address?.trim() || undefined,
+      lat: location.lat,
+      lng: location.lng,
     };
-    this.availabilityType = data.availabilityType;
-    this.startAt = data.startAt ?? null;
-    this.endAt = data.endAt ?? null;
-    this.recurrence = data.recurrence ?? null;
-    this.blackoutRanges = data.blackoutRanges;
-    this.allowStandalonePurchase = data.allowStandalonePurchase;
-    this.allowReservationPurchase = data.allowReservationPurchase;
-    this.minNoticeHours = data.minNoticeHours;
-    this.purchaseCutoffHours = data.purchaseCutoffHours;
+    this.availabilityType = availabilityType;
+    this.startAt = startAt ?? null;
+    this.endAt = endAt ?? null;
+    this.recurrence = recurrence ?? null;
+    this.blackoutRanges = blackoutRanges;
+    this.allowStandalonePurchase = allowStandalonePurchase;
+    this.allowReservationPurchase = allowReservationPurchase;
     this.updatedAt = new Date();
   }
 

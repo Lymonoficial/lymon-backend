@@ -1,6 +1,11 @@
 import { CreateExperienceCommand } from '@/application/experience/commands/create-experience.command';
 import { CreateExperienceResult } from '@/application/experience/commands/create-experience.result';
-import { UpdateExperienceCommand } from '@/application/experience/commands/update-experience/update-experience.command';
+import {
+  ExperienceActor,
+  UpdateExperienceCommand,
+} from '@/application/experience/commands/update-experience/update-experience.command';
+import { ExperienceChanges } from '@/domain/experience/entities/experience.entity';
+import { pickDefined } from '@/presentation/common/utils/pick-defined.util';
 import { GetExperiencesByTenantQuery } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query';
 import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
@@ -224,35 +229,48 @@ export class ExperienceController {
   @RequirePermission(Permission.EXPERIENCE_EDIT)
   @ApiOperation({ summary: 'Update an existing experience' })
   @ApiResponse({ status: 200, description: 'Experience updated successfully' })
-  @ApiResponse({ status: 400, description: 'Validation error or no fields provided' })
-  @ApiResponse({ status: 403, description: 'Insufficient permissions or not the owner' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or no fields provided',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Insufficient permissions or not the owner',
+  })
   @ApiResponse({ status: 404, description: 'Experience not found' })
   async update(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
     @Body() dto: UpdateExperienceDto,
   ) {
+    const changes: ExperienceChanges = {
+      ...pickDefined({
+        name: dto.name,
+        description: dto.description,
+        priceCop: dto.priceCop,
+        durationHours: dto.durationHours,
+        capacity: dto.capacity,
+        coverImageUrl: dto.coverImageUrl,
+        location: dto.location,
+        availabilityType: dto.availabilityType,
+        recurrence: dto.recurrence,
+        allowStandalonePurchase: dto.allowStandalonePurchase,
+        allowReservationPurchase: dto.allowReservationPurchase,
+      }),
+      ...(dto.startAt !== undefined && { startAt: new Date(dto.startAt) }),
+      ...(dto.endAt !== undefined && { endAt: new Date(dto.endAt) }),
+      ...(dto.blackoutRanges !== undefined && {
+        blackoutRanges: dto.blackoutRanges.map((r) => ({
+          startAt: new Date(r.startAt),
+          endAt: new Date(r.endAt),
+        })),
+      }),
+    };
+
+    const actor: ExperienceActor = { id: user.userId, email: user.email };
+
     await this.commandBus.execute(
-      new UpdateExperienceCommand(
-        id,
-        user.tenantId,
-        dto.name,
-        dto.description,
-        dto.priceCop,
-        dto.durationHours,
-        dto.capacity,
-        dto.coverImageUrl,
-        dto.location,
-        dto.availabilityType,
-        dto.startAt,
-        dto.endAt,
-        dto.recurrence,
-        dto.blackoutRanges,
-        dto.allowStandalonePurchase,
-        dto.allowReservationPurchase,
-        user.userId,
-        user.email,
-      ),
+      new UpdateExperienceCommand(id, user.tenantId, changes, actor),
     );
 
     return { message: 'Experience updated successfully' };
