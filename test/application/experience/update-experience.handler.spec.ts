@@ -4,13 +4,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UpdateExperienceHandler } from '@/application/experience/commands/update-experience/update-experience.handler';
-import { UpdateExperienceCommand } from '@/application/experience/commands/update-experience/update-experience.command';
-import { Experience } from '@/domain/experience/entities/experience.entity';
-import { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
 import {
-  ExperienceAvailabilityType,
-  ExperienceAvailabilityTypeEnum,
-} from '@/domain/experience/value-objects/experience-availability-type.vo';
+  ExperienceActor,
+  UpdateExperienceCommand,
+} from '@/application/experience/commands/update-experience/update-experience.command';
+import {
+  Experience,
+  ExperienceChanges,
+} from '@/domain/experience/entities/experience.entity';
+import { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
+import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
+import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
@@ -24,6 +28,10 @@ import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitte
 const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
 const OTHER_TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9ff';
 const EXPERIENCE_ID = '65f1a1a2b3c4d5e6f7a8b9c5';
+const DEFAULT_ACTOR: ExperienceActor = {
+  id: 'user-123',
+  email: 'host@example.com',
+};
 
 function makeExperience(overrides?: { tenantId?: string }): Experience {
   return Experience.reconstitute({
@@ -62,28 +70,17 @@ function makeExperience(overrides?: { tenantId?: string }): Experience {
   });
 }
 
-function makeCommand(
-  overrides?: Partial<UpdateExperienceCommand>,
-): UpdateExperienceCommand {
+function makeCommand(overrides?: {
+  experienceId?: string;
+  tenantId?: string;
+  changes?: ExperienceChanges;
+  actor?: ExperienceActor;
+}): UpdateExperienceCommand {
   return new UpdateExperienceCommand(
     overrides?.experienceId ?? EXPERIENCE_ID,
     overrides?.tenantId ?? TENANT_ID,
-    overrides?.name ?? 'Updated transfer name',
-    overrides?.description,
-    overrides?.priceCop,
-    overrides?.durationHours,
-    overrides?.capacity,
-    overrides?.coverImageUrl,
-    overrides?.location,
-    overrides?.availabilityType,
-    overrides?.startAt,
-    overrides?.endAt,
-    overrides?.recurrence,
-    overrides?.blackoutRanges,
-    overrides?.allowStandalonePurchase,
-    overrides?.allowReservationPurchase,
-    overrides?.actorId ?? 'user-123',
-    overrides?.actorEmail ?? 'host@example.com',
+    overrides?.changes ?? { name: 'Updated transfer name' },
+    overrides?.actor ?? DEFAULT_ACTOR,
   );
 }
 
@@ -101,29 +98,16 @@ describe('UpdateExperienceHandler', () => {
     );
   });
 
-  it('throws BadRequestException when no updatable field provided', async () => {
-    const command = new UpdateExperienceCommand(
-      EXPERIENCE_ID,
-      TENANT_ID,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      'user-123',
-      'host@example.com',
-    );
-
-    await expect(handler.execute(command)).rejects.toThrow(BadRequestException);
+  it('throws when changes object is empty', () => {
+    expect(
+      () =>
+        new UpdateExperienceCommand(
+          EXPERIENCE_ID,
+          TENANT_ID,
+          {},
+          DEFAULT_ACTOR,
+        ),
+    ).toThrow('UpdateExperienceCommand: changes must not be empty');
   });
 
   it('throws NotFoundException when experience does not exist', async () => {
@@ -150,19 +134,33 @@ describe('UpdateExperienceHandler', () => {
     experienceRepository.findById.mockResolvedValue(makeExperience());
     experienceRepository.save.mockResolvedValue(EXPERIENCE_ID);
 
-    await handler.execute(makeCommand({ name: 'New transfer name' }));
+    await handler.execute(
+      makeCommand({ changes: { name: 'New transfer name' } }),
+    );
 
     expect(experienceRepository.save).toHaveBeenCalledTimes(1);
     expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
   });
 
+  it('throws BadRequestException when entity validation fails', async () => {
+    experienceRepository.findById.mockResolvedValue(makeExperience());
+
+    await expect(
+      handler.execute(makeCommand({ changes: { name: '' } })),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(experienceRepository.save).not.toHaveBeenCalled();
+  });
+
   it('Lymon admin updates experience belonging to their tenant', async () => {
-    // Admin tenantId matches experience tenantId — succeeds
     experienceRepository.findById.mockResolvedValue(makeExperience());
     experienceRepository.save.mockResolvedValue(EXPERIENCE_ID);
 
     await handler.execute(
-      makeCommand({ tenantId: TENANT_ID, name: 'Admin updated name' }),
+      makeCommand({
+        tenantId: TENANT_ID,
+        changes: { name: 'Admin updated name' },
+      }),
     );
 
     expect(experienceRepository.save).toHaveBeenCalledTimes(1);
