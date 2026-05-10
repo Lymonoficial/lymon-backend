@@ -13,8 +13,10 @@ import {
   ExperienceChanges,
 } from '@/domain/experience/entities/experience.entity';
 import { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
-import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
-import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
+import {
+  ExperienceAvailabilityType,
+  ExperienceAvailabilityTypeEnum,
+} from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';

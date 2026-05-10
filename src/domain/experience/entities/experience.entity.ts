@@ -118,8 +118,8 @@ export class Experience {
     private blackoutRanges: ExperienceBlackoutRange[],
     private allowStandalonePurchase: boolean,
     private allowReservationPurchase: boolean,
-    private minNoticeHours: number,
-    private purchaseCutoffHours: number,
+    private readonly minNoticeHours: number,
+    private readonly purchaseCutoffHours: number,
     private readonly status: ExperienceStatus,
     private readonly createdAt: Date,
     private updatedAt: Date,
@@ -391,16 +391,9 @@ export class Experience {
     const availabilityType = changes.availabilityType
       ? ExperienceAvailabilityType.create(changes.availabilityType)
       : this.availabilityType;
-    const startAt =
-      changes.startAt !== undefined
-        ? changes.startAt
-        : (this.startAt ?? undefined);
-    const endAt =
-      changes.endAt !== undefined ? changes.endAt : (this.endAt ?? undefined);
-    const recurrence =
-      changes.recurrence !== undefined
-        ? changes.recurrence
-        : (this.recurrence ?? undefined);
+    const startAt = changes.startAt ?? this.startAt ?? undefined;
+    const endAt = changes.endAt ?? this.endAt ?? undefined;
+    const recurrence = changes.recurrence ?? this.recurrence ?? undefined;
     const blackoutRanges = changes.blackoutRanges ?? this.blackoutRanges;
 
     Experience.validateAvailability(
