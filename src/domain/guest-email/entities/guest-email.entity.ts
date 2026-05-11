@@ -6,6 +6,7 @@ import {
 } from './guest-email.types';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { IGuestEmailData } from '../interfaces/guest-email.interface';
 
 export class GuestEmail {
   private constructor(
@@ -14,7 +15,7 @@ export class GuestEmail {
     private readonly guestId: GuestId,
     private readonly subject: string,
     private status: GuestEmailStatusEnum,
-    private attachments: GuestEmailAttachment[],
+    private readonly attachments: GuestEmailAttachment[],
     private messageId: string | null,
     private readonly sentById: string | null,
     private readonly createdAt: Date,
@@ -38,27 +39,17 @@ export class GuestEmail {
     );
   }
 
-  static reconstitute(
-    id: GuestEmailId,
-    tenantId: TenantId,
-    guestId: GuestId,
-    subject: string,
-    status: GuestEmailStatusEnum,
-    attachments: GuestEmailAttachment[],
-    messageId: string | null,
-    sentById: string | null,
-    createdAt: Date,
-  ): GuestEmail {
+  static reconstitute(data: IGuestEmailData): GuestEmail {
     return new GuestEmail(
-      id,
-      tenantId,
-      guestId,
-      subject,
-      status,
-      attachments,
-      messageId,
-      sentById,
-      createdAt,
+      data.id,
+      data.tenantId,
+      data.guestId,
+      data.subject,
+      data.status,
+      data.attachments,
+      data.messageId,
+      data.sentById,
+      data.createdAt,
     );
   }
 

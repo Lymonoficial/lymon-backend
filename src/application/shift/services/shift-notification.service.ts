@@ -56,4 +56,28 @@ export class ShiftNotificationService {
       htmlContent,
     });
   }
+
+  async sendStaffAssignedToShiftEmail(
+    staffMembers: StaffMember[],
+    shift: ShiftForNotification,
+  ): Promise<void> {
+    const htmlContent = `
+      <div style="font-family: sans-serif; line-height: 1.6;">
+        <p><strong>Shift:</strong> ${shift.getName()}</p>
+        <p>You have been assigned to a shift.</p>
+        <p><strong>Date range:</strong> ${shift.getStartDate().toISOString().split('T')[0]} - ${shift.getEndDate()?.toISOString().split('T')[0] ?? 'No end date'}</p>
+        <p><strong>Time:</strong> ${shift.getStartHour()} - ${shift.getEndHour()}</p>
+        ${shift.getNotes() ? `<p><strong>Notes:</strong> ${shift.getNotes()}</p>` : ''}
+      </div>
+    `;
+
+    await this.emailService.sendEmail({
+      to: staffMembers.map((staffMember) => ({
+        email: staffMember.getEmail().toString(),
+        name: staffMember.getEmail().toString(),
+      })),
+      subject: 'You have been assigned to a shift',
+      htmlContent,
+    });
+  }
 }

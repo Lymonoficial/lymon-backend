@@ -176,6 +176,13 @@ export class MongoExperienceRepository implements ExperienceRepository {
     };
   }
 
+  async delete(id: ExperienceId): Promise<void> {
+    await this.experienceModel.findByIdAndUpdate(id.toString(), {
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
   private toDomain(document: ExperienceDocument): Experience {
     return Experience.reconstitute({
       id: ExperienceId.create(document._id.toString()),

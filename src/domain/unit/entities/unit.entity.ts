@@ -70,7 +70,7 @@ export class Unit {
     private externalIds: ExternalIds,
     private readonly createdAt: Date,
     private updatedAt: Date,
-    private deletedAt: Date | null,
+    private readonly deletedAt: Date | null,
   ) {}
 
   static create(input: UnitCreateInput): Unit {

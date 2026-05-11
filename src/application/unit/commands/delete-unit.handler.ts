@@ -40,7 +40,7 @@ export class DeleteUnitHandler implements ICommandHandler<
 
     const unit = await this.unitRepository.findById(unitId);
 
-    if (!unit || !unit.getTenantId().equals(tenantId)) {
+    if (!unit?.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Unit not found');
     }
 

@@ -19,6 +19,7 @@ import { SuppliersController } from '@/presentation/controllers/suppliers.contro
 import { ShiftsController } from '@/presentation/controllers/shifts.controller';
 import { ExperienceController } from '@/presentation/controllers/experience.controller';
 import { GuestExperienceController } from '@/presentation/controllers/guest-experience.controller';
+import { GuestTagController } from '@/presentation/controllers/guest-tag.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -41,6 +42,7 @@ import { GuestExperienceController } from '@/presentation/controllers/guest-expe
     ShiftsController,
     ExperienceController,
     GuestExperienceController,
+    GuestTagController,
   ],
 })
 export class PresentationModule {}

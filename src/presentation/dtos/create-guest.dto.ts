@@ -9,6 +9,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { GuestPreferenceItemDto } from '@/presentation/dtos/save-guest-preferences.dto';
 
 class GuestIdentityDto {
   @ApiPropertyOptional({ example: 'passport' })
@@ -93,8 +94,10 @@ export class CreateGuestDto {
   @IsString({ each: true })
   tags?: string[];
 
-  @ApiPropertyOptional({ example: 'Late check-in preferred' })
+  @ApiPropertyOptional({ type: [GuestPreferenceItemDto] })
   @IsOptional()
-  @IsString()
-  preferencesNotes?: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => GuestPreferenceItemDto)
+  preferences?: GuestPreferenceItemDto[];
 }

@@ -43,18 +43,18 @@ describe('GetGuestNotesByGuestIdHandler', () => {
       updatedAt: Date;
     }>,
   ): GuestNote {
-    return GuestNote.reconstitute(
-      GuestNoteId.createFromString(overrides?.id ?? 'note-123'),
-      TenantId.createFromString(overrides?.tenantId ?? tenantId),
-      GuestId.createFromString(overrides?.guestId ?? guestId),
-      overrides?.note ?? 'Prefers a quiet room',
-      overrides?.type ?? GuestNoteTypeEnum.PREFERENCE,
-      overrides?.status ?? GuestNoteStatusEnum.NOT_PINNED,
-      overrides?.createdBy ?? 'user-123',
-      overrides?.createdAt ?? new Date('2030-01-01T10:00:00Z'),
-      overrides?.updatedAt ?? new Date('2030-01-01T10:00:00Z'),
-      null,
-    );
+    return GuestNote.reconstitute({
+      id: GuestNoteId.createFromString(overrides?.id ?? 'note-123'),
+      tenantId: TenantId.createFromString(overrides?.tenantId ?? tenantId),
+      guestId: GuestId.createFromString(overrides?.guestId ?? guestId),
+      note: overrides?.note ?? 'Prefers a quiet room',
+      type: overrides?.type ?? GuestNoteTypeEnum.PREFERENCE,
+      status: overrides?.status ?? GuestNoteStatusEnum.NOT_PINNED,
+      createdBy: overrides?.createdBy ?? 'user-123',
+      createdAt: overrides?.createdAt ?? new Date('2030-01-01T10:00:00Z'),
+      updatedAt: overrides?.updatedAt ?? new Date('2030-01-01T10:00:00Z'),
+      deletedAt: null,
+    });
   }
 
   describe('when guest notes exist', () => {

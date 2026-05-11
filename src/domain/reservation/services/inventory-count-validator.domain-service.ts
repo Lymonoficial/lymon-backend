@@ -1,16 +1,16 @@
 import { Reservation } from '@/domain/reservation/entities/reservation.entity';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
-const INACTIVE_STATUSES: ReservationStatusEnum[] = [
+const INACTIVE_STATUSES = new Set<ReservationStatusEnum>([
   ReservationStatusEnum.CANCELLED,
   ReservationStatusEnum.NO_SHOW,
-];
+]);
 
 export class InventoryCountValidator {
   static getMinimumRequiredInventory(reservations: Reservation[]): number {
     const activeReservations = reservations.filter(
       (reservation) =>
-        !INACTIVE_STATUSES.includes(reservation.getStatus().getValue()),
+        !INACTIVE_STATUSES.has(reservation.getStatus().getValue()),
     );
 
     if (activeReservations.length === 0) {
@@ -21,8 +21,10 @@ export class InventoryCountValidator {
 
     for (const reservation of activeReservations) {
       const range = reservation.getDateRange();
-      events.push({ at: range.getCheckIn(), delta: 1 });
-      events.push({ at: range.getCheckOut(), delta: -1 });
+      events.push(
+        { at: range.getCheckIn(), delta: 1 },
+        { at: range.getCheckOut(), delta: -1 },
+      );
     }
 
     events.sort((a, b) => {

@@ -8,6 +8,9 @@ import {
   GuestStatusEnum,
   GuestSummary,
 } from '@/domain/guest/entities/guest.types';
+import { GuestTag } from '@/domain/guest-tag/entities/guest-tag.entity';
+import { IGuestData } from '../interfaces/guest.interface';
+import { GuestPreferenceItem } from '@/domain/guest/value-objects/guest-preference-item.vo';
 
 export class Guest {
   private constructor(
@@ -22,8 +25,8 @@ export class Guest {
     private emails: string[],
     private phones: GuestPhone[],
     private status: GuestStatusEnum,
-    private tags: string[],
-    private preferencesNotes: string,
+    private tags: GuestTag[],
+    private preferences: GuestPreferenceItem[],
     private summary: GuestSummary,
     private readonly createdAt: Date,
     private updatedAt: Date,
@@ -51,8 +54,8 @@ export class Guest {
       emails,
       phones,
       params.status ?? GuestStatusEnum.ACTIVE,
-      Guest.uniqueStrings(params.tags ?? []),
-      params.preferencesNotes?.trim() ?? '',
+      [],
+      params.preferences ?? [],
       {
         totalBookings: 0,
         totalNights: 0,
@@ -66,41 +69,24 @@ export class Guest {
     );
   }
 
-  static reconstitute(
-    id: GuestId,
-    tenantId: TenantId,
-    guestAccountId: GuestAccountId | null,
-    identity: GuestIdentity,
-    firstName: string | null,
-    lastName: string | null,
-    fullName: string,
-    primaryEmail: string,
-    emails: string[],
-    phones: GuestPhone[],
-    status: GuestStatusEnum,
-    tags: string[],
-    preferencesNotes: string,
-    summary: GuestSummary,
-    createdAt: Date,
-    updatedAt: Date,
-  ): Guest {
+  static reconstitute(data: IGuestData): Guest {
     return new Guest(
-      id,
-      tenantId,
-      guestAccountId,
-      identity,
-      firstName,
-      lastName,
-      fullName,
-      Guest.normalizeEmail(primaryEmail),
-      Guest.buildEmails(primaryEmail, emails),
-      phones,
-      status,
-      Guest.uniqueStrings(tags),
-      preferencesNotes,
-      summary,
-      createdAt,
-      updatedAt,
+      data.id,
+      data.tenantId,
+      data.guestAccountId,
+      data.identity,
+      data.firstName,
+      data.lastName,
+      data.fullName,
+      Guest.normalizeEmail(data.primaryEmail),
+      Guest.buildEmails(data.primaryEmail, data.emails),
+      data.phones,
+      data.status,
+      Guest.uniqueTags(data.tags),
+      data.preferences,
+      data.summary,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 
@@ -146,13 +132,13 @@ export class Guest {
     this.touch();
   }
 
-  setTags(tags: string[]): void {
-    this.tags = Guest.uniqueStrings(tags);
+  setTags(tags: GuestTag[]): void {
+    this.tags = Guest.uniqueTags(tags);
     this.touch();
   }
 
-  setPreferencesNotes(notes: string): void {
-    this.preferencesNotes = notes.trim();
+  setPreferences(items: GuestPreferenceItem[]): void {
+    this.preferences = items;
     this.touch();
   }
 
@@ -218,12 +204,12 @@ export class Guest {
     return this.status;
   }
 
-  getTags(): string[] {
+  getTags(): GuestTag[] {
     return [...this.tags];
   }
 
-  getPreferencesNotes(): string {
-    return this.preferencesNotes;
+  getPreferences(): GuestPreferenceItem[] {
+    return [...this.preferences];
   }
 
   getSummary(): GuestSummary {
@@ -262,12 +248,14 @@ export class Guest {
     return [...new Set(all)];
   }
 
-  private static uniqueStrings(values: string[]): string[] {
-    const normalized = values
-      .map((value) => value.trim().toLowerCase())
-      .filter((value) => value.length > 0);
-
-    return [...new Set(normalized)];
+  private static uniqueTags(tags: GuestTag[]): GuestTag[] {
+    const seen = new Set<string>();
+    return tags.filter((t) => {
+      const name = t.getName();
+      if (seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    });
   }
 
   private static normalizeOptionalString(value?: string | null): string | null {
