@@ -11,6 +11,15 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { mapExperienceToPublicDto } from '@/application/experience/queries/shared/experience.mapper';
 
+function tryCreate<T>(value: string | undefined, factory: (v: string) => T): T | undefined {
+  if (!value) return undefined;
+  try {
+    return factory(value);
+  } catch {
+    return undefined;
+  }
+}
+
 @QueryHandler(GetAvailableExperiencesQuery)
 export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
   GetAvailableExperiencesQuery,
@@ -24,27 +33,15 @@ export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
   async execute(
     query: GetAvailableExperiencesQuery,
   ): Promise<GetAvailableExperiencesResult> {
-    let tenantId: TenantId | undefined;
-    let propertyId: PropertyId | undefined;
-    let category: ExperienceCategory | undefined;
-
-    try {
-      if (query.tenantId) tenantId = TenantId.createFromString(query.tenantId);
-    } catch {
-      // invalid tenantId → no filter
-    }
-
-    try {
-      if (query.propertyId) propertyId = PropertyId.create(query.propertyId);
-    } catch {
-      // invalid propertyId → no filter
-    }
-
-    try {
-      if (query.category) category = ExperienceCategory.create(query.category);
-    } catch {
-      // invalid category → no filter
-    }
+    const tenantId = tryCreate(query.tenantId, (v) =>
+      TenantId.createFromString(v),
+    );
+    const propertyId = tryCreate(query.propertyId, (v) =>
+      PropertyId.create(v),
+    );
+    const category = tryCreate(query.category, (v) =>
+      ExperienceCategory.create(v),
+    );
 
     const { experiences, total } =
       await this.experienceRepository.findAvailableForGuestPaginated(
