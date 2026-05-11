@@ -20,7 +20,7 @@ class BedDto {
     description: 'Type of bed',
   })
   @IsEnum(BedTypeEnum)
-  type: BedTypeEnum;
+  type!: BedTypeEnum;
 
   @ApiProperty({
     example: 2,
@@ -29,7 +29,7 @@ class BedDto {
   })
   @IsNumber()
   @Min(1)
-  count: number;
+  count!: number;
 }
 
 class BedroomDto {
@@ -39,13 +39,13 @@ class BedroomDto {
   })
   @IsString()
   @IsNotEmpty()
-  roomName: string;
+  roomName!: string;
 
   @ApiProperty({ type: [BedDto], description: 'List of beds in this bedroom' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => BedDto)
-  beds: BedDto[];
+  beds!: BedDto[];
 }
 
 class ExternalIdsDto {
@@ -84,12 +84,12 @@ export class CreateUnitDto {
   })
   @IsString()
   @IsNotEmpty()
-  propertyId: string;
+  propertyId!: string;
 
   @ApiProperty({ example: 'Deluxe Ocean View Suite', description: 'Unit name' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'Spacious suite with private balcony and ocean views',
@@ -97,7 +97,7 @@ export class CreateUnitDto {
   })
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
   @ApiProperty({
     example: 10,
@@ -106,7 +106,7 @@ export class CreateUnitDto {
   })
   @IsNumber()
   @Min(1)
-  inventoryCount: number;
+  inventoryCount!: number;
 
   @ApiProperty({
     example: 4,
@@ -115,7 +115,7 @@ export class CreateUnitDto {
   })
   @IsNumber()
   @Min(1)
-  maxGuests: number;
+  maxGuests!: number;
 
   @ApiProperty({
     example: 2,
@@ -124,7 +124,7 @@ export class CreateUnitDto {
   })
   @IsNumber()
   @Min(1)
-  standardGuests: number;
+  standardGuests!: number;
 
   @ApiProperty({
     type: [BedroomDto],
@@ -133,19 +133,19 @@ export class CreateUnitDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => BedroomDto)
-  bedrooms: BedroomDto[];
+  bedrooms!: BedroomDto[];
 
   @ApiProperty({ example: 2, description: 'Number of bathrooms', minimum: 0 })
   @IsNumber()
   @Min(0)
-  bathroomsCount: number;
+  bathroomsCount!: number;
 
   @ApiProperty({
     example: false,
     description: 'Whether the unit is a shared space',
   })
   @IsBoolean()
-  isShared: boolean;
+  isShared!: boolean;
 
   @ApiProperty({
     example: ['WiFi', 'Air Conditioning', 'TV', 'Mini Bar'],
@@ -154,16 +154,16 @@ export class CreateUnitDto {
   })
   @IsArray()
   @IsString({ each: true })
-  amenities: string[];
+  amenities!: string[];
 
   @ApiProperty({
-    example: 150.0,
+    example: 150,
     description: 'Price per night in USD',
     minimum: 0,
   })
   @IsNumber()
   @Min(0)
-  pricePerNight: number;
+  pricePerNight!: number;
 
   @ApiProperty({
     type: ExternalIdsDto,

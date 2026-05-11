@@ -49,8 +49,8 @@ export class GetGuestByIdHandler implements IQueryHandler<
           isPrimary: p.isPrimary,
         })),
         status: guest.getStatus(),
-        tags: guest.getTags(),
-        preferencesNotes: guest.getPreferencesNotes() || null,
+        tags: guest.getTags().map((t) => t.getName()),
+        preferences: guest.getPreferences(),
         summary: guest.getSummary()
           ? {
               totalBookings: guest.getSummary().totalBookings,

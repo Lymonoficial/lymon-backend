@@ -100,8 +100,8 @@ export class ReservationController {
     >(
       new GetReservationsByTenantQuery(
         user.tenantId,
-        parseInt(page, 10),
-        parseInt(limit, 10),
+        Number.parseInt(page, 10),
+        Number.parseInt(limit, 10),
       ),
     );
   }
@@ -156,7 +156,7 @@ export class ReservationController {
         user.tenantId,
         dto.checkIn ? new Date(dto.checkIn) : null,
         dto.checkOut ? new Date(dto.checkOut) : null,
-        dto.notes !== undefined ? dto.notes : null,
+        dto.notes ?? null,
         user.userId,
         user.email,
       ),

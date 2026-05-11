@@ -4,6 +4,7 @@ import { GuestNoteStatusEnum } from '@/domain/guest-note/value-objects/guest-nod
 import { CreateGuestNoteParams } from './guest-note.types';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { IGuestNoteData } from '../interfaces/guest-note.interface';
 
 export class GuestNote {
   private constructor(
@@ -39,29 +40,18 @@ export class GuestNote {
     );
   }
 
-  static reconstitute(
-    id: GuestNoteId,
-    tenantId: TenantId,
-    guestId: GuestId,
-    note: string,
-    type: GuestNoteTypeEnum,
-    status: GuestNoteStatusEnum,
-    createdBy: string,
-    createdAt: Date,
-    updatedAt: Date,
-    deletedAt: Date | null,
-  ): GuestNote {
+  static reconstitute(data: IGuestNoteData): GuestNote {
     return new GuestNote(
-      id,
-      tenantId,
-      guestId,
-      note,
-      type,
-      status,
-      createdBy,
-      createdAt,
-      updatedAt,
-      deletedAt,
+      data.id,
+      data.tenantId,
+      data.guestId,
+      data.note,
+      data.type,
+      data.status,
+      data.createdBy,
+      data.createdAt,
+      data.updatedAt,
+      data.deletedAt,
     );
   }
 

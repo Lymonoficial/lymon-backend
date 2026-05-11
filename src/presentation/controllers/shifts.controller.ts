@@ -15,6 +15,9 @@ import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CreateShiftDto } from '@/presentation/dtos/create-shift.dto';
 import { GetShiftsDto } from '@/presentation/dtos/get-shifts.dto';
 import { UpdateShiftDto } from '@/presentation/dtos/update-shift.dto';
+import { AssignStaffToShiftDto } from '@/presentation/dtos/assign-staff-to-shift.dto';
+import { AssignStaffToShiftCommand } from '@/application/shift/commands/assign-staff-to-shift/assign-staff-to-shift.command';
+import { AssignStaffToShiftCommandResult } from '@/application/shift/commands/assign-staff-to-shift/assign-staff-to-shift.result';
 import {
   Body,
   Controller,
@@ -158,6 +161,37 @@ export class ShiftsController {
 
     return {
       message: 'Shift deleted successfully',
+      data: result,
+    };
+  }
+
+  @Patch(':id/assign-staff')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.TENANT_USERS_MANAGE)
+  @ApiOperation({
+    summary: 'Assign staff members to an existing shift (additive)',
+  })
+  @ApiResponse({ status: 200, description: 'Staff assigned successfully' })
+  async assignStaffToShift(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') shiftId: string,
+    @Body() dto: AssignStaffToShiftDto,
+  ) {
+    const result = await this.commandBus.execute<
+      AssignStaffToShiftCommand,
+      AssignStaffToShiftCommandResult
+    >(
+      new AssignStaffToShiftCommand(
+        shiftId,
+        user.tenantId,
+        dto.staffMemberIds,
+        user.userId,
+        user.email,
+      ),
+    );
+
+    return {
+      message: 'Staff assigned successfully',
       data: result,
     };
   }

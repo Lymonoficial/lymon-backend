@@ -6,6 +6,7 @@ import {
 } from '@/application/experience/commands/update-experience/update-experience.command';
 import { ExperienceChanges } from '@/domain/experience/entities/experience.entity';
 import { pickDefined } from '@/presentation/common/utils/pick-defined.util';
+import { DeleteExperienceCommand } from '@/application/experience/commands/delete-experience.command';
 import { GetExperiencesByTenantQuery } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query';
 import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
@@ -20,8 +21,10 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   Param,
+  HttpCode,
   ParseIntPipe,
   Patch,
   Post,
@@ -274,5 +277,22 @@ export class ExperienceController {
     );
 
     return { message: 'Experience updated successfully' };
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.EXPERIENCE_DELETE)
+  @ApiOperation({ summary: 'Delete an experience' })
+  @ApiResponse({ status: 204, description: 'Experience deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Experience not found' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  async delete(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new DeleteExperienceCommand(id, user.tenantId, user.userId, user.email),
+    );
   }
 }

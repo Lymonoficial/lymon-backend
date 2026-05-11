@@ -427,6 +427,11 @@ export class Experience {
     this.updatedAt = new Date();
   }
 
+  softDelete(): void {
+    this.deletedAt = new Date();
+    this.updatedAt = new Date();
+  }
+
   private static validateLocation(location: ExperienceLocation): void {
     if (!location?.label || location.label.trim() === '') {
       throw new Error('Experience location label cannot be empty');

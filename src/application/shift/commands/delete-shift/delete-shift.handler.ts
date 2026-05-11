@@ -51,7 +51,7 @@ export class DeleteShiftCommandHandler implements ICommandHandler<DeleteShiftCom
     const shiftId = ShiftId.createFromString(command.shiftId);
 
     const shift = await this.shiftRepository.findById(shiftId);
-    if (!shift || !shift.getTenantId().equals(tenantId)) {
+    if (!shift?.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Shift not found for the tenant');
     }
 
