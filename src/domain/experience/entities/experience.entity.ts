@@ -1,7 +1,10 @@
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
-import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
+import {
+  ExperienceAvailabilityType,
+  ExperienceAvailabilityTypeEnum,
+} from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
@@ -76,6 +79,23 @@ export interface ExperienceReconstituteData {
   deletedAt?: Date | null;
 }
 
+export interface ExperienceChanges {
+  name?: string;
+  description?: string;
+  priceCop?: number;
+  durationHours?: number;
+  capacity?: number;
+  coverImageUrl?: string;
+  location?: ExperienceLocation;
+  availabilityType?: ExperienceAvailabilityTypeEnum;
+  startAt?: Date;
+  endAt?: Date;
+  recurrence?: ExperienceRecurrence;
+  blackoutRanges?: ExperienceBlackoutRange[];
+  allowStandalonePurchase?: boolean;
+  allowReservationPurchase?: boolean;
+}
+
 export class Experience {
   private constructor(
     private readonly id: ExperienceId | null,
@@ -83,27 +103,27 @@ export class Experience {
     private readonly scope: ExperienceScope,
     private readonly propertyId: PropertyId | null,
     private readonly unitIds: UnitId[],
-    private readonly name: string,
-    private readonly description: string,
+    private name: string,
+    private description: string,
     private readonly category: ExperienceCategory,
-    private readonly priceCop: number,
-    private readonly durationHours: number,
-    private readonly capacity: number,
-    private readonly coverImageUrl: string,
-    private readonly location: ExperienceLocation,
-    private readonly availabilityType: ExperienceAvailabilityType,
-    private readonly startAt: Date | null,
-    private readonly endAt: Date | null,
-    private readonly recurrence: ExperienceRecurrence | null,
-    private readonly blackoutRanges: ExperienceBlackoutRange[],
-    private readonly allowStandalonePurchase: boolean,
-    private readonly allowReservationPurchase: boolean,
+    private priceCop: number,
+    private durationHours: number,
+    private capacity: number,
+    private coverImageUrl: string,
+    private location: ExperienceLocation,
+    private availabilityType: ExperienceAvailabilityType,
+    private startAt: Date | null,
+    private endAt: Date | null,
+    private recurrence: ExperienceRecurrence | null,
+    private blackoutRanges: ExperienceBlackoutRange[],
+    private allowStandalonePurchase: boolean,
+    private allowReservationPurchase: boolean,
     private readonly minNoticeHours: number,
     private readonly purchaseCutoffHours: number,
     private readonly status: ExperienceStatus,
     private readonly createdAt: Date,
     private updatedAt: Date,
-    private deletedAt: Date | null,
+    private readonly deletedAt: Date | null,
   ) {}
 
   static create(props: ExperienceProps): Experience {
@@ -325,6 +345,86 @@ export class Experience {
 
   getDeletedAt(): Date | null {
     return this.deletedAt;
+  }
+
+  update(changes: ExperienceChanges): void {
+    const name = (changes.name ?? this.name)?.trim();
+    if (!name) {
+      throw new Error('Experience name cannot be empty');
+    }
+
+    const description = (changes.description ?? this.description)?.trim();
+    if (!description) {
+      throw new Error('Experience description cannot be empty');
+    }
+
+    if (description.length > 5000) {
+      throw new Error('Experience description cannot exceed 5000 characters');
+    }
+
+    const priceCop = changes.priceCop ?? this.priceCop;
+    if (!Number.isFinite(priceCop) || priceCop <= 0) {
+      throw new Error('Experience price must be greater than zero');
+    }
+
+    const durationHours = changes.durationHours ?? this.durationHours;
+    if (!Number.isFinite(durationHours) || durationHours <= 0) {
+      throw new Error('Experience duration must be greater than zero');
+    }
+
+    const capacity = changes.capacity ?? this.capacity;
+    if (!Number.isInteger(capacity) || capacity <= 0) {
+      throw new Error('Experience capacity must be a positive integer');
+    }
+
+    const allowStandalonePurchase =
+      changes.allowStandalonePurchase ?? this.allowStandalonePurchase;
+    const allowReservationPurchase =
+      changes.allowReservationPurchase ?? this.allowReservationPurchase;
+    if (!allowStandalonePurchase && !allowReservationPurchase) {
+      throw new Error('Experience must be purchasable in at least one mode');
+    }
+
+    const location = changes.location ?? this.location;
+    Experience.validateLocation(location);
+
+    const availabilityType = changes.availabilityType
+      ? ExperienceAvailabilityType.create(changes.availabilityType)
+      : this.availabilityType;
+    const startAt = changes.startAt ?? this.startAt ?? undefined;
+    const endAt = changes.endAt ?? this.endAt ?? undefined;
+    const recurrence = changes.recurrence ?? this.recurrence ?? undefined;
+    const blackoutRanges = changes.blackoutRanges ?? this.blackoutRanges;
+
+    Experience.validateAvailability(
+      availabilityType,
+      startAt,
+      endAt,
+      recurrence,
+      blackoutRanges,
+      new Date(),
+    );
+
+    this.name = name;
+    this.description = description;
+    this.priceCop = priceCop;
+    this.durationHours = durationHours;
+    this.capacity = capacity;
+    this.coverImageUrl = changes.coverImageUrl ?? this.coverImageUrl;
+    this.location = {
+      label: location.label.trim(),
+      address: location.address?.trim() || undefined,
+      lat: location.lat,
+      lng: location.lng,
+    };
+    this.availabilityType = availabilityType;
+    this.startAt = startAt ?? null;
+    this.endAt = endAt ?? null;
+    this.recurrence = recurrence ?? null;
+    this.blackoutRanges = blackoutRanges;
+    this.allowStandalonePurchase = allowStandalonePurchase;
+    this.allowReservationPurchase = allowReservationPurchase;
+    this.updatedAt = new Date();
   }
 
   softDelete(): void {
