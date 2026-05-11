@@ -33,10 +33,7 @@ export class GetItemsBySupplierQueryHandler implements IQueryHandler<
     const supplierId = SupplierId.create(query.supplierId);
 
     const supplier = await this.supplierRepository.findById(supplierId);
-    if (
-      !supplier ||
-      supplier.getTenantId().toString() !== tenantId.toString()
-    ) {
+    if (supplier?.getTenantId().toString() !== tenantId.toString()) {
       throw new NotFoundException('Supplier not found');
     }
 

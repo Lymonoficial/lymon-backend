@@ -333,26 +333,26 @@ export class MongoReservationRepository
   }
 
   private toDomain(doc: ReservationDocument): Reservation {
-    return Reservation.reconstitute(
-      doc._id.toHexString(),
-      TenantId.createFromString(doc.tenantId.toHexString()),
-      PropertyId.create(doc.propertyId.toHexString()),
-      UnitId.create(doc.unitId.toHexString()),
-      GuestId.createFromString(doc.guestId.toHexString()),
-      DateRange.reconstitute(doc.checkIn, doc.checkOut),
-      ReservationSource.create(doc.source as ReservationSourceEnum),
-      ReservationStatus.create(doc.status as ReservationStatusEnum),
-      doc.guestsCount,
-      doc.pricePerNight,
-      doc.totalPrice,
-      doc.notes,
-      doc.externalReservationId ?? null,
-      doc.cancelledAt,
-      doc.cancellationReason,
-      doc.checkInActualAt,
-      doc.checkOutActualAt,
-      doc.createdAt,
-      doc.updatedAt,
-    );
+    return Reservation.reconstitute({
+      id: doc._id.toHexString(),
+      tenantId: TenantId.createFromString(doc.tenantId.toHexString()),
+      propertyId: PropertyId.create(doc.propertyId.toHexString()),
+      unitId: UnitId.create(doc.unitId.toHexString()),
+      guestId: GuestId.createFromString(doc.guestId.toHexString()),
+      dateRange: DateRange.reconstitute(doc.checkIn, doc.checkOut),
+      source: ReservationSource.create(doc.source as ReservationSourceEnum),
+      status: ReservationStatus.create(doc.status as ReservationStatusEnum),
+      guestsCount: doc.guestsCount,
+      pricePerNight: doc.pricePerNight,
+      totalPrice: doc.totalPrice,
+      notes: doc.notes,
+      externalReservationId: doc.externalReservationId ?? null,
+      cancelledAt: doc.cancelledAt,
+      cancellationReason: doc.cancellationReason,
+      checkInActualAt: doc.checkInActualAt,
+      checkOutActualAt: doc.checkOutActualAt,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    });
   }
 }

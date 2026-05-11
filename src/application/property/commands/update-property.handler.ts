@@ -41,7 +41,7 @@ export class UpdatePropertyHandler implements ICommandHandler<
     const propertyId = PropertyId.create(command.propertyId);
 
     const property = await this.propertyRepository.findById(propertyId);
-    if (!property || !property.getTenantId().equals(tenantId)) {
+    if (!property?.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Property not found');
     }
 

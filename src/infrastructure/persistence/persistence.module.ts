@@ -98,6 +98,12 @@ import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
 import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
 import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
 import {
+  GuestPreferenceCatalogItemDocument,
+  GuestPreferenceCatalogItemSchema,
+} from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
+import { GUEST_PREFERENCE_CATALOG_REPOSITORY } from '@/domain/guest-preference/repositories/guest-preference-catalog.repository';
+import { MongoGuestPreferenceCatalogRepository } from '@/infrastructure/persistence/repositories/mongo-guest-preference-catalog.repository';
+import {
   ExperienceDocument,
   ExperienceSchema,
 } from '@/infrastructure/persistence/schemas/experience.schema';
@@ -105,6 +111,13 @@ import { EXPERIENCE_REPOSITORY } from '@/domain/experience/repositories/experien
 import { MongoExperienceRepository } from '@/infrastructure/persistence/repositories/mongo-experience.repository';
 import { METRICS_READ_REPOSITORY } from '@/domain/metrics/repositories/metrics-read.repository';
 import { MongoMetricsReadRepository } from '@/infrastructure/persistence/repositories/mongo-metrics-read.repository';
+import {
+  GuestTagDocument,
+  GuestTagSchema,
+} from '@/infrastructure/persistence/schemas/guest-tag.schema';
+import { GUEST_TAG_REPOSITORY } from '@/domain/guest-tag/repositories/guest-tag.repository';
+import { MongoGuestTagRepository } from '@/infrastructure/persistence/repositories/mongo-guest-tag.repository';
+import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-tag-seed.service';
 
 @Module({
   imports: [
@@ -128,7 +141,12 @@ import { MongoMetricsReadRepository } from '@/infrastructure/persistence/reposit
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
+      {
+        name: GuestPreferenceCatalogItemDocument.name,
+        schema: GuestPreferenceCatalogItemSchema,
+      },
       { name: ExperienceDocument.name, schema: ExperienceSchema },
+      { name: GuestTagDocument.name, schema: GuestTagSchema },
     ]),
   ],
   providers: [
@@ -205,6 +223,10 @@ import { MongoMetricsReadRepository } from '@/infrastructure/persistence/reposit
       useClass: MongoShiftRepository,
     },
     {
+      provide: GUEST_PREFERENCE_CATALOG_REPOSITORY,
+      useClass: MongoGuestPreferenceCatalogRepository,
+    },
+    {
       provide: EXPERIENCE_REPOSITORY,
       useClass: MongoExperienceRepository,
     },
@@ -213,6 +235,11 @@ import { MongoMetricsReadRepository } from '@/infrastructure/persistence/reposit
       useClass: MongoMetricsReadRepository,
     },
     RoleSeedService,
+    {
+      provide: GUEST_TAG_REPOSITORY,
+      useClass: MongoGuestTagRepository,
+    },
+    GuestTagSeedService,
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -233,8 +260,10 @@ import { MongoMetricsReadRepository } from '@/infrastructure/persistence/reposit
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
+    GUEST_PREFERENCE_CATALOG_REPOSITORY,
     EXPERIENCE_REPOSITORY,
     METRICS_READ_REPOSITORY,
+    GUEST_TAG_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

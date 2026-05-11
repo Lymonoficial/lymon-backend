@@ -37,7 +37,7 @@ export class DeletePropertyHandler implements ICommandHandler<
     const propertyId = PropertyId.create(command.propertyId);
     const property = await this.propertyRepository.findById(propertyId);
 
-    if (!property || property.getTenantId().toString() !== command.tenantId) {
+    if (!property || property?.getTenantId().toString() !== command.tenantId) {
       throw new NotFoundException(
         `Property with id "${command.propertyId}" not found`,
       );

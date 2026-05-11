@@ -2,7 +2,7 @@ export class SaveGuestPreferencesCommand {
   constructor(
     public readonly tenantId: string,
     public readonly guestId: string,
-    public readonly preferencesNotes: string,
+    public readonly catalogItemIds: string[],
     public readonly activePlan: string,
   ) {}
 }

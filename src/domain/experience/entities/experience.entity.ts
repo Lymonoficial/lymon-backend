@@ -102,8 +102,8 @@ export class Experience {
     private readonly purchaseCutoffHours: number,
     private readonly status: ExperienceStatus,
     private readonly createdAt: Date,
-    private readonly updatedAt: Date,
-    private readonly deletedAt: Date | null,
+    private updatedAt: Date,
+    private deletedAt: Date | null,
   ) {}
 
   static create(props: ExperienceProps): Experience {
@@ -325,6 +325,11 @@ export class Experience {
 
   getDeletedAt(): Date | null {
     return this.deletedAt;
+  }
+
+  softDelete(): void {
+    this.deletedAt = new Date();
+    this.updatedAt = new Date();
   }
 
   private static validateLocation(location: ExperienceLocation): void {
