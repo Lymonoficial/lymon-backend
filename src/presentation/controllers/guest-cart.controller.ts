@@ -1,0 +1,155 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Public } from '@/infrastructure/auth/decorators/public.decorator';
+import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
+import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-guest.decorator';
+import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
+import { AddExperienceToCartDto } from '@/presentation/dtos/add-experience-to-cart.dto';
+import { SetCartReservationDto } from '@/presentation/dtos/set-cart-reservation.dto';
+import { CheckoutCartDto } from '@/presentation/dtos/checkout-cart.dto';
+import { AddExperienceToCartCommand } from '@/application/cart/commands/add-experience-to-cart/add-experience-to-cart.command';
+import { RemoveExperienceFromCartCommand } from '@/application/cart/commands/remove-experience-from-cart/remove-experience-from-cart.command';
+import { SetCartReservationCommand } from '@/application/cart/commands/set-cart-reservation/set-cart-reservation.command';
+import { RemoveCartReservationCommand } from '@/application/cart/commands/remove-cart-reservation/remove-cart-reservation.command';
+import { ClearCartCommand } from '@/application/cart/commands/clear-cart/clear-cart.command';
+import { CheckoutCartCommand } from '@/application/cart/commands/checkout-cart/checkout-cart.command';
+import { GetGuestCartQuery } from '@/application/cart/queries/get-guest-cart/get-guest-cart.query';
+
+@ApiTags('guest-cart')
+@ApiBearerAuth('GuestJWT-auth')
+@Public()
+@UseGuards(GuestJwtAuthGuard)
+@Controller('guest/cart')
+export class GuestCartController {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Get the guest open cart' })
+  @ApiResponse({ status: 200, description: 'Current open cart or null' })
+  async getCart(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return this.queryBus.execute(
+      new GetGuestCartQuery(guest.guestAccountId, tenantId),
+    );
+  }
+
+  @Post('items')
+  @ApiOperation({ summary: 'Add an experience to cart' })
+  @ApiResponse({ status: 201, description: 'Experience added to cart' })
+  async addExperience(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Body() dto: AddExperienceToCartDto,
+  ) {
+    await this.commandBus.execute(
+      new AddExperienceToCartCommand(
+        guest.guestAccountId,
+        dto.tenantId,
+        dto.experienceId,
+        dto.quantity,
+        dto.selectedDate ? new Date(dto.selectedDate) : null,
+        dto.reservationId ?? null,
+        guest.email,
+      ),
+    );
+    return { message: 'Experience added to cart' };
+  }
+
+  @Delete('items/:experienceId')
+  @ApiOperation({ summary: 'Remove an experience from cart' })
+  async removeExperience(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Param('experienceId') experienceId: string,
+    @Query('tenantId') tenantId: string,
+    @Query('selectedDate') selectedDate?: string,
+  ) {
+    await this.commandBus.execute(
+      new RemoveExperienceFromCartCommand(
+        guest.guestAccountId,
+        tenantId,
+        experienceId,
+        selectedDate ? new Date(selectedDate) : null,
+      ),
+    );
+    return { message: 'Experience removed from cart' };
+  }
+
+  @Post('reservation')
+  @ApiOperation({ summary: 'Set a reservation in the cart for payment' })
+  @ApiResponse({ status: 201, description: 'Reservation added to cart' })
+  async setReservation(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Body() dto: SetCartReservationDto,
+  ) {
+    await this.commandBus.execute(
+      new SetCartReservationCommand(
+        guest.guestAccountId,
+        dto.tenantId,
+        dto.reservationId,
+        guest.email,
+      ),
+    );
+    return { message: 'Reservation added to cart' };
+  }
+
+  @Delete('reservation')
+  @ApiOperation({ summary: 'Remove the reservation from cart' })
+  async removeReservation(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Query('tenantId') tenantId: string,
+  ) {
+    await this.commandBus.execute(
+      new RemoveCartReservationCommand(guest.guestAccountId, tenantId),
+    );
+    return { message: 'Reservation removed from cart' };
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Clear all items from cart' })
+  async clearCart(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Query('tenantId') tenantId: string,
+  ) {
+    await this.commandBus.execute(
+      new ClearCartCommand(guest.guestAccountId, tenantId),
+    );
+    return { message: 'Cart cleared' };
+  }
+
+  @Post('checkout')
+  @ApiOperation({ summary: 'Checkout cart — confirms reservation and creates experience purchases' })
+  @ApiResponse({ status: 201, description: 'Cart checked out successfully' })
+  async checkout(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Body() dto: CheckoutCartDto,
+  ) {
+    await this.commandBus.execute(
+      new CheckoutCartCommand(
+        guest.guestAccountId,
+        dto.tenantId,
+        guest.guestAccountId,
+        guest.email,
+      ),
+    );
+    return { message: 'Checkout successful' };
+  }
+}
