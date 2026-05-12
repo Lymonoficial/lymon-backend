@@ -23,9 +23,7 @@ import { GuestReservationOverlapChecker } from '@/domain/reservation/services/gu
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 
 @CommandHandler(SetCartReservationCommand)
-export class SetCartReservationHandler
-  implements ICommandHandler<SetCartReservationCommand>
-{
+export class SetCartReservationHandler implements ICommandHandler<SetCartReservationCommand> {
   constructor(
     @Inject(CART_REPOSITORY)
     private readonly cartRepository: CartRepository,
@@ -82,9 +80,7 @@ export class SetCartReservationHandler
       guestAccountId,
       tenantId,
     );
-    if (!cart) {
-      cart = Cart.create({ tenantId, guestAccountId });
-    }
+    cart ??= Cart.create({ tenantId, guestAccountId });
 
     cart.setReservationItem(
       CartReservationItem.create({

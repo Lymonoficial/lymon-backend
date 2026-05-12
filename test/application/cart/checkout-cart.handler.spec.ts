@@ -15,7 +15,6 @@ import { makeExperience } from '@test/shared/fixtures/experience.fixture';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 import { CartStatusEnum } from '@/domain/cart/value-objects/cart-status.vo';
-import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 
 const GUEST_ACCOUNT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
 const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c2';
@@ -35,7 +34,9 @@ describe('CheckoutCartHandler', () => {
   let reservationRepository: ReturnType<typeof createReservationRepositoryMock>;
   let guestRepository: ReturnType<typeof createGuestRepositoryMock>;
   let experienceRepository: ReturnType<typeof createExperienceRepositoryMock>;
-  let purchaseRepository: ReturnType<typeof createExperiencePurchaseRepositoryMock>;
+  let purchaseRepository: ReturnType<
+    typeof createExperiencePurchaseRepositoryMock
+  >;
   let eventEmitter: ReturnType<typeof createEventEmitterMock>;
 
   beforeEach(() => {
@@ -186,7 +187,9 @@ describe('CheckoutCartHandler', () => {
       status: ReservationStatusEnum.CONFIRMED,
     });
     reservationRepository.findById.mockResolvedValue(targetReservation);
-    reservationRepository.findByGuestId.mockResolvedValue([conflictingReservation]);
+    reservationRepository.findByGuestId.mockResolvedValue([
+      conflictingReservation,
+    ]);
 
     await expect(handler.execute(command)).rejects.toThrow(DomainException);
   });

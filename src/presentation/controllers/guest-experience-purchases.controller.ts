@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
@@ -28,8 +22,13 @@ export class GuestExperiencePurchasesController {
   constructor(private readonly queryBus: QueryBus) {}
 
   @Get()
-  @ApiOperation({ summary: 'List experience purchases for the authenticated guest' })
-  @ApiResponse({ status: 200, description: 'Paginated list of experience purchases' })
+  @ApiOperation({
+    summary: 'List experience purchases for the authenticated guest',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Paginated list of experience purchases',
+  })
   async findAll(
     @CurrentGuest() guest: GuestJwtPayload,
     @Query('tenantId') tenantId: string,
@@ -40,8 +39,8 @@ export class GuestExperiencePurchasesController {
       new GetExperiencePurchasesByGuestQuery(
         guest.guestAccountId,
         tenantId,
-        Math.max(1, parseInt(page ?? '1', 10) || 1),
-        Math.max(1, parseInt(limit ?? '20', 10) || 20),
+        Math.max(1, Number.parseInt(page ?? '1', 10) || 1),
+        Math.max(1, Number.parseInt(limit ?? '20', 10) || 20),
       ),
     );
   }

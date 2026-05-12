@@ -18,9 +18,7 @@ import { ExperienceStatusEnum } from '@/domain/experience/value-objects/experien
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 
 @CommandHandler(AddExperienceToCartCommand)
-export class AddExperienceToCartHandler
-  implements ICommandHandler<AddExperienceToCartCommand>
-{
+export class AddExperienceToCartHandler implements ICommandHandler<AddExperienceToCartCommand> {
   constructor(
     @Inject(CART_REPOSITORY)
     private readonly cartRepository: CartRepository,
@@ -59,9 +57,7 @@ export class AddExperienceToCartHandler
       guestAccountId,
       tenantId,
     );
-    if (!cart) {
-      cart = Cart.create({ tenantId, guestAccountId });
-    }
+    cart ??= Cart.create({ tenantId, guestAccountId });
 
     const item = CartItem.create({
       experienceId,
