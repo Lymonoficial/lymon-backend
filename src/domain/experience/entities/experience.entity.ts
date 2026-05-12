@@ -123,7 +123,7 @@ export class Experience {
     private readonly status: ExperienceStatus,
     private readonly createdAt: Date,
     private updatedAt: Date,
-    private readonly deletedAt: Date | null,
+    private deletedAt: Date | null,
   ) {}
 
   static create(props: ExperienceProps): Experience {
