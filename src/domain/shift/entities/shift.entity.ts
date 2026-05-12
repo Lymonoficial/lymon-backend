@@ -237,10 +237,6 @@ export class Shift {
       return this.staffMemberIds;
     }
 
-    if (params.staffMemberIds.length === 0) {
-      return this.staffMemberIds;
-    }
-
     return params.staffMemberIds;
   }
 
