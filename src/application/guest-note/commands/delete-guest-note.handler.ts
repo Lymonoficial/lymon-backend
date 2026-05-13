@@ -9,9 +9,10 @@ import { GuestNoteId } from '@/domain/guest-note/value-objects/guest-note-id.vo'
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @CommandHandler(DeleteGuestNoteCommand)
-export class DeleteGuestNoteHandler
-  implements ICommandHandler<DeleteGuestNoteCommand, void>
-{
+export class DeleteGuestNoteHandler implements ICommandHandler<
+  DeleteGuestNoteCommand,
+  void
+> {
   constructor(
     @Inject(GUEST_NOTE_REPOSITORY)
     private readonly guestNoteRepository: GuestNoteRepository,

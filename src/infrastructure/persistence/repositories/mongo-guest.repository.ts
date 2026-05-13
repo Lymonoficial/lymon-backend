@@ -118,9 +118,7 @@ export class MongoGuestRepository implements GuestRepository {
       })
       .populate<{ tags: GuestTagDocument[] }>('tags');
 
-    return document
-      ? this.toDomain(document as PopulatedGuestDocument)
-      : null;
+    return document ? this.toDomain(document as PopulatedGuestDocument) : null;
   }
 
   async findByDocumentNumber(
@@ -261,7 +259,7 @@ export class MongoGuestRepository implements GuestRepository {
   private toDomain(document: PopulatedGuestDocument): Guest {
     const tags = (document.tags ?? []).map((tag) =>
       GuestTag.reconstitute(
-        GuestTagId.createFromString((tag._id as Types.ObjectId).toString()),
+        GuestTagId.createFromString(tag._id.toString()),
         tag.tenantId,
         tag.name,
         tag.createdAt,

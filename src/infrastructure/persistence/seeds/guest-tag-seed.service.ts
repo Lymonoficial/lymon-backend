@@ -1,9 +1,17 @@
-import { Injectable, Logger, OnApplicationBootstrap, Inject} from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnApplicationBootstrap,
+  Inject,
+} from '@nestjs/common';
 import {
   GUEST_TAG_REPOSITORY,
   type GuestTagRepository,
 } from '@/domain/guest-tag/repositories/guest-tag.repository';
-import { GuestTag, PLATFORM_TENANT_ID } from '@/domain/guest-tag/entities/guest-tag.entity';
+import {
+  GuestTag,
+  PLATFORM_TENANT_ID,
+} from '@/domain/guest-tag/entities/guest-tag.entity';
 
 export const PLATFORM_GUEST_TAGS = [
   'vip',

@@ -32,11 +32,16 @@ import {
   ApiTags,
   ApiQuery,
 } from '@nestjs/swagger';
-import { CreatePropertyDto } from '@/presentation/dtos/create-property.dto';
-import { UpdatePropertyDto } from '@/presentation/dtos/update-property.dto';
+import { CreatePropertyDto } from '@/presentation/dtos/property/create-property.dto';
+import { UpdatePropertyDto } from '@/presentation/dtos/property/update-property.dto';
 import { DeletePropertyCommand } from '@/application/property/commands/delete-property.command';
 import { GetPropertiesByTenantQuery } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.query';
 import { GetPropertiesByTenantResult } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.result';
+import { GetPropertyByIdQuery } from '@/application/property/queries/GetPropertyById/get-property-by-id.query';
+import { GetPropertyByIdResult } from '@/application/property/queries/GetPropertyById/get-property-by-id.result';
+import {
+  GetPropertyByIdResponseDto,
+} from '@/presentation/dtos/property/get-property-by-id-response.dto';
 
 @ApiTags('properties')
 @ApiBearerAuth('JWT-auth')
@@ -139,6 +144,40 @@ export class PropertyController {
         limit: result.limit,
         totalPages: Math.ceil(result.total / result.limit),
       },
+    };
+  }
+
+@Get(':propertyId')
+  @ApiOperation({ summary: 'Get a specific property by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Property retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Property not found',
+  })
+  async getProperty(
+    @CurrentUser() user: JwtPayload,
+    @Param('propertyId') propertyId: string,
+  ) {
+    const query = new GetPropertyByIdQuery(propertyId, user.tenantId);
+
+    const result = await this.queryBus.execute<
+      GetPropertyByIdQuery,
+      GetPropertyByIdResult
+    >(query);
+
+    if (!result.property) {
+      return {
+        message: 'Property not found',
+        data: null,
+      };
+    }
+
+    return {
+      message: 'Property retrieved successfully',
+      data: result.property,
     };
   }
 

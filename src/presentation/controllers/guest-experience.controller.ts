@@ -10,7 +10,7 @@ import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { GetAvailableExperiencesQuery } from '@/application/experience/queries/GetAvailableExperiences/get-available-experiences.query';
 import { GetAvailableExperiencesResult } from '@/application/experience/queries/GetAvailableExperiences/get-available-experiences.result';
-import { GetAvailableExperiencesQueryDto } from '@/presentation/dtos/get-available-experiences-query.dto';
+import { GetAvailableExperiencesQueryDto } from '@/presentation/dtos/experience/get-available-experiences-query.dto';
 
 @ApiTags('guest-experiences')
 @ApiBearerAuth('GuestJWT-auth')

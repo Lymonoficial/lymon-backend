@@ -8,7 +8,12 @@ import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('guest-tags')
 @ApiBearerAuth('JWT-auth')
@@ -20,7 +25,10 @@ export class GuestTagController {
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)
   @ApiOperation({ summary: 'List all available guest tags' })
-  @ApiResponse({ status: 200, description: 'Guest tags retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest tags retrieved successfully',
+  })
   async getAll(@CurrentUser() user: JwtPayload): Promise<GetGuestTagsResult> {
     return this.queryBus.execute<GetGuestTagsQuery, GetGuestTagsResult>(
       new GetGuestTagsQuery(user.tenantId),

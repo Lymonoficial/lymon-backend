@@ -21,15 +21,16 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { RegisterTenantDto } from '@/presentation/dtos/register-tenant.dto';
-import { LoginDto } from '@/presentation/dtos/login.dto';
-import { RefreshTokenDto } from '@/presentation/dtos/refresh-token.dto';
+import { RegisterTenantDto } from '@/presentation/dtos/tenant/register-tenant.dto';
+import { LoginDto } from '@/presentation/dtos/auth/login.dto';
+import { RefreshTokenDto } from '@/presentation/dtos/auth/refresh-token.dto';
 import { RefreshTokenCommand } from '@/application/auth/commands/refresh-token.command';
 import { RefreshTokenResult } from '@/application/auth/commands/refresh-token.handler';
-import { RecoverPasswordDto } from '@/presentation/dtos/recover-password.dto';
-import { ConfirmRecoverPasswordDto } from '@/presentation/dtos/confirm-recover-password.dto';
-import { LogoutCommand } from '@/application/auth/commands/logout.command';
+import { RecoverPasswordDto } from '@/presentation/dtos/auth/recover-password.dto';
+import { ConfirmRecoverPasswordDto } from '@/presentation/dtos/auth/confirm-recover-password.dto';
+import { VerifyEmailDto } from '@/presentation/dtos/auth/verify-email.dto';
 import { LogoutResult } from '@/application/auth/commands/logout.handler';
+import { LogoutCommand } from '@/application/auth/commands/logout.command';
 
 @ApiTags('auth')
 @Controller('auth')

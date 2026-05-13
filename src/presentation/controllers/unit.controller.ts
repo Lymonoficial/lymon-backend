@@ -41,8 +41,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CreateUnitDto } from '@/presentation/dtos/create-unit.dto';
-import { UpdateUnitDto } from '@/presentation/dtos/update-unit.dto';
+import { CreateUnitDto } from '@/presentation/dtos/unit/create-unit.dto';
+import { UpdateUnitDto } from '@/presentation/dtos/unit/update-unit.dto';
 
 @ApiTags('units')
 @ApiBearerAuth('JWT-auth')

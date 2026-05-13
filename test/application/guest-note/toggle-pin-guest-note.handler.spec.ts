@@ -38,7 +38,9 @@ describe('TogglePinGuestNoteHandler', () => {
 
   describe('when the note is NOT_PINNED', () => {
     it('pins the note and saves', async () => {
-      const guestNote = makeGuestNote({ status: GuestNoteStatusEnum.NOT_PINNED });
+      const guestNote = makeGuestNote({
+        status: GuestNoteStatusEnum.NOT_PINNED,
+      });
       guestNoteRepository.findById.mockResolvedValue(guestNote);
 
       await handler.execute(
@@ -57,7 +59,9 @@ describe('TogglePinGuestNoteHandler', () => {
 
   describe('when the note is IS_PINNED', () => {
     it('unpins the note and saves', async () => {
-      const guestNote = makeGuestNote({ status: GuestNoteStatusEnum.IS_PINNED });
+      const guestNote = makeGuestNote({
+        status: GuestNoteStatusEnum.IS_PINNED,
+      });
       guestNoteRepository.findById.mockResolvedValue(guestNote);
 
       await handler.execute(

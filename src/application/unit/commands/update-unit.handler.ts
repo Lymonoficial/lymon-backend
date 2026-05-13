@@ -54,7 +54,11 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
     const previousInventoryCount = unit.getInventoryCount();
 
     if (command.inventoryCount !== undefined) {
-      await this.validateAndApplyInventoryCount(command.inventoryCount, command.unitId, unit);
+      await this.validateAndApplyInventoryCount(
+        command.inventoryCount,
+        command.unitId,
+        unit,
+      );
     }
 
     if (command.name !== undefined || command.description !== undefined) {

@@ -103,12 +103,18 @@ describe('GetGuestReservationsHandler', () => {
     propertyRepository.findByTenantId.mockImplementation((tenantId) => {
       if (tenantId.toString() === '65f1a1a2b3c4d5e6f7a8b9c0') {
         return Promise.resolve([
-          makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+          makeProperty({
+            id: '65f1a1a2b3c4d5e6f7a8b9c1',
+            tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+          }),
         ]);
       }
 
       return Promise.resolve([
-        makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9cd', tenantId: '65f1a1a2b3c4d5e6f7a8b9c9' }),
+        makeProperty({
+          id: '65f1a1a2b3c4d5e6f7a8b9cd',
+          tenantId: '65f1a1a2b3c4d5e6f7a8b9c9',
+        }),
       ]);
     });
     unitRepository.findByTenantId.mockImplementation(() => Promise.resolve([]));

@@ -11,7 +11,10 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { mapExperienceToPublicDto } from '@/application/experience/queries/shared/experience.mapper';
 
-function tryCreate<T>(value: string | undefined, factory: (v: string) => T): T | undefined {
+function tryCreate<T>(
+  value: string | undefined,
+  factory: (v: string) => T,
+): T | undefined {
   if (!value) return undefined;
   try {
     return factory(value);
@@ -36,9 +39,7 @@ export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
     const tenantId = tryCreate(query.tenantId, (v) =>
       TenantId.createFromString(v),
     );
-    const propertyId = tryCreate(query.propertyId, (v) =>
-      PropertyId.create(v),
-    );
+    const propertyId = tryCreate(query.propertyId, (v) => PropertyId.create(v));
     const category = tryCreate(query.category, (v) =>
       ExperienceCategory.create(v),
     );
