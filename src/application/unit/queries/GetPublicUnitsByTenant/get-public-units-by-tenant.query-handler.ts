@@ -31,6 +31,7 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
       tenantId,
       query.page,
       query.limit,
+      query.minGuests,
     );
     const dtos = units.map(mapUnitToPublicDto);
 
