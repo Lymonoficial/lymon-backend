@@ -94,6 +94,8 @@ export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
       passwordHash,
       tenantId,
       command.roleAssignments,
+      command.fullName,
+      command.document,
     );
     await this.userRepository.save(staffUser);
 

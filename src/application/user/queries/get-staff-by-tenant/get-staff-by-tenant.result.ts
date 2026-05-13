@@ -19,6 +19,8 @@ export type StaffScopeDto =
 export interface StaffDto {
   id: string;
   email: string;
+  fullName?: string;
+  document?: string;
   isOwner: boolean;
   emailVerified: boolean;
   roleAssignments: Array<{ roleId: string; scope: StaffScopeDto }>;

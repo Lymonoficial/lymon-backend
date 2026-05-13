@@ -91,6 +91,8 @@ export class UserController {
       dto.roleAssignments as unknown as RoleAssignment[],
       jwtPayload.userId,
       jwtPayload.email,
+      dto.fullName,
+      dto.document,
     );
 
     await this.commandBus.execute(command);
