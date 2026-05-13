@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { GuestTag, PLATFORM_TENANT_ID } from '@/domain/guest-tag/entities/guest-tag.entity';
+import {
+  GuestTag,
+  PLATFORM_TENANT_ID,
+} from '@/domain/guest-tag/entities/guest-tag.entity';
 import type { GuestTagRepository } from '@/domain/guest-tag/repositories/guest-tag.repository';
 import { GuestTagId } from '@/domain/guest-tag/value-objects/guest-tag-id.vo';
 import { GuestTagDocument } from '@/infrastructure/persistence/schemas/guest-tag.schema';
@@ -47,7 +50,7 @@ export class MongoGuestTagRepository implements GuestTagRepository {
 
   private toDomain(doc: GuestTagDocument): GuestTag {
     return GuestTag.reconstitute(
-      GuestTagId.createFromString((doc._id as Types.ObjectId).toString()),
+      GuestTagId.createFromString(doc._id.toString()),
       doc.tenantId,
       doc.name,
       doc.createdAt,

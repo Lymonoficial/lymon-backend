@@ -14,11 +14,11 @@ import { ConfirmRecoverGuestPasswordResult } from '@/application/guest-auth/comm
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { GuestPublic } from '@/infrastructure/guest-auth/decorators/guest-public.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
-import { RegisterGuestAccountDto } from '@/presentation/dtos/register-guest-account.dto';
-import { GuestLoginDto } from '@/presentation/dtos/guest-login.dto';
-import { RecoverGuestPasswordDto } from '@/presentation/dtos/recover-guest-password.dto';
-import { ConfirmRecoverGuestPasswordDto } from '@/presentation/dtos/confirm-recover-guest-password.dto';
-import { RefreshTokenDto } from '@/presentation/dtos/refresh-token.dto';
+import { RegisterGuestAccountDto } from '@/presentation/dtos/guest/register-guest-account.dto';
+import { GuestLoginDto } from '@/presentation/dtos/guest/guest-login.dto';
+import { RecoverGuestPasswordDto } from '@/presentation/dtos/guest/recover-guest-password.dto';
+import { ConfirmRecoverGuestPasswordDto } from '@/presentation/dtos/guest/confirm-recover-guest-password.dto';
+import { RefreshTokenDto } from '@/presentation/dtos/auth/refresh-token.dto';
 import { RefreshGuestTokenCommand } from '@/application/guest-auth/commands/refresh-guest-token/refresh-guest-token.command';
 import { RefreshGuestTokenResult } from '@/application/guest-auth/commands/refresh-guest-token/refresh-guest-token.result';
 import { LogoutGuestCommand } from '@/application/guest-auth/commands/logout-guest/logout-guest.command';

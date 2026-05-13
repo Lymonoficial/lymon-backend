@@ -25,8 +25,8 @@ import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decor
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { ChangePasswordCommand } from '@/application/user/commands/change-password/change-password.command';
 import { ChangePasswordResult } from '@/application/user/commands/change-password/change-password.handler';
-import { ChangePasswordDto } from '@/presentation/dtos/change-password.dto';
-import { InviteStaffDto } from '@/presentation/dtos/invite-staff.dto';
+import { ChangePasswordDto } from '@/presentation/dtos/auth/change-password.dto';
+import { InviteStaffDto } from '@/presentation/dtos/tenant/invite-staff.dto';
 import { InviteStaffCommand } from '@/application/user/commands/invite-staff/invite-staff.command';
 import { RoleAssignment } from '@/domain/user/entities/user.entity';
 import { GetStaffByTenantQuery } from '@/application/user/queries/get-staff-by-tenant/get-staff-by-tenant.query';

@@ -253,7 +253,10 @@ describe('User Entity - Extended Coverage', () => {
       const roleAssignments: RoleAssignment[] = [
         {
           roleId: 'ADMIN',
-          scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1'] },
+          scope: {
+            type: 'PROPERTY',
+            resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1'],
+          },
         },
       ];
 

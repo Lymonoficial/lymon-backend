@@ -35,7 +35,10 @@ describe('RemoveSupplierFromItemHandler', () => {
 
   it('removes the supplier from an inventory item', async () => {
     propertyRepository.findById.mockResolvedValue(
-      makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+      makeProperty({
+        id: '65f1a1a2b3c4d5e6f7a8b9c1',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      }),
     );
     inventoryItemRepository.findById.mockResolvedValue(
       makeInventoryItem({
@@ -46,7 +49,10 @@ describe('RemoveSupplierFromItemHandler', () => {
       }),
     );
     supplierRepository.findById.mockResolvedValue(
-      makeSupplier({ id: '65f1a1a2b3c4d5e6f7a8b9c4', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+      makeSupplier({
+        id: '65f1a1a2b3c4d5e6f7a8b9c4',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      }),
     );
     inventoryItemRepository.save.mockResolvedValue('item-123');
     supplierRepository.save.mockResolvedValue('65f1a1a2b3c4d5e6f7a8b9c4');
@@ -74,7 +80,10 @@ describe('RemoveSupplierFromItemHandler', () => {
 
   it('removes the supplier without touching supplier persistence when none is linked', async () => {
     propertyRepository.findById.mockResolvedValue(
-      makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+      makeProperty({
+        id: '65f1a1a2b3c4d5e6f7a8b9c1',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      }),
     );
     inventoryItemRepository.findById.mockResolvedValue(
       makeInventoryItem({
@@ -101,7 +110,10 @@ describe('RemoveSupplierFromItemHandler', () => {
 
   it('throws NotFoundException when the item does not exist', async () => {
     propertyRepository.findById.mockResolvedValue(
-      makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+      makeProperty({
+        id: '65f1a1a2b3c4d5e6f7a8b9c1',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      }),
     );
     inventoryItemRepository.findById.mockResolvedValue(null);
 

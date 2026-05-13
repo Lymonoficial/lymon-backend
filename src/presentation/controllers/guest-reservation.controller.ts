@@ -18,7 +18,7 @@ import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-guest.decorator';
 import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
-import { CreateGuestReservationDto } from '@/presentation/dtos/create-guest-reservation.dto';
+import { CreateGuestReservationDto } from '@/presentation/dtos/reservation/create-guest-reservation.dto';
 import { CreateGuestReservationCommand } from '@/application/reservation/commands/create-guest-reservation/create-guest-reservation.command';
 import { CreateReservationResult } from '@/application/reservation/commands/create-reservation/create-reservation.result';
 import { GetGuestReservationQuery } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.query';

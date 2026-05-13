@@ -23,9 +23,9 @@ import { RequirePermission } from '@/infrastructure/auth/decorators/require-perm
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
-import { CreateReservationDto } from '@/presentation/dtos/create-reservation.dto';
-import { UpdateReservationDto } from '@/presentation/dtos/update-reservation.dto';
-import { CancelReservationDto } from '@/presentation/dtos/cancel-reservation.dto';
+import { CreateReservationDto } from '@/presentation/dtos/reservation/create-reservation.dto';
+import { UpdateReservationDto } from '@/presentation/dtos/reservation/update-reservation.dto';
+import { CancelReservationDto } from '@/presentation/dtos/reservation/cancel-reservation.dto';
 import { CreateReservationCommand } from '@/application/reservation/commands/create-reservation/create-reservation.command';
 import { CreateReservationResult } from '@/application/reservation/commands/create-reservation/create-reservation.result';
 import { ConfirmReservationCommand } from '@/application/reservation/commands/confirm-reservation/confirm-reservation.command';

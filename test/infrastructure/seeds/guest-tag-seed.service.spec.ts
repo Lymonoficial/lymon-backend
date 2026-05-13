@@ -1,4 +1,7 @@
-import { GuestTagSeedService, PLATFORM_GUEST_TAGS } from '@/infrastructure/persistence/seeds/guest-tag-seed.service';
+import {
+  GuestTagSeedService,
+  PLATFORM_GUEST_TAGS,
+} from '@/infrastructure/persistence/seeds/guest-tag-seed.service';
 import { GuestTagRepository } from '@/domain/guest-tag/repositories/guest-tag.repository';
 import { PLATFORM_TENANT_ID } from '@/domain/guest-tag/entities/guest-tag.entity';
 import { createGuestTagRepositoryMock } from '@test/shared/mocks/repositories/guest-tag-repository.mock';
@@ -19,7 +22,9 @@ describe('GuestTagSeedService', () => {
 
       await service.onApplicationBootstrap();
 
-      expect(tagRepository.save).toHaveBeenCalledTimes(PLATFORM_GUEST_TAGS.length);
+      expect(tagRepository.save).toHaveBeenCalledTimes(
+        PLATFORM_GUEST_TAGS.length,
+      );
       for (const name of PLATFORM_GUEST_TAGS) {
         expect(tagRepository.existsByTenantIdAndName).toHaveBeenCalledWith(
           PLATFORM_TENANT_ID,
@@ -48,7 +53,9 @@ describe('GuestTagSeedService', () => {
 
       await service.onApplicationBootstrap();
 
-      expect(tagRepository.save).toHaveBeenCalledTimes(PLATFORM_GUEST_TAGS.length - 1);
+      expect(tagRepository.save).toHaveBeenCalledTimes(
+        PLATFORM_GUEST_TAGS.length - 1,
+      );
     });
   });
 
@@ -60,7 +67,9 @@ describe('GuestTagSeedService', () => {
         .mockResolvedValue(undefined);
 
       await expect(service.onApplicationBootstrap()).resolves.not.toThrow();
-      expect(tagRepository.save).toHaveBeenCalledTimes(PLATFORM_GUEST_TAGS.length);
+      expect(tagRepository.save).toHaveBeenCalledTimes(
+        PLATFORM_GUEST_TAGS.length,
+      );
     });
   });
 });

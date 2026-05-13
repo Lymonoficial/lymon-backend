@@ -12,10 +12,10 @@ import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decor
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
-import { CreateShiftDto } from '@/presentation/dtos/create-shift.dto';
-import { GetShiftsDto } from '@/presentation/dtos/get-shifts.dto';
-import { UpdateShiftDto } from '@/presentation/dtos/update-shift.dto';
-import { AssignStaffToShiftDto } from '@/presentation/dtos/assign-staff-to-shift.dto';
+import { CreateShiftDto } from '@/presentation/dtos/shift/create-shift.dto';
+import { GetShiftsDto } from '@/presentation/dtos/shift/get-shifts.dto';
+import { UpdateShiftDto } from '@/presentation/dtos/shift/update-shift.dto';
+import { AssignStaffToShiftDto } from '@/presentation/dtos/shift/assign-staff-to-shift.dto';
 import { AssignStaffToShiftCommand } from '@/application/shift/commands/assign-staff-to-shift/assign-staff-to-shift.command';
 import { AssignStaffToShiftCommandResult } from '@/application/shift/commands/assign-staff-to-shift/assign-staff-to-shift.result';
 import { UnassignStaffFromShiftDto } from '@/presentation/dtos/unassign-staff-from-shift.dto';

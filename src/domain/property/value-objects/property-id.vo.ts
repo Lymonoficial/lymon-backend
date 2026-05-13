@@ -10,7 +10,9 @@ export class PropertyId {
       throw new DomainException('PropertyId cannot be empty');
     }
     if (!PropertyId.OBJECT_ID_REGEX.test(value)) {
-      throw new DomainException('PropertyId must be a valid 24-character hex identifier');
+      throw new DomainException(
+        'PropertyId must be a valid 24-character hex identifier',
+      );
     }
     return new PropertyId(value);
   }

@@ -8,9 +8,10 @@ import {
 } from '@/domain/guest-tag/repositories/guest-tag.repository';
 
 @QueryHandler(GetGuestTagsQuery)
-export class GetGuestTagsHandler
-  implements IQueryHandler<GetGuestTagsQuery, GetGuestTagsResult>
-{
+export class GetGuestTagsHandler implements IQueryHandler<
+  GetGuestTagsQuery,
+  GetGuestTagsResult
+> {
   constructor(
     @Inject(GUEST_TAG_REPOSITORY)
     private readonly guestTagRepository: GuestTagRepository,

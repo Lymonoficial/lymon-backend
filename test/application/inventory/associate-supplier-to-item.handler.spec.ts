@@ -35,7 +35,10 @@ describe('AssociateSupplierToItemHandler', () => {
 
   it('associates a supplier to an inventory item', async () => {
     propertyRepository.findById.mockResolvedValue(
-      makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+      makeProperty({
+        id: '65f1a1a2b3c4d5e6f7a8b9c1',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      }),
     );
     inventoryItemRepository.findById.mockResolvedValue(
       makeInventoryItem({
@@ -45,7 +48,10 @@ describe('AssociateSupplierToItemHandler', () => {
       }),
     );
     supplierRepository.findById.mockResolvedValue(
-      makeSupplier({ id: '65f1a1a2b3c4d5e6f7a8b9c4', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+      makeSupplier({
+        id: '65f1a1a2b3c4d5e6f7a8b9c4',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      }),
     );
     inventoryItemRepository.save.mockResolvedValue('item-123');
     supplierRepository.save.mockResolvedValue('65f1a1a2b3c4d5e6f7a8b9c4');
@@ -65,7 +71,9 @@ describe('AssociateSupplierToItemHandler', () => {
     expect(result.supplierId).toBe('65f1a1a2b3c4d5e6f7a8b9c4');
 
     const savedItem = inventoryItemRepository.save.mock.calls[0][0];
-    expect(savedItem.getSupplierId()?.toString()).toBe('65f1a1a2b3c4d5e6f7a8b9c4');
+    expect(savedItem.getSupplierId()?.toString()).toBe(
+      '65f1a1a2b3c4d5e6f7a8b9c4',
+    );
 
     expect(supplierRepository.save).toHaveBeenCalledTimes(1);
     expect(eventEmitter.emit).toHaveBeenCalledWith(
@@ -76,7 +84,10 @@ describe('AssociateSupplierToItemHandler', () => {
 
   it('throws NotFoundException when the supplier does not exist', async () => {
     propertyRepository.findById.mockResolvedValue(
-      makeProperty({ id: '65f1a1a2b3c4d5e6f7a8b9c1', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+      makeProperty({
+        id: '65f1a1a2b3c4d5e6f7a8b9c1',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      }),
     );
     inventoryItemRepository.findById.mockResolvedValue(
       makeInventoryItem({

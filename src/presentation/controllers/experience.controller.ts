@@ -15,8 +15,8 @@ import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decor
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
-import { CreateExperienceDto } from '@/presentation/dtos/create-experience.dto';
-import { UpdateExperienceDto } from '@/presentation/dtos/update-experience.dto';
+import { CreateExperienceDto } from '@/presentation/dtos/experience/create-experience.dto';
+import { UpdateExperienceDto } from '@/presentation/dtos/experience/update-experience.dto';
 import {
   Body,
   Controller,

@@ -35,28 +35,28 @@ import { CreateGuestNoteResult } from '@/application/guest-note/commands/create-
 import { UpdateGuestNoteCommand } from '@/application/guest-note/commands/update-guest-note.command';
 import { DeleteGuestNoteCommand } from '@/application/guest-note/commands/delete-guest-note.command';
 import { TogglePinGuestNoteCommand } from '@/application/guest-note/commands/toggle-pin-guest-note.command';
-import { CreateGuestNoteDto } from '@/presentation/dtos/create-guest-note.dto';
-import { UpdateGuestNoteDto } from '@/presentation/dtos/update-guest-note.dto';
-import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
-import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
 import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.query';
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
+import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
+import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
-import { SendGuestMessageDto } from '@/presentation/dtos/send-guest-message.dto';
-import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
-import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
-import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferences.dto';
 import { ListCatalogItemsByTenantQuery } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.query';
 import { ListCatalogItemsByTenantResult } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.result';
+import { ToggleCatalogItemCommand } from '@/application/guest-preference/commands/toggle-catalog-item/toggle-catalog-item.command';
 import { CreateCustomCatalogItemCommand } from '@/application/guest-preference/commands/create-custom-catalog-item/create-custom-catalog-item.command';
 import { UpdateCustomCatalogItemCommand } from '@/application/guest-preference/commands/update-custom-catalog-item/update-custom-catalog-item.command';
 import { DeleteCustomCatalogItemCommand } from '@/application/guest-preference/commands/delete-custom-catalog-item/delete-custom-catalog-item.command';
-import { ToggleCatalogItemCommand } from '@/application/guest-preference/commands/toggle-catalog-item/toggle-catalog-item.command';
-import { CreateCatalogItemDto } from '@/presentation/dtos/create-catalog-item.dto';
-import { UpdateCatalogItemDto } from '@/presentation/dtos/update-catalog-item.dto';
-import { ToggleCatalogItemDto } from '@/presentation/dtos/toggle-catalog-item.dto';
+import { CreateGuestNoteDto } from '@/presentation/dtos/guest-note/create-guest-note.dto';
+import { UpdateGuestNoteDto } from '@/presentation/dtos/guest-note/update-guest-note.dto';
+import { SendGuestMessageDto } from '@/presentation/dtos/guest/send-guest-message.dto';
+import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
+import { CreateCatalogItemDto } from '@/presentation/dtos/catalog/create-catalog-item.dto';
+import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog-item.dto';
+import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -163,7 +163,10 @@ export class CrmController {
   @RequirePermission(Permission.CRM_MANAGE)
   @ApiOperation({ summary: 'Edit a guest note' })
   @ApiResponse({ status: 200, description: 'Guest note updated successfully' })
-  @ApiResponse({ status: 400, description: 'No fields provided or invalid type' })
+  @ApiResponse({
+    status: 400,
+    description: 'No fields provided or invalid type',
+  })
   @ApiResponse({ status: 404, description: 'Guest note not found' })
   async updateGuestNote(
     @Param('noteId') noteId: string,
