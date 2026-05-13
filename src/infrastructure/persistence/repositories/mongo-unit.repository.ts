@@ -97,11 +97,15 @@ export class MongoUnitRepository implements UnitRepository {
     tenantId: TenantId,
     page: number,
     limit: number,
+    minGuests?: number,
   ): Promise<{ units: Unit[]; total: number }> {
-    const filter = {
+    const filter: any = {
       tenantId: new Types.ObjectId(tenantId.toString()),
       deletedAt: null,
     };
+    if (minGuests !== undefined) {
+      filter.maxGuests = { $gte: minGuests };
+    }
     const total = await this.unitModel.countDocuments(filter);
     const documents = await this.unitModel
       .find(filter)
@@ -117,8 +121,12 @@ export class MongoUnitRepository implements UnitRepository {
   async findAllPaginated(
     page: number,
     limit: number,
+    minGuests?: number,
   ): Promise<{ units: Unit[]; total: number }> {
-    const filter = { deletedAt: null };
+    const filter: any = { deletedAt: null };
+    if (minGuests !== undefined) {
+      filter.maxGuests = { $gte: minGuests };
+    }
     const total = await this.unitModel.countDocuments(filter);
     const documents = await this.unitModel
       .find(filter)

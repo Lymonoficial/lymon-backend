@@ -22,6 +22,7 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
     const { units, total } = await this.unitRepository.findAllPaginated(
       query.page,
       query.limit,
+      query.minGuests,
     );
     const dtos = units.map(mapUnitToPublicDto);
 

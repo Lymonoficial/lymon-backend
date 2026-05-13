@@ -20,9 +20,11 @@ export interface UnitRepository {
     tenantId: TenantId,
     page: number,
     limit: number,
+    minGuests?: number,
   ): Promise<{ units: Unit[]; total: number }>;
   findAllPaginated(
     page: number,
     limit: number,
+    minGuests?: number,
   ): Promise<{ units: Unit[]; total: number }>;
 }
