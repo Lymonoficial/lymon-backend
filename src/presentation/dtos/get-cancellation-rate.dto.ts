@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsMongoId, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsMongoId } from 'class-validator';
 
 export class GetCancellationRateDto {
   @ApiProperty({ description: 'Guest ID to filter metrics' })
