@@ -36,6 +36,8 @@ export class MongoUserRepository implements UserRepository {
       const resetPasswordToken = user.getResetPasswordToken();
       const resetPasswordExpires = user.getResetPasswordExpires();
       const passwordChangedAt = user.getPasswordChangedAt();
+      const fullName = user.getFullName();
+      const documentNumber = user.getDocument();
 
       // Set or unset optional fields
       if (resetPasswordToken !== undefined) {
@@ -46,6 +48,12 @@ export class MongoUserRepository implements UserRepository {
       }
       if (passwordChangedAt !== undefined) {
         document.passwordChangedAt = passwordChangedAt;
+      }
+      if (fullName !== undefined) {
+        document.fullName = fullName;
+      }
+      if (documentNumber !== undefined) {
+        document.document = documentNumber;
       }
 
       if (id) {
@@ -142,6 +150,8 @@ export class MongoUserRepository implements UserRepository {
       resetPasswordExpires: doc.resetPasswordExpires,
       passwordChangedAt: doc.passwordChangedAt,
       deletedAt: doc.deletedAt,
+      fullName: doc.fullName,
+      document: doc.document,
     });
   }
 }

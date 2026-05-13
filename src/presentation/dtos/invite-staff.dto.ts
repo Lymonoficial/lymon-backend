@@ -90,6 +90,14 @@ export class InviteStaffDto {
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
 
+  @ApiProperty({ example: 'Juan Pérez' })
+  @IsString()
+  fullName: string;
+
+  @ApiProperty({ example: '1234567890' })
+  @IsString()
+  document: string;
+
   @ApiProperty({
     type: [RoleAssignmentDto],
     description: 'One or more role assignments for the staff member',
