@@ -12,7 +12,6 @@ import {
 import { Cart } from '@/domain/cart/entities/cart.entity';
 import { CartItem } from '@/domain/cart/value-objects/cart-item.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperienceStatusEnum } from '@/domain/experience/value-objects/experience-status.vo';
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
@@ -27,7 +26,6 @@ export class AddExperienceToCartHandler implements ICommandHandler<AddExperience
   ) {}
 
   async execute(command: AddExperienceToCartCommand): Promise<void> {
-    const tenantId = TenantId.createFromString(command.tenantId);
     const guestAccountId = GuestAccountId.createFromString(
       command.guestAccountId,
     );

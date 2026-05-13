@@ -44,9 +44,7 @@ import {
 } from '@/infrastructure/audit/events/audit-logged.event';
 
 @CommandHandler(CheckoutCartCommand)
-export class CheckoutCartHandler
-  implements ICommandHandler<CheckoutCartCommand>
-{
+export class CheckoutCartHandler implements ICommandHandler<CheckoutCartCommand> {
   constructor(
     @Inject(CART_REPOSITORY)
     private readonly cartRepository: CartRepository,
@@ -92,7 +90,9 @@ export class CheckoutCartHandler
     command: CheckoutCartCommand,
   ): Promise<void> {
     const tenantId = TenantId.createFromString(reservationItem.tenantId);
-    const guestAccountId = GuestAccountId.createFromString(command.guestAccountId);
+    const guestAccountId = GuestAccountId.createFromString(
+      command.guestAccountId,
+    );
 
     const guest = await this.guestRepository.findByGuestAccountId(
       tenantId,
@@ -153,7 +153,9 @@ export class CheckoutCartHandler
     command: CheckoutCartCommand,
   ): Promise<void> {
     const tenantId = TenantId.createFromString(item.tenantId);
-    const guestAccountId = GuestAccountId.createFromString(command.guestAccountId);
+    const guestAccountId = GuestAccountId.createFromString(
+      command.guestAccountId,
+    );
     const experience = await this.experienceRepository.findById(
       ExperienceId.create(item.experienceId.toString()),
     );
