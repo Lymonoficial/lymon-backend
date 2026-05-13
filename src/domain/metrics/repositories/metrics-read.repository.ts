@@ -25,8 +25,8 @@ export interface CancellationRateMetrics {
 export interface MetricsReadRepository {
   getCancellationRates(
     tenantId: string,
+    guestId: string,
     startDate: Date,
     endDate: Date,
-    propertyId?: string,
   ): Promise<CancellationRateMetrics>;
 }

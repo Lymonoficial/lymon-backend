@@ -41,9 +41,9 @@ export class MetricsController {
     >(
       new GetCancellationRateQuery(
         user.tenantId,
+        query.guestId,
         new Date(query.startDate),
         new Date(query.endDate),
-        query.propertyId,
       ),
     );
 

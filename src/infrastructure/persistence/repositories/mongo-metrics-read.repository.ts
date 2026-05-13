@@ -17,18 +17,15 @@ export class MongoMetricsReadRepository implements MetricsReadRepository {
 
   async getCancellationRates(
     tenantId: string,
+    guestId: string,
     startDate: Date,
     endDate: Date,
-    propertyId?: string,
   ): Promise<CancellationRateMetrics> {
     const matchStage: Record<string, unknown> = {
       tenantId: new Types.ObjectId(tenantId),
+      guestId: new Types.ObjectId(guestId),
       checkIn: { $gte: startDate, $lte: endDate },
     };
-
-    if (propertyId) {
-      matchStage.propertyId = new Types.ObjectId(propertyId);
-    }
 
     interface AggregationResult {
       totals: Array<{ total: number; cancelled: number; noShow: number }>;

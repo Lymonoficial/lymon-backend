@@ -22,9 +22,9 @@ export class GetCancellationRateHandler implements IQueryHandler<
   ): Promise<GetCancellationRateResult> {
     const metrics = await this.metricsReadRepository.getCancellationRates(
       query.tenantId,
+      query.guestId,
       query.startDate,
       query.endDate,
-      query.propertyId,
     );
 
     return new GetCancellationRateResult(metrics);
