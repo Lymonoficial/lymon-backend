@@ -26,7 +26,7 @@ export class GetPropertyByIdQueryHandler implements IQueryHandler<
 
     const property = await this.propertyRepository.findById(propertyId);
 
-    if (!property || !property.getTenantId().equals(tenantId)) {
+    if (!property?.getTenantId().equals(tenantId)) {
       return new GetPropertyByIdResult(null);
     }
 
