@@ -101,7 +101,9 @@ describe('GetReservationsByTenantHandler', () => {
     r2.setId(ReservationId.create('res-4'));
 
     reservationRepository.findByTenantId.mockImplementation((tenantId) => {
-      return Promise.resolve(tenantId === '65f1a1a2b3c4d5e6f7a8b9c0' ? [r1] : [r2]);
+      return Promise.resolve(
+        tenantId === '65f1a1a2b3c4d5e6f7a8b9c0' ? [r1] : [r2],
+      );
     });
     reservationRepository.countByTenantId.mockImplementation((tenantId) => {
       return Promise.resolve(tenantId === '65f1a1a2b3c4d5e6f7a8b9c0' ? 1 : 1);

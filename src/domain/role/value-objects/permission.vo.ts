@@ -46,6 +46,9 @@ export enum Permission {
   // --- Audit ---
   AUDIT_VIEW = 'AUDIT_VIEW',
 
+  // --- Experience ---
+  EXPERIENCE_EDIT = 'EXPERIENCE_EDIT',
+
   // --- Incident Reports ---
   INCIDENT_REPORT_CREATE = 'INCIDENT_REPORT_CREATE',
   INCIDENT_REPORT_READ = 'INCIDENT_REPORT_READ',
@@ -75,6 +78,7 @@ export const ADMIN_PERMISSIONS: Permission[] = [
   Permission.INTEGRATION_VIEW,
   Permission.TENANT_USERS_MANAGE,
   Permission.AUDIT_VIEW,
+  Permission.EXPERIENCE_EDIT,
   Permission.INCIDENT_REPORT_CREATE,
   Permission.INCIDENT_REPORT_READ,
   Permission.INCIDENT_REPORT_EDIT,

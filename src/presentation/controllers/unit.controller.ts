@@ -41,8 +41,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CreateUnitDto } from '@/presentation/dtos/create-unit.dto';
-import { UpdateUnitDto } from '@/presentation/dtos/update-unit.dto';
+import { CreateUnitDto } from '@/presentation/dtos/unit/create-unit.dto';
+import { UpdateUnitDto } from '@/presentation/dtos/unit/update-unit.dto';
 
 @ApiTags('units')
 @ApiBearerAuth('JWT-auth')
@@ -157,12 +157,20 @@ export class UnitController {
     type: Number,
     description: 'Items per page (default: 10)',
   })
+  @ApiQuery({
+    name: 'minGuests',
+    required: false,
+    type: Number,
+    description: 'Filter units by minimum number of guests (maxGuests)',
+  })
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getAllPublic(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('minGuests') minGuests?: string,
   ) {
-    const query = new GetAllPublicUnitsQuery(page, limit);
+    const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
+    const query = new GetAllPublicUnitsQuery(page, limit, minGuestsNum);
 
     const result = await this.queryBus.execute<
       GetAllPublicUnitsQuery,
@@ -200,13 +208,26 @@ export class UnitController {
     type: Number,
     description: 'Items per page (default: 10)',
   })
+  @ApiQuery({
+    name: 'minGuests',
+    required: false,
+    type: Number,
+    description: 'Filter units by minimum number of guests (maxGuests)',
+  })
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getPublicByTenant(
     @Param('tenantId') tenantId: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('minGuests') minGuests?: string,
   ) {
-    const query = new GetPublicUnitsByTenantQuery(tenantId, page, limit);
+    const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
+    const query = new GetPublicUnitsByTenantQuery(
+      tenantId,
+      page,
+      limit,
+      minGuestsNum,
+    );
 
     const result = await this.queryBus.execute<
       GetPublicUnitsByTenantQuery,

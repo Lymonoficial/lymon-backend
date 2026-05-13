@@ -4,6 +4,7 @@ import { CreatePropertyHandler } from '@/application/property/commands/create-pr
 import { UpdatePropertyHandler } from '@/application/property/commands/update-property.handler';
 import { DeletePropertyHandler } from '@/application/property/commands/delete-property.handler';
 import { GetPropertiesByTenantQueryHandler } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.query-handler';
+import { GetPropertyByIdQueryHandler } from '@/application/property/queries/GetPropertyById/get-property-by-id.query-handler';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 
 const CommandHandlers = [
@@ -11,7 +12,10 @@ const CommandHandlers = [
   UpdatePropertyHandler,
   DeletePropertyHandler,
 ];
-const QueryHandlers = [GetPropertiesByTenantQueryHandler];
+const QueryHandlers = [
+  GetPropertiesByTenantQueryHandler,
+  GetPropertyByIdQueryHandler,
+];
 
 @Module({
   imports: [CqrsModule, PersistenceModule],

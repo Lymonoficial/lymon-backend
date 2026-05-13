@@ -25,8 +25,8 @@ import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decor
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { ChangePasswordCommand } from '@/application/user/commands/change-password/change-password.command';
 import { ChangePasswordResult } from '@/application/user/commands/change-password/change-password.handler';
-import { ChangePasswordDto } from '@/presentation/dtos/change-password.dto';
-import { InviteStaffDto } from '@/presentation/dtos/invite-staff.dto';
+import { ChangePasswordDto } from '@/presentation/dtos/auth/change-password.dto';
+import { InviteStaffDto } from '@/presentation/dtos/tenant/invite-staff.dto';
 import { InviteStaffCommand } from '@/application/user/commands/invite-staff/invite-staff.command';
 import { RoleAssignment } from '@/domain/user/entities/user.entity';
 import { GetStaffByTenantQuery } from '@/application/user/queries/get-staff-by-tenant/get-staff-by-tenant.query';
@@ -91,6 +91,8 @@ export class UserController {
       dto.roleAssignments as unknown as RoleAssignment[],
       jwtPayload.userId,
       jwtPayload.email,
+      dto.fullName,
+      dto.document,
     );
 
     await this.commandBus.execute(command);
@@ -103,10 +105,83 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('staff')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'List invited staff for the current tenant' })
+  @ApiOperation({
+    summary: 'List invited staff for the current tenant',
+    description:
+      'Retrieves a list of staff members associated with the current tenant, including their assigned roles and access scopes (TENANT, PROPERTY, or UNIT). Contains detailed information about accessible resources like property or unit IDs and names.',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Staff retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Staff retrieved successfully' },
+        total: { type: 'number', example: 1 },
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                format: 'uuid',
+                example: '123e4567-e89b-12d3-a456-426614174000',
+              },
+              email: {
+                type: 'string',
+                format: 'email',
+                example: 'staff@example.com',
+              },
+              isOwner: { type: 'boolean', example: false },
+              emailVerified: { type: 'boolean', example: true },
+              roleAssignments: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    roleId: { type: 'string', example: 'staff-role-id' },
+                    scope: {
+                      type: 'object',
+                      properties: {
+                        type: {
+                          type: 'string',
+                          enum: ['TENANT', 'PROPERTY', 'UNIT'],
+                          example: 'PROPERTY',
+                        },
+                        resourceIds: {
+                          type: 'array',
+                          items: { type: 'string', format: 'uuid' },
+                          example: ['987e6543-e21b-34d3-a456-426614174111'],
+                        },
+                        resources: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              id: {
+                                type: 'string',
+                                format: 'uuid',
+                                example: '987e6543-e21b-34d3-a456-426614174111',
+                              },
+                              name: { type: 'string', example: 'Sunset Villa' },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized - Invalid or missing JWT token',
   })
   async getStaff(
     @CurrentUser() jwtPayload: JwtPayload,

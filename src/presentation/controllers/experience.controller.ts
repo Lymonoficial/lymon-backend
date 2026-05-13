@@ -1,5 +1,11 @@
 import { CreateExperienceCommand } from '@/application/experience/commands/create-experience.command';
 import { CreateExperienceResult } from '@/application/experience/commands/create-experience.result';
+import {
+  ExperienceActor,
+  UpdateExperienceCommand,
+} from '@/application/experience/commands/update-experience/update-experience.command';
+import { ExperienceChanges } from '@/domain/experience/entities/experience.entity';
+import { pickDefined } from '@/presentation/common/utils/pick-defined.util';
 import { DeleteExperienceCommand } from '@/application/experience/commands/delete-experience.command';
 import { GetExperiencesByTenantQuery } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query';
 import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
@@ -9,16 +15,18 @@ import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decor
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
-import { CreateExperienceDto } from '@/presentation/dtos/create-experience.dto';
+import { CreateExperienceDto } from '@/presentation/dtos/experience/create-experience.dto';
+import { UpdateExperienceDto } from '@/presentation/dtos/experience/update-experience.dto';
 import {
   Body,
   Controller,
   DefaultValuePipe,
   Delete,
   Get,
+  Param,
   HttpCode,
   ParseIntPipe,
-  Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -217,6 +225,58 @@ export class ExperienceController {
         experienceId: result.experienceId,
       },
     };
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.EXPERIENCE_EDIT)
+  @ApiOperation({ summary: 'Update an existing experience' })
+  @ApiResponse({ status: 200, description: 'Experience updated successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or no fields provided',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Insufficient permissions or not the owner',
+  })
+  @ApiResponse({ status: 404, description: 'Experience not found' })
+  async update(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: UpdateExperienceDto,
+  ) {
+    const changes: ExperienceChanges = {
+      ...pickDefined({
+        name: dto.name,
+        description: dto.description,
+        priceCop: dto.priceCop,
+        durationHours: dto.durationHours,
+        capacity: dto.capacity,
+        coverImageUrl: dto.coverImageUrl,
+        location: dto.location,
+        availabilityType: dto.availabilityType,
+        recurrence: dto.recurrence,
+        allowStandalonePurchase: dto.allowStandalonePurchase,
+        allowReservationPurchase: dto.allowReservationPurchase,
+      }),
+      ...(dto.startAt !== undefined && { startAt: new Date(dto.startAt) }),
+      ...(dto.endAt !== undefined && { endAt: new Date(dto.endAt) }),
+      ...(dto.blackoutRanges !== undefined && {
+        blackoutRanges: dto.blackoutRanges.map((r) => ({
+          startAt: new Date(r.startAt),
+          endAt: new Date(r.endAt),
+        })),
+      }),
+    };
+
+    const actor: ExperienceActor = { id: user.userId, email: user.email };
+
+    await this.commandBus.execute(
+      new UpdateExperienceCommand(id, user.tenantId, changes, actor),
+    );
+
+    return { message: 'Experience updated successfully' };
   }
 
   @Delete(':id')

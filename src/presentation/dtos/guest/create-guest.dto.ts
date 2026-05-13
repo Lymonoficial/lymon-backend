@@ -9,7 +9,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { GuestPreferenceItemDto } from '@/presentation/dtos/save-guest-preferences.dto';
+import { GuestPreferenceItemDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
 
 class GuestIdentityDto {
   @ApiPropertyOptional({ example: 'passport' })

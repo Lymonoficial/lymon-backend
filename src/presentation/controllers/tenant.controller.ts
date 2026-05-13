@@ -21,7 +21,7 @@ import { RequirePermission } from '@/infrastructure/auth/decorators/require-perm
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
-import { UpdateTenantProfileDto } from '@/presentation/dtos/update-tenant-profile.dto';
+import { UpdateTenantProfileDto } from '@/presentation/dtos/tenant/update-tenant-profile.dto';
 import { UpdateTenantProfileCommand } from '@/application/tenant/commands/update-tenant-profile.command';
 import { UpdateTenantProfileResult } from '@/application/tenant/commands/update-tenant-profile.result';
 import { DeleteTenantCommand } from '@/application/tenant/commands/delete-tenant/delete-tenant.command';

@@ -27,10 +27,10 @@ import { RequirePermission } from '@/infrastructure/auth/decorators/require-perm
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
-import { CreateInventoryItemDto } from '@/presentation/dtos/create-inventory-item.dto';
-import { UpdateInventoryItemDto } from '@/presentation/dtos/update-inventory-item.dto';
-import { RecordInventoryMovementDto } from '@/presentation/dtos/record-inventory-movement.dto';
-import { UpdateInventoryItemSupplierDto } from '@/presentation/dtos/update-inventory-item-supplier.dto';
+import { CreateInventoryItemDto } from '@/presentation/dtos/inventory/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from '@/presentation/dtos/inventory/update-inventory-item.dto';
+import { RecordInventoryMovementDto } from '@/presentation/dtos/inventory/record-inventory-movement.dto';
+import { UpdateInventoryItemSupplierDto } from '@/presentation/dtos/inventory/update-inventory-item-supplier.dto';
 import { CreateInventoryItemCommand } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.command';
 import { CreateInventoryItemResult } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.result';
 import { UpdateInventoryItemCommand } from '@/application/inventory/commands/update-inventory-item/update-inventory-item.command';
