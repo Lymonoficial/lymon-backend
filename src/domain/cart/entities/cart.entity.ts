@@ -1,6 +1,5 @@
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { CartId } from '@/domain/cart/value-objects/cart-id.vo';
 import { CartItem } from '@/domain/cart/value-objects/cart-item.vo';
@@ -11,7 +10,6 @@ import { CartCreateParams, ICartData } from './cart.types';
 export class Cart {
   private constructor(
     private readonly id: CartId | null,
-    private readonly tenantId: TenantId,
     private readonly guestAccountId: GuestAccountId,
     private experienceItems: CartItem[],
     private reservationItem: CartReservationItem | null,
@@ -23,7 +21,6 @@ export class Cart {
   static create(params: CartCreateParams): Cart {
     return new Cart(
       null,
-      params.tenantId,
       params.guestAccountId,
       [],
       null,
@@ -36,7 +33,6 @@ export class Cart {
   static reconstitute(data: ICartData): Cart {
     return new Cart(
       data.id,
-      data.tenantId,
       data.guestAccountId,
       [...data.experienceItems],
       data.reservationItem,
@@ -109,10 +105,6 @@ export class Cart {
 
   getId(): CartId | null {
     return this.id;
-  }
-
-  getTenantId(): TenantId {
-    return this.tenantId;
   }
 
   getGuestAccountId(): GuestAccountId {

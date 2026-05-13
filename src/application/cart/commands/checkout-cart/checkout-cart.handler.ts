@@ -33,7 +33,6 @@ import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reserv
 import { ExperienceStatusEnum } from '@/domain/experience/value-objects/experience-status.vo';
 import { CartItem } from '@/domain/cart/value-objects/cart-item.vo';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
-import { Guest } from '@/domain/guest/entities/guest.entity';
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 import {
   AuditAction,
@@ -66,18 +65,34 @@ export class CheckoutCartHandler
     const guestAccountId = GuestAccountId.createFromString(
       command.guestAccountId,
     );
-    const tenantId = TenantId.createFromString(command.tenantId);
 
-    const cart = await this.cartRepository.findOpenByGuestAndTenant(
-      guestAccountId,
-      tenantId,
-    );
+    const cart = await this.cartRepository.findOpenByGuest(guestAccountId);
     if (!cart) {
       throw new NotFoundException('No open cart found');
     }
     if (cart.getExperienceItems().length === 0 && !cart.getReservationItem()) {
       throw new DomainException('Cannot checkout an empty cart');
     }
+
+    const reservationItem = cart.getReservationItem();
+    if (reservationItem) {
+      await this.processReservationItem(reservationItem, command);
+    }
+
+    for (const item of cart.getExperienceItems()) {
+      await this.processExperienceItem(item, command);
+    }
+
+    cart.checkout();
+    await this.cartRepository.save(cart);
+  }
+
+  private async processReservationItem(
+    reservationItem: CartReservationItem,
+    command: CheckoutCartCommand,
+  ): Promise<void> {
+    const tenantId = TenantId.createFromString(reservationItem.tenantId);
+    const guestAccountId = GuestAccountId.createFromString(command.guestAccountId);
 
     const guest = await this.guestRepository.findByGuestAccountId(
       tenantId,
@@ -87,37 +102,6 @@ export class CheckoutCartHandler
       throw new NotFoundException('Guest profile not found for this tenant');
     }
 
-    const reservationItem = cart.getReservationItem();
-    if (reservationItem) {
-      await this.processReservationItem(reservationItem, guest, command);
-    }
-
-    for (const item of cart.getExperienceItems()) {
-      await this.processExperienceItem(item, tenantId, guestAccountId, command);
-    }
-
-    cart.checkout();
-    await this.cartRepository.save(cart);
-
-    this.eventEmitter.emit(
-      AUDIT_LOG_EVENT,
-      new AuditLoggedEvent(
-        command.tenantId,
-        command.actorId,
-        command.actorEmail,
-        AuditAction.CART_CHECKED_OUT,
-        AuditEntityType.CART,
-        cart.getId()?.toString(),
-        { totalCop: cart.getTotalCop() },
-      ),
-    );
-  }
-
-  private async processReservationItem(
-    reservationItem: CartReservationItem,
-    guest: Guest,
-    command: CheckoutCartCommand,
-  ): Promise<void> {
     const reservation = await this.reservationRepository.findById(
       ReservationId.create(reservationItem.reservationId),
     );
@@ -136,7 +120,7 @@ export class CheckoutCartHandler
     }
 
     const guestReservations = await this.reservationRepository.findByGuestId(
-      command.tenantId,
+      reservationItem.tenantId,
       guest.getId()!.toString(),
       1,
       200,
@@ -154,7 +138,7 @@ export class CheckoutCartHandler
     this.eventEmitter.emit(
       AUDIT_LOG_EVENT,
       new AuditLoggedEvent(
-        command.tenantId,
+        reservationItem.tenantId,
         command.actorId,
         command.actorEmail,
         AuditAction.RESERVATION_PAID,
@@ -166,10 +150,10 @@ export class CheckoutCartHandler
 
   private async processExperienceItem(
     item: CartItem,
-    tenantId: TenantId,
-    guestAccountId: GuestAccountId,
     command: CheckoutCartCommand,
   ): Promise<void> {
+    const tenantId = TenantId.createFromString(item.tenantId);
+    const guestAccountId = GuestAccountId.createFromString(command.guestAccountId);
     const experience = await this.experienceRepository.findById(
       ExperienceId.create(item.experienceId.toString()),
     );
@@ -218,7 +202,7 @@ export class CheckoutCartHandler
     this.eventEmitter.emit(
       AUDIT_LOG_EVENT,
       new AuditLoggedEvent(
-        command.tenantId,
+        item.tenantId,
         command.actorId,
         command.actorEmail,
         AuditAction.EXPERIENCE_PURCHASED,

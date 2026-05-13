@@ -6,7 +6,6 @@ import {
   type CartRepository,
 } from '@/domain/cart/repositories/cart.repository';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 export interface CartItemResult {
   experienceId: string;
@@ -39,9 +38,8 @@ export class GetGuestCartHandler implements IQueryHandler<GetGuestCartQuery> {
   ) {}
 
   async execute(query: GetGuestCartQuery): Promise<GuestCartResult | null> {
-    const cart = await this.cartRepository.findOpenByGuestAndTenant(
+    const cart = await this.cartRepository.findOpenByGuest(
       GuestAccountId.createFromString(query.guestAccountId),
-      TenantId.createFromString(query.tenantId),
     );
     if (!cart) return null;
 

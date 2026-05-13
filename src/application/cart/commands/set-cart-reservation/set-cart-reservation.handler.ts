@@ -76,14 +76,12 @@ export class SetCartReservationHandler implements ICommandHandler<SetCartReserva
       command.reservationId,
     );
 
-    let cart = await this.cartRepository.findOpenByGuestAndTenant(
-      guestAccountId,
-      tenantId,
-    );
-    cart ??= Cart.create({ tenantId, guestAccountId });
+    let cart = await this.cartRepository.findOpenByGuest(guestAccountId);
+    cart ??= Cart.create({ guestAccountId });
 
     cart.setReservationItem(
       CartReservationItem.create({
+        tenantId: command.tenantId,
         reservationId: command.reservationId,
         totalPriceCopSnapshot: reservation.getTotalPrice(),
       }),

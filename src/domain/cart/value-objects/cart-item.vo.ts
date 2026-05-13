@@ -3,6 +3,7 @@ import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 
 export class CartItem {
   private constructor(
+    readonly tenantId: string,
     readonly experienceId: ExperienceId,
     readonly experienceName: string,
     readonly selectedDate: Date | null,
@@ -12,6 +13,7 @@ export class CartItem {
   ) {}
 
   static create(params: {
+    tenantId: string;
     experienceId: ExperienceId;
     experienceName: string;
     selectedDate?: Date | null;
@@ -23,6 +25,7 @@ export class CartItem {
       throw new DomainException('Cart item quantity must be a positive integer');
     }
     return new CartItem(
+      params.tenantId,
       params.experienceId,
       params.experienceName,
       params.selectedDate ?? null,

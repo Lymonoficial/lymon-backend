@@ -8,7 +8,6 @@ import { CartItem } from '@/domain/cart/value-objects/cart-item.vo';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
 import { CartStatus, CartStatusEnum } from '@/domain/cart/value-objects/cart-status.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { CartDocument } from '../schemas/cart.schema';
 
@@ -22,10 +21,10 @@ export class MongoCartRepository implements CartRepository {
   async save(cart: Cart): Promise<string> {
     const id = cart.getId()?.toString();
     const doc = {
-      tenantId: new Types.ObjectId(cart.getTenantId().toString()),
       guestAccountId: new Types.ObjectId(cart.getGuestAccountId().toString()),
       status: cart.getStatus().toString(),
       experienceItems: cart.getExperienceItems().map((item) => ({
+        tenantId: new Types.ObjectId(item.tenantId),
         experienceId: new Types.ObjectId(item.experienceId.toString()),
         experienceName: item.experienceName,
         selectedDate: item.selectedDate ?? null,
@@ -37,6 +36,7 @@ export class MongoCartRepository implements CartRepository {
       })),
       reservationItem: cart.getReservationItem()
         ? {
+            tenantId: new Types.ObjectId(cart.getReservationItem()!.tenantId),
             reservationId: new Types.ObjectId(
               cart.getReservationItem()!.reservationId,
             ),
@@ -59,13 +59,9 @@ export class MongoCartRepository implements CartRepository {
     return doc ? this.toDomainEntity(doc) : null;
   }
 
-  async findOpenByGuestAndTenant(
-    guestAccountId: GuestAccountId,
-    tenantId: TenantId,
-  ): Promise<Cart | null> {
+  async findOpenByGuest(guestAccountId: GuestAccountId): Promise<Cart | null> {
     const doc = await this.cartModel.findOne({
       guestAccountId: new Types.ObjectId(guestAccountId.toString()),
-      tenantId: new Types.ObjectId(tenantId.toString()),
       status: CartStatusEnum.OPEN,
     });
     return doc ? this.toDomainEntity(doc) : null;
@@ -74,12 +70,12 @@ export class MongoCartRepository implements CartRepository {
   private toDomainEntity(doc: CartDocument): Cart {
     return Cart.reconstitute({
       id: CartId.createFromString(doc._id.toString()),
-      tenantId: TenantId.createFromString(doc.tenantId.toString()),
       guestAccountId: GuestAccountId.createFromString(
         doc.guestAccountId.toString(),
       ),
       experienceItems: doc.experienceItems.map((item) =>
         CartItem.create({
+          tenantId: item.tenantId.toString(),
           experienceId: ExperienceId.create(item.experienceId.toString()),
           experienceName: item.experienceName,
           selectedDate: item.selectedDate ?? null,
@@ -90,6 +86,7 @@ export class MongoCartRepository implements CartRepository {
       ),
       reservationItem: doc.reservationItem
         ? CartReservationItem.create({
+            tenantId: doc.reservationItem.tenantId.toString(),
             reservationId: doc.reservationItem.reservationId.toString(),
             totalPriceCopSnapshot:
               doc.reservationItem.totalPriceCopSnapshot,

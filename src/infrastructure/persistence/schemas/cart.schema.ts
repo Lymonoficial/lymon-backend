@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
 export interface CartItemSubdoc {
+  tenantId: Types.ObjectId;
   experienceId: Types.ObjectId;
   experienceName: string;
   selectedDate: Date | null;
@@ -11,6 +12,7 @@ export interface CartItemSubdoc {
 }
 
 export interface CartReservationItemSubdoc {
+  tenantId: Types.ObjectId;
   reservationId: Types.ObjectId;
   totalPriceCopSnapshot: number;
 }
@@ -22,17 +24,10 @@ export class CartDocument extends Document {
 
   @Prop({
     type: Types.ObjectId,
-    ref: 'TenantDocument',
-    required: true,
-    index: true,
-  })
-  tenantId: Types.ObjectId;
-
-  @Prop({
-    type: Types.ObjectId,
     ref: 'GuestAccountDocument',
     required: true,
     index: true,
+    unique: true,
   })
   guestAccountId: Types.ObjectId;
 
@@ -42,6 +37,7 @@ export class CartDocument extends Document {
   @Prop({
     type: [
       {
+        tenantId: { type: Types.ObjectId, required: true },
         experienceId: { type: Types.ObjectId, required: true },
         experienceName: { type: String, required: true },
         selectedDate: { type: Date, default: null },
@@ -56,6 +52,7 @@ export class CartDocument extends Document {
 
   @Prop({
     type: {
+      tenantId: { type: Types.ObjectId, required: true },
       reservationId: { type: Types.ObjectId, required: true },
       totalPriceCopSnapshot: { type: Number, required: true },
     },
@@ -66,4 +63,4 @@ export class CartDocument extends Document {
 
 export const CartSchema = SchemaFactory.createForClass(CartDocument);
 
-CartSchema.index({ guestAccountId: 1, tenantId: 1, status: 1 });
+CartSchema.index({ guestAccountId: 1, status: 1 });

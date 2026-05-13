@@ -53,13 +53,11 @@ export class AddExperienceToCartHandler implements ICommandHandler<AddExperience
       );
     }
 
-    let cart = await this.cartRepository.findOpenByGuestAndTenant(
-      guestAccountId,
-      tenantId,
-    );
-    cart ??= Cart.create({ tenantId, guestAccountId });
+    let cart = await this.cartRepository.findOpenByGuest(guestAccountId);
+    cart ??= Cart.create({ guestAccountId });
 
     const item = CartItem.create({
+      tenantId: command.tenantId,
       experienceId,
       experienceName: experience.getName(),
       selectedDate: command.selectedDate ?? null,

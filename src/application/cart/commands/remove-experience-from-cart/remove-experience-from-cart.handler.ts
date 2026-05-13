@@ -6,7 +6,6 @@ import {
   type CartRepository,
 } from '@/domain/cart/repositories/cart.repository';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 
 @CommandHandler(RemoveExperienceFromCartCommand)
@@ -22,12 +21,8 @@ export class RemoveExperienceFromCartHandler
     const guestAccountId = GuestAccountId.createFromString(
       command.guestAccountId,
     );
-    const tenantId = TenantId.createFromString(command.tenantId);
 
-    const cart = await this.cartRepository.findOpenByGuestAndTenant(
-      guestAccountId,
-      tenantId,
-    );
+    const cart = await this.cartRepository.findOpenByGuest(guestAccountId);
     if (!cart) {
       throw new NotFoundException('No open cart found');
     }

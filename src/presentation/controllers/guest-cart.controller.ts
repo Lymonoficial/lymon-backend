@@ -21,7 +21,6 @@ import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-gue
 import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
 import { AddExperienceToCartDto } from '@/presentation/dtos/add-experience-to-cart.dto';
 import { SetCartReservationDto } from '@/presentation/dtos/set-cart-reservation.dto';
-import { CheckoutCartDto } from '@/presentation/dtos/checkout-cart.dto';
 import { AddExperienceToCartCommand } from '@/application/cart/commands/add-experience-to-cart/add-experience-to-cart.command';
 import { RemoveExperienceFromCartCommand } from '@/application/cart/commands/remove-experience-from-cart/remove-experience-from-cart.command';
 import { SetCartReservationCommand } from '@/application/cart/commands/set-cart-reservation/set-cart-reservation.command';
@@ -44,13 +43,8 @@ export class GuestCartController {
   @Get()
   @ApiOperation({ summary: 'Get the guest open cart' })
   @ApiResponse({ status: 200, description: 'Current open cart or null' })
-  async getCart(
-    @CurrentGuest() guest: GuestJwtPayload,
-    @Query('tenantId') tenantId: string,
-  ) {
-    return this.queryBus.execute(
-      new GetGuestCartQuery(guest.guestAccountId, tenantId),
-    );
+  async getCart(@CurrentGuest() guest: GuestJwtPayload) {
+    return this.queryBus.execute(new GetGuestCartQuery(guest.guestAccountId));
   }
 
   @Post('items')
@@ -79,13 +73,11 @@ export class GuestCartController {
   async removeExperience(
     @CurrentGuest() guest: GuestJwtPayload,
     @Param('experienceId') experienceId: string,
-    @Query('tenantId') tenantId: string,
     @Query('selectedDate') selectedDate?: string,
   ) {
     await this.commandBus.execute(
       new RemoveExperienceFromCartCommand(
         guest.guestAccountId,
-        tenantId,
         experienceId,
         selectedDate ? new Date(selectedDate) : null,
       ),
@@ -113,24 +105,18 @@ export class GuestCartController {
 
   @Delete('reservation')
   @ApiOperation({ summary: 'Remove the reservation from cart' })
-  async removeReservation(
-    @CurrentGuest() guest: GuestJwtPayload,
-    @Query('tenantId') tenantId: string,
-  ) {
+  async removeReservation(@CurrentGuest() guest: GuestJwtPayload) {
     await this.commandBus.execute(
-      new RemoveCartReservationCommand(guest.guestAccountId, tenantId),
+      new RemoveCartReservationCommand(guest.guestAccountId),
     );
     return { message: 'Reservation removed from cart' };
   }
 
   @Delete()
   @ApiOperation({ summary: 'Clear all items from cart' })
-  async clearCart(
-    @CurrentGuest() guest: GuestJwtPayload,
-    @Query('tenantId') tenantId: string,
-  ) {
+  async clearCart(@CurrentGuest() guest: GuestJwtPayload) {
     await this.commandBus.execute(
-      new ClearCartCommand(guest.guestAccountId, tenantId),
+      new ClearCartCommand(guest.guestAccountId),
     );
     return { message: 'Cart cleared' };
   }
@@ -138,14 +124,10 @@ export class GuestCartController {
   @Post('checkout')
   @ApiOperation({ summary: 'Checkout cart — confirms reservation and creates experience purchases' })
   @ApiResponse({ status: 201, description: 'Cart checked out successfully' })
-  async checkout(
-    @CurrentGuest() guest: GuestJwtPayload,
-    @Body() dto: CheckoutCartDto,
-  ) {
+  async checkout(@CurrentGuest() guest: GuestJwtPayload) {
     await this.commandBus.execute(
       new CheckoutCartCommand(
         guest.guestAccountId,
-        dto.tenantId,
         guest.guestAccountId,
         guest.email,
       ),
