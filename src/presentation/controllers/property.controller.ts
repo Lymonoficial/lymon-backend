@@ -39,9 +39,6 @@ import { GetPropertiesByTenantQuery } from '@/application/property/queries/GetPr
 import { GetPropertiesByTenantResult } from '@/application/property/queries/GetPropertiesByTenant/get-properties-by-tenant.result';
 import { GetPropertyByIdQuery } from '@/application/property/queries/GetPropertyById/get-property-by-id.query';
 import { GetPropertyByIdResult } from '@/application/property/queries/GetPropertyById/get-property-by-id.result';
-import {
-  GetPropertyByIdResponseDto,
-} from '@/presentation/dtos/property/get-property-by-id-response.dto';
 
 @ApiTags('properties')
 @ApiBearerAuth('JWT-auth')
@@ -147,7 +144,7 @@ export class PropertyController {
     };
   }
 
-@Get(':propertyId')
+  @Get(':propertyId')
   @ApiOperation({ summary: 'Get a specific property by ID' })
   @ApiResponse({
     status: 200,

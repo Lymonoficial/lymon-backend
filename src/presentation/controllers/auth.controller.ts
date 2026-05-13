@@ -28,7 +28,6 @@ import { RefreshTokenCommand } from '@/application/auth/commands/refresh-token.c
 import { RefreshTokenResult } from '@/application/auth/commands/refresh-token.handler';
 import { RecoverPasswordDto } from '@/presentation/dtos/auth/recover-password.dto';
 import { ConfirmRecoverPasswordDto } from '@/presentation/dtos/auth/confirm-recover-password.dto';
-import { VerifyEmailDto } from '@/presentation/dtos/auth/verify-email.dto';
 import { LogoutResult } from '@/application/auth/commands/logout.handler';
 import { LogoutCommand } from '@/application/auth/commands/logout.command';
 
