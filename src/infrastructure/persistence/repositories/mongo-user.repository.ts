@@ -21,62 +21,10 @@ export class MongoUserRepository implements UserRepository {
   async save(user: User): Promise<void> {
     try {
       const id = user.getId()?.toString();
-
-      const document: Partial<UserDocument> = {
-        email: user.getEmail().toString(),
-        passwordHash: user.getPasswordHash(),
-        tenantId: user.getTenantId().toString(),
-        isOwner: user.isOwner(),
-        roleAssignments: user.getRoleAssignments(),
-        emailVerified: user.isEmailVerified(),
-        updatedAt: new Date(),
-        deletedAt: user.getDeletedAt(),
-      };
-
-      const resetPasswordToken = user.getResetPasswordToken();
-      const resetPasswordExpires = user.getResetPasswordExpires();
-      const passwordChangedAt = user.getPasswordChangedAt();
-      const fullName = user.getFullName();
-      const documentNumber = user.getDocument();
-
-      // Set or unset optional fields
-      if (resetPasswordToken !== undefined) {
-        document.resetPasswordToken = resetPasswordToken;
-      }
-      if (resetPasswordExpires !== undefined) {
-        document.resetPasswordExpires = resetPasswordExpires;
-      }
-      if (passwordChangedAt !== undefined) {
-        document.passwordChangedAt = passwordChangedAt;
-      }
-      if (fullName !== undefined) {
-        document.fullName = fullName;
-      }
-      if (documentNumber !== undefined) {
-        document.document = documentNumber;
-      }
+      const document = this.buildDocument(user);
 
       if (id) {
-        const updateOperation: {
-          $set: Partial<UserDocument>;
-          $unset?: Record<string, string>;
-        } = { $set: document };
-
-        const unsetFields: Record<string, string> = {};
-        if (resetPasswordToken === undefined) {
-          unsetFields.resetPasswordToken = '';
-        }
-        if (resetPasswordExpires === undefined) {
-          unsetFields.resetPasswordExpires = '';
-        }
-
-        if (Object.keys(unsetFields).length > 0) {
-          updateOperation.$unset = unsetFields;
-        }
-
-        await this.userModel.findByIdAndUpdate(id, updateOperation, {
-          new: true,
-        });
+        await this.updateUser(id, document, user);
       } else {
         await this.userModel.create({ ...document, createdAt: new Date() });
       }
@@ -89,6 +37,60 @@ export class MongoUserRepository implements UserRepository {
 
       throw error;
     }
+  }
+
+  private buildDocument(user: User): Partial<UserDocument> {
+    const document: Partial<UserDocument> = {
+      email: user.getEmail().toString(),
+      passwordHash: user.getPasswordHash(),
+      tenantId: user.getTenantId().toString(),
+      isOwner: user.isOwner(),
+      roleAssignments: user.getRoleAssignments(),
+      emailVerified: user.isEmailVerified(),
+      updatedAt: new Date(),
+      deletedAt: user.getDeletedAt(),
+    };
+
+    const optionalFields = [
+      { key: 'resetPasswordToken', value: user.getResetPasswordToken() },
+      { key: 'resetPasswordExpires', value: user.getResetPasswordExpires() },
+      { key: 'passwordChangedAt', value: user.getPasswordChangedAt() },
+      { key: 'fullName', value: user.getFullName() },
+      { key: 'document', value: user.getDocument() },
+    ];
+
+    for (const field of optionalFields) {
+      if (field.value !== undefined) {
+        document[field.key as keyof Partial<UserDocument>] = field.value as any;
+      }
+    }
+
+    return document;
+  }
+
+  private async updateUser(
+    id: string,
+    document: Partial<UserDocument>,
+    user: User,
+  ): Promise<void> {
+    const updateOperation: {
+      $set: Partial<UserDocument>;
+      $unset?: Record<string, string>;
+    } = { $set: document };
+
+    const unsetFields: Record<string, string> = {};
+    if (user.getResetPasswordToken() === undefined) {
+      unsetFields.resetPasswordToken = '';
+    }
+    if (user.getResetPasswordExpires() === undefined) {
+      unsetFields.resetPasswordExpires = '';
+    }
+
+    if (Object.keys(unsetFields).length > 0) {
+      updateOperation.$unset = unsetFields;
+    }
+
+    await this.userModel.findByIdAndUpdate(id, updateOperation, { new: true });
   }
 
   async findById(id: UserId): Promise<User | null> {

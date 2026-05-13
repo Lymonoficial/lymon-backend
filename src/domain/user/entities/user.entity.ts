@@ -29,8 +29,8 @@ export interface UserReconstitutionData {
   resetPasswordExpires?: Date;
   passwordChangedAt?: Date;
   deletedAt?: Date | null;
-  fullName?: string;
-  document?: string;
+  readonly fullName?: string;
+  readonly document?: string;
 }
 
 /** Kept for OWNER identity checks only. Staff roles are managed via RoleAssignment. */
