@@ -133,6 +133,14 @@ export class Reservation {
     this.touch();
   }
 
+  pay(): void {
+    if (!this.status.isPending()) {
+      throw new DomainException('Reservation must be PENDING to pay');
+    }
+    this.status = ReservationStatus.create(ReservationStatusEnum.CONFIRMED);
+    this.touch();
+  }
+
   markNoShow(): void {
     this.assertCanTransitionTo(ReservationStatusEnum.NO_SHOW);
     this.status = ReservationStatus.create(ReservationStatusEnum.NO_SHOW);

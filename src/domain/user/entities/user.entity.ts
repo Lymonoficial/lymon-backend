@@ -29,6 +29,8 @@ export interface UserReconstitutionData {
   resetPasswordExpires?: Date;
   passwordChangedAt?: Date;
   deletedAt?: Date | null;
+  readonly fullName?: string;
+  readonly document?: string;
 }
 
 /** Kept for OWNER identity checks only. Staff roles are managed via RoleAssignment. */
@@ -75,6 +77,8 @@ export class User {
     private resetPasswordExpires?: Date,
     private passwordChangedAt?: Date,
     private deletedAt: Date | null = null,
+    private fullName?: string,
+    private document?: string,
   ) {}
 
   static createOwner(
@@ -100,6 +104,8 @@ export class User {
     passwordHash: string,
     tenantId: TenantId,
     roleAssignments: RoleAssignment[],
+    fullName?: string,
+    document?: string,
   ): User {
     return new User(
       null,
@@ -111,6 +117,12 @@ export class User {
       false,
       new Date(),
       new Date(),
+      undefined,
+      undefined,
+      undefined,
+      null,
+      fullName,
+      document,
     );
   }
 
@@ -133,6 +145,8 @@ export class User {
       data.resetPasswordExpires,
       data.passwordChangedAt,
       data.deletedAt,
+      data.fullName,
+      data.document,
     );
   }
 
@@ -169,6 +183,14 @@ export class User {
 
   getEmail(): Email {
     return this.email;
+  }
+
+  getFullName(): string | undefined {
+    return this.fullName;
+  }
+
+  getDocument(): string | undefined {
+    return this.document;
   }
 
   getPasswordHash(): string {

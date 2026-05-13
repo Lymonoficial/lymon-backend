@@ -18,6 +18,9 @@ import { UpdateShiftDto } from '@/presentation/dtos/shift/update-shift.dto';
 import { AssignStaffToShiftDto } from '@/presentation/dtos/shift/assign-staff-to-shift.dto';
 import { AssignStaffToShiftCommand } from '@/application/shift/commands/assign-staff-to-shift/assign-staff-to-shift.command';
 import { AssignStaffToShiftCommandResult } from '@/application/shift/commands/assign-staff-to-shift/assign-staff-to-shift.result';
+import { UnassignStaffFromShiftDto } from '@/presentation/dtos/unassign-staff-from-shift.dto';
+import { UnassignStaffFromShiftCommand } from '@/application/shift/commands/unassign-staff-from-shift/unassign-staff-from-shift.command';
+import { UnassignStaffFromShiftCommandResult } from '@/application/shift/commands/unassign-staff-from-shift/unassign-staff-from-shift.result';
 import {
   Body,
   Controller,
@@ -192,6 +195,37 @@ export class ShiftsController {
 
     return {
       message: 'Staff assigned successfully',
+      data: result,
+    };
+  }
+
+  @Patch(':id/unassign-staff')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.TENANT_USERS_MANAGE)
+  @ApiOperation({
+    summary: 'Unassign staff members from an existing shift',
+  })
+  @ApiResponse({ status: 200, description: 'Staff unassigned successfully' })
+  async unassignStaffFromShift(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') shiftId: string,
+    @Body() dto: UnassignStaffFromShiftDto,
+  ) {
+    const result = await this.commandBus.execute<
+      UnassignStaffFromShiftCommand,
+      UnassignStaffFromShiftCommandResult
+    >(
+      new UnassignStaffFromShiftCommand(
+        shiftId,
+        user.tenantId,
+        dto.staffMemberIds,
+        user.userId,
+        user.email,
+      ),
+    );
+
+    return {
+      message: 'Staff unassigned successfully',
       data: result,
     };
   }

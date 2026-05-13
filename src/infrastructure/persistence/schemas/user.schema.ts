@@ -43,6 +43,12 @@ export class UserDocument extends Document {
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
+
+  @Prop()
+  fullName?: string;
+
+  @Prop()
+  document?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);
