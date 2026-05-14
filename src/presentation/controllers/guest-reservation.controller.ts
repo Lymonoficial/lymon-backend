@@ -11,6 +11,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -71,6 +72,13 @@ export class GuestReservationController {
   @Get()
   @ApiOperation({ summary: 'List authenticated guest bookings' })
   @ApiResponse({ status: 200, description: 'Paginated guest bookings list' })
+  @ApiQuery({ name: 'status', required: false, description: 'Filter by status: active, pending, confirmed, finished, cancelled' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)', example: '1' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 20)', example: '20' })
+  @ApiQuery({ name: 'fromDate', required: false, description: 'Filter reservations from this date (ISO format)', example: '2024-01-01' })
+  @ApiQuery({ name: 'toDate', required: false, description: 'Filter reservations until this date (ISO format)', example: '2024-12-31' })
+  @ApiQuery({ name: 'sortBy', required: false, description: 'Sort field: date, status, createdAt', example: 'date', enum: ['date', 'status', 'createdAt'] })
+  @ApiQuery({ name: 'sortOrder', required: false, description: 'Sort direction: asc or desc', example: 'desc', enum: ['asc', 'desc'] })
   async findAll(
     @CurrentGuest() guest: GuestJwtPayload,
     @Query()
@@ -84,7 +92,7 @@ export class GuestReservationController {
       sortOrder?: 'asc' | 'desc';
     },
   ): Promise<GetGuestReservationsResult> {
-    const parsedStatus = this.parseStatus(query.status);
+    const parsedStatuses = this.parseStatuses(query.status);
     const sortBy = query.sortBy ?? 'date';
     const sortOrder = query.sortOrder ?? 'desc';
 
@@ -96,7 +104,7 @@ export class GuestReservationController {
         guest.guestAccountId,
         Math.max(1, Number.parseInt(query.page ?? '1', 10) || 1),
         Math.max(1, Number.parseInt(query.limit ?? '20', 10) || 20),
-        parsedStatus,
+        parsedStatuses,
         query.fromDate ? new Date(query.fromDate) : undefined,
         query.toDate ? new Date(query.toDate) : undefined,
         sortBy,
@@ -118,19 +126,35 @@ export class GuestReservationController {
     >(new GetGuestReservationQuery(id, guest.guestAccountId));
   }
 
-  private parseStatus(status?: string): ReservationStatusEnum | undefined {
+  private parseStatuses(
+    status?: string,
+  ): ReservationStatusEnum[] | undefined {
     if (!status) {
       return undefined;
     }
 
     const normalized = status.toLowerCase();
+
+    if (normalized === 'active') {
+      return [
+        ReservationStatusEnum.PENDING,
+        ReservationStatusEnum.CONFIRMED,
+        ReservationStatusEnum.CHECKED_IN,
+      ];
+    }
+
+    if (normalized === 'finished') {
+      return [ReservationStatusEnum.CHECKED_OUT];
+    }
+
     const statusMap: Record<string, ReservationStatusEnum> = {
       pending: ReservationStatusEnum.PENDING,
       confirmed: ReservationStatusEnum.CONFIRMED,
       cancelled: ReservationStatusEnum.CANCELLED,
-      completed: ReservationStatusEnum.CHECKED_OUT,
+      finished: ReservationStatusEnum.CHECKED_OUT,
     };
 
-    return statusMap[normalized];
+    const mapped = statusMap[normalized];
+    return mapped ? [mapped] : undefined;
   }
 }

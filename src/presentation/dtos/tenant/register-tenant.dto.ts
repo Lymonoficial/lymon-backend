@@ -9,8 +9,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export enum PlanTypeDto {
   LYMON_ONE = 'LYMON_ONE',
-  PLUS = 'PLUS',
-  PRIME = 'PRIME',
+  PLUS = 'LYMON_PLUS',
+  PRIME = 'LYMON_PRIME',
   TRIAL = 'TRIAL',
 }
 
