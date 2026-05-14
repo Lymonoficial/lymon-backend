@@ -10,5 +10,6 @@ export class GetShiftsQuery {
     public readonly filters: GetShiftsFilters,
     public readonly actorUserId: string,
     public readonly canViewAllStaff: boolean,
+    public readonly staffMemberId?: string,
   ) {}
 }
