@@ -21,10 +21,12 @@ export interface UnitRepository {
     page: number,
     limit: number,
     minGuests?: number,
+    propertyId?: string,
   ): Promise<{ units: Unit[]; total: number }>;
   findAllPaginated(
     page: number,
     limit: number,
     minGuests?: number,
+    propertyId?: string,
   ): Promise<{ units: Unit[]; total: number }>;
 }

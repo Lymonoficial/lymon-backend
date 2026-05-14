@@ -98,6 +98,7 @@ export class MongoUnitRepository implements UnitRepository {
     page: number,
     limit: number,
     minGuests?: number,
+    propertyId?: string,
   ): Promise<{ units: Unit[]; total: number }> {
     const filter: any = {
       tenantId: new Types.ObjectId(tenantId.toString()),
@@ -105,6 +106,9 @@ export class MongoUnitRepository implements UnitRepository {
     };
     if (minGuests !== undefined) {
       filter.maxGuests = { $gte: minGuests };
+    }
+    if (propertyId) {
+      filter.propertyId = new Types.ObjectId(propertyId);
     }
     const total = await this.unitModel.countDocuments(filter);
     const documents = await this.unitModel
@@ -122,10 +126,14 @@ export class MongoUnitRepository implements UnitRepository {
     page: number,
     limit: number,
     minGuests?: number,
+    propertyId?: string,
   ): Promise<{ units: Unit[]; total: number }> {
     const filter: any = { deletedAt: null };
     if (minGuests !== undefined) {
       filter.maxGuests = { $gte: minGuests };
+    }
+    if (propertyId) {
+      filter.propertyId = new Types.ObjectId(propertyId);
     }
     const total = await this.unitModel.countDocuments(filter);
     const documents = await this.unitModel
