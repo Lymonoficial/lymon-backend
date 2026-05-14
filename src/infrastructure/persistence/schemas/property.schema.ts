@@ -1,5 +1,6 @@
 import { PropertyTypeEnum } from '@/domain/property/value-objects/property-type.vo';
 import { CancellationPolicyEnum } from '@/domain/property/value-objects/cancellation-policy.vo';
+import { ChannexSyncStatusEnum } from '@/domain/property/value-objects/channex-sync-status.vo';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
@@ -72,6 +73,16 @@ export class PropertyDocument extends Document {
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
+
+  @Prop({ required: false, default: null })
+  channexId?: string;
+
+  @Prop({
+    required: true,
+    enum: ChannexSyncStatusEnum,
+    default: ChannexSyncStatusEnum.PENDING,
+  })
+  channexSyncStatus: string;
 }
 
 export const PropertySchema = SchemaFactory.createForClass(PropertyDocument);
