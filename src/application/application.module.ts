@@ -14,6 +14,10 @@ import { EmailModule } from '@/infrastructure/email/email.module';
 import { PropertyApplicationModule } from '@/application/property/property-application.module';
 import { UnitApplicationModule } from '@/application/unit/unit-application.module';
 import { InviteStaffHandler } from '@/application/user/commands/invite-staff/invite-staff.handler';
+import { UpdateStaffHandler } from '@/application/user/commands/update-staff.handler';
+import { AddRolesHandler } from '@/application/user/commands/add-roles.handler';
+import { RemoveAllRolesHandler } from '@/application/user/commands/remove-all-roles.handler';
+import { RemoveRoleHandler } from '@/application/user/commands/remove-role.handler';
 import { AuditApplicationModule } from '@/application/audit/audit-application.module';
 import { IncidentReportApplicationModule } from '@/application/incident-report/incident-report-application.module';
 import { TenantApplicationModule } from '@/application/tenant/tenant-application.module';
@@ -42,6 +46,10 @@ const CommandHandlers = [
   VerifyEmailHandler,
   ChangePasswordHandler,
   InviteStaffHandler,
+  UpdateStaffHandler,
+  AddRolesHandler,
+  RemoveAllRolesHandler,
+  RemoveRoleHandler,
   DeleteShiftCommandHandler,
 ];
 
