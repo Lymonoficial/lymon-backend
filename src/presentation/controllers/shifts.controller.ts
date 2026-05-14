@@ -57,12 +57,6 @@ export class ShiftsController {
     @CurrentUser() user: JwtPayload,
     @Query() dto: GetShiftsDto,
   ): Promise<{ data: GetShiftsResult }> {
-    const canViewAllStaff =
-      user.isOwner ||
-      user.roleAssignments.some((assignment) =>
-        assignment.permissions.includes(Permission.TENANT_USERS_MANAGE),
-      );
-
     const result = await this.queryBus.execute<GetShiftsQuery, GetShiftsResult>(
       new GetShiftsQuery(
         user.tenantId,
@@ -72,7 +66,40 @@ export class ShiftsController {
           propertyId: dto.propertyId,
         },
         user.userId,
-        canViewAllStaff,
+        this.canViewAllStaff(user),
+      ),
+    );
+
+    return { data: result };
+  }
+
+  @Get('staff/:staffMemberId')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'List work shifts for a specific staff member',
+    description:
+      'For employee flow, non-manager users can only request their own staff member id.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff member shifts returned successfully',
+  })
+  async getShiftsByStaffMember(
+    @CurrentUser() user: JwtPayload,
+    @Param('staffMemberId') staffMemberId: string,
+    @Query() dto: GetShiftsDto,
+  ): Promise<{ data: GetShiftsResult }> {
+    const result = await this.queryBus.execute<GetShiftsQuery, GetShiftsResult>(
+      new GetShiftsQuery(
+        user.tenantId,
+        {
+          dateFrom: dto.dateFrom ? new Date(dto.dateFrom) : undefined,
+          dateTo: dto.dateTo ? new Date(dto.dateTo) : undefined,
+          propertyId: dto.propertyId,
+        },
+        user.userId,
+        this.canViewAllStaff(user),
+        staffMemberId,
       ),
     );
 
@@ -228,5 +255,14 @@ export class ShiftsController {
       message: 'Staff unassigned successfully',
       data: result,
     };
+  }
+
+  private canViewAllStaff(user: JwtPayload): boolean {
+    return (
+      user.isOwner ||
+      user.roleAssignments.some((assignment) =>
+        assignment.permissions.includes(Permission.TENANT_USERS_MANAGE),
+      )
+    );
   }
 }
