@@ -9,20 +9,24 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UserDocument } from '@/infrastructure/persistence/schemas/user.schema';
 import { Model, Types } from 'mongoose';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, OnModuleInit } from '@nestjs/common';
 import { MongoServerError } from 'mongodb';
 
-export class MongoUserRepository implements UserRepository {
+export class MongoUserRepository implements UserRepository, OnModuleInit {
   constructor(
     @InjectModel(UserDocument.name)
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async save(user: User): Promise<void> {
-    try {
-      const id = user.getId()?.toString();
-      const document = this.buildDocument(user);
+  async onModuleInit(): Promise<void> {
+    await this.userModel.syncIndexes();
+  }
 
+  async save(user: User): Promise<void> {
+    const id = user.getId()?.toString();
+    const document = this.buildDocument(user);
+
+    try {
       if (id) {
         await this.updateUser(id, document, user);
       } else {
@@ -31,7 +35,7 @@ export class MongoUserRepository implements UserRepository {
     } catch (error) {
       if (error instanceof MongoServerError && error.code === 11000) {
         throw new ConflictException(
-          'This email is already registered. If this should be allowed across tenants, verify Mongo indexes and keep only the unique composite index { email, tenantId }.',
+          'This email is already registered for an active user in this tenant.',
         );
       }
 
@@ -57,15 +61,23 @@ export class MongoUserRepository implements UserRepository {
       { key: 'passwordChangedAt', value: user.getPasswordChangedAt() },
       { key: 'fullName', value: user.getFullName() },
       { key: 'document', value: user.getDocument() },
-    ];
+    ] as const;
 
     for (const field of optionalFields) {
-      if (field.value !== undefined) {
-        document[field.key as keyof Partial<UserDocument>] = field.value as any;
-      }
+      this.assignOptionalField(document, field.key, field.value);
     }
 
     return document;
+  }
+
+  private assignOptionalField<K extends keyof Partial<UserDocument>>(
+    document: Partial<UserDocument>,
+    key: K,
+    value: Partial<UserDocument>[K] | undefined,
+  ): void {
+    if (value !== undefined) {
+      document[key] = value;
+    }
   }
 
   private async updateUser(
