@@ -19,6 +19,7 @@ export type StaffScopeDto =
 export interface StaffDto {
   id: string;
   email: string;
+  createdAt: string;
   fullName?: string;
   document?: string;
   isOwner: boolean;
