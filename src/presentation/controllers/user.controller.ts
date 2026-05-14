@@ -133,6 +133,11 @@ export class UserController {
                 format: 'email',
                 example: 'staff@example.com',
               },
+              createdAt: {
+                type: 'string',
+                format: 'date-time',
+                example: '2026-05-14T14:30:00.000Z',
+              },
               isOwner: { type: 'boolean', example: false },
               emailVerified: { type: 'boolean', example: true },
               roleAssignments: {

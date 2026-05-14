@@ -193,6 +193,10 @@ export class User {
     return this.document;
   }
 
+  getCreatedAt(): Date {
+    return this.createdAt;
+  }
+
   getPasswordHash(): string {
     return this.passwordHash;
   }
