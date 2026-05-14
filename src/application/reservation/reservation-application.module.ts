@@ -14,6 +14,7 @@ import { GetReservationsByTenantHandler } from '@/application/reservation/querie
 import { GetReservationsByUnitHandler } from '@/application/reservation/queries/get-reservations-by-unit/get-reservations-by-unit.query-handler';
 import { GetGuestReservationHandler } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.query-handler';
 import { GetGuestReservationsHandler } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query-handler';
+import { GetUnitOccupancyHandler } from '@/application/reservation/queries/get-unit-occupancy/get-unit-occupancy.query-handler';
 
 const CommandHandlers = [
   CreateReservationHandler,
@@ -32,6 +33,7 @@ const QueryHandlers = [
   GetReservationsByUnitHandler,
   GetGuestReservationHandler,
   GetGuestReservationsHandler,
+  GetUnitOccupancyHandler,
 ];
 
 @Module({

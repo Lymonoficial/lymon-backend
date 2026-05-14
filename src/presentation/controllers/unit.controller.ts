@@ -163,14 +163,23 @@ export class UnitController {
     type: Number,
     description: 'Filter units by minimum number of guests (maxGuests)',
   })
+  @ApiQuery({ name: 'propertyId', required: false, type: String, description: 'Filter by property ID' })
+  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date for availability check (ISO)' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'End date for availability check (ISO)' })
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getAllPublic(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('minGuests') minGuests?: string,
+    @Query('propertyId') propertyId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
-    const query = new GetAllPublicUnitsQuery(page, limit, minGuestsNum);
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+
+    const query = new GetAllPublicUnitsQuery(page, limit, minGuestsNum, propertyId, start, end);
 
     const result = await this.queryBus.execute<
       GetAllPublicUnitsQuery,
@@ -214,19 +223,29 @@ export class UnitController {
     type: Number,
     description: 'Filter units by minimum number of guests (maxGuests)',
   })
+  @ApiQuery({ name: 'propertyId', required: false, type: String, description: 'Filter by property ID' })
+  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date for availability check (ISO)' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'End date for availability check (ISO)' })
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getPublicByTenant(
     @Param('tenantId') tenantId: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('minGuests') minGuests?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+
     const query = new GetPublicUnitsByTenantQuery(
       tenantId,
       page,
       limit,
       minGuestsNum,
+      start,
+      end,
     );
 
     const result = await this.queryBus.execute<

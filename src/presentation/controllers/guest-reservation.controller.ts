@@ -16,6 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
+import { GuestPublic } from '@/infrastructure/guest-auth/decorators/guest-public.decorator';
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-guest.decorator';
 import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
@@ -26,6 +27,7 @@ import { GetGuestReservationQuery } from '@/application/reservation/queries/get-
 import { GuestReservationDetailResult } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.result';
 import { GetGuestReservationsQuery } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query';
 import { GetGuestReservationsResult } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.result';
+import { GetUnitOccupancyQuery } from '@/application/reservation/queries/get-unit-occupancy/get-unit-occupancy.query';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 @ApiTags('guest-reservations')
@@ -37,7 +39,7 @@ export class GuestReservationController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
-  ) {}
+  ) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a reservation as a guest' })
@@ -113,6 +115,34 @@ export class GuestReservationController {
     );
   }
 
+  @Get('unit/:unitId/calendar')
+  @GuestPublic()
+  @Public()
+  @ApiOperation({ summary: 'Get occupied dates for a specific unit calendar' })
+  @ApiResponse({ status: 200, description: 'List of occupied date ranges' })
+  @ApiQuery({ name: 'startDate', required: false, description: 'Start date of the range (defaults to today)' })
+  @ApiQuery({ name: 'endDate', required: false, description: 'End date of the range (defaults to 1 year from now)' })
+  async getUnitCalendar(
+    @Param('unitId') unitId: string,
+    @Query('startDate') startDateStr?: string,
+    @Query('endDate') endDateStr?: string,
+  ): Promise<{ message: string; data: { checkIn: Date; checkOut: Date }[] }> {
+    const startDate = startDateStr ? new Date(startDateStr) : new Date();
+    const endDate = endDateStr
+      ? new Date(endDateStr)
+      : new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 año por defecto
+
+    const occupancy = await this.queryBus.execute<
+      GetUnitOccupancyQuery,
+      { checkIn: Date; checkOut: Date }[]
+    >(new GetUnitOccupancyQuery(unitId, startDate, endDate));
+
+    return {
+      message: 'Occupancy calendar retrieved successfully',
+      data: occupancy,
+    };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a guest reservation by ID' })
   @ApiResponse({ status: 200, description: 'Reservation detail for guest' })
@@ -157,4 +187,5 @@ export class GuestReservationController {
     const mapped = statusMap[normalized];
     return mapped ? [mapped] : undefined;
   }
+
 }
