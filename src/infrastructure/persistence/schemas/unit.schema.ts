@@ -65,6 +65,9 @@ export class UnitDocument extends Document {
   @Prop({ type: [String], required: true, default: [] })
   amenities: string[];
 
+  @Prop({ type: [String], required: true, default: [] })
+  mediaKeys: string[];
+
   @Prop({ required: true, min: 0 })
   pricePerNight: number;
 

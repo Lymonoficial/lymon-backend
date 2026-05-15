@@ -110,6 +110,9 @@ export class ExperienceDocument extends Document {
   @Prop({ required: true, default: true })
   allowReservationPurchase: boolean;
 
+  @Prop({ type: [String], required: true, default: [] })
+  mediaKeys: string[];
+
   @Prop({ required: true, default: 2 })
   minNoticeHours: number;
 

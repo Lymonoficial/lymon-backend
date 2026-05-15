@@ -36,6 +36,7 @@ export class MongoUnitRepository implements UnitRepository {
       bathroomsCount: unit.getBathroomsCount(),
       isShared: unit.getIsShared(),
       amenities: unit.getAmenities(),
+      mediaKeys: unit.getMediaKeys(),
       pricePerNight: unit.getPricePerNight(),
       externalIds: unit.getExternalIds().toObject(),
       updatedAt: unit.getUpdatedAt(),
@@ -186,6 +187,7 @@ export class MongoUnitRepository implements UnitRepository {
         pricePerNight: document.pricePerNight,
       },
       amenities: document.amenities,
+      mediaKeys: document.mediaKeys ?? [],
       externalIds: ExternalIds.create(
         document.externalIds?.airbnbId,
         document.externalIds?.bookingId,
