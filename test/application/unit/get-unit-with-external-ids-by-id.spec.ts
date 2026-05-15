@@ -80,7 +80,7 @@ describe('GetUnitWithExternalIdsById', () => {
   });
 
   describe('TC-01: Consultar una Unit válida del tenant autenticado', () => {
-    it('Handler should return the unit as UnitWithExternalIdsDto including externalIds', async () => {
+    it('Handler should return the unit as UnitWithExternalIdsDto', async () => {
       const unit = makeUnit();
       unitRepository.findById.mockResolvedValue(unit);
 
@@ -90,9 +90,6 @@ describe('GetUnitWithExternalIdsById', () => {
       expect(result).toBeInstanceOf(GetUnitWithExternalIdsByIdResult);
       expect(result.unit.id).toBe(UNIT_ID);
       expect(result.unit.name).toBe(unit.getName());
-      expect(result.unit.externalIds.airbnbId).toBe('ext-airbnb');
-      expect(result.unit.externalIds.bookingId).toBe('ext-booking');
-      expect(result.unit.externalIds.vrboId).toBe('ext-vrbo');
     });
 
     it('Handler should throw NotFoundException if unit does not exist', async () => {
@@ -111,7 +108,22 @@ describe('GetUnitWithExternalIdsById', () => {
     });
   });
 
-  describe('TC-02: Acceso protegido por autenticación de tenant', () => {
+  describe('TC-02: Verificar inclusión de externalIds en la respuesta', () => {
+    it('The resulting DTO must contain externalIds with airbnbId, bookingId and vrboId', async () => {
+      const unit = makeUnit();
+      unitRepository.findById.mockResolvedValue(unit);
+
+      const query = new GetUnitWithExternalIdsByIdQuery(UNIT_ID, TENANT_ID);
+      const result = await handler.execute(query);
+
+      expect(result.unit).toHaveProperty('externalIds');
+      expect(result.unit.externalIds.airbnbId).toBe('ext-airbnb');
+      expect(result.unit.externalIds.bookingId).toBe('ext-booking');
+      expect(result.unit.externalIds.vrboId).toBe('ext-vrbo');
+    });
+  });
+
+  describe('TC-03: Acceso protegido por autenticación de tenant', () => {
     it('The controller method should NOT have the @Public() decorator', () => {
       const target = controller.getByIdWithExternalIds;
       const isPublic = Reflect.getMetadata('isPublic', target);
