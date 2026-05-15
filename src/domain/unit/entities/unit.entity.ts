@@ -40,6 +40,7 @@ export interface UnitCreateInput {
   pricingConfig: UnitPricingConfig;
   amenities: string[];
   externalIds: ExternalIds;
+  mediaKeys?: string[];
 }
 
 export interface UnitTimestamps {
@@ -66,6 +67,7 @@ export class Unit {
     private bathroomsCount: number,
     private isShared: boolean,
     private amenities: string[],
+    private mediaKeys: string[],
     private pricePerNight: number,
     private externalIds: ExternalIds,
     private readonly createdAt: Date,
@@ -122,6 +124,7 @@ export class Unit {
       physicalFeatures.bathroomsCount,
       physicalFeatures.isShared,
       amenities,
+      input.mediaKeys ?? [],
       pricingConfig.pricePerNight,
       externalIds,
       new Date(),
@@ -158,6 +161,7 @@ export class Unit {
       physicalFeatures.bathroomsCount,
       physicalFeatures.isShared,
       amenities,
+      input.mediaKeys ?? [],
       pricingConfig.pricePerNight,
       externalIds,
       timestamps.createdAt,
@@ -212,6 +216,10 @@ export class Unit {
 
   getAmenities(): string[] {
     return this.amenities;
+  }
+
+  getMediaKeys(): string[] {
+    return this.mediaKeys;
   }
 
   getPricePerNight(): number {
@@ -294,6 +302,11 @@ export class Unit {
 
   updateAmenities(amenities: string[]): void {
     this.amenities = amenities;
+    this.updatedAt = new Date();
+  }
+
+  updateMediaKeys(mediaKeys: string[]): void {
+    this.mediaKeys = mediaKeys;
     this.updatedAt = new Date();
   }
 
