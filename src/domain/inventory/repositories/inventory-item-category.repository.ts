@@ -9,6 +9,7 @@ export interface InventoryItemCategoryRepository {
     tenantId: TenantId,
     name: string,
   ): Promise<InventoryItemCategory | null>;
+  findByTenantId(tenantId: TenantId): Promise<InventoryItemCategory[]>;
 }
 
 export const INVENTORY_ITEM_CATEGORY_REPOSITORY =

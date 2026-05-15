@@ -15,6 +15,7 @@ import { GetLowStockItemsByPropertyQueryHandler } from '@/application/inventory/
 import { GetSuppliersQueryHandler } from '@/application/inventory/queries/get-suppliers/get-suppliers.query-handler';
 import { GetItemsBySupplierQueryHandler } from '@/application/inventory/queries/get-items-by-supplier/get-items-by-supplier.query-handler';
 import { CreateInventoryItemCategoryHandler } from '@/application/inventory/commands/create-inventory-item-category/create-inventory-item-category.handler';
+import { GetInventoryItemCategoriesQueryHandler } from '@/application/inventory/queries/get-inventory-item-categories/get-inventory-item-categories.query-handler';
 
 const CommandHandlers = [
   CreateInventoryItemHandler,
@@ -34,6 +35,7 @@ const QueryHandlers = [
   GetLowStockItemsByPropertyQueryHandler,
   GetSuppliersQueryHandler,
   GetItemsBySupplierQueryHandler,
+  GetInventoryItemCategoriesQueryHandler,
 ];
 
 @Module({
