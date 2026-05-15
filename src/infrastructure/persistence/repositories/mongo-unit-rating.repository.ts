@@ -75,12 +75,9 @@ export class MongoUnitRatingRepository implements UnitRatingRepository {
       filter['rate'] = filterRate;
     }
 
-    const sortQuery: Record<string, 1 | -1> =
-      sort === 'best'
-        ? { rate: -1, createdAt: -1 }
-        : sort === 'worst'
-          ? { rate: 1, createdAt: -1 }
-          : { createdAt: -1 };
+    let sortQuery: Record<string, 1 | -1> = { createdAt: -1 };
+    if (sort === 'best') sortQuery = { rate: -1, createdAt: -1 };
+    else if (sort === 'worst') sortQuery = { rate: 1, createdAt: -1 };
 
     const [total, docs] = await Promise.all([
       this.unitRatingModel.countDocuments(filter),
