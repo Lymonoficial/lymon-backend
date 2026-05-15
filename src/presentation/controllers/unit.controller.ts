@@ -121,6 +121,7 @@ export class UnitController {
       dto.bathroomsCount,
       dto.isShared,
       dto.amenities,
+      dto.mediaKeys,
       dto.pricePerNight,
       dto.externalIds,
       user.userId,
