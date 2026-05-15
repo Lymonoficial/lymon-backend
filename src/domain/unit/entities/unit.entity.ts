@@ -51,6 +51,7 @@ export interface UnitTimestamps {
 export interface UnitReconstituteInput extends UnitCreateInput {
   id: UnitId;
   timestamps: UnitTimestamps;
+  channexRoomTypeId?: string | null;
 }
 
 export class Unit {
@@ -73,6 +74,7 @@ export class Unit {
     private readonly createdAt: Date,
     private updatedAt: Date,
     private readonly deletedAt: Date | null,
+    private channexRoomTypeId: string | null = null,
   ) {}
 
   static create(input: UnitCreateInput): Unit {
@@ -146,6 +148,7 @@ export class Unit {
       amenities,
       externalIds,
       timestamps,
+      channexRoomTypeId,
     } = input;
 
     return new Unit(
@@ -167,6 +170,7 @@ export class Unit {
       timestamps.createdAt,
       timestamps.updatedAt,
       null,
+      channexRoomTypeId ?? null,
     );
   }
 
@@ -312,6 +316,15 @@ export class Unit {
 
   updateExternalIds(externalIds: ExternalIds): void {
     this.externalIds = externalIds;
+    this.updatedAt = new Date();
+  }
+
+  getChannexRoomTypeId(): string | null {
+    return this.channexRoomTypeId;
+  }
+
+  setChannexRoomTypeId(id: string): void {
+    this.channexRoomTypeId = id;
     this.updatedAt = new Date();
   }
 }

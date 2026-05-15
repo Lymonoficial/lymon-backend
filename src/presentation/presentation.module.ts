@@ -1,4 +1,5 @@
 import { ApplicationModule } from '@/application/application.module';
+import { ChannexInfrastructureModule } from '@/infrastructure/channex/channex-infrastructure.module';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthController } from '@/presentation/controllers/auth.controller';
@@ -22,9 +23,10 @@ import { ExperienceController } from '@/presentation/controllers/experience.cont
 import { GuestExperienceController } from '@/presentation/controllers/guest-experience.controller';
 import { GuestTagController } from '@/presentation/controllers/guest-tag.controller';
 import { StorageController } from '@/presentation/controllers/storage.controller';
+import { ChannexWebhookController } from '@/presentation/controllers/channex-webhook.controller';
 
 @Module({
-  imports: [CqrsModule, ApplicationModule],
+  imports: [CqrsModule, ApplicationModule, ChannexInfrastructureModule],
   controllers: [
     AuthController,
     UserController,
@@ -46,6 +48,7 @@ import { StorageController } from '@/presentation/controllers/storage.controller
     ExperienceController,
     GuestExperienceController,
     GuestTagController,
+    ChannexWebhookController,
     StorageController,
   ],
 })

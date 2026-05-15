@@ -85,6 +85,9 @@ export class UnitDocument extends Document {
     vrboId?: string;
   };
 
+  @Prop({ type: String, default: null })
+  channexRoomTypeId: string | null;
+
   @Prop()
   createdAt: Date;
 
@@ -103,3 +106,4 @@ UnitSchema.index({ propertyId: 1, deletedAt: 1 });
 UnitSchema.index({ 'externalIds.airbnbId': 1 }, { sparse: true });
 UnitSchema.index({ 'externalIds.bookingId': 1 }, { sparse: true });
 UnitSchema.index({ 'externalIds.vrboId': 1 }, { sparse: true });
+UnitSchema.index({ channexRoomTypeId: 1 }, { sparse: true });

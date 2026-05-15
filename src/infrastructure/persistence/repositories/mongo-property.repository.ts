@@ -105,6 +105,15 @@ export class MongoPropertyRepository implements PropertyRepository {
     });
   }
 
+  async findByChannexId(channexId: string): Promise<Property | null> {
+    const document = await this.propertyModel.findOne({
+      channexId,
+      deletedAt: null,
+    });
+    if (!document) return null;
+    return this.toDomain(document);
+  }
+
   async findFailedChannexSync(): Promise<Property[]> {
     const documents = await this.propertyModel.find({
       channexSyncStatus: ChannexSyncStatusEnum.FAILED,
