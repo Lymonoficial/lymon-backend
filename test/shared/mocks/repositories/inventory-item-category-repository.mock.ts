@@ -5,5 +5,6 @@ export function createInventoryItemCategoryRepositoryMock(): jest.Mocked<Invento
     save: jest.fn(),
     findById: jest.fn(),
     findByName: jest.fn(),
+    findByTenantId: jest.fn(),
   };
 }
