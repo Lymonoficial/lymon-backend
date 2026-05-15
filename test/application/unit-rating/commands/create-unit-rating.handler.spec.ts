@@ -93,7 +93,7 @@ describe('CreateUnitRatingHandler', () => {
       unitRatingRepository.findByReservationId.mockResolvedValue(null);
       unitRepository.findById.mockResolvedValue(makeUnitFixture());
       unitRatingRepository.save.mockResolvedValue('new-rating-id');
-      unitRatingRepository.calculateAverageForUnit.mockResolvedValue(4.0);
+      unitRatingRepository.calculateAverageForUnit.mockResolvedValue(4);
       unitRepository.save.mockResolvedValue('unit-id');
 
       const result = await handler.execute(defaultCommand);

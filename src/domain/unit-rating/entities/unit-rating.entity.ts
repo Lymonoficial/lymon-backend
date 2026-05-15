@@ -28,10 +28,10 @@ export class UnitRating {
     private readonly unitId: UnitId,
     private readonly guestId: GuestId,
     private readonly reservationId: ReservationId,
-    private rate: number,
-    private message: string | null,
+    private readonly rate: number,
+    private readonly message: string | null,
     private readonly createdAt: Date,
-    private updatedAt: Date,
+    private readonly updatedAt: Date,
     private readonly deletedAt: Date | null,
   ) {}
 

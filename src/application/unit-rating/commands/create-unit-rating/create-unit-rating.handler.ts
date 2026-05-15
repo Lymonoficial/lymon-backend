@@ -21,8 +21,6 @@ import {
 } from '@/domain/guest/repositories/guest.repository';
 import { UnitRating } from '@/domain/unit-rating/entities/unit-rating.entity';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
-import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { ReservationId } from '@/domain/reservation/value-objects/reservation-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
@@ -85,7 +83,7 @@ export class CreateUnitRatingHandler
     }
 
     const guestId = guest.getId();
-    if (!guestId || guestId.toString() !== reservation.getGuestId().toString()) {
+    if (guestId?.toString() !== reservation.getGuestId().toString()) {
       throw new DomainException(
         'This reservation does not belong to the authenticated guest',
       );
@@ -110,7 +108,7 @@ export class CreateUnitRatingHandler
     const rating = UnitRating.create({
       tenantId,
       unitId,
-      guestId,
+      guestId: guestId!,
       reservationId,
       rate: command.rate,
       message: command.message,
