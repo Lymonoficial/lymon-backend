@@ -11,6 +11,8 @@ import { GetAllPublicUnitsQuery } from '@/application/unit/queries/GetAllPublicU
 import { GetAllPublicUnitsResult } from '@/application/unit/queries/GetAllPublicUnits/get-all-public-units.result';
 import { GetPublicUnitByIdQuery } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query';
 import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.result';
+import { GetUnitWithExternalIdsByIdQuery } from '@/application/unit/queries/GetUnitWithExternalIdsById/get-unit-with-external-ids-by-id.query';
+import { GetUnitWithExternalIdsByIdResult } from '@/application/unit/queries/GetUnitWithExternalIdsById/get-unit-with-external-ids-by-id.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
@@ -264,6 +266,31 @@ export class UnitController {
           limit: result.limit,
           totalPages: result.totalPages,
         },
+      },
+    };
+  }
+
+  @Get('unit/:unitId')
+  @ApiOperation({
+    summary: 'Get a specific unit by ID including external IDs (tenant only)',
+  })
+  @ApiResponse({ status: 200, description: 'Unit retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Unit not found' })
+  async getByIdWithExternalIds(
+    @CurrentUser() user: JwtPayload,
+    @Param('unitId') unitId: string,
+  ) {
+    const query = new GetUnitWithExternalIdsByIdQuery(unitId, user.tenantId);
+
+    const result = await this.queryBus.execute<
+      GetUnitWithExternalIdsByIdQuery,
+      GetUnitWithExternalIdsByIdResult
+    >(query);
+
+    return {
+      message: 'Unit retrieved successfully',
+      data: {
+        unit: result.unit,
       },
     };
   }
