@@ -14,7 +14,6 @@ import {
   type UnitRepository,
 } from '@/domain/unit/repositories/unit.repository';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @QueryHandler(GetUnitRatingsQuery)
 export class GetUnitRatingsHandler
@@ -29,14 +28,9 @@ export class GetUnitRatingsHandler
 
   async execute(query: GetUnitRatingsQuery): Promise<GetUnitRatingsResult> {
     const unitId = UnitId.create(query.unitId);
-    const tenantId = TenantId.createFromString(query.tenantId);
 
     const unit = await this.unitRepository.findById(unitId);
     if (!unit) {
-      throw new NotFoundException('Unit not found');
-    }
-
-    if (!unit.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Unit not found');
     }
 
@@ -45,6 +39,8 @@ export class GetUnitRatingsHandler
         unitId,
         query.page,
         query.limit,
+        query.sort,
+        query.filterRate,
       );
 
     const dtos = ratings.map(

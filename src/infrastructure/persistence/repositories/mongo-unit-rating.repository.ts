@@ -63,16 +63,27 @@ export class MongoUnitRatingRepository implements UnitRatingRepository {
     unitId: UnitId,
     page: number,
     limit: number,
+    sort?: 'best' | 'worst',
+    filterRate?: number,
   ): Promise<{ ratings: UnitRating[]; total: number }> {
-    const filter = {
+    const filter: Record<string, unknown> = {
       unitId: new Types.ObjectId(unitId.toString()),
       deletedAt: null,
     };
+
+    if (filterRate !== undefined) {
+      filter['rate'] = filterRate;
+    }
+
+    let sortQuery: Record<string, 1 | -1> = { createdAt: -1 };
+    if (sort === 'best') sortQuery = { rate: -1, createdAt: -1 };
+    else if (sort === 'worst') sortQuery = { rate: 1, createdAt: -1 };
+
     const [total, docs] = await Promise.all([
       this.unitRatingModel.countDocuments(filter),
       this.unitRatingModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sortQuery)
         .skip((page - 1) * limit)
         .limit(limit),
     ]);

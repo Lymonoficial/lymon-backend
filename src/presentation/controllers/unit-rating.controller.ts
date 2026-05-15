@@ -61,24 +61,39 @@ export class UnitRatingController {
   }
 
   @Get('units/:unitId/ratings')
-  @ApiBearerAuth()
+  @Public()
   @ApiOperation({ summary: 'Get paginated ratings for a unit' })
   @ApiResponse({ status: 200, description: 'Paginated unit ratings' })
-  @ApiQuery({ name: 'tenantId', required: true })
   @ApiQuery({ name: 'page', required: false, example: '1' })
   @ApiQuery({ name: 'limit', required: false, example: '20' })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    enum: ['best', 'worst'],
+    description: 'Sort by rate: best (highest first) or worst (lowest first). Default: newest first.',
+  })
+  @ApiQuery({
+    name: 'filterRate',
+    required: false,
+    example: '3',
+    description: 'Filter ratings by exact rate value (1–5)',
+  })
   async findByUnit(
     @Param('unitId') unitId: string,
-    @Query('tenantId') tenantId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('sort') sort?: 'best' | 'worst',
+    @Query('filterRate') filterRate?: string,
   ): Promise<GetUnitRatingsResult> {
+    const parsedFilterRate = filterRate ? Number.parseInt(filterRate, 10) : undefined;
+
     return this.queryBus.execute<GetUnitRatingsQuery, GetUnitRatingsResult>(
       new GetUnitRatingsQuery(
-        tenantId,
         unitId,
         Math.max(1, Number.parseInt(page ?? '1', 10) || 1),
         Math.max(1, Number.parseInt(limit ?? '20', 10) || 20),
+        sort,
+        parsedFilterRate,
       ),
     );
   }
