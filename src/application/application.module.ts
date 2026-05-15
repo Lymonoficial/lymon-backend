@@ -31,6 +31,7 @@ import { DeleteShiftCommandHandler } from '@/application/shift/commands/delete-s
 import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shifts.handler';
 import { ExperienceApplicationModule } from '@/application/experience/experience-application.module';
 import { GuestTagApplicationModule } from '@/application/guest-tag/guest-tag-application.module';
+import { StorageApplicationModule } from '@/application/storage/storage-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -69,6 +70,7 @@ const QueryHandlers = [GetShiftsHandler];
     ShiftApplicationModule,
     ExperienceApplicationModule,
     GuestTagApplicationModule,
+    StorageApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [
