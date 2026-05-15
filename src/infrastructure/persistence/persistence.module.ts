@@ -122,6 +122,12 @@ import {
 import { GUEST_TAG_REPOSITORY } from '@/domain/guest-tag/repositories/guest-tag.repository';
 import { MongoGuestTagRepository } from '@/infrastructure/persistence/repositories/mongo-guest-tag.repository';
 import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-tag-seed.service';
+import {
+  UnitRatingDocument,
+  UnitRatingSchema,
+} from '@/infrastructure/persistence/schemas/unit-rating.schema';
+import { UNIT_RATING_REPOSITORY } from '@/domain/unit-rating/repositories/unit-rating.repository';
+import { MongoUnitRatingRepository } from '@/infrastructure/persistence/repositories/mongo-unit-rating.repository';
 
 @Module({
   imports: [
@@ -155,6 +161,7 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       },
       { name: ExperienceDocument.name, schema: ExperienceSchema },
       { name: GuestTagDocument.name, schema: GuestTagSchema },
+      { name: UnitRatingDocument.name, schema: UnitRatingSchema },
     ]),
   ],
   providers: [
@@ -248,6 +255,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       useClass: MongoGuestTagRepository,
     },
     GuestTagSeedService,
+    {
+      provide: UNIT_RATING_REPOSITORY,
+      useClass: MongoUnitRatingRepository,
+    },
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -272,6 +283,7 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
     GUEST_PREFERENCE_CATALOG_REPOSITORY,
     EXPERIENCE_REPOSITORY,
     GUEST_TAG_REPOSITORY,
+    UNIT_RATING_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

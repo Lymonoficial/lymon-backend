@@ -85,6 +85,9 @@ export class UnitDocument extends Document {
     vrboId?: string;
   };
 
+  @Prop({ type: Number, default: null })
+  rating: number | null;
+
   @Prop()
   createdAt: Date;
 
