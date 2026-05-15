@@ -6,7 +6,7 @@ export class UpdateInventoryItemCommand implements ICommand {
     public readonly propertyId: string,
     public readonly itemId: string,
     public readonly name: string | undefined,
-    public readonly category: string | undefined,
+    public readonly categoryId: string | undefined,
     public readonly unit: string | undefined,
     public readonly minStock: number | undefined,
     public readonly actorId: string,
