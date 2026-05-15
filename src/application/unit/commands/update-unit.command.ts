@@ -16,6 +16,7 @@ export class UpdateUnitCommand {
     public readonly bathroomsCount: number | undefined,
     public readonly isShared: boolean | undefined,
     public readonly amenities: string[] | undefined,
+    public readonly mediaKeys: string[] | undefined,
     public readonly pricePerNight: number | undefined,
     public readonly externalIds:
       | {
