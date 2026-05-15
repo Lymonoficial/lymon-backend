@@ -27,5 +27,6 @@ export function mapUnitToPublicDto(unit: Unit): PublicUnitDto {
     unit.getPricePerNight(),
     unit.getTenantId().toString(),
     unit.getPropertyId().toString(),
+    unit.getRating(),
   );
 }

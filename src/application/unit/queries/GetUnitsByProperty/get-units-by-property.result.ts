@@ -11,6 +11,7 @@ export class UnitDto {
     public readonly amenities: string[],
     public readonly pricePerNight: number,
     public readonly createdAt: Date,
+    public readonly rating: number | null,
   ) {}
 }
 

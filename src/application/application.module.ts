@@ -36,6 +36,7 @@ import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shi
 import { ExperienceApplicationModule } from '@/application/experience/experience-application.module';
 import { GuestTagApplicationModule } from '@/application/guest-tag/guest-tag-application.module';
 import { StorageApplicationModule } from '@/application/storage/storage-application.module';
+import { UnitRatingApplicationModule } from '@/application/unit-rating/unit-rating-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -79,6 +80,7 @@ const QueryHandlers = [GetShiftsHandler];
     ExperienceApplicationModule,
     GuestTagApplicationModule,
     StorageApplicationModule,
+    UnitRatingApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [
