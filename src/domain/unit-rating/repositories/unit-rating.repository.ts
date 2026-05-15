@@ -13,6 +13,8 @@ export interface UnitRatingRepository {
     unitId: UnitId,
     page: number,
     limit: number,
+    sort?: 'best' | 'worst',
+    filterRate?: number,
   ): Promise<{ ratings: UnitRating[]; total: number }>;
   calculateAverageForUnit(unitId: UnitId): Promise<number | null>;
 }
