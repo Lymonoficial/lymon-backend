@@ -108,7 +108,7 @@ export class CreateUnitRatingHandler
     const rating = UnitRating.create({
       tenantId,
       unitId,
-      guestId: guestId!,
+      guestId,
       reservationId,
       rate: command.rate,
       message: command.message,
