@@ -58,6 +58,13 @@ export class MongoInventoryItemCategoryRepository
     return this.toDomain(doc);
   }
 
+  async findByTenantId(tenantId: TenantId): Promise<InventoryItemCategory[]> {
+    const docs = await this.categoryModel
+      .find({ tenantId: new Types.ObjectId(tenantId.toString()) })
+      .sort({ name: 1 });
+    return docs.map((doc) => this.toDomain(doc));
+  }
+
   private toDomain(
     doc: InventoryItemCategoryDocument,
   ): InventoryItemCategory {
