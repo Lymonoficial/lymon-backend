@@ -7,6 +7,7 @@ import { createReservationRepositoryMock } from '@test/shared/mocks/repositories
 import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
 import { createExperienceRepositoryMock } from '@test/shared/mocks/repositories/experience-repository.mock';
 import { createExperiencePurchaseRepositoryMock } from '@test/shared/mocks/repositories/experience-purchase-repository.mock';
+import { PAYMENT_SESSION_REPOSITORY } from '@/domain/payment/repositories/payment-session.repository';
 import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitter.mock';
 import { makeCart, makeCartItem } from '@test/shared/fixtures/cart.fixture';
 import { makeReservation } from '@test/shared/fixtures/reservation.fixture';
@@ -15,6 +16,10 @@ import { makeExperience } from '@test/shared/fixtures/experience.fixture';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 import { CartStatusEnum } from '@/domain/cart/value-objects/cart-status.vo';
+import {
+  type IPaymentGateway,
+  type PaymentCheckoutResponse,
+} from '@/domain/shared/payment-gateway.interface';
 
 const GUEST_ACCOUNT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
 const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c2';
@@ -24,9 +29,21 @@ const GUEST_ID = '65f1a1a2b3c4d5e6f7a8b9c5';
 const command = new CheckoutCartCommand(
   GUEST_ACCOUNT_ID,
   TENANT_ID,
-  GUEST_ACCOUNT_ID,
   'guest@example.com',
 );
+
+const paymentResponse: PaymentCheckoutResponse = {
+  publicKey: 'pub_test_123',
+  reference: 'checkout_65f1a1a2b3c4d5e6f7a8bb01_test',
+  amountInCents: 90000,
+  currency: 'COP',
+  signatureIntegrity: 'signature-hash',
+  redirectUrl: 'https://example.com/checkout',
+  expirationTime: null,
+  customerData: {
+    email: 'guest@example.com',
+  },
+};
 
 describe('CheckoutCartHandler', () => {
   let handler: CheckoutCartHandler;
@@ -37,7 +54,14 @@ describe('CheckoutCartHandler', () => {
   let purchaseRepository: ReturnType<
     typeof createExperiencePurchaseRepositoryMock
   >;
+  let paymentSessionRepository: {
+    save: jest.Mock;
+    findByReference: jest.Mock;
+    findByProviderReference: jest.Mock;
+    findPendingByCartId: jest.Mock;
+  };
   let eventEmitter: ReturnType<typeof createEventEmitterMock>;
+  let paymentGateway: jest.Mocked<IPaymentGateway>;
 
   beforeEach(() => {
     cartRepository = createCartRepositoryMock();
@@ -45,7 +69,16 @@ describe('CheckoutCartHandler', () => {
     guestRepository = createGuestRepositoryMock();
     experienceRepository = createExperienceRepositoryMock();
     purchaseRepository = createExperiencePurchaseRepositoryMock();
+    paymentSessionRepository = {
+      save: jest.fn(),
+      findByReference: jest.fn(),
+      findByProviderReference: jest.fn(),
+      findPendingByCartId: jest.fn().mockResolvedValue(null),
+    };
     eventEmitter = createEventEmitterMock();
+    paymentGateway = {
+      buildCheckoutPayload: jest.fn().mockResolvedValue(paymentResponse),
+    } as unknown as jest.Mocked<IPaymentGateway>;
 
     handler = new CheckoutCartHandler(
       cartRepository,
@@ -53,47 +86,48 @@ describe('CheckoutCartHandler', () => {
       guestRepository,
       experienceRepository,
       purchaseRepository,
-      eventEmitter,
+      paymentSessionRepository as never,
+      paymentGateway,
+      eventEmitter as never,
     );
   });
 
   it('throws NotFoundException when no open cart exists', async () => {
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(null);
+    cartRepository.findOpenByGuest.mockResolvedValue(null);
 
     await expect(handler.execute(command)).rejects.toThrow(NotFoundException);
   });
 
   it('throws DomainException when cart is empty', async () => {
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(makeCart());
-    const guest = makeGuest({ id: GUEST_ID });
-    guestRepository.findByGuestAccountId.mockResolvedValue(guest);
+    cartRepository.findOpenByGuest.mockResolvedValue(makeCart());
 
     await expect(handler.execute(command)).rejects.toThrow(DomainException);
   });
 
-  it('checks out cart with only experience items', async () => {
+  it('creates Wompi payload for cart with only experience items', async () => {
     const cartItem = makeCartItem({ quantity: 2 });
     const cart = makeCart({ experienceItems: [cartItem] });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
-
-    const guest = makeGuest({ id: GUEST_ID });
-    guestRepository.findByGuestAccountId.mockResolvedValue(guest);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     experienceRepository.findById.mockResolvedValue(makeExperience());
     purchaseRepository.countConfirmedByExperienceAndDate.mockResolvedValue(0);
-    purchaseRepository.save.mockResolvedValue('purchase-id');
     cartRepository.save.mockResolvedValue(cart.getId()!.toString());
 
-    await handler.execute(command);
+    const result = await handler.execute(command);
 
-    expect(purchaseRepository.save).toHaveBeenCalledTimes(1);
+    expect(paymentGateway.buildCheckoutPayload).toHaveBeenCalledTimes(1);
     expect(cartRepository.save).toHaveBeenCalledTimes(1);
-    const savedCart = cartRepository.save.mock.calls[0][0];
-    expect(savedCart.getStatus().getValue()).toBe(CartStatusEnum.CHECKED_OUT);
+    expect(cartRepository.save.mock.calls[0][0].getStatus().getValue()).toBe(
+      CartStatusEnum.CHECKED_OUT,
+    );
+    expect(result).toEqual(paymentResponse);
+    expect(reservationRepository.save).not.toHaveBeenCalled();
+    expect(purchaseRepository.save).not.toHaveBeenCalled();
   });
 
-  it('pays reservation and creates purchases on full checkout', async () => {
+  it('creates Wompi payload for cart with reservation and experiences', async () => {
     const reservationItem = CartReservationItem.create({
+      tenantId: TENANT_ID,
       reservationId: RESERVATION_ID,
       totalPriceCopSnapshot: 400000,
     });
@@ -102,9 +136,13 @@ describe('CheckoutCartHandler', () => {
       experienceItems: [cartItem],
       reservationItem,
     });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
-    const guest = makeGuest({ id: GUEST_ID });
+    const guest = makeGuest({
+      id: GUEST_ID,
+      primaryEmail: 'guest@example.com',
+      fullName: 'Guest Example',
+    });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);
 
     const reservation = makeReservation({
@@ -114,27 +152,24 @@ describe('CheckoutCartHandler', () => {
     });
     reservationRepository.findById.mockResolvedValue(reservation);
     reservationRepository.findByGuestId.mockResolvedValue([]);
-    reservationRepository.save.mockResolvedValue(RESERVATION_ID);
 
     experienceRepository.findById.mockResolvedValue(makeExperience());
     purchaseRepository.countConfirmedByExperienceAndDate.mockResolvedValue(0);
-    purchaseRepository.save.mockResolvedValue('purchase-id');
     cartRepository.save.mockResolvedValue(cart.getId()!.toString());
 
-    await handler.execute(command);
+    const result = await handler.execute(command);
 
-    expect(reservationRepository.save).toHaveBeenCalledTimes(1);
-    expect(purchaseRepository.save).toHaveBeenCalledTimes(1);
+    expect(paymentGateway.buildCheckoutPayload).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(paymentResponse);
+    expect(reservationRepository.save).not.toHaveBeenCalled();
+    expect(purchaseRepository.save).not.toHaveBeenCalled();
   });
 
   it('throws DomainException when experience capacity exceeded', async () => {
     const experience = makeExperience();
     const cartItem = makeCartItem({ quantity: 10 });
     const cart = makeCart({ experienceItems: [cartItem] });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
-
-    const guest = makeGuest({ id: GUEST_ID });
-    guestRepository.findByGuestAccountId.mockResolvedValue(guest);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     experienceRepository.findById.mockResolvedValue(experience);
     purchaseRepository.countConfirmedByExperienceAndDate.mockResolvedValue(
@@ -146,11 +181,12 @@ describe('CheckoutCartHandler', () => {
 
   it('throws DomainException when reservation in cart is not PENDING', async () => {
     const reservationItem = CartReservationItem.create({
+      tenantId: TENANT_ID,
       reservationId: RESERVATION_ID,
       totalPriceCopSnapshot: 400000,
     });
     const cart = makeCart({ reservationItem, experienceItems: [] });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     const guest = makeGuest({ id: GUEST_ID });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);
@@ -167,11 +203,12 @@ describe('CheckoutCartHandler', () => {
 
   it('throws DomainException when overlapping reservation exists at same property', async () => {
     const reservationItem = CartReservationItem.create({
+      tenantId: TENANT_ID,
       reservationId: RESERVATION_ID,
       totalPriceCopSnapshot: 400000,
     });
     const cart = makeCart({ reservationItem, experienceItems: [] });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     const guest = makeGuest({ id: GUEST_ID });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);

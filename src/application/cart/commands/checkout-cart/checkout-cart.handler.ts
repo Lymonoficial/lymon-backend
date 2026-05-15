@@ -1,6 +1,7 @@
 import { Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { randomUUID } from 'node:crypto';
 import { CheckoutCartCommand } from './checkout-cart.command';
 import {
   CART_REPOSITORY,
@@ -22,7 +23,10 @@ import {
   EXPERIENCE_PURCHASE_REPOSITORY,
   type ExperiencePurchaseRepository,
 } from '@/domain/experience-purchase/repositories/experience-purchase.repository';
-import { ExperiencePurchase } from '@/domain/experience-purchase/entities/experience-purchase.entity';
+import {
+  PAYMENT_SESSION_REPOSITORY,
+  type PaymentSessionRepository,
+} from '@/domain/payment/repositories/payment-session.repository';
 import { ExperienceCapacityChecker } from '@/domain/experience-purchase/services/experience-capacity-checker.domain-service';
 import { GuestReservationOverlapChecker } from '@/domain/reservation/services/guest-reservation-overlap-checker.domain-service';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
@@ -33,7 +37,14 @@ import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reserv
 import { ExperienceStatusEnum } from '@/domain/experience/value-objects/experience-status.vo';
 import { CartItem } from '@/domain/cart/value-objects/cart-item.vo';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
+import { Guest } from '@/domain/guest/entities/guest.entity';
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
+import { PaymentSession } from '@/domain/payment/entities/payment-session.entity';
+import {
+  PAYMENT_GATEWAY,
+  type IPaymentGateway,
+  type PaymentCheckoutResponse,
+} from '@/domain/shared/payment-gateway.interface';
 import {
   AuditAction,
   AuditEntityType,
@@ -56,10 +67,16 @@ export class CheckoutCartHandler implements ICommandHandler<CheckoutCartCommand>
     private readonly experienceRepository: ExperienceRepository,
     @Inject(EXPERIENCE_PURCHASE_REPOSITORY)
     private readonly experiencePurchaseRepository: ExperiencePurchaseRepository,
+    @Inject(PAYMENT_SESSION_REPOSITORY)
+    private readonly paymentSessionRepository: PaymentSessionRepository,
+    @Inject(PAYMENT_GATEWAY)
+    private readonly paymentGateway: IPaymentGateway,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async execute(command: CheckoutCartCommand): Promise<void> {
+  async execute(
+    command: CheckoutCartCommand,
+  ): Promise<PaymentCheckoutResponse> {
     const guestAccountId = GuestAccountId.createFromString(
       command.guestAccountId,
     );
@@ -72,30 +89,125 @@ export class CheckoutCartHandler implements ICommandHandler<CheckoutCartCommand>
       throw new DomainException('Cannot checkout an empty cart');
     }
 
-    const reservationItem = cart.getReservationItem();
-    if (reservationItem) {
-      await this.processReservationItem(reservationItem, command);
+    const tenantId = this.resolveTenantId(cart);
+    const guest = await this.validateCheckoutItems(cart, command);
+
+    const existingSession =
+      await this.paymentSessionRepository.findPendingByCartId(cart.getId()!);
+
+    if (existingSession) {
+      if (cart.getStatus().isOpen()) {
+        cart.checkout();
+        await this.cartRepository.save(cart);
+      }
+
+      return this.toCheckoutResponse(
+        existingSession,
+        guest,
+        command.actorEmail,
+      );
     }
 
-    for (const item of cart.getExperienceItems()) {
-      await this.processExperienceItem(item, command);
-    }
+    const reference = this.buildPaymentReference(cart.getId()!.toString());
+
+    const checkoutPayload = await this.paymentGateway.buildCheckoutPayload({
+      reference,
+      amountInCents: cart.getTotalCop(),
+      currency: 'COP',
+      customerData: {
+        email: guest?.getPrimaryEmail() ?? command.actorEmail,
+        fullName: guest?.getFullName() ?? null,
+      },
+    });
+
+    const paymentSession = PaymentSession.create({
+      tenantId,
+      guestAccountId,
+      cartId: cart.getId()!,
+      reference: checkoutPayload.reference,
+      amountInCents: checkoutPayload.amountInCents,
+      currency: checkoutPayload.currency,
+      publicKey: checkoutPayload.publicKey,
+      signatureIntegrity: checkoutPayload.signatureIntegrity,
+      redirectUrl: checkoutPayload.redirectUrl ?? null,
+      expirationTime: checkoutPayload.expirationTime ?? null,
+    });
+
+    await this.paymentSessionRepository.save(paymentSession);
 
     cart.checkout();
     await this.cartRepository.save(cart);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        tenantId.toString(),
+        command.actorId,
+        command.actorEmail,
+        AuditAction.CART_CHECKED_OUT,
+        AuditEntityType.CART,
+        cart.getId()!.toString(),
+        {
+          reference: checkoutPayload.reference,
+          amountInCents: checkoutPayload.amountInCents,
+          currency: checkoutPayload.currency,
+        },
+      ),
+    );
+
+    return checkoutPayload;
   }
 
-  private async processReservationItem(
+  private toCheckoutResponse(
+    paymentSession: PaymentSession,
+    guest: Guest | null,
+    fallbackEmail: string,
+  ): PaymentCheckoutResponse {
+    return {
+      publicKey: paymentSession.getPublicKey(),
+      reference: paymentSession.getReference(),
+      amountInCents: paymentSession.getAmountInCents(),
+      currency: paymentSession.getCurrency(),
+      signatureIntegrity: paymentSession.getSignatureIntegrity(),
+      redirectUrl: paymentSession.getRedirectUrl(),
+      expirationTime: paymentSession.getExpirationTime(),
+      customerData: {
+        email: guest?.getPrimaryEmail() ?? fallbackEmail,
+        fullName: guest?.getFullName() ?? null,
+      },
+    };
+  }
+
+  private async validateCheckoutItems(
+    cart: {
+      getReservationItem(): CartReservationItem | null;
+      getExperienceItems(): CartItem[];
+    },
+    command: CheckoutCartCommand,
+  ) {
+    const reservationItem = cart.getReservationItem();
+    let guest: Guest | null = null;
+
+    if (reservationItem) {
+      guest = await this.validateReservationItem(reservationItem, command);
+    }
+
+    for (const item of cart.getExperienceItems()) {
+      await this.validateExperienceItem(item);
+    }
+
+    return guest;
+  }
+
+  private async validateReservationItem(
     reservationItem: CartReservationItem,
     command: CheckoutCartCommand,
-  ): Promise<void> {
-    const tenantId = TenantId.createFromString(reservationItem.tenantId);
+  ): Promise<Guest> {
     const guestAccountId = GuestAccountId.createFromString(
       command.guestAccountId,
     );
-
     const guest = await this.guestRepository.findByGuestAccountId(
-      tenantId,
+      TenantId.createFromString(reservationItem.tenantId),
       guestAccountId,
     );
     if (!guest) {
@@ -132,30 +244,10 @@ export class CheckoutCartHandler implements ICommandHandler<CheckoutCartCommand>
       reservationItem.reservationId,
     );
 
-    reservation.pay();
-    await this.reservationRepository.save(reservation);
-
-    this.eventEmitter.emit(
-      AUDIT_LOG_EVENT,
-      new AuditLoggedEvent(
-        reservationItem.tenantId,
-        command.actorId,
-        command.actorEmail,
-        AuditAction.RESERVATION_PAID,
-        AuditEntityType.RESERVATION,
-        reservationItem.reservationId,
-      ),
-    );
+    return guest;
   }
 
-  private async processExperienceItem(
-    item: CartItem,
-    command: CheckoutCartCommand,
-  ): Promise<void> {
-    const tenantId = TenantId.createFromString(item.tenantId);
-    const guestAccountId = GuestAccountId.createFromString(
-      command.guestAccountId,
-    );
+  private async validateExperienceItem(item: CartItem): Promise<void> {
     const experience = await this.experienceRepository.findById(
       ExperienceId.create(item.experienceId.toString()),
     );
@@ -188,34 +280,26 @@ export class CheckoutCartHandler implements ICommandHandler<CheckoutCartCommand>
         item.selectedDate,
       );
     ExperienceCapacityChecker.check(experience, item.quantity, confirmedCount);
+  }
 
-    const purchase = ExperiencePurchase.create({
-      tenantId,
-      guestAccountId,
-      experienceId: ExperienceId.create(item.experienceId.toString()),
-      reservationId: item.reservationId ?? null,
-      selectedDate: item.selectedDate ?? null,
-      quantity: item.quantity,
-      unitPriceCop: item.unitPriceCopSnapshot,
-    });
+  private resolveTenantId(cart: {
+    getReservationItem(): CartReservationItem | null;
+    getExperienceItems(): CartItem[];
+  }): TenantId {
+    const reservationItem = cart.getReservationItem();
+    if (reservationItem) {
+      return TenantId.createFromString(reservationItem.tenantId);
+    }
 
-    const purchaseId = await this.experiencePurchaseRepository.save(purchase);
+    const firstExperienceItem = cart.getExperienceItems()[0];
+    if (!firstExperienceItem) {
+      throw new DomainException('Cannot resolve tenant for empty checkout');
+    }
 
-    this.eventEmitter.emit(
-      AUDIT_LOG_EVENT,
-      new AuditLoggedEvent(
-        item.tenantId,
-        command.actorId,
-        command.actorEmail,
-        AuditAction.EXPERIENCE_PURCHASED,
-        AuditEntityType.EXPERIENCE_PURCHASE,
-        purchaseId,
-        {
-          experienceId: item.experienceId.toString(),
-          quantity: item.quantity,
-          totalPriceCop: item.getTotalCop(),
-        },
-      ),
-    );
+    return TenantId.createFromString(firstExperienceItem.tenantId);
+  }
+
+  private buildPaymentReference(cartId: string): string {
+    return `checkout_${cartId}_${randomUUID()}`;
   }
 }

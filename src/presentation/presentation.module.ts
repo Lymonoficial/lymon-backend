@@ -20,6 +20,7 @@ import { ShiftsController } from '@/presentation/controllers/shifts.controller';
 import { ExperienceController } from '@/presentation/controllers/experience.controller';
 import { GuestExperienceController } from '@/presentation/controllers/guest-experience.controller';
 import { GuestTagController } from '@/presentation/controllers/guest-tag.controller';
+import { GuestCartController } from '@/presentation/controllers/guest-cart.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -43,6 +44,7 @@ import { GuestTagController } from '@/presentation/controllers/guest-tag.control
     ExperienceController,
     GuestExperienceController,
     GuestTagController,
+    GuestCartController,
   ],
 })
 export class PresentationModule {}

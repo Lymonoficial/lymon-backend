@@ -67,6 +67,9 @@ import {
   ReservationDocument,
   ReservationSchema,
 } from '@/infrastructure/persistence/schemas/reservation.schema';
+import { CartDocument, CartSchema } from '@/infrastructure/persistence/schemas/cart.schema';
+import { CART_REPOSITORY } from '@/domain/cart/repositories/cart.repository';
+import { MongoCartRepository } from '@/infrastructure/persistence/repositories/mongo-cart.repository';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
 import { GUEST_RESERVATIONS_READ_REPOSITORY } from '@/domain/reservation/repositories/guest-reservations-read.repository';
 import { MongoReservationRepository } from './repositories/mongo-reservation.repository';
@@ -110,6 +113,18 @@ import {
 import { EXPERIENCE_REPOSITORY } from '@/domain/experience/repositories/experience.repository';
 import { MongoExperienceRepository } from '@/infrastructure/persistence/repositories/mongo-experience.repository';
 import {
+  PaymentSessionDocument,
+  PaymentSessionSchema,
+} from '@/infrastructure/persistence/schemas/payment-session.schema';
+import { PAYMENT_SESSION_REPOSITORY } from '@/domain/payment/repositories/payment-session.repository';
+import { MongoPaymentSessionRepository } from '@/infrastructure/persistence/repositories/mongo-payment-session.repository';
+import {
+  ExperiencePurchaseDocument,
+  ExperiencePurchaseSchema,
+} from '@/infrastructure/persistence/schemas/experience-purchase.schema';
+import { EXPERIENCE_PURCHASE_REPOSITORY } from '@/domain/experience-purchase/repositories/experience-purchase.repository';
+import { MongoExperiencePurchaseRepository } from '@/infrastructure/persistence/repositories/mongo-experience-purchase.repository';
+import {
   GuestTagDocument,
   GuestTagSchema,
 } from '@/infrastructure/persistence/schemas/guest-tag.schema';
@@ -130,6 +145,7 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       { name: AuditLogDocument.name, schema: AuditLogSchema },
       { name: IncidentReportDocument.name, schema: IncidentReportSchema },
       { name: ReservationDocument.name, schema: ReservationSchema },
+          { name: CartDocument.name, schema: CartSchema },
       { name: InventoryItemDocument.name, schema: InventoryItemSchema },
       {
         name: InventoryMovementDocument.name,
@@ -144,6 +160,11 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
         schema: GuestPreferenceCatalogItemSchema,
       },
       { name: ExperienceDocument.name, schema: ExperienceSchema },
+      { name: PaymentSessionDocument.name, schema: PaymentSessionSchema },
+      {
+        name: ExperiencePurchaseDocument.name,
+        schema: ExperiencePurchaseSchema,
+      },
       { name: GuestTagDocument.name, schema: GuestTagSchema },
     ]),
   ],
@@ -193,6 +214,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       useClass: MongoReservationRepository,
     },
     {
+      provide: CART_REPOSITORY,
+      useClass: MongoCartRepository,
+    },
+    {
       provide: GUEST_RESERVATIONS_READ_REPOSITORY,
       useExisting: RESERVATION_REPOSITORY,
     },
@@ -228,6 +253,14 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       provide: EXPERIENCE_REPOSITORY,
       useClass: MongoExperienceRepository,
     },
+    {
+      provide: PAYMENT_SESSION_REPOSITORY,
+      useClass: MongoPaymentSessionRepository,
+    },
+    {
+      provide: EXPERIENCE_PURCHASE_REPOSITORY,
+      useClass: MongoExperiencePurchaseRepository,
+    },
     RoleSeedService,
     {
       provide: GUEST_TAG_REPOSITORY,
@@ -256,6 +289,9 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
     SHIFT_REPOSITORY,
     GUEST_PREFERENCE_CATALOG_REPOSITORY,
     EXPERIENCE_REPOSITORY,
+    PAYMENT_SESSION_REPOSITORY,
+    EXPERIENCE_PURCHASE_REPOSITORY,
+    CART_REPOSITORY,
     GUEST_TAG_REPOSITORY,
   ],
 })

@@ -1,9 +1,14 @@
 import { CartRepository } from '@/domain/cart/repositories/cart.repository';
 
-export function createCartRepositoryMock(): jest.Mocked<CartRepository> {
+type CartRepositoryMock = jest.Mocked<CartRepository> & {
+  findOpenByGuestAndTenant: jest.Mock;
+};
+
+export function createCartRepositoryMock(): CartRepositoryMock {
   return {
     save: jest.fn(),
     findById: jest.fn(),
+    findOpenByGuest: jest.fn(),
     findOpenByGuestAndTenant: jest.fn(),
-  };
+  } as CartRepositoryMock;
 }

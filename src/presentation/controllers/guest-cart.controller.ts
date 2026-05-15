@@ -28,6 +28,10 @@ import { RemoveCartReservationCommand } from '@/application/cart/commands/remove
 import { ClearCartCommand } from '@/application/cart/commands/clear-cart/clear-cart.command';
 import { CheckoutCartCommand } from '@/application/cart/commands/checkout-cart/checkout-cart.command';
 import { GetGuestCartQuery } from '@/application/cart/queries/get-guest-cart/get-guest-cart.query';
+import type { GuestCartResult } from '@/application/cart/queries/get-guest-cart/get-guest-cart.handler';
+import type { PaymentCheckoutResponse } from '@/domain/shared/payment-gateway.interface';
+import type { GetPaymentSessionStatusResult } from '@/application/payment/queries/get-payment-session-status/get-payment-session-status.handler';
+import { GetPaymentSessionStatusQuery } from '@/application/payment/queries/get-payment-session-status/get-payment-session-status.query';
 
 @ApiTags('guest-cart')
 @ApiBearerAuth('GuestJWT-auth')
@@ -43,7 +47,9 @@ export class GuestCartController {
   @Get()
   @ApiOperation({ summary: 'Get the guest open cart' })
   @ApiResponse({ status: 200, description: 'Current open cart or null' })
-  async getCart(@CurrentGuest() guest: GuestJwtPayload) {
+  async getCart(
+    @CurrentGuest() guest: GuestJwtPayload,
+  ): Promise<GuestCartResult | null> {
     return this.queryBus.execute(new GetGuestCartQuery(guest.guestAccountId));
   }
 
@@ -115,23 +121,39 @@ export class GuestCartController {
   @Delete()
   @ApiOperation({ summary: 'Clear all items from cart' })
   async clearCart(@CurrentGuest() guest: GuestJwtPayload) {
-    await this.commandBus.execute(
-      new ClearCartCommand(guest.guestAccountId),
-    );
+    await this.commandBus.execute(new ClearCartCommand(guest.guestAccountId));
     return { message: 'Cart cleared' };
   }
 
   @Post('checkout')
-  @ApiOperation({ summary: 'Checkout cart — confirms reservation and creates experience purchases' })
-  @ApiResponse({ status: 201, description: 'Cart checked out successfully' })
-  async checkout(@CurrentGuest() guest: GuestJwtPayload) {
-    await this.commandBus.execute(
+  @ApiOperation({
+    summary: 'Checkout cart and create the Wompi payment payload',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Wompi checkout payload generated successfully',
+  })
+  async checkout(
+    @CurrentGuest() guest: GuestJwtPayload,
+  ): Promise<PaymentCheckoutResponse> {
+    return this.commandBus.execute(
       new CheckoutCartCommand(
         guest.guestAccountId,
         guest.guestAccountId,
         guest.email,
       ),
     );
-    return { message: 'Checkout successful' };
+  }
+
+  @Get('checkout/status/:reference')
+  @ApiOperation({ summary: 'Get the status of a Wompi checkout session' })
+  @ApiResponse({ status: 200, description: 'Checkout session status' })
+  async getCheckoutStatus(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Param('reference') reference: string,
+  ): Promise<GetPaymentSessionStatusResult> {
+    return this.queryBus.execute(
+      new GetPaymentSessionStatusQuery(guest.guestAccountId, reference),
+    );
   }
 }
