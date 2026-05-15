@@ -157,6 +157,16 @@ export class UpdateUnitDto {
   amenities?: string[];
 
   @ApiPropertyOptional({
+    example: ['tenantId/1234-photo.jpg'],
+    description: 'R2 object keys for uploaded media files',
+    type: [String],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  mediaKeys?: string[];
+
+  @ApiPropertyOptional({
     example: 150,
     description: 'Price per night in USD',
     minimum: 0,

@@ -6,7 +6,10 @@ import { UpdateShiftCommandResult } from '@/application/shift/commands/update-sh
 import { DeleteShiftCommand } from '@/application/shift/commands/delete-shift/delete-shift.command';
 import { DeleteShiftCommandResult } from '@/application/shift/commands/delete-shift/delete-shift.result';
 import { GetShiftsQuery } from '@/application/shift/queries/get-shifts/get-shifts.query';
-import { type GetShiftsResult } from '@/application/shift/queries/get-shifts/get-shifts.result';
+import {
+  type GetShiftsResult,
+  type ShiftListItemDto,
+} from '@/application/shift/queries/get-shifts/get-shifts.result';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
@@ -57,12 +60,6 @@ export class ShiftsController {
     @CurrentUser() user: JwtPayload,
     @Query() dto: GetShiftsDto,
   ): Promise<{ data: GetShiftsResult }> {
-    const canViewAllStaff =
-      user.isOwner ||
-      user.roleAssignments.some((assignment) =>
-        assignment.permissions.includes(Permission.TENANT_USERS_MANAGE),
-      );
-
     const result = await this.queryBus.execute<GetShiftsQuery, GetShiftsResult>(
       new GetShiftsQuery(
         user.tenantId,
@@ -72,11 +69,48 @@ export class ShiftsController {
           propertyId: dto.propertyId,
         },
         user.userId,
-        canViewAllStaff,
+        this.canViewAllStaff(user),
       ),
     );
 
     return { data: result };
+  }
+
+  @Get('staff/:staffMemberId')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'List work shifts for a specific staff member',
+    description:
+      'For employee flow, non-manager users can only request their own staff member id.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff member shifts returned successfully',
+  })
+  async getShiftsByStaffMember(
+    @CurrentUser() user: JwtPayload,
+    @Param('staffMemberId') staffMemberId: string,
+    @Query() dto: GetShiftsDto,
+  ): Promise<{ data: { items: StaffShiftListItemDto[] } }> {
+    const result = await this.queryBus.execute<GetShiftsQuery, GetShiftsResult>(
+      new GetShiftsQuery(
+        user.tenantId,
+        {
+          dateFrom: dto.dateFrom ? new Date(dto.dateFrom) : undefined,
+          dateTo: dto.dateTo ? new Date(dto.dateTo) : undefined,
+          propertyId: dto.propertyId,
+        },
+        user.userId,
+        this.canViewAllStaff(user),
+        staffMemberId,
+      ),
+    );
+
+    return {
+      data: {
+        items: result.items.map((shift) => this.toStaffShiftListItemDto(shift)),
+      },
+    };
   }
 
   @Post()
@@ -229,4 +263,37 @@ export class ShiftsController {
       data: result,
     };
   }
+
+  private canViewAllStaff(user: JwtPayload): boolean {
+    return (
+      user.isOwner ||
+      user.roleAssignments.some((assignment) =>
+        assignment.permissions.includes(Permission.TENANT_USERS_MANAGE),
+      )
+    );
+  }
+
+  private toStaffShiftListItemDto(
+    shift: ShiftListItemDto,
+  ): StaffShiftListItemDto {
+    return {
+      id: shift.id,
+      tenantId: shift.tenantId,
+      propertyId: shift.propertyId,
+      name: shift.name,
+      startDate: shift.startDate,
+      endDate: shift.endDate,
+      startHour: shift.startHour,
+      endHour: shift.endHour,
+      startMinutes: shift.startMinutes,
+      endMinutes: shift.endMinutes,
+      notes: shift.notes,
+      createdBy: shift.createdBy,
+      createdByEmail: shift.createdByEmail,
+      createdAt: shift.createdAt,
+      updatedAt: shift.updatedAt,
+    };
+  }
 }
+
+type StaffShiftListItemDto = Omit<ShiftListItemDto, 'staffMemberIds'>;

@@ -36,6 +36,7 @@ export class MongoUnitRepository implements UnitRepository {
       bathroomsCount: unit.getBathroomsCount(),
       isShared: unit.getIsShared(),
       amenities: unit.getAmenities(),
+      mediaKeys: unit.getMediaKeys(),
       pricePerNight: unit.getPricePerNight(),
       externalIds: unit.getExternalIds().toObject(),
       updatedAt: unit.getUpdatedAt(),
@@ -98,6 +99,7 @@ export class MongoUnitRepository implements UnitRepository {
     page: number,
     limit: number,
     minGuests?: number,
+    propertyId?: string,
   ): Promise<{ units: Unit[]; total: number }> {
     const filter: any = {
       tenantId: new Types.ObjectId(tenantId.toString()),
@@ -105,6 +107,9 @@ export class MongoUnitRepository implements UnitRepository {
     };
     if (minGuests !== undefined) {
       filter.maxGuests = { $gte: minGuests };
+    }
+    if (propertyId) {
+      filter.propertyId = new Types.ObjectId(propertyId);
     }
     const total = await this.unitModel.countDocuments(filter);
     const documents = await this.unitModel
@@ -122,10 +127,14 @@ export class MongoUnitRepository implements UnitRepository {
     page: number,
     limit: number,
     minGuests?: number,
+    propertyId?: string,
   ): Promise<{ units: Unit[]; total: number }> {
     const filter: any = { deletedAt: null };
     if (minGuests !== undefined) {
       filter.maxGuests = { $gte: minGuests };
+    }
+    if (propertyId) {
+      filter.propertyId = new Types.ObjectId(propertyId);
     }
     const total = await this.unitModel.countDocuments(filter);
     const documents = await this.unitModel
@@ -178,6 +187,7 @@ export class MongoUnitRepository implements UnitRepository {
         pricePerNight: document.pricePerNight,
       },
       amenities: document.amenities,
+      mediaKeys: document.mediaKeys ?? [],
       externalIds: ExternalIds.create(
         document.externalIds?.airbnbId,
         document.externalIds?.bookingId,

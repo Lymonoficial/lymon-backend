@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Experience } from '@/domain/experience/entities/experience.entity';
 import type { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
@@ -15,14 +16,19 @@ import { ExperienceController } from '@/presentation/controllers/experience.cont
 import { GetExperiencesByTenantQuery } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query';
 import { GetExperiencesByTenantQueryHandler } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query-handler';
 import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
+import { GetExperienceByIdQuery } from '@/application/experience/queries/GetExperienceById/get-experience-by-id.query';
+import { GetExperienceByIdQueryHandler } from '@/application/experience/queries/GetExperienceById/get-experience-by-id.query-handler';
+import { GetExperienceByIdResult } from '@/application/experience/queries/GetExperienceById/get-experience-by-id.result';
 
 const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
 const EXPERIENCE_ID = 'experience-123';
 
-function makeExperience(overrides?: Partial<{ id: string }>) {
+function makeExperience(
+  overrides?: Partial<{ id: string; tenantId: string }>,
+) {
   return Experience.reconstitute({
     id: ExperienceId.create(overrides?.id ?? EXPERIENCE_ID),
-    tenantId: TenantId.createFromString(TENANT_ID),
+    tenantId: TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
     scope: ExperienceScope.create('PROPERTY'),
     propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
     unitIds: [UnitId.create('65f1a1a2b3c4d5e6f7a8b9c8')],
@@ -57,6 +63,7 @@ function makeExperience(overrides?: Partial<{ id: string }>) {
 
 describe('GetExperiencesByTenant', () => {
   let handler: GetExperiencesByTenantQueryHandler;
+  let getByIdHandler: GetExperienceByIdQueryHandler;
   let experienceRepository: jest.Mocked<ExperienceRepository>;
   let controller: ExperienceController;
   let queryBus: QueryBus;
@@ -65,6 +72,7 @@ describe('GetExperiencesByTenant', () => {
     experienceRepository = createExperienceRepositoryMock();
 
     handler = new GetExperiencesByTenantQueryHandler(experienceRepository);
+    getByIdHandler = new GetExperienceByIdQueryHandler(experienceRepository);
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ExperienceController],
@@ -127,5 +135,55 @@ describe('GetExperiencesByTenant', () => {
       expect.any(GetExperiencesByTenantQuery),
     );
     expect(response.data.experiences[0].id).toBe(EXPERIENCE_ID);
+  });
+
+  it('getById handler returns mapped experience for same tenant', async () => {
+    experienceRepository.findById.mockResolvedValue(makeExperience());
+
+    const result = await getByIdHandler.execute(
+      new GetExperienceByIdQuery(EXPERIENCE_ID, TENANT_ID),
+    );
+
+    expect(result).toBeInstanceOf(GetExperienceByIdResult);
+    expect(result.experience.id).toBe(EXPERIENCE_ID);
+  });
+
+  it('getById handler throws NotFound when experience does not exist', async () => {
+    experienceRepository.findById.mockResolvedValue(null);
+
+    await expect(
+      getByIdHandler.execute(new GetExperienceByIdQuery(EXPERIENCE_ID, TENANT_ID)),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('getById handler throws NotFound when experience belongs to other tenant', async () => {
+    experienceRepository.findById.mockResolvedValue(
+      makeExperience({ tenantId: 'other-tenant-id' }),
+    );
+
+    await expect(
+      getByIdHandler.execute(new GetExperienceByIdQuery(EXPERIENCE_ID, TENANT_ID)),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('controller getById executes query bus with experience and tenant id', async () => {
+    const mockResult = new GetExperienceByIdResult(
+      {
+        id: EXPERIENCE_ID,
+      } as any,
+    );
+    (queryBus.execute as jest.Mock).mockResolvedValue(mockResult);
+
+    const response = await controller.getById(
+      {
+        tenantId: TENANT_ID,
+      } as any,
+      EXPERIENCE_ID,
+    );
+
+    expect(queryBus.execute).toHaveBeenCalledWith(
+      expect.any(GetExperienceByIdQuery),
+    );
+    expect(response.data.id).toBe(EXPERIENCE_ID);
   });
 });

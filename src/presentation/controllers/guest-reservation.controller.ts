@@ -11,10 +11,12 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
+import { GuestPublic } from '@/infrastructure/guest-auth/decorators/guest-public.decorator';
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-guest.decorator';
 import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
@@ -25,6 +27,7 @@ import { GetGuestReservationQuery } from '@/application/reservation/queries/get-
 import { GuestReservationDetailResult } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.result';
 import { GetGuestReservationsQuery } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query';
 import { GetGuestReservationsResult } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.result';
+import { GetUnitOccupancyQuery } from '@/application/reservation/queries/get-unit-occupancy/get-unit-occupancy.query';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 @ApiTags('guest-reservations')
@@ -36,7 +39,7 @@ export class GuestReservationController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
-  ) {}
+  ) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a reservation as a guest' })
@@ -71,6 +74,13 @@ export class GuestReservationController {
   @Get()
   @ApiOperation({ summary: 'List authenticated guest bookings' })
   @ApiResponse({ status: 200, description: 'Paginated guest bookings list' })
+  @ApiQuery({ name: 'status', required: false, description: 'Filter by status: active, pending, confirmed, finished, cancelled' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)', example: '1' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 20)', example: '20' })
+  @ApiQuery({ name: 'fromDate', required: false, description: 'Filter reservations from this date (ISO format)', example: '2024-01-01' })
+  @ApiQuery({ name: 'toDate', required: false, description: 'Filter reservations until this date (ISO format)', example: '2024-12-31' })
+  @ApiQuery({ name: 'sortBy', required: false, description: 'Sort field: date, status, createdAt', example: 'date', enum: ['date', 'status', 'createdAt'] })
+  @ApiQuery({ name: 'sortOrder', required: false, description: 'Sort direction: asc or desc', example: 'desc', enum: ['asc', 'desc'] })
   async findAll(
     @CurrentGuest() guest: GuestJwtPayload,
     @Query()
@@ -84,7 +94,7 @@ export class GuestReservationController {
       sortOrder?: 'asc' | 'desc';
     },
   ): Promise<GetGuestReservationsResult> {
-    const parsedStatus = this.parseStatus(query.status);
+    const parsedStatuses = this.parseStatuses(query.status);
     const sortBy = query.sortBy ?? 'date';
     const sortOrder = query.sortOrder ?? 'desc';
 
@@ -96,13 +106,41 @@ export class GuestReservationController {
         guest.guestAccountId,
         Math.max(1, Number.parseInt(query.page ?? '1', 10) || 1),
         Math.max(1, Number.parseInt(query.limit ?? '20', 10) || 20),
-        parsedStatus,
+        parsedStatuses,
         query.fromDate ? new Date(query.fromDate) : undefined,
         query.toDate ? new Date(query.toDate) : undefined,
         sortBy,
         sortOrder,
       ),
     );
+  }
+
+  @Get('unit/:unitId/calendar')
+  @GuestPublic()
+  @Public()
+  @ApiOperation({ summary: 'Get occupied dates for a specific unit calendar' })
+  @ApiResponse({ status: 200, description: 'List of occupied date ranges' })
+  @ApiQuery({ name: 'startDate', required: false, description: 'Start date of the range (defaults to today)' })
+  @ApiQuery({ name: 'endDate', required: false, description: 'End date of the range (defaults to 1 year from now)' })
+  async getUnitCalendar(
+    @Param('unitId') unitId: string,
+    @Query('startDate') startDateStr?: string,
+    @Query('endDate') endDateStr?: string,
+  ): Promise<{ message: string; data: { checkIn: Date; checkOut: Date }[] }> {
+    const startDate = startDateStr ? new Date(startDateStr) : new Date();
+    const endDate = endDateStr
+      ? new Date(endDateStr)
+      : new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 año por defecto
+
+    const occupancy = await this.queryBus.execute<
+      GetUnitOccupancyQuery,
+      { checkIn: Date; checkOut: Date }[]
+    >(new GetUnitOccupancyQuery(unitId, startDate, endDate));
+
+    return {
+      message: 'Occupancy calendar retrieved successfully',
+      data: occupancy,
+    };
   }
 
   @Get(':id')
@@ -118,19 +156,36 @@ export class GuestReservationController {
     >(new GetGuestReservationQuery(id, guest.guestAccountId));
   }
 
-  private parseStatus(status?: string): ReservationStatusEnum | undefined {
+  private parseStatuses(
+    status?: string,
+  ): ReservationStatusEnum[] | undefined {
     if (!status) {
       return undefined;
     }
 
     const normalized = status.toLowerCase();
+
+    if (normalized === 'active') {
+      return [
+        ReservationStatusEnum.PENDING,
+        ReservationStatusEnum.CONFIRMED,
+        ReservationStatusEnum.CHECKED_IN,
+      ];
+    }
+
+    if (normalized === 'finished') {
+      return [ReservationStatusEnum.CHECKED_OUT];
+    }
+
     const statusMap: Record<string, ReservationStatusEnum> = {
       pending: ReservationStatusEnum.PENDING,
       confirmed: ReservationStatusEnum.CONFIRMED,
       cancelled: ReservationStatusEnum.CANCELLED,
-      completed: ReservationStatusEnum.CHECKED_OUT,
+      finished: ReservationStatusEnum.CHECKED_OUT,
     };
 
-    return statusMap[normalized];
+    const mapped = statusMap[normalized];
+    return mapped ? [mapped] : undefined;
   }
+
 }

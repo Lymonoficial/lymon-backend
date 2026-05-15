@@ -5,6 +5,7 @@ import { InventoryItemDocument } from '@/infrastructure/persistence/schemas/inve
 import { InventoryItemRepository } from '@/domain/inventory/repositories/inventory-item.repository';
 import { InventoryItem } from '@/domain/inventory/entities/inventory-item.entity';
 import { InventoryItemId } from '@/domain/inventory/value-objects/inventory-item-id.vo';
+import { InventoryItemCategoryId } from '@/domain/inventory/value-objects/inventory-item-category-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
@@ -29,7 +30,7 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
       propertyId: new Types.ObjectId(item.getPropertyId().toString()),
       sku: item.getSku(),
       name: item.getName(),
-      category: item.getCategory(),
+      categoryId: new Types.ObjectId(item.getCategoryId().toString()),
       unit: item.getUnit(),
       minStock: item.getMinStock(),
       currentStock: item.getCurrentStock(),
@@ -150,7 +151,9 @@ export class MongoInventoryItemRepository implements InventoryItemRepository {
       profile: {
         sku: document.sku,
         name: document.name,
-        category: document.category,
+        categoryId: InventoryItemCategoryId.create(
+          document.categoryId.toHexString(),
+        ),
         unit: document.unit,
         minStock: document.minStock,
         currentStock: document.currentStock,

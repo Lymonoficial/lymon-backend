@@ -193,6 +193,20 @@ export class User {
     return this.document;
   }
 
+  updateFullName(fullName?: string): void {
+    this.fullName = fullName;
+    this.updatedAt = new Date();
+  }
+
+  updateDocument(document?: string): void {
+    this.document = document;
+    this.updatedAt = new Date();
+  }
+
+  getCreatedAt(): Date {
+    return this.createdAt;
+  }
+
   getPasswordHash(): string {
     return this.passwordHash;
   }

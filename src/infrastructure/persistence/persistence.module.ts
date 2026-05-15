@@ -98,6 +98,12 @@ import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
 import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
 import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
 import {
+  InventoryItemCategoryDocument,
+  InventoryItemCategorySchema,
+} from '@/infrastructure/persistence/schemas/inventory-item-category.schema';
+import { INVENTORY_ITEM_CATEGORY_REPOSITORY } from '@/domain/inventory/repositories/inventory-item-category.repository';
+import { MongoInventoryItemCategoryRepository } from '@/infrastructure/persistence/repositories/mongo-inventory-item-category.repository';
+import {
   GuestPreferenceCatalogItemDocument,
   GuestPreferenceCatalogItemSchema,
 } from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
@@ -136,6 +142,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
         schema: InventoryMovementSchema,
       },
       { name: SupplierDocument.name, schema: SupplierSchema },
+      {
+        name: InventoryItemCategoryDocument.name,
+        schema: InventoryItemCategorySchema,
+      },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
@@ -209,6 +219,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       useClass: MongoSupplierRepository,
     },
     {
+      provide: INVENTORY_ITEM_CATEGORY_REPOSITORY,
+      useClass: MongoInventoryItemCategoryRepository,
+    },
+    {
       provide: GUEST_NOTE_REPOSITORY,
       useClass: MongoGuestNoteRepository,
     },
@@ -251,6 +265,7 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
     INVENTORY_ITEM_REPOSITORY,
     INVENTORY_MOVEMENT_REPOSITORY,
     SUPPLIER_REPOSITORY,
+    INVENTORY_ITEM_CATEGORY_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,

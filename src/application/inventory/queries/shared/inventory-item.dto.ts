@@ -3,7 +3,7 @@ export class InventoryItemDto {
     public readonly id: string,
     public readonly sku: string,
     public readonly name: string,
-    public readonly category: string,
+    public readonly categoryId: string,
     public readonly unit: string,
     public readonly minStock: number,
     public readonly currentStock: number,
@@ -17,7 +17,7 @@ export const toInventoryItemDto = (item: {
   getId(): { toString(): string } | null;
   getSku(): string;
   getName(): string;
-  getCategory(): string;
+  getCategoryId(): { toString(): string };
   getUnit(): string;
   getMinStock(): number;
   getCurrentStock(): number;
@@ -29,7 +29,7 @@ export const toInventoryItemDto = (item: {
     item.getId()?.toString() ?? '',
     item.getSku(),
     item.getName(),
-    item.getCategory(),
+    item.getCategoryId().toString(),
     item.getUnit(),
     item.getMinStock(),
     item.getCurrentStock(),

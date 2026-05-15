@@ -14,6 +14,10 @@ import { EmailModule } from '@/infrastructure/email/email.module';
 import { PropertyApplicationModule } from '@/application/property/property-application.module';
 import { UnitApplicationModule } from '@/application/unit/unit-application.module';
 import { InviteStaffHandler } from '@/application/user/commands/invite-staff/invite-staff.handler';
+import { UpdateStaffHandler } from '@/application/user/commands/update-staff.handler';
+import { AddRolesHandler } from '@/application/user/commands/add-roles.handler';
+import { RemoveAllRolesHandler } from '@/application/user/commands/remove-all-roles.handler';
+import { RemoveRoleHandler } from '@/application/user/commands/remove-role.handler';
 import { AuditApplicationModule } from '@/application/audit/audit-application.module';
 import { IncidentReportApplicationModule } from '@/application/incident-report/incident-report-application.module';
 import { TenantApplicationModule } from '@/application/tenant/tenant-application.module';
@@ -31,6 +35,7 @@ import { DeleteShiftCommandHandler } from '@/application/shift/commands/delete-s
 import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shifts.handler';
 import { ExperienceApplicationModule } from '@/application/experience/experience-application.module';
 import { GuestTagApplicationModule } from '@/application/guest-tag/guest-tag-application.module';
+import { StorageApplicationModule } from '@/application/storage/storage-application.module';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -42,6 +47,10 @@ const CommandHandlers = [
   VerifyEmailHandler,
   ChangePasswordHandler,
   InviteStaffHandler,
+  UpdateStaffHandler,
+  AddRolesHandler,
+  RemoveAllRolesHandler,
+  RemoveRoleHandler,
   DeleteShiftCommandHandler,
 ];
 
@@ -69,6 +78,7 @@ const QueryHandlers = [GetShiftsHandler];
     ShiftApplicationModule,
     ExperienceApplicationModule,
     GuestTagApplicationModule,
+    StorageApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [

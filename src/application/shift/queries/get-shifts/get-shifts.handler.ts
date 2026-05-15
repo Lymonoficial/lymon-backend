@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { ForbiddenException, Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import {
   SHIFT_REPOSITORY,
@@ -22,9 +22,7 @@ export class GetShiftsHandler implements IQueryHandler<
 
   async execute(query: GetShiftsQuery): Promise<GetShiftsResult> {
     const tenantId = TenantId.createFromString(query.tenantId);
-    const visibleStaffMemberId = query.canViewAllStaff
-      ? undefined
-      : UserId.createFromString(query.actorUserId);
+    const visibleStaffMemberId = this.resolveVisibleStaffMemberId(query);
 
     const shifts = await this.shiftRepository.findByFilters(
       tenantId,
@@ -60,5 +58,21 @@ export class GetShiftsHandler implements IQueryHandler<
         updatedAt: shift.getUpdatedAt().toISOString(),
       })),
     };
+  }
+
+  private resolveVisibleStaffMemberId(
+    query: GetShiftsQuery,
+  ): UserId | undefined {
+    if (!query.staffMemberId) {
+      return query.canViewAllStaff
+        ? undefined
+        : UserId.createFromString(query.actorUserId);
+    }
+
+    if (!query.canViewAllStaff && query.staffMemberId !== query.actorUserId) {
+      throw new ForbiddenException('You can only view your own shifts');
+    }
+
+    return UserId.createFromString(query.staffMemberId);
   }
 }

@@ -6,6 +6,8 @@ import { UpdateExperienceHandler } from '@/application/experience/commands/updat
 import { DeleteExperienceHandler } from '@/application/experience/commands/delete-experience.handler';
 import { GetExperiencesByTenantQueryHandler } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query-handler';
 import { GetAvailableExperiencesQueryHandler } from '@/application/experience/queries/GetAvailableExperiences/get-available-experiences.query-handler';
+import { GetExperienceByIdQueryHandler } from '@/application/experience/queries/GetExperienceById/get-experience-by-id.query-handler';
+import { GetAvailableExperienceByIdQueryHandler } from '@/application/experience/queries/GetAvailableExperienceById/get-available-experience-by-id.query-handler';
 
 const CommandHandlers = [
   CreateExperienceHandler,
@@ -15,6 +17,8 @@ const CommandHandlers = [
 const QueryHandlers = [
   GetExperiencesByTenantQueryHandler,
   GetAvailableExperiencesQueryHandler,
+  GetExperienceByIdQueryHandler,
+  GetAvailableExperienceByIdQueryHandler,
 ];
 
 @Module({

@@ -6,7 +6,7 @@ export class CreateInventoryItemCommand implements ICommand {
     public readonly propertyId: string,
     public readonly sku: string,
     public readonly name: string,
-    public readonly category: string,
+    public readonly categoryId: string,
     public readonly unit: string,
     public readonly minStock: number,
     public readonly initialStock: number,

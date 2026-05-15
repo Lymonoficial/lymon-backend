@@ -26,8 +26,12 @@ export class InventoryItemDocument extends Document {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
-  category: string;
+  @Prop({
+    type: Types.ObjectId,
+    required: true,
+    index: true,
+  })
+  categoryId: Types.ObjectId;
 
   @Prop({ required: true })
   unit: string;
