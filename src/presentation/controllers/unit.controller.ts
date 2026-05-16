@@ -21,6 +21,7 @@ import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import {
+  applyDecorators,
   Body,
   Controller,
   DefaultValuePipe,
@@ -45,6 +46,47 @@ import {
 } from '@nestjs/swagger';
 import { CreateUnitDto } from '@/presentation/dtos/unit/create-unit.dto';
 import { UpdateUnitDto } from '@/presentation/dtos/unit/update-unit.dto';
+
+function PublicUnitQueryParams() {
+  return applyDecorators(
+    ApiQuery({
+      name: 'page',
+      required: false,
+      type: Number,
+      description: 'Page number for pagination',
+    }),
+    ApiQuery({
+      name: 'limit',
+      required: false,
+      type: Number,
+      description: 'Items per page (default: 10)',
+    }),
+    ApiQuery({
+      name: 'minGuests',
+      required: false,
+      type: Number,
+      description: 'Filter units by minimum number of guests (maxGuests)',
+    }),
+    ApiQuery({
+      name: 'propertyId',
+      required: false,
+      type: String,
+      description: 'Filter by property ID',
+    }),
+    ApiQuery({
+      name: 'startDate',
+      required: false,
+      type: String,
+      description: 'Start date for availability check (ISO)',
+    }),
+    ApiQuery({
+      name: 'endDate',
+      required: false,
+      type: String,
+      description: 'End date for availability check (ISO)',
+    }),
+  );
+}
 
 @ApiTags('units')
 @ApiBearerAuth('JWT-auth')
@@ -148,42 +190,7 @@ export class UnitController {
   @ApiOperation({
     summary: 'Get all public units (no authentication required)',
   })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-    description: 'Page number for pagination',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Items per page (default: 10)',
-  })
-  @ApiQuery({
-    name: 'minGuests',
-    required: false,
-    type: Number,
-    description: 'Filter units by minimum number of guests (maxGuests)',
-  })
-  @ApiQuery({
-    name: 'propertyId',
-    required: false,
-    type: String,
-    description: 'Filter by property ID',
-  })
-  @ApiQuery({
-    name: 'startDate',
-    required: false,
-    type: String,
-    description: 'Start date for availability check (ISO)',
-  })
-  @ApiQuery({
-    name: 'endDate',
-    required: false,
-    type: String,
-    description: 'End date for availability check (ISO)',
-  })
+  @PublicUnitQueryParams()
   @ApiQuery({
     name: 'sortByPrice',
     required: false,
@@ -231,42 +238,7 @@ export class UnitController {
   @ApiOperation({
     summary: 'Get all units for a tenant (public, no authentication required)',
   })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-    description: 'Page number for pagination',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Items per page (default: 10)',
-  })
-  @ApiQuery({
-    name: 'minGuests',
-    required: false,
-    type: Number,
-    description: 'Filter units by minimum number of guests (maxGuests)',
-  })
-  @ApiQuery({
-    name: 'propertyId',
-    required: false,
-    type: String,
-    description: 'Filter by property ID',
-  })
-  @ApiQuery({
-    name: 'startDate',
-    required: false,
-    type: String,
-    description: 'Start date for availability check (ISO)',
-  })
-  @ApiQuery({
-    name: 'endDate',
-    required: false,
-    type: String,
-    description: 'End date for availability check (ISO)',
-  })
+  @PublicUnitQueryParams()
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getPublicByTenant(
     @Param('tenantId') tenantId: string,
