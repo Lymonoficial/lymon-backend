@@ -119,6 +119,15 @@ export class GuestDocument extends Document {
     lastUnitId: Types.ObjectId | null;
   };
 
+  @Prop({ type: String, default: null })
+  pendingEmail: string | null;
+
+  @Prop({ type: String, default: null })
+  emailChangeToken: string | null;
+
+  @Prop({ type: Date, default: null })
+  emailChangeExpiry: Date | null;
+
   @Prop()
   createdAt: Date;
 
@@ -135,3 +144,4 @@ GuestSchema.index(
   { sparse: true },
 );
 GuestSchema.index({ tenantId: 1, guestAccountId: 1 }, { sparse: true });
+GuestSchema.index({ emailChangeToken: 1 }, { sparse: true });
