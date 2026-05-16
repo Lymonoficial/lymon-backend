@@ -42,4 +42,5 @@ export interface GuestRepository {
     page: number,
     limit: number,
   ): Promise<{ guests: Guest[]; total: number }>;
+  findByEmailChangeToken(hashedToken: string): Promise<Guest | null>;
 }
