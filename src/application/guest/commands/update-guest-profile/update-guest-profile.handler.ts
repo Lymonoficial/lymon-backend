@@ -1,4 +1,9 @@
-import { ConflictException, ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  NotFoundException,
+} from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -9,9 +14,7 @@ import {
 import { UpdateGuestProfileCommand } from './update-guest-profile.command';
 
 @CommandHandler(UpdateGuestProfileCommand)
-export class UpdateGuestProfileHandler
-  implements ICommandHandler<UpdateGuestProfileCommand>
-{
+export class UpdateGuestProfileHandler implements ICommandHandler<UpdateGuestProfileCommand> {
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
@@ -26,14 +29,18 @@ export class UpdateGuestProfileHandler
     }
 
     if (guest.getTenantId().toString() !== command.tenantId) {
-      throw new ForbiddenException('You do not have permission to modify this guest');
+      throw new ForbiddenException(
+        'You do not have permission to modify this guest',
+      );
     }
 
     if (command.fullName !== undefined) {
       guest.updateBasicInfo(
         command.fullName,
-        command.firstName !== undefined ? command.firstName : guest.getFirstName(),
-        command.lastName !== undefined ? command.lastName : guest.getLastName(),
+        command.firstName === undefined
+          ? guest.getFirstName()
+          : command.firstName,
+        command.lastName === undefined ? guest.getLastName() : command.lastName,
       );
     }
 
@@ -44,7 +51,9 @@ export class UpdateGuestProfileHandler
         command.primaryEmail,
       );
       if (existing && existing.getId()?.toString() !== command.guestId) {
-        throw new ConflictException('A guest with this primary email already exists');
+        throw new ConflictException(
+          'A guest with this primary email already exists',
+        );
       }
       guest.setPrimaryEmail(command.primaryEmail);
     }
