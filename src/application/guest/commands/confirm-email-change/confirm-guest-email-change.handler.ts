@@ -1,9 +1,5 @@
-import * as crypto from 'crypto';
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-} from '@nestjs/common';
+import * as crypto from 'node:crypto';
+import { BadRequestException, ConflictException, Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   GUEST_REPOSITORY,
@@ -12,9 +8,7 @@ import {
 import { ConfirmGuestEmailChangeCommand } from './confirm-guest-email-change.command';
 
 @CommandHandler(ConfirmGuestEmailChangeCommand)
-export class ConfirmGuestEmailChangeHandler
-  implements ICommandHandler<ConfirmGuestEmailChangeCommand>
-{
+export class ConfirmGuestEmailChangeHandler implements ICommandHandler<ConfirmGuestEmailChangeCommand> {
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
@@ -28,7 +22,7 @@ export class ConfirmGuestEmailChangeHandler
 
     const guest = await this.guestRepository.findByEmailChangeToken(hashed);
 
-    if (!guest || !guest.isEmailChangeTokenValid(new Date())) {
+    if (!guest?.isEmailChangeTokenValid(new Date())) {
       throw new BadRequestException('Invalid or expired email change token');
     }
 
@@ -37,7 +31,10 @@ export class ConfirmGuestEmailChangeHandler
       guest.getTenantId(),
       pending,
     );
-    if (existing && existing.getId()?.toString() !== guest.getId()?.toString()) {
+    if (
+      existing &&
+      existing.getId()?.toString() !== guest.getId()?.toString()
+    ) {
       guest.clearEmailChange();
       await this.guestRepository.save(guest);
       throw new ConflictException(

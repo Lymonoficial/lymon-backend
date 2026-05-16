@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import {
   ConflictException,
   ForbiddenException,
@@ -80,7 +80,10 @@ export class UpdateGuestProfileHandler implements ICommandHandler<UpdateGuestPro
       const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
       guest.initEmailChange(command.primaryEmail, hashed, expiry);
       await this.guestRepository.save(guest);
-      await this.emailService.sendVerificationEmail(command.primaryEmail, plain);
+      await this.emailService.sendVerificationEmail(
+        command.primaryEmail,
+        plain,
+      );
       return;
     }
 
