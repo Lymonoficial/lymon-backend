@@ -26,6 +26,7 @@ export class PublicUnitDto {
     public readonly pricePerNight: number,
     public readonly tenantId: string,
     public readonly propertyId: string,
+    public readonly rating: number | null,
   ) {}
 }
 

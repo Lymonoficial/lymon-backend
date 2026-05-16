@@ -7,7 +7,6 @@ import {
   CartStatusEnum,
 } from '@/domain/cart/value-objects/cart-status.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 
 export const CART_FIXTURE_DEFAULTS = {
@@ -22,7 +21,6 @@ export const CART_FIXTURE_DEFAULTS = {
 export function makeCart(
   overrides?: Partial<{
     id: string;
-    tenantId: string;
     guestAccountId: string;
     status: CartStatusEnum;
     experienceItems: CartItem[];
@@ -34,7 +32,6 @@ export function makeCart(
   const merged = { ...CART_FIXTURE_DEFAULTS, ...overrides };
   return Cart.reconstitute({
     id: CartId.createFromString(merged.id),
-    tenantId: TenantId.createFromString(merged.tenantId),
     guestAccountId: GuestAccountId.createFromString(merged.guestAccountId),
     experienceItems: merged.experienceItems ?? [],
     reservationItem: merged.reservationItem ?? null,
@@ -46,6 +43,7 @@ export function makeCart(
 
 export function makeCartItem(
   overrides?: Partial<{
+    tenantId: string;
     tenantId: string;
     experienceId: string;
     experienceName: string;

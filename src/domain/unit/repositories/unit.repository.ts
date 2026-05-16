@@ -28,5 +28,7 @@ export interface UnitRepository {
     limit: number,
     minGuests?: number,
     propertyId?: string,
+    sortByPrice?: 'asc' | 'desc',
   ): Promise<{ units: Unit[]; total: number }>;
+  findByChannexRoomTypeId(roomTypeId: string): Promise<Unit | null>;
 }

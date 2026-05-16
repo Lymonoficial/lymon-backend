@@ -4,6 +4,7 @@ import { GetAllPublicUnitsQuery } from './get-all-public-units.query';
 import { GetAllPublicUnitsResult } from './get-all-public-units.result';
 import { UNIT_REPOSITORY } from '@/domain/unit/repositories/unit.repository';
 import type { UnitRepository } from '@/domain/unit/repositories/unit.repository';
+import { Unit } from '@/domain/unit/entities/unit.entity';
 import { mapUnitToPublicDto } from '@/application/reservation/queries/shared/unit.mapper';
 import {
   RESERVATION_REPOSITORY,
@@ -30,7 +31,7 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
     // Si hay fechas, necesitamos filtrar por disponibilidad
     if (query.startDate && query.endDate) {
       const dateRange = DateRange.create(query.startDate, query.endDate);
-      
+
       // Obtenemos todas las unidades candidatas (sin paginar en DB para poder filtrar luego)
       const { units } = await this.unitRepository.findAllPaginated(
         1,
@@ -39,12 +40,13 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
         query.propertyId,
       );
 
-      const availableUnits: any[] = [];
+      const availableUnits: Unit[] = [];
       for (const unit of units) {
-        const reservations = await this.reservationRepository.findByUnitAndDateRange(
-          unit.getId()!,
-          dateRange,
-        );
+        const reservations =
+          await this.reservationRepository.findByUnitAndDateRange(
+            unit.getId()!,
+            dateRange,
+          );
 
         const isAvailable = AvailabilityChecker.isAvailable(
           dateRange,
@@ -55,6 +57,14 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
         if (isAvailable) {
           availableUnits.push(unit);
         }
+      }
+
+      if (query.sortByPrice) {
+        availableUnits.sort((a, b) =>
+          query.sortByPrice === 'asc'
+            ? a.getPricePerNight() - b.getPricePerNight()
+            : b.getPricePerNight() - a.getPricePerNight(),
+        );
       }
 
       const total = availableUnits.length;
@@ -71,6 +81,7 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
       query.limit,
       query.minGuests,
       query.propertyId,
+      query.sortByPrice,
     );
     const dtos = units.map(mapUnitToPublicDto);
 

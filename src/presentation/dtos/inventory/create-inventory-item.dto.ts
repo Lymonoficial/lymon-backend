@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsMongoId, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateInventoryItemDto {
   @ApiProperty({ example: 'SOAP-001' })
@@ -12,10 +12,11 @@ export class CreateInventoryItemDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: 'TOILETRIES' })
+  @ApiProperty({ example: '6650a1b2c3d4e5f6a7b8c9d0' })
   @IsString()
   @IsNotEmpty()
-  category: string;
+  @IsMongoId()
+  categoryId: string;
 
   @ApiProperty({ example: 'piece' })
   @IsString()

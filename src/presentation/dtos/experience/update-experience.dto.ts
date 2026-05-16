@@ -157,4 +157,14 @@ export class UpdateExperienceDto {
   @IsBoolean()
   @IsOptional()
   allowReservationPurchase?: boolean;
+
+  @ApiPropertyOptional({
+    example: ['tenantId/1234-photo.jpg'],
+    description: 'R2 object keys for uploaded media files',
+    type: [String],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  mediaKeys?: string[];
 }

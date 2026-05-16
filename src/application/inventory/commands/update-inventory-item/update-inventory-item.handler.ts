@@ -13,6 +13,11 @@ import {
   PROPERTY_REPOSITORY,
   type PropertyRepository,
 } from '@/domain/property/repositories/property.repository';
+import {
+  INVENTORY_ITEM_CATEGORY_REPOSITORY,
+  type InventoryItemCategoryRepository,
+} from '@/domain/inventory/repositories/inventory-item-category.repository';
+import { InventoryItemCategoryId } from '@/domain/inventory/value-objects/inventory-item-category-id.vo';
 
 @CommandHandler(UpdateInventoryItemCommand)
 export class UpdateInventoryItemHandler implements ICommandHandler<
@@ -24,6 +29,8 @@ export class UpdateInventoryItemHandler implements ICommandHandler<
     private readonly inventoryItemRepository: InventoryItemRepository,
     @Inject(PROPERTY_REPOSITORY)
     private readonly propertyRepository: PropertyRepository,
+    @Inject(INVENTORY_ITEM_CATEGORY_REPOSITORY)
+    private readonly categoryRepository: InventoryItemCategoryRepository,
   ) {}
 
   async execute(
@@ -31,12 +38,13 @@ export class UpdateInventoryItemHandler implements ICommandHandler<
   ): Promise<UpdateInventoryItemResult> {
     if (
       command.name === undefined &&
-      command.category === undefined &&
+      command.categoryId === undefined &&
       command.unit === undefined &&
-      command.minStock === undefined
+      command.minStock === undefined &&
+      command.currentStock === undefined
     ) {
       throw new BadRequestException(
-        'At least one field is required: name, category, unit or minStock',
+        'At least one field is required: name, categoryId, unit or minStock',
       );
     }
 
@@ -67,11 +75,22 @@ export class UpdateInventoryItemHandler implements ICommandHandler<
       throw new NotFoundException('Inventory item not found');
     }
 
+    let categoryId: InventoryItemCategoryId | undefined;
+    if (command.categoryId !== undefined) {
+      const rawId = InventoryItemCategoryId.create(command.categoryId);
+      const category = await this.categoryRepository.findById(rawId);
+      if (category?.getTenantId().toString() !== tenantId.toString()) {
+        throw new NotFoundException('Inventory item category not found');
+      }
+      categoryId = rawId;
+    }
+
     item.update({
       name: command.name,
-      category: command.category,
+      categoryId,
       unit: command.unit,
       minStock: command.minStock,
+      currentStock: command.currentStock,
     });
 
     const savedItemId = await this.inventoryItemRepository.save(item);

@@ -1,5 +1,4 @@
 import { Unit } from '@/domain/unit/entities/unit.entity';
-import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 
@@ -37,7 +36,10 @@ export function makeUnit(
     propertyId: PropertyId.create(merged.propertyId),
     basicInfo: { name: merged.name, description: merged.description },
     inventoryConfig: { inventoryCount: merged.inventoryCount },
-    capacityConfig: { maxGuests: merged.maxGuests, standardGuests: merged.standardGuests },
+    capacityConfig: {
+      maxGuests: merged.maxGuests,
+      standardGuests: merged.standardGuests,
+    },
     physicalFeatures: {
       bedrooms: merged.bedrooms,
       bathroomsCount: merged.bathroomsCount,

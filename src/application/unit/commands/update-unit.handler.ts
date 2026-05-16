@@ -101,6 +101,10 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       unit.updateAmenities(command.amenities);
     }
 
+    if (command.mediaKeys !== undefined) {
+      unit.updateMediaKeys(command.mediaKeys);
+    }
+
     if (command.pricePerNight !== undefined) {
       unit.updatePrice(command.pricePerNight);
     }
@@ -181,6 +185,7 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       command.bathroomsCount !== undefined ||
       command.isShared !== undefined ||
       command.amenities !== undefined ||
+      command.mediaKeys !== undefined ||
       command.pricePerNight !== undefined ||
       command.externalIds !== undefined;
 
@@ -206,6 +211,7 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       changedFields.push('bathroomsCount');
     if (command.isShared !== undefined) changedFields.push('isShared');
     if (command.amenities !== undefined) changedFields.push('amenities');
+    if (command.mediaKeys !== undefined) changedFields.push('mediaKeys');
     if (command.pricePerNight !== undefined)
       changedFields.push('pricePerNight');
     if (command.externalIds !== undefined) changedFields.push('externalIds');

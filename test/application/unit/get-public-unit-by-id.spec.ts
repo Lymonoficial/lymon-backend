@@ -5,50 +5,11 @@ import { GetPublicUnitByIdQueryHandler } from '@/application/unit/queries/GetPub
 import { GetPublicUnitByIdQuery } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.query';
 import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.result';
 import type { UnitRepository } from '@/domain/unit/repositories/unit.repository';
-import { Unit } from '@/domain/unit/entities/unit.entity';
-import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
-import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
+import { makeUnit, UNIT_FIXTURE_DEFAULTS } from '@test/shared/fixtures/unit.fixture';
 import { UnitController } from '@/presentation/controllers/unit.controller';
 
-const UNIT_ID = '65f1a1a2b3c4d5e6f7a8b9c8';
-const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
-const PROPERTY_ID = '65f1a1a2b3c4d5e6f7a8b9c1';
-
-function makeUnit(overrides?: Partial<{ id: string }>): Unit {
-  return Unit.reconstitute({
-    id: UnitId.create(overrides?.id ?? UNIT_ID),
-    tenantId: TenantId.createFromString(TENANT_ID),
-    propertyId: PropertyId.create(PROPERTY_ID),
-    basicInfo: {
-      name: 'Unit Name',
-      description: 'Unit Description',
-    },
-    inventoryConfig: {
-      inventoryCount: 1,
-    },
-    capacityConfig: {
-      maxGuests: 4,
-      standardGuests: 2,
-    },
-    physicalFeatures: {
-      bedrooms: [],
-      bathroomsCount: 1,
-      isShared: false,
-    },
-    pricingConfig: {
-      pricePerNight: 100,
-    },
-    amenities: ['wifi'],
-    externalIds: ExternalIds.create('ext-airbnb', 'ext-booking', 'ext-vrbo'),
-    timestamps: {
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
-}
+const UNIT_ID = UNIT_FIXTURE_DEFAULTS.id;
 
 describe('GetPublicUnitById', () => {
   let handler: GetPublicUnitByIdQueryHandler;
@@ -108,7 +69,6 @@ describe('GetPublicUnitById', () => {
       const result = await handler.execute(query);
 
       expect(result.unit).not.toHaveProperty('externalIds');
-
       expect(result.unit.name).toBe(unit.getName());
     });
   });

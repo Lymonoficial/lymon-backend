@@ -73,3 +73,7 @@ docs/user-stories.feature
 .sonarlint/
 
 .agents
+
+#Claude
+/.claude
+CLAUDE.md

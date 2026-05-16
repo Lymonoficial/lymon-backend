@@ -14,6 +14,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ReservationInfrastructureModule } from '@/infrastructure/reservation/reservation-infrastructure.module';
 import { InventoryInfrastructureModule } from '@/infrastructure/inventory/inventory-infrastructure.module';
 import { GuestPreferenceInfrastructureModule } from '@/infrastructure/guest-preference/guest-preference-infrastructure.module';
+import { ChannexInfrastructureModule } from '@/infrastructure/channex/channex-infrastructure.module';
 import { PaymentModule } from '@/infrastructure/payment/payment.module';
 
 @Module({
@@ -38,6 +39,7 @@ import { PaymentModule } from '@/infrastructure/payment/payment.module';
     InventoryInfrastructureModule,
     GuestPreferenceInfrastructureModule,
     PaymentModule,
+    ChannexInfrastructureModule,
   ],
   controllers: [AppController],
   providers: [

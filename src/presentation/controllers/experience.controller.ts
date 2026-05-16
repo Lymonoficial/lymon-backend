@@ -288,6 +288,7 @@ export class ExperienceController {
           endAt: new Date(r.endAt),
         })),
       }),
+      ...(dto.mediaKeys !== undefined && { mediaKeys: dto.mediaKeys }),
     };
 
     const actor: ExperienceActor = { id: user.userId, email: user.email };

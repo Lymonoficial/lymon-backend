@@ -36,8 +36,11 @@ export class MongoUnitRepository implements UnitRepository {
       bathroomsCount: unit.getBathroomsCount(),
       isShared: unit.getIsShared(),
       amenities: unit.getAmenities(),
+      mediaKeys: unit.getMediaKeys(),
       pricePerNight: unit.getPricePerNight(),
       externalIds: unit.getExternalIds().toObject(),
+      channexRoomTypeId: unit.getChannexRoomTypeId() ?? undefined,
+      rating: unit.getRating(),
       updatedAt: unit.getUpdatedAt(),
     };
 
@@ -127,6 +130,7 @@ export class MongoUnitRepository implements UnitRepository {
     limit: number,
     minGuests?: number,
     propertyId?: string,
+    sortByPrice?: 'asc' | 'desc',
   ): Promise<{ units: Unit[]; total: number }> {
     const filter: any = { deletedAt: null };
     if (minGuests !== undefined) {
@@ -136,9 +140,12 @@ export class MongoUnitRepository implements UnitRepository {
       filter.propertyId = new Types.ObjectId(propertyId);
     }
     const total = await this.unitModel.countDocuments(filter);
+    const sortOrder: Record<string, 1 | -1> = sortByPrice
+      ? { pricePerNight: sortByPrice === 'asc' ? 1 : -1 }
+      : { createdAt: -1 };
     const documents = await this.unitModel
       .find(filter)
-      .sort({ createdAt: -1 })
+      .sort(sortOrder)
       .skip((page - 1) * limit)
       .limit(limit);
     return {
@@ -186,15 +193,27 @@ export class MongoUnitRepository implements UnitRepository {
         pricePerNight: document.pricePerNight,
       },
       amenities: document.amenities,
+      mediaKeys: document.mediaKeys ?? [],
       externalIds: ExternalIds.create(
         document.externalIds?.airbnbId,
         document.externalIds?.bookingId,
         document.externalIds?.vrboId,
       ),
+      rating: document.rating ?? null,
       timestamps: {
         createdAt: document.createdAt,
         updatedAt: document.updatedAt,
       },
+      channexRoomTypeId: document.channexRoomTypeId ?? null,
     });
+  }
+
+  async findByChannexRoomTypeId(roomTypeId: string): Promise<Unit | null> {
+    const document = await this.unitModel.findOne({
+      channexRoomTypeId: roomTypeId,
+      deletedAt: null,
+    });
+    if (!document) return null;
+    return this.toDomain(document);
   }
 }

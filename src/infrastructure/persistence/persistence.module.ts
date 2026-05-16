@@ -101,6 +101,12 @@ import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
 import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
 import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
 import {
+  InventoryItemCategoryDocument,
+  InventoryItemCategorySchema,
+} from '@/infrastructure/persistence/schemas/inventory-item-category.schema';
+import { INVENTORY_ITEM_CATEGORY_REPOSITORY } from '@/domain/inventory/repositories/inventory-item-category.repository';
+import { MongoInventoryItemCategoryRepository } from '@/infrastructure/persistence/repositories/mongo-inventory-item-category.repository';
+import {
   GuestPreferenceCatalogItemDocument,
   GuestPreferenceCatalogItemSchema,
 } from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
@@ -131,6 +137,12 @@ import {
 import { GUEST_TAG_REPOSITORY } from '@/domain/guest-tag/repositories/guest-tag.repository';
 import { MongoGuestTagRepository } from '@/infrastructure/persistence/repositories/mongo-guest-tag.repository';
 import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-tag-seed.service';
+import {
+  UnitRatingDocument,
+  UnitRatingSchema,
+} from '@/infrastructure/persistence/schemas/unit-rating.schema';
+import { UNIT_RATING_REPOSITORY } from '@/domain/unit-rating/repositories/unit-rating.repository';
+import { MongoUnitRatingRepository } from '@/infrastructure/persistence/repositories/mongo-unit-rating.repository';
 
 @Module({
   imports: [
@@ -152,6 +164,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
         schema: InventoryMovementSchema,
       },
       { name: SupplierDocument.name, schema: SupplierSchema },
+      {
+        name: InventoryItemCategoryDocument.name,
+        schema: InventoryItemCategorySchema,
+      },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
@@ -166,6 +182,7 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
         schema: ExperiencePurchaseSchema,
       },
       { name: GuestTagDocument.name, schema: GuestTagSchema },
+      { name: UnitRatingDocument.name, schema: UnitRatingSchema },
     ]),
   ],
   providers: [
@@ -234,6 +251,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       useClass: MongoSupplierRepository,
     },
     {
+      provide: INVENTORY_ITEM_CATEGORY_REPOSITORY,
+      useClass: MongoInventoryItemCategoryRepository,
+    },
+    {
       provide: GUEST_NOTE_REPOSITORY,
       useClass: MongoGuestNoteRepository,
     },
@@ -267,6 +288,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       useClass: MongoGuestTagRepository,
     },
     GuestTagSeedService,
+    {
+      provide: UNIT_RATING_REPOSITORY,
+      useClass: MongoUnitRatingRepository,
+    },
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -284,6 +309,7 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
     INVENTORY_ITEM_REPOSITORY,
     INVENTORY_MOVEMENT_REPOSITORY,
     SUPPLIER_REPOSITORY,
+    INVENTORY_ITEM_CATEGORY_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
@@ -293,6 +319,7 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
     EXPERIENCE_PURCHASE_REPOSITORY,
     CART_REPOSITORY,
     GUEST_TAG_REPOSITORY,
+    UNIT_RATING_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

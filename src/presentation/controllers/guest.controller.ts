@@ -10,6 +10,7 @@ import type { GetGuestByIdResult } from '@/application/guest/queries/get-guest-b
 import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
+import { UpdateGuestProfileCommand } from '@/application/guest/commands/update-guest-profile/update-guest-profile.command';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
@@ -23,6 +24,7 @@ import { ChangePasswordDto } from '@/presentation/dtos/auth/change-password.dto'
 import { CreateGuestDto } from '@/presentation/dtos/guest/create-guest.dto';
 import { UpdateTagsDto } from '@/presentation/dtos/guest/update-tags.dto';
 import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
+import { UpdateGuestProfileDto } from '@/presentation/dtos/guest/update-guest-profile.dto';
 import {
   Body,
   Controller,
@@ -183,6 +185,35 @@ export class GuestController {
       message: 'Guest profile retrieved successfully',
       data: result.item,
     };
+  }
+
+  @Patch(':guestId')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Update profile fields of a specific guest' })
+  @ApiResponse({ status: 200, description: 'Guest profile updated successfully' })
+  @ApiResponse({ status: 404, description: 'Guest not found' })
+  @ApiResponse({ status: 409, description: 'A guest with this primary email already exists' })
+  async updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Param('guestId') guestId: string,
+    @Body() dto: UpdateGuestProfileDto,
+  ) {
+    await this.commandBus.execute(
+      new UpdateGuestProfileCommand(
+        user.tenantId,
+        guestId,
+        dto.fullName,
+        dto.firstName,
+        dto.lastName,
+        dto.primaryEmail,
+        dto.emails,
+        dto.phones,
+        dto.identity,
+      ),
+    );
+
+    return { message: 'Guest profile updated successfully' };
   }
 
   @Patch(':guestId/tags')

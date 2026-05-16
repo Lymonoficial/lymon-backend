@@ -50,6 +50,7 @@ describe('SetCartReservationHandler', () => {
 
     const cart = makeCart();
     cartRepository.findOpenByGuest.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
     cartRepository.save.mockResolvedValue(cart.getId()!.toString());
 
     await handler.execute(command);
@@ -70,6 +71,7 @@ describe('SetCartReservationHandler', () => {
     unitRepository.findById.mockResolvedValue(unit);
     reservationRepository.findByUnitAndDateRange.mockResolvedValue([]);
 
+    cartRepository.findOpenByGuest.mockResolvedValue(null);
     cartRepository.findOpenByGuest.mockResolvedValue(null);
     cartRepository.save.mockResolvedValue('new-cart-id');
 
