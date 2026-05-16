@@ -37,6 +37,9 @@ import { ExperienceApplicationModule } from '@/application/experience/experience
 import { GuestTagApplicationModule } from '@/application/guest-tag/guest-tag-application.module';
 import { StorageApplicationModule } from '@/application/storage/storage-application.module';
 import { UnitRatingApplicationModule } from '@/application/unit-rating/unit-rating-application.module';
+import { CartApplicationModule } from '@/application/cart/cart-application.module';
+import { ProcessWompiWebhookHandler } from '@/application/payment/commands/process-wompi-webhook/process-wompi-webhook.handler';
+import { GetPaymentSessionStatusHandler } from '@/application/payment/queries/get-payment-session-status/get-payment-session-status.handler';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -53,6 +56,8 @@ const CommandHandlers = [
   RemoveAllRolesHandler,
   RemoveRoleHandler,
   DeleteShiftCommandHandler,
+  ProcessWompiWebhookHandler,
+  GetPaymentSessionStatusHandler,
 ];
 
 const QueryHandlers = [GetShiftsHandler];
@@ -81,6 +86,7 @@ const QueryHandlers = [GetShiftsHandler];
     GuestTagApplicationModule,
     StorageApplicationModule,
     UnitRatingApplicationModule,
+    CartApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [

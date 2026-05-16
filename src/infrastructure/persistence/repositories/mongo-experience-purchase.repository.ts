@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { ClientSession, Model, Types } from 'mongoose';
 import type { ExperiencePurchaseRepository } from '@/domain/experience-purchase/repositories/experience-purchase.repository';
 import { ExperiencePurchase } from '@/domain/experience-purchase/entities/experience-purchase.entity';
 import { ExperiencePurchaseId } from '@/domain/experience-purchase/value-objects/experience-purchase-id.vo';
@@ -12,17 +12,19 @@ import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-accou
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperiencePurchaseDocument } from '../schemas/experience-purchase.schema';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
 @Injectable()
-export class MongoExperiencePurchaseRepository
-  implements ExperiencePurchaseRepository
-{
+export class MongoExperiencePurchaseRepository implements ExperiencePurchaseRepository {
   constructor(
     @InjectModel(ExperiencePurchaseDocument.name)
     private readonly purchaseModel: Model<ExperiencePurchaseDocument>,
   ) {}
 
-  async save(purchase: ExperiencePurchase): Promise<string> {
+  async save(
+    purchase: ExperiencePurchase,
+    ctx?: TransactionContextData,
+  ): Promise<string> {
     const id = purchase.getId()?.toString();
     const doc = {
       tenantId: new Types.ObjectId(purchase.getTenantId().toString()),
@@ -41,17 +43,28 @@ export class MongoExperiencePurchaseRepository
       paymentReference: purchase.getPaymentReference() ?? null,
     };
 
+    const options = ctx ? { session: ctx as ClientSession } : undefined;
+
     if (id) {
-      await this.purchaseModel.findByIdAndUpdate(id, doc);
+      await this.purchaseModel.findByIdAndUpdate(id, doc, options);
       return id;
     }
-    const created = await this.purchaseModel.create(doc);
-    return created._id.toString();
+
+    const created = await this.purchaseModel.create(
+      [
+        {
+          ...doc,
+          createdAt: purchase.getCreatedAt(),
+          updatedAt: purchase.getUpdatedAt(),
+        },
+      ],
+      options,
+    );
+
+    return created[0]._id.toString();
   }
 
-  async findById(
-    id: ExperiencePurchaseId,
-  ): Promise<ExperiencePurchase | null> {
+  async findById(id: ExperiencePurchaseId): Promise<ExperiencePurchase | null> {
     const doc = await this.purchaseModel.findById(id.toString());
     return doc ? this.toDomainEntity(doc) : null;
   }
