@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import {
   ConflictException,
   ForbiddenException,
@@ -11,6 +12,10 @@ import {
   GUEST_REPOSITORY,
   type GuestRepository,
 } from '@/domain/guest/repositories/guest.repository';
+import {
+  EMAIL_SERVICE,
+  type IEmailService,
+} from '@/application/shared/services/email.service';
 import { UpdateGuestProfileCommand } from './update-guest-profile.command';
 
 @CommandHandler(UpdateGuestProfileCommand)
@@ -18,6 +23,8 @@ export class UpdateGuestProfileHandler implements ICommandHandler<UpdateGuestPro
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
+    @Inject(EMAIL_SERVICE)
+    private readonly emailService: IEmailService,
   ) {}
 
   async execute(command: UpdateGuestProfileCommand): Promise<void> {
@@ -44,6 +51,18 @@ export class UpdateGuestProfileHandler implements ICommandHandler<UpdateGuestPro
       );
     }
 
+    if (command.emails !== undefined) {
+      guest.setEmails(command.emails);
+    }
+
+    if (command.phones !== undefined) {
+      guest.setPhones(command.phones);
+    }
+
+    if (command.identity !== undefined) {
+      guest.setIdentity(command.identity);
+    }
+
     if (command.primaryEmail !== undefined) {
       const tenantId = TenantId.createFromString(command.tenantId);
       const existing = await this.guestRepository.findByPrimaryEmail(
@@ -55,19 +74,14 @@ export class UpdateGuestProfileHandler implements ICommandHandler<UpdateGuestPro
           'A guest with this primary email already exists',
         );
       }
-      guest.setPrimaryEmail(command.primaryEmail);
-    }
 
-    if (command.emails !== undefined) {
-      guest.setEmails(command.emails);
-    }
-
-    if (command.phones !== undefined) {
-      guest.setPhones(command.phones);
-    }
-
-    if (command.identity !== undefined) {
-      guest.setIdentity(command.identity);
+      const plain = crypto.randomBytes(32).toString('hex');
+      const hashed = crypto.createHash('sha256').update(plain).digest('hex');
+      const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      guest.initEmailChange(command.primaryEmail, hashed, expiry);
+      await this.guestRepository.save(guest);
+      await this.emailService.sendVerificationEmail(command.primaryEmail, plain);
+      return;
     }
 
     await this.guestRepository.save(guest);
