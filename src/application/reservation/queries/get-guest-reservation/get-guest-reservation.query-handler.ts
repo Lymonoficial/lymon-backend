@@ -1,7 +1,10 @@
 import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetGuestReservationQuery } from './get-guest-reservation.query';
-import { GuestReservationDetailResult } from './get-guest-reservation.result';
+import {
+  GuestReservationDetailResult,
+  RefundPolicyInfo,
+} from './get-guest-reservation.result';
 import {
   RESERVATION_REPOSITORY,
   type ReservationRepository,
@@ -18,8 +21,13 @@ import {
   UNIT_REPOSITORY,
   type UnitRepository,
 } from '@/domain/unit/repositories/unit.repository';
+import {
+  REFUND_REQUEST_REPOSITORY,
+  type RefundRequestRepository,
+} from '@/domain/refund/repositories/refund-request.repository';
 import { ReservationId } from '@/domain/reservation/value-objects/reservation-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
+import { CancellationRefundService } from '@/domain/reservation/services/cancellation-refund.service';
 
 @QueryHandler(GetGuestReservationQuery)
 export class GetGuestReservationHandler implements IQueryHandler<
@@ -35,6 +43,8 @@ export class GetGuestReservationHandler implements IQueryHandler<
     private readonly propertyRepository: PropertyRepository,
     @Inject(UNIT_REPOSITORY)
     private readonly unitRepository: UnitRepository,
+    @Inject(REFUND_REQUEST_REPOSITORY)
+    private readonly refundRequestRepository: RefundRequestRepository,
   ) {}
 
   async execute(
@@ -77,6 +87,8 @@ export class GetGuestReservationHandler implements IQueryHandler<
     const nights = reservation.getDateRange().nights();
     const totalPrice = reservation.getTotalPrice();
 
+    const refundPolicy = await this.buildRefundPolicy(reservation);
+
     return {
       id: reservation.getId()!.toString(),
       bookingReference: reservation.getId()!.toString(),
@@ -101,12 +113,57 @@ export class GetGuestReservationHandler implements IQueryHandler<
         nights,
         totalPrice,
       },
+      refundPolicy,
       actions: {
         contactSupport: {
           enabled: true,
           channel: 'email',
         },
       },
+    };
+  }
+
+  private async buildRefundPolicy(
+    reservation: { getStatus: () => { toString: () => string }; getDateRange: () => { getCheckIn: () => Date }; getTotalPrice: () => number; getId: () => { toString: () => string } | null },
+  ): Promise<RefundPolicyInfo> {
+    const status = reservation.getStatus().toString();
+    const checkIn = reservation.getDateRange().getCheckIn();
+    const now = new Date();
+
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const checkInNormalized = new Date(
+      checkIn.getFullYear(),
+      checkIn.getMonth(),
+      checkIn.getDate(),
+    );
+    const todayNormalized = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const daysBeforeCheckIn = Math.floor(
+      (checkInNormalized.getTime() - todayNormalized.getTime()) / msPerDay,
+    );
+
+    const eligible = status === 'CONFIRMED';
+    const refundAmount = eligible
+      ? CancellationRefundService.calculate(checkIn, now, reservation.getTotalPrice())
+      : 0;
+
+    let refundRequestId: string | null = null;
+    if (status === 'CANCELLED' || (eligible && refundAmount > 0)) {
+      const existing = await this.refundRequestRepository.findByReservationId(
+        reservation.getId()?.toString() ?? '',
+      );
+      refundRequestId = existing?.getId()?.toString() ?? null;
+    }
+
+    return {
+      eligible,
+      refundAmount,
+      policy: 'STANDARD',
+      daysBeforeCheckIn: Math.max(0, daysBeforeCheckIn),
+      refundRequestId,
     };
   }
 }

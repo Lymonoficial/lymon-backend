@@ -1,11 +1,15 @@
 import {
+  Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -23,6 +27,8 @@ import { GuestReservationDetailResult } from '@/application/reservation/queries/
 import { GetGuestReservationsQuery } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query';
 import { GetGuestReservationsResult } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.result';
 import { GetUnitOccupancyQuery } from '@/application/reservation/queries/get-unit-occupancy/get-unit-occupancy.query';
+import { CancelGuestReservationCommand } from '@/application/reservation/commands/cancel-guest-reservation/cancel-guest-reservation.command';
+import type { CancelGuestReservationResult } from '@/application/reservation/commands/cancel-guest-reservation/cancel-guest-reservation.handler';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 @ApiTags('guest-reservations')
@@ -31,7 +37,10 @@ import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reserv
 @UseGuards(GuestJwtAuthGuard)
 @Controller('guest/reservations')
 export class GuestReservationController {
-  constructor(private readonly queryBus: QueryBus) {}
+  constructor(
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List authenticated guest bookings' })
@@ -161,6 +170,28 @@ export class GuestReservationController {
       GetGuestReservationQuery,
       GuestReservationDetailResult
     >(new GetGuestReservationQuery(id, guest.guestAccountId));
+  }
+
+  @Post(':id/cancel')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Cancel a guest reservation' })
+  @ApiResponse({ status: 200, description: 'Reservation cancelled' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Reservation not found' })
+  async cancel(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+  ): Promise<{ message: string; data: CancelGuestReservationResult }> {
+    const result = await this.commandBus.execute<
+      CancelGuestReservationCommand,
+      CancelGuestReservationResult
+    >(new CancelGuestReservationCommand(id, guest.guestAccountId, reason ?? null));
+
+    return {
+      message: 'Reservation cancelled successfully',
+      data: result,
+    };
   }
 
   private parseStatuses(status?: string): ReservationStatusEnum[] | undefined {
