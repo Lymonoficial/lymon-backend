@@ -119,6 +119,7 @@ export class InventoryController {
         dto.categoryId,
         dto.unit,
         dto.minStock,
+        dto.currentStock,
         user.userId,
         user.email,
       ),
@@ -182,6 +183,12 @@ export class InventoryController {
     type: Number,
     description: 'Items per page (default: 10)',
   })
+  @ApiQuery({
+    name: 'supplierId',
+    required: false,
+    type: String,
+    description: 'Filter by supplier ID',
+  })
   @ApiResponse({
     status: 200,
     description: 'Inventory items retrieved successfully',
@@ -191,6 +198,7 @@ export class InventoryController {
     @Param('propertyId') propertyId: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('supplierId') supplierId?: string,
   ) {
     const result: GetInventoryItemsByPropertyResult =
       await this.queryBus.execute<
@@ -202,6 +210,7 @@ export class InventoryController {
           propertyId,
           page,
           limit,
+          supplierId,
         ),
       );
 
