@@ -30,6 +30,9 @@ export class Guest {
     private summary: GuestSummary,
     private readonly createdAt: Date,
     private updatedAt: Date,
+    private pendingEmail: string | null,
+    private emailChangeToken: string | null,
+    private emailChangeExpiry: Date | null,
   ) {}
 
   static create(params: CreateGuestParams): Guest {
@@ -66,6 +69,9 @@ export class Guest {
       },
       new Date(),
       new Date(),
+      null,
+      null,
+      null,
     );
   }
 
@@ -87,6 +93,9 @@ export class Guest {
       data.summary,
       data.createdAt,
       data.updatedAt,
+      data.pendingEmail ?? null,
+      data.emailChangeToken ?? null,
+      data.emailChangeExpiry ?? null,
     );
   }
 
@@ -157,6 +166,48 @@ export class Guest {
     }
 
     this.summary = summary;
+    this.touch();
+  }
+
+  initEmailChange(pendingEmail: string, hashedToken: string, expiry: Date): void {
+    this.pendingEmail = Guest.normalizeEmail(pendingEmail);
+    this.emailChangeToken = hashedToken;
+    this.emailChangeExpiry = expiry;
+    this.touch();
+  }
+
+  getPendingEmail(): string | null {
+    return this.pendingEmail;
+  }
+
+  getEmailChangeToken(): string | null {
+    return this.emailChangeToken;
+  }
+
+  getEmailChangeExpiry(): Date | null {
+    return this.emailChangeExpiry;
+  }
+
+  isEmailChangeTokenValid(now: Date): boolean {
+    return (
+      this.pendingEmail !== null &&
+      this.emailChangeExpiry !== null &&
+      this.emailChangeExpiry > now
+    );
+  }
+
+  confirmEmailChange(): void {
+    if (!this.pendingEmail) return;
+    this.setPrimaryEmail(this.pendingEmail);
+    this.pendingEmail = null;
+    this.emailChangeToken = null;
+    this.emailChangeExpiry = null;
+  }
+
+  clearEmailChange(): void {
+    this.pendingEmail = null;
+    this.emailChangeToken = null;
+    this.emailChangeExpiry = null;
     this.touch();
   }
 
