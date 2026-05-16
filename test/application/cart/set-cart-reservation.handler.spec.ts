@@ -52,7 +52,7 @@ describe('SetCartReservationHandler', () => {
     reservationRepository.findByGuestId.mockResolvedValue([]);
 
     const cart = makeCart();
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
     cartRepository.save.mockResolvedValue(cart.getId()!.toString());
 
     await handler.execute(command);
@@ -74,7 +74,7 @@ describe('SetCartReservationHandler', () => {
     reservationRepository.findById.mockResolvedValue(reservation);
     reservationRepository.findByGuestId.mockResolvedValue([]);
 
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(null);
+    cartRepository.findOpenByGuest.mockResolvedValue(null);
     cartRepository.save.mockResolvedValue('new-cart-id');
 
     await handler.execute(command);

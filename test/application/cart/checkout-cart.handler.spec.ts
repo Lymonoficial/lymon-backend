@@ -58,13 +58,13 @@ describe('CheckoutCartHandler', () => {
   });
 
   it('throws NotFoundException when no open cart exists', async () => {
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(null);
+    cartRepository.findOpenByGuest.mockResolvedValue(null);
 
     await expect(handler.execute(command)).rejects.toThrow(NotFoundException);
   });
 
   it('throws DomainException when cart is empty', async () => {
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(makeCart());
+    cartRepository.findOpenByGuest.mockResolvedValue(makeCart());
     const guest = makeGuest({ id: GUEST_ID });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);
 
@@ -74,7 +74,7 @@ describe('CheckoutCartHandler', () => {
   it('checks out cart with only experience items', async () => {
     const cartItem = makeCartItem({ quantity: 2 });
     const cart = makeCart({ experienceItems: [cartItem] });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     const guest = makeGuest({ id: GUEST_ID });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);
@@ -94,6 +94,7 @@ describe('CheckoutCartHandler', () => {
 
   it('pays reservation and creates purchases on full checkout', async () => {
     const reservationItem = CartReservationItem.create({
+      tenantId: TENANT_ID,
       reservationId: RESERVATION_ID,
       totalPriceCopSnapshot: 400000,
     });
@@ -102,7 +103,7 @@ describe('CheckoutCartHandler', () => {
       experienceItems: [cartItem],
       reservationItem,
     });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     const guest = makeGuest({ id: GUEST_ID });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);
@@ -131,7 +132,7 @@ describe('CheckoutCartHandler', () => {
     const experience = makeExperience();
     const cartItem = makeCartItem({ quantity: 10 });
     const cart = makeCart({ experienceItems: [cartItem] });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     const guest = makeGuest({ id: GUEST_ID });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);
@@ -146,11 +147,12 @@ describe('CheckoutCartHandler', () => {
 
   it('throws DomainException when reservation in cart is not PENDING', async () => {
     const reservationItem = CartReservationItem.create({
+      tenantId: TENANT_ID,
       reservationId: RESERVATION_ID,
       totalPriceCopSnapshot: 400000,
     });
     const cart = makeCart({ reservationItem, experienceItems: [] });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     const guest = makeGuest({ id: GUEST_ID });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);
@@ -167,11 +169,12 @@ describe('CheckoutCartHandler', () => {
 
   it('throws DomainException when overlapping reservation exists at same property', async () => {
     const reservationItem = CartReservationItem.create({
+      tenantId: TENANT_ID,
       reservationId: RESERVATION_ID,
       totalPriceCopSnapshot: 400000,
     });
     const cart = makeCart({ reservationItem, experienceItems: [] });
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(cart);
+    cartRepository.findOpenByGuest.mockResolvedValue(cart);
 
     const guest = makeGuest({ id: GUEST_ID });
     guestRepository.findByGuestAccountId.mockResolvedValue(guest);
