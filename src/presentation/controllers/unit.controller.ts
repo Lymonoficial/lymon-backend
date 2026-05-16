@@ -200,9 +200,11 @@ export class UnitController {
     @Query('endDate') endDate?: string,
     @Query('sortByPrice') sortByPrice?: string,
   ) {
-    const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
-    const start = startDate ? new Date(startDate) : undefined;
-    const end = endDate ? new Date(endDate) : undefined;
+    const { minGuestsNum, start, end } = this.parsePublicUnitFilters(
+      minGuests,
+      startDate,
+      endDate,
+    );
     const priceSortDir =
       sortByPrice === 'asc' || sortByPrice === 'desc' ? sortByPrice : undefined;
 
@@ -221,18 +223,7 @@ export class UnitController {
       GetAllPublicUnitsResult
     >(query);
 
-    return {
-      message: 'Units retrieved successfully',
-      data: {
-        units: result.units,
-        pagination: {
-          total: result.total,
-          page: result.page,
-          limit: result.limit,
-          totalPages: result.totalPages,
-        },
-      },
-    };
+    return this.buildPaginatedUnitsResponse(result);
   }
 
   @Public()
@@ -285,9 +276,11 @@ export class UnitController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
-    const start = startDate ? new Date(startDate) : undefined;
-    const end = endDate ? new Date(endDate) : undefined;
+    const { minGuestsNum, start, end } = this.parsePublicUnitFilters(
+      minGuests,
+      startDate,
+      endDate,
+    );
 
     const query = new GetPublicUnitsByTenantQuery(
       tenantId,
@@ -303,8 +296,37 @@ export class UnitController {
       GetPublicUnitsByTenantResult
     >(query);
 
+    return this.buildPaginatedUnitsResponse(result);
+  }
+
+  private parsePublicUnitFilters(
+    minGuests?: string,
+    startDate?: string,
+    endDate?: string,
+  ): {
+    minGuestsNum: number | undefined;
+    start: Date | undefined;
+    end: Date | undefined;
+  } {
     return {
-      message: 'Units retrieved successfully',
+      minGuestsNum: minGuests ? parseInt(minGuests, 10) : undefined,
+      start: startDate ? new Date(startDate) : undefined,
+      end: endDate ? new Date(endDate) : undefined,
+    };
+  }
+
+  private buildPaginatedUnitsResponse(
+    result: {
+      units: unknown[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    },
+    message = 'Units retrieved successfully',
+  ) {
+    return {
+      message,
       data: {
         units: result.units,
         pagination: {
