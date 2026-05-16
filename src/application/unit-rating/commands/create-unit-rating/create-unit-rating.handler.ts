@@ -20,7 +20,6 @@ import {
   type GuestRepository,
 } from '@/domain/guest/repositories/guest.repository';
 import { UnitRating } from '@/domain/unit-rating/entities/unit-rating.entity';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { ReservationId } from '@/domain/reservation/value-objects/reservation-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
@@ -53,7 +52,6 @@ export class CreateUnitRatingHandler
   async execute(
     command: CreateUnitRatingCommand,
   ): Promise<CreateUnitRatingResult> {
-    const tenantId = TenantId.createFromString(command.tenantId);
     const reservationId = ReservationId.create(command.reservationId);
 
     const reservation = await this.reservationRepository.findById(reservationId);
@@ -61,9 +59,7 @@ export class CreateUnitRatingHandler
       throw new NotFoundException('Reservation not found');
     }
 
-    if (!reservation.getTenantId().equals(tenantId)) {
-      throw new NotFoundException('Reservation not found');
-    }
+    const tenantId = reservation.getTenantId();
 
     if (
       reservation.getStatus().getValue() !== ReservationStatusEnum.CHECKED_OUT
@@ -125,7 +121,7 @@ export class CreateUnitRatingHandler
     this.eventEmitter.emit(
       AUDIT_LOG_EVENT,
       new AuditLoggedEvent(
-        command.tenantId,
+        tenantId.toString(),
         command.actorId,
         command.actorEmail,
         AuditAction.UNIT_RATING_CREATED,

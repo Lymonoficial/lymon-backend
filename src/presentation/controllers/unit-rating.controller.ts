@@ -50,7 +50,6 @@ export class UnitRatingController {
       new CreateUnitRatingCommand(
         guest.guestAccountId,
         guest.email,
-        dto.tenantId,
         dto.reservationId,
         dto.rate,
         dto.message ?? null,
