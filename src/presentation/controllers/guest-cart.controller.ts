@@ -21,6 +21,7 @@ import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-gue
 import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
 import { AddExperienceToCartDto } from '@/presentation/dtos/add-experience-to-cart.dto';
 import { SetCartReservationDto } from '@/presentation/dtos/set-cart-reservation.dto';
+import { CheckoutCartDto } from '@/presentation/dtos/checkout-cart.dto';
 import { AddExperienceToCartCommand } from '@/application/cart/commands/add-experience-to-cart/add-experience-to-cart.command';
 import { RemoveExperienceFromCartCommand } from '@/application/cart/commands/remove-experience-from-cart/remove-experience-from-cart.command';
 import { SetCartReservationCommand } from '@/application/cart/commands/set-cart-reservation/set-cart-reservation.command';
@@ -92,8 +93,8 @@ export class GuestCartController {
   }
 
   @Post('reservation')
-  @ApiOperation({ summary: 'Set a reservation in the cart for payment' })
-  @ApiResponse({ status: 201, description: 'Reservation added to cart' })
+  @ApiOperation({ summary: 'Set a reservation draft in the cart for payment' })
+  @ApiResponse({ status: 201, description: 'Reservation draft added to cart' })
   async setReservation(
     @CurrentGuest() guest: GuestJwtPayload,
     @Body() dto: SetCartReservationDto,
@@ -102,11 +103,17 @@ export class GuestCartController {
       new SetCartReservationCommand(
         guest.guestAccountId,
         dto.tenantId,
-        dto.reservationId,
+        dto.propertyId,
+        dto.unitId,
+        new Date(dto.checkIn),
+        new Date(dto.checkOut),
+        dto.guestsCount,
+        dto.pricePerNight,
+        dto.notes ?? null,
         guest.email,
       ),
     );
-    return { message: 'Reservation added to cart' };
+    return { message: 'Reservation draft added to cart' };
   }
 
   @Delete('reservation')
@@ -135,12 +142,31 @@ export class GuestCartController {
   })
   async checkout(
     @CurrentGuest() guest: GuestJwtPayload,
+    @Body() dto: CheckoutCartDto,
   ): Promise<PaymentCheckoutResponse> {
     return this.commandBus.execute(
       new CheckoutCartCommand(
         guest.guestAccountId,
         guest.guestAccountId,
         guest.email,
+        dto.reservationItem
+          ? {
+              tenantId: dto.reservationItem.tenantId,
+              propertyId: dto.reservationItem.propertyId,
+              unitId: dto.reservationItem.unitId,
+              checkIn: new Date(dto.reservationItem.checkIn),
+              checkOut: new Date(dto.reservationItem.checkOut),
+              guestsCount: dto.reservationItem.guestsCount,
+              pricePerNight: dto.reservationItem.pricePerNight,
+              notes: dto.reservationItem.notes ?? null,
+            }
+          : undefined,
+        dto.experienceItems?.map((item) => ({
+          tenantId: item.tenantId,
+          experienceId: item.experienceId,
+          quantity: item.quantity,
+          selectedDate: item.selectedDate ? new Date(item.selectedDate) : null,
+        })),
       ),
     );
   }

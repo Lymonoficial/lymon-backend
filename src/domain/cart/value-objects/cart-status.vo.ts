@@ -1,6 +1,7 @@
 export enum CartStatusEnum {
   OPEN = 'OPEN',
-  CHECKED_OUT = 'CHECKED_OUT',
+  PENDING_PAYMENT = 'PENDING_PAYMENT',
+  PAID = 'PAID',
   EXPIRED = 'EXPIRED',
 }
 
@@ -21,6 +22,14 @@ export class CartStatus {
 
   isOpen(): boolean {
     return this.value === CartStatusEnum.OPEN;
+  }
+
+  isPendingPayment(): boolean {
+    return this.value === CartStatusEnum.PENDING_PAYMENT;
+  }
+
+  isPaid(): boolean {
+    return this.value === CartStatusEnum.PAID;
   }
 
   toString(): string {

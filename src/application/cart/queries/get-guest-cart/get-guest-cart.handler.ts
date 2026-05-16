@@ -22,8 +22,15 @@ export interface GuestCartResult {
   status: string;
   experienceItems: CartItemResult[];
   reservationItem: {
-    reservationId: string;
+    propertyId: string;
+    unitId: string;
+    checkIn: Date;
+    checkOut: Date;
+    guestsCount: number;
+    notes: string | null;
+    pricePerNight: number;
     totalPriceCop: number;
+    reservationId: string | null;
   } | null;
   totalCop: number;
   createdAt: Date;
@@ -38,10 +45,12 @@ export class GetGuestCartHandler implements IQueryHandler<GetGuestCartQuery> {
   ) {}
 
   async execute(query: GetGuestCartQuery): Promise<GuestCartResult | null> {
-    const cart = await this.cartRepository.findOpenByGuest(
+    const cart = await this.cartRepository.findByGuestAccountId(
       GuestAccountId.createFromString(query.guestAccountId),
     );
-    if (!cart) return null;
+    if (!cart || cart.getStatus().isPaid()) return null;
+
+    const reservationItem = cart.getReservationItem();
 
     return {
       cartId: cart.getId()?.toString() ?? null,
@@ -55,10 +64,17 @@ export class GetGuestCartHandler implements IQueryHandler<GetGuestCartQuery> {
         totalPriceCop: item.getTotalCop(),
         reservationId: item.reservationId,
       })),
-      reservationItem: cart.getReservationItem()
+      reservationItem: reservationItem
         ? {
-            reservationId: cart.getReservationItem()!.reservationId,
-            totalPriceCop: cart.getReservationItem()!.totalPriceCopSnapshot,
+            propertyId: reservationItem.propertyId,
+            unitId: reservationItem.unitId,
+            checkIn: reservationItem.checkIn,
+            checkOut: reservationItem.checkOut,
+            guestsCount: reservationItem.guestsCount,
+            notes: reservationItem.notes,
+            pricePerNight: reservationItem.pricePerNight,
+            totalPriceCop: reservationItem.totalPriceCopSnapshot,
+            reservationId: reservationItem.reservationId,
           }
         : null,
       totalCop: cart.getTotalCop(),

@@ -13,8 +13,15 @@ export interface CartItemSubdoc {
 
 export interface CartReservationItemSubdoc {
   tenantId: Types.ObjectId;
-  reservationId: Types.ObjectId;
+  propertyId: Types.ObjectId;
+  unitId: Types.ObjectId;
+  checkIn: Date;
+  checkOut: Date;
+  guestsCount: number;
+  notes: string | null;
+  pricePerNight: number;
   totalPriceCopSnapshot: number;
+  reservationId: Types.ObjectId | null;
 }
 
 @Schema({ collection: 'carts', timestamps: true })
@@ -27,7 +34,6 @@ export class CartDocument extends Document {
     ref: 'GuestAccountDocument',
     required: true,
     index: true,
-    unique: true,
   })
   guestAccountId: Types.ObjectId;
 
@@ -53,8 +59,15 @@ export class CartDocument extends Document {
   @Prop({
     type: {
       tenantId: { type: Types.ObjectId, required: true },
-      reservationId: { type: Types.ObjectId, required: true },
+      propertyId: { type: Types.ObjectId, required: true },
+      unitId: { type: Types.ObjectId, required: true },
+      checkIn: { type: Date, required: true },
+      checkOut: { type: Date, required: true },
+      guestsCount: { type: Number, required: true },
+      notes: { type: String, default: null },
+      pricePerNight: { type: Number, required: true },
       totalPriceCopSnapshot: { type: Number, required: true },
+      reservationId: { type: Types.ObjectId, default: null },
     },
     default: null,
   })

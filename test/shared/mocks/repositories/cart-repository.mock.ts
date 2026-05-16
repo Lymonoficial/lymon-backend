@@ -10,5 +10,7 @@ export function createCartRepositoryMock(): CartRepositoryMock {
     findById: jest.fn(),
     findOpenByGuest: jest.fn(),
     findOpenByGuestAndTenant: jest.fn(),
+    findByGuestAccountId: jest.fn(),
+    findPendingPaymentCartsOlderThan: jest.fn(),
   } as CartRepositoryMock;
 }
