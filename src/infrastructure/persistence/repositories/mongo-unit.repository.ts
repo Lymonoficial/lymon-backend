@@ -39,6 +39,7 @@ export class MongoUnitRepository implements UnitRepository {
       mediaKeys: unit.getMediaKeys(),
       pricePerNight: unit.getPricePerNight(),
       externalIds: unit.getExternalIds().toObject(),
+      channexRoomTypeId: unit.getChannexRoomTypeId() ?? undefined,
       rating: unit.getRating(),
       updatedAt: unit.getUpdatedAt(),
     };
@@ -199,6 +200,16 @@ export class MongoUnitRepository implements UnitRepository {
         createdAt: document.createdAt,
         updatedAt: document.updatedAt,
       },
+      channexRoomTypeId: document.channexRoomTypeId ?? null,
     });
+  }
+
+  async findByChannexRoomTypeId(roomTypeId: string): Promise<Unit | null> {
+    const document = await this.unitModel.findOne({
+      channexRoomTypeId: roomTypeId,
+      deletedAt: null,
+    });
+    if (!document) return null;
+    return this.toDomain(document);
   }
 }

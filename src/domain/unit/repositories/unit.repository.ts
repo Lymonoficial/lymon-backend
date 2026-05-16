@@ -29,4 +29,5 @@ export interface UnitRepository {
     minGuests?: number,
     propertyId?: string,
   ): Promise<{ units: Unit[]; total: number }>;
+  findByChannexRoomTypeId(roomTypeId: string): Promise<Unit | null>;
 }
