@@ -8,11 +8,13 @@ import { GetGuestBookingsHandler } from './queries/get-guest-bookings/get-guest-
 import { CreateGuestHandler } from '@/application/guest/commands/create-guest.handler';
 import { AssignGuestTagsHandler } from './commands/assign-guest-tags.handler';
 import { SaveGuestPreferencesHandler } from './commands/preferences/save-guest-preferences.handler';
+import { UpdateGuestProfileHandler } from './commands/update-guest-profile/update-guest-profile.handler';
 
 const CommandHandlers = [
   CreateGuestHandler,
   AssignGuestTagsHandler,
   SaveGuestPreferencesHandler,
+  UpdateGuestProfileHandler,
 ];
 const QueryHandlers = [
   SearchGuestsQuery,
