@@ -22,6 +22,7 @@ import { ExperienceController } from '@/presentation/controllers/experience.cont
 import { GuestExperienceController } from '@/presentation/controllers/guest-experience.controller';
 import { GuestTagController } from '@/presentation/controllers/guest-tag.controller';
 import { StorageController } from '@/presentation/controllers/storage.controller';
+import { UnitRatingController } from '@/presentation/controllers/unit-rating.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule],
@@ -47,6 +48,7 @@ import { StorageController } from '@/presentation/controllers/storage.controller
     GuestExperienceController,
     GuestTagController,
     StorageController,
+    UnitRatingController,
   ],
 })
 export class PresentationModule {}
