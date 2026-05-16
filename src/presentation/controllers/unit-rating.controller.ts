@@ -89,6 +89,7 @@ export class UnitRatingController {
 
     return this.queryBus.execute<GetUnitRatingsQuery, GetUnitRatingsResult>(
       new GetUnitRatingsQuery(
+        '',
         unitId,
         Math.max(1, Number.parseInt(page ?? '1', 10) || 1),
         Math.max(1, Number.parseInt(limit ?? '20', 10) || 20),

@@ -4,6 +4,6 @@ export function createCartRepositoryMock(): jest.Mocked<CartRepository> {
   return {
     save: jest.fn(),
     findById: jest.fn(),
-    findOpenByGuestAndTenant: jest.fn(),
+    findOpenByGuest: jest.fn(),
   };
 }
