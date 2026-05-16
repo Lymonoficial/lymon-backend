@@ -281,7 +281,7 @@ export class UnitController {
     end: Date | undefined;
   } {
     return {
-      minGuestsNum: minGuests ? parseInt(minGuests, 10) : undefined,
+      minGuestsNum: minGuests ? Number.parseInt(minGuests, 10) : undefined,
       start: startDate ? new Date(startDate) : undefined,
       end: endDate ? new Date(endDate) : undefined,
     };
