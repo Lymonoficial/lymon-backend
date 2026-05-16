@@ -40,7 +40,8 @@ export class UpdateInventoryItemHandler implements ICommandHandler<
       command.name === undefined &&
       command.categoryId === undefined &&
       command.unit === undefined &&
-      command.minStock === undefined
+      command.minStock === undefined &&
+      command.currentStock === undefined
     ) {
       throw new BadRequestException(
         'At least one field is required: name, categoryId, unit or minStock',
@@ -78,10 +79,7 @@ export class UpdateInventoryItemHandler implements ICommandHandler<
     if (command.categoryId !== undefined) {
       const rawId = InventoryItemCategoryId.create(command.categoryId);
       const category = await this.categoryRepository.findById(rawId);
-      if (
-        !category ||
-        category.getTenantId().toString() !== tenantId.toString()
-      ) {
+      if (category?.getTenantId().toString() !== tenantId.toString()) {
         throw new NotFoundException('Inventory item category not found');
       }
       categoryId = rawId;
@@ -92,6 +90,7 @@ export class UpdateInventoryItemHandler implements ICommandHandler<
       categoryId,
       unit: command.unit,
       minStock: command.minStock,
+      currentStock: command.currentStock,
     });
 
     const savedItemId = await this.inventoryItemRepository.save(item);

@@ -191,6 +191,7 @@ export class InventoryItem {
     categoryId?: InventoryItemCategoryId;
     unit?: string;
     minStock?: number;
+    currentStock?: number;
   }): void {
     if (params.name !== undefined) {
       const name = params.name.trim();
@@ -212,6 +213,12 @@ export class InventoryItem {
       if (params.minStock < 0)
         throw new DomainException('Min stock cannot be negative');
       this.minStock = params.minStock;
+    }
+
+    if (params.currentStock !== undefined) {
+      if (params.currentStock < 0)
+        throw new DomainException('Current stock cannot be negative');
+      this.currentStock = params.currentStock;
     }
 
     this.touch();
