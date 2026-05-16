@@ -14,6 +14,10 @@ import { EmailModule } from '@/infrastructure/email/email.module';
 import { PropertyApplicationModule } from '@/application/property/property-application.module';
 import { UnitApplicationModule } from '@/application/unit/unit-application.module';
 import { InviteStaffHandler } from '@/application/user/commands/invite-staff/invite-staff.handler';
+import { UpdateStaffHandler } from '@/application/user/commands/update-staff.handler';
+import { AddRolesHandler } from '@/application/user/commands/add-roles.handler';
+import { RemoveAllRolesHandler } from '@/application/user/commands/remove-all-roles.handler';
+import { RemoveRoleHandler } from '@/application/user/commands/remove-role.handler';
 import { AuditApplicationModule } from '@/application/audit/audit-application.module';
 import { IncidentReportApplicationModule } from '@/application/incident-report/incident-report-application.module';
 import { TenantApplicationModule } from '@/application/tenant/tenant-application.module';
@@ -32,6 +36,12 @@ import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shi
 import { ExperienceApplicationModule } from '@/application/experience/experience-application.module';
 import { MetricsApplicationModule } from '@/application/metrics/metrics-application.module';
 import { GuestTagApplicationModule } from '@/application/guest-tag/guest-tag-application.module';
+import { StorageApplicationModule } from '@/application/storage/storage-application.module';
+import { UnitRatingApplicationModule } from '@/application/unit-rating/unit-rating-application.module';
+import { CartApplicationModule } from '@/application/cart/cart-application.module';
+import { RefundApplicationModule } from '@/application/refund/refund-application.module';
+import { ProcessWompiWebhookHandler } from '@/application/payment/commands/process-wompi-webhook/process-wompi-webhook.handler';
+import { GetPaymentSessionStatusHandler } from '@/application/payment/queries/get-payment-session-status/get-payment-session-status.handler';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -43,7 +53,13 @@ const CommandHandlers = [
   VerifyEmailHandler,
   ChangePasswordHandler,
   InviteStaffHandler,
+  UpdateStaffHandler,
+  AddRolesHandler,
+  RemoveAllRolesHandler,
+  RemoveRoleHandler,
   DeleteShiftCommandHandler,
+  ProcessWompiWebhookHandler,
+  GetPaymentSessionStatusHandler,
 ];
 
 const QueryHandlers = [GetShiftsHandler];
@@ -71,6 +87,10 @@ const QueryHandlers = [GetShiftsHandler];
     ExperienceApplicationModule,
     MetricsApplicationModule,
     GuestTagApplicationModule,
+    StorageApplicationModule,
+    UnitRatingApplicationModule,
+    CartApplicationModule,
+    RefundApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [

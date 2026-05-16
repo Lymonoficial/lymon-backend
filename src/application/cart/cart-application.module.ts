@@ -8,6 +8,7 @@ import { RemoveCartReservationHandler } from '@/application/cart/commands/remove
 import { ClearCartHandler } from '@/application/cart/commands/clear-cart/clear-cart.handler';
 import { CheckoutCartHandler } from '@/application/cart/commands/checkout-cart/checkout-cart.handler';
 import { GetGuestCartHandler } from '@/application/cart/queries/get-guest-cart/get-guest-cart.handler';
+import { PaymentModule } from '@/infrastructure/payment/payment.module';
 
 const CommandHandlers = [
   AddExperienceToCartHandler,
@@ -21,7 +22,7 @@ const CommandHandlers = [
 const QueryHandlers = [GetGuestCartHandler];
 
 @Module({
-  imports: [CqrsModule, PersistenceModule],
+  imports: [CqrsModule, PersistenceModule, PaymentModule],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers],
 })

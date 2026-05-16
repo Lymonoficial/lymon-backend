@@ -62,6 +62,7 @@ export class GetStaffByTenantHandler implements IQueryHandler<
       .map((u) => ({
         id: u.getId()?.toString() ?? '',
         email: u.getEmail().toString(),
+        createdAt: u.getCreatedAt().toISOString(),
         fullName: u.getFullName(),
         document: u.getDocument(),
         isOwner: u.isOwner(),

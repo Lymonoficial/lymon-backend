@@ -53,6 +53,7 @@ export interface ExperienceProps {
 export interface ExperienceReconstituteData {
   id: ExperienceId;
   tenantId: TenantId;
+  mediaKeys?: string[];
   scope: ExperienceScope;
   propertyId?: PropertyId;
   unitIds: UnitId[];
@@ -94,6 +95,7 @@ export interface ExperienceChanges {
   blackoutRanges?: ExperienceBlackoutRange[];
   allowStandalonePurchase?: boolean;
   allowReservationPurchase?: boolean;
+  mediaKeys?: string[];
 }
 
 export class Experience {
@@ -124,6 +126,7 @@ export class Experience {
     private readonly createdAt: Date,
     private updatedAt: Date,
     private deletedAt: Date | null,
+    private mediaKeys: string[],
   ) {}
 
   static create(props: ExperienceProps): Experience {
@@ -209,6 +212,7 @@ export class Experience {
       now,
       now,
       null,
+      [],
     );
   }
 
@@ -240,6 +244,7 @@ export class Experience {
       data.createdAt,
       data.updatedAt,
       data.deletedAt ?? null,
+      data.mediaKeys ?? [],
     );
   }
 
@@ -347,6 +352,10 @@ export class Experience {
     return this.deletedAt;
   }
 
+  getMediaKeys(): string[] {
+    return this.mediaKeys;
+  }
+
   update(changes: ExperienceChanges): void {
     const name = (changes.name ?? this.name)?.trim();
     if (!name) {
@@ -424,6 +433,9 @@ export class Experience {
     this.blackoutRanges = blackoutRanges;
     this.allowStandalonePurchase = allowStandalonePurchase;
     this.allowReservationPurchase = allowReservationPurchase;
+    if (changes.mediaKeys !== undefined) {
+      this.mediaKeys = changes.mediaKeys;
+    }
     this.updatedAt = new Date();
   }
 

@@ -311,8 +311,8 @@ export class MongoReservationRepository
       guestId: { $in: guestIds },
     };
 
-    if (filters?.status) {
-      query.status = filters.status;
+    if (filters?.statuses && filters.statuses.length > 0) {
+      query.status = { $in: filters.statuses };
     }
 
     if (filters?.fromDate || filters?.toDate) {

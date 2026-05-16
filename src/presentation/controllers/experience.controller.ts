@@ -9,6 +9,8 @@ import { pickDefined } from '@/presentation/common/utils/pick-defined.util';
 import { DeleteExperienceCommand } from '@/application/experience/commands/delete-experience.command';
 import { GetExperiencesByTenantQuery } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query';
 import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
+import { GetExperienceByIdQuery } from '@/application/experience/queries/GetExperienceById/get-experience-by-id.query';
+import { GetExperienceByIdResult } from '@/application/experience/queries/GetExperienceById/get-experience-by-id.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
@@ -99,6 +101,24 @@ export class ExperienceController {
           totalPages: result.totalPages,
         },
       },
+    };
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_VIEW)
+  @ApiOperation({ summary: 'Get experience by ID' })
+  @ApiResponse({ status: 200, description: 'Experience retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Experience not found' })
+  async getById(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    const result = await this.queryBus.execute<
+      GetExperienceByIdQuery,
+      GetExperienceByIdResult
+    >(new GetExperienceByIdQuery(id, user.tenantId));
+
+    return {
+      message: 'Experience retrieved successfully',
+      data: result.experience,
     };
   }
 
@@ -268,6 +288,7 @@ export class ExperienceController {
           endAt: new Date(r.endAt),
         })),
       }),
+      ...(dto.mediaKeys !== undefined && { mediaKeys: dto.mediaKeys }),
     };
 
     const actor: ExperienceActor = { id: user.userId, email: user.email };

@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterGuestAccountCommand } from '@/application/guest-auth/commands/register-guest-account/register-guest-account.command';
 import { RegisterGuestAccountResult } from '@/application/guest-auth/commands/register-guest-account/register-guest-account.result';
 import { VerifyGuestEmailCommand } from '@/application/guest-auth/commands/verify-guest-email/verify-guest-email.command';
 import { VerifyGuestEmailResult } from '@/application/guest-auth/commands/verify-guest-email/verify-guest-email.handler';
+import { ConfirmGuestEmailChangeCommand } from '@/application/guest/commands/confirm-email-change/confirm-guest-email-change.command';
 import { GuestLoginCommand } from '@/application/guest-auth/commands/login-guest/login-guest.command';
 import { GuestLoginResult } from '@/application/guest-auth/commands/login-guest/login-guest.result';
 import { RecoverGuestPasswordCommand } from '@/application/guest-auth/commands/recover-guest-password/recover-guest-password.command';
@@ -60,15 +61,23 @@ export class GuestAuthController {
 
   @GuestPublic()
   @Get('verify-email')
-  @ApiOperation({ summary: 'Verify guest email address' })
+  @ApiOperation({ summary: 'Verify guest email address or confirm email change' })
   @ApiResponse({ status: 200, description: 'Email verified' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async verifyEmail(@Query('token') token: string) {
-    const result = await this.commandBus.execute<
-      VerifyGuestEmailCommand,
-      VerifyGuestEmailResult
-    >(new VerifyGuestEmailCommand(token));
-
-    return { message: result.message };
+    try {
+      const result = await this.commandBus.execute<
+        VerifyGuestEmailCommand,
+        VerifyGuestEmailResult
+      >(new VerifyGuestEmailCommand(token));
+      return { message: result.message };
+    } catch (e) {
+      if (e instanceof BadRequestException) {
+        await this.commandBus.execute(new ConfirmGuestEmailChangeCommand(token));
+        return { message: 'Email updated successfully' };
+      }
+      throw e;
+    }
   }
 
   @GuestPublic()

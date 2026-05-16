@@ -84,6 +84,7 @@ function makeCommand(
     undefined,
     undefined,
     undefined,
+    undefined,
     'user-1',
     'owner@example.com',
   );
@@ -115,6 +116,7 @@ describe('UpdateUnitHandler', () => {
         new UpdateUnitCommand(
           TENANT_ID,
           UNIT_ID,
+          undefined,
           undefined,
           undefined,
           undefined,

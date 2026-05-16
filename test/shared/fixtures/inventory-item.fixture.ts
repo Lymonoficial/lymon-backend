@@ -1,10 +1,12 @@
 import { InventoryItem } from '@/domain/inventory/entities/inventory-item.entity';
 import { InventoryItemId } from '@/domain/inventory/value-objects/inventory-item-id.vo';
+import { InventoryItemCategoryId } from '@/domain/inventory/value-objects/inventory-item-category-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
 import { PROPERTY_FIXTURE_DEFAULTS } from '@test/shared/fixtures/property.fixture';
 import { TENANT_FIXTURE_DEFAULTS } from '@test/shared/fixtures/tenant.fixture';
+import { INVENTORY_ITEM_CATEGORY_FIXTURE_DEFAULTS } from '@test/shared/fixtures/inventory-item-category.fixture';
 
 export const INVENTORY_ITEM_FIXTURE_DEFAULTS = {
   id: '65f1a1a2b3c4d5e6f7a8b9c3',
@@ -12,7 +14,7 @@ export const INVENTORY_ITEM_FIXTURE_DEFAULTS = {
   propertyId: PROPERTY_FIXTURE_DEFAULTS.id,
   sku: 'SKU-001',
   name: 'Toalla',
-  category: 'Limpieza',
+  categoryId: INVENTORY_ITEM_CATEGORY_FIXTURE_DEFAULTS.id,
   unit: 'unidad',
   minStock: 5,
   currentStock: 20,
@@ -26,7 +28,7 @@ export function makeInventoryItem(
     propertyId: string;
     sku: string;
     name: string;
-    category: string;
+    categoryId: string;
     unit: string;
     minStock: number;
     currentStock: number;
@@ -44,7 +46,7 @@ export function makeInventoryItem(
     profile: {
       sku: merged.sku,
       name: merged.name,
-      category: merged.category,
+      categoryId: InventoryItemCategoryId.create(merged.categoryId),
       unit: merged.unit,
       minStock: merged.minStock,
       currentStock: merged.currentStock,

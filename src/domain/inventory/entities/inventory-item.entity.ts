@@ -4,6 +4,7 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { InventoryMovementType } from '@/domain/inventory/value-objects/inventory-movement-type.vo';
 import { InventoryItemId } from '@/domain/inventory/value-objects/inventory-item-id.vo';
 import { SupplierId } from '@/domain/inventory/value-objects/supplier-id.vo';
+import { InventoryItemCategoryId } from '@/domain/inventory/value-objects/inventory-item-category-id.vo';
 
 export class InventoryItem {
   private constructor(
@@ -12,7 +13,7 @@ export class InventoryItem {
     private readonly propertyId: PropertyId,
     private readonly sku: string,
     private name: string,
-    private category: string,
+    private categoryId: InventoryItemCategoryId,
     private unit: string,
     private minStock: number,
     private currentStock: number,
@@ -26,7 +27,7 @@ export class InventoryItem {
     propertyId: PropertyId;
     sku: string;
     name: string;
-    category: string;
+    categoryId: InventoryItemCategoryId;
     unit: string;
     minStock: number;
     initialStock?: number;
@@ -34,13 +35,11 @@ export class InventoryItem {
   }): InventoryItem {
     const sku = params.sku.trim();
     const name = params.name.trim();
-    const category = params.category.trim();
     const unit = params.unit.trim();
     const initialStock = params.initialStock ?? 0;
 
     if (!sku) throw new DomainException('SKU is required');
     if (!name) throw new DomainException('Name is required');
-    if (!category) throw new DomainException('Category is required');
     if (!unit) throw new DomainException('Unit is required');
     if (params.minStock < 0)
       throw new DomainException('Min stock cannot be negative');
@@ -53,7 +52,7 @@ export class InventoryItem {
       params.propertyId,
       sku,
       name,
-      category,
+      params.categoryId,
       unit,
       params.minStock,
       initialStock,
@@ -72,7 +71,7 @@ export class InventoryItem {
     profile: {
       sku: string;
       name: string;
-      category: string;
+      categoryId: InventoryItemCategoryId;
       unit: string;
       minStock: number;
       currentStock: number;
@@ -89,7 +88,7 @@ export class InventoryItem {
       data.identity.propertyId,
       data.profile.sku,
       data.profile.name,
-      data.profile.category,
+      data.profile.categoryId,
       data.profile.unit,
       data.profile.minStock,
       data.profile.currentStock,
@@ -159,8 +158,8 @@ export class InventoryItem {
     return this.name;
   }
 
-  getCategory(): string {
-    return this.category;
+  getCategoryId(): InventoryItemCategoryId {
+    return this.categoryId;
   }
 
   getUnit(): string {
@@ -189,9 +188,10 @@ export class InventoryItem {
 
   update(params: {
     name?: string;
-    category?: string;
+    categoryId?: InventoryItemCategoryId;
     unit?: string;
     minStock?: number;
+    currentStock?: number;
   }): void {
     if (params.name !== undefined) {
       const name = params.name.trim();
@@ -199,10 +199,8 @@ export class InventoryItem {
       this.name = name;
     }
 
-    if (params.category !== undefined) {
-      const category = params.category.trim();
-      if (!category) throw new DomainException('Category is required');
-      this.category = category;
+    if (params.categoryId !== undefined) {
+      this.categoryId = params.categoryId;
     }
 
     if (params.unit !== undefined) {
@@ -215,6 +213,12 @@ export class InventoryItem {
       if (params.minStock < 0)
         throw new DomainException('Min stock cannot be negative');
       this.minStock = params.minStock;
+    }
+
+    if (params.currentStock !== undefined) {
+      if (params.currentStock < 0)
+        throw new DomainException('Current stock cannot be negative');
+      this.currentStock = params.currentStock;
     }
 
     this.touch();

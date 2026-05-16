@@ -67,6 +67,9 @@ import {
   ReservationDocument,
   ReservationSchema,
 } from '@/infrastructure/persistence/schemas/reservation.schema';
+import { CartDocument, CartSchema } from '@/infrastructure/persistence/schemas/cart.schema';
+import { CART_REPOSITORY } from '@/domain/cart/repositories/cart.repository';
+import { MongoCartRepository } from '@/infrastructure/persistence/repositories/mongo-cart.repository';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
 import { GUEST_RESERVATIONS_READ_REPOSITORY } from '@/domain/reservation/repositories/guest-reservations-read.repository';
 import { MongoReservationRepository } from './repositories/mongo-reservation.repository';
@@ -98,6 +101,12 @@ import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
 import { SUPPLIER_REPOSITORY } from '@/domain/inventory/repositories/supplier.repository';
 import { MongoSupplierRepository } from './repositories/mongo-supplier.repository';
 import {
+  InventoryItemCategoryDocument,
+  InventoryItemCategorySchema,
+} from '@/infrastructure/persistence/schemas/inventory-item-category.schema';
+import { INVENTORY_ITEM_CATEGORY_REPOSITORY } from '@/domain/inventory/repositories/inventory-item-category.repository';
+import { MongoInventoryItemCategoryRepository } from '@/infrastructure/persistence/repositories/mongo-inventory-item-category.repository';
+import {
   GuestPreferenceCatalogItemDocument,
   GuestPreferenceCatalogItemSchema,
 } from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
@@ -112,12 +121,36 @@ import { MongoExperienceRepository } from '@/infrastructure/persistence/reposito
 import { METRICS_READ_REPOSITORY } from '@/domain/metrics/repositories/metrics-read.repository';
 import { MongoMetricsReadRepository } from '@/infrastructure/persistence/repositories/mongo-metrics-read.repository';
 import {
+  PaymentSessionDocument,
+  PaymentSessionSchema,
+} from '@/infrastructure/persistence/schemas/payment-session.schema';
+import { PAYMENT_SESSION_REPOSITORY } from '@/domain/payment/repositories/payment-session.repository';
+import { MongoPaymentSessionRepository } from '@/infrastructure/persistence/repositories/mongo-payment-session.repository';
+import {
+  ExperiencePurchaseDocument,
+  ExperiencePurchaseSchema,
+} from '@/infrastructure/persistence/schemas/experience-purchase.schema';
+import { EXPERIENCE_PURCHASE_REPOSITORY } from '@/domain/experience-purchase/repositories/experience-purchase.repository';
+import { MongoExperiencePurchaseRepository } from '@/infrastructure/persistence/repositories/mongo-experience-purchase.repository';
+import {
   GuestTagDocument,
   GuestTagSchema,
 } from '@/infrastructure/persistence/schemas/guest-tag.schema';
 import { GUEST_TAG_REPOSITORY } from '@/domain/guest-tag/repositories/guest-tag.repository';
 import { MongoGuestTagRepository } from '@/infrastructure/persistence/repositories/mongo-guest-tag.repository';
 import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-tag-seed.service';
+import {
+  UnitRatingDocument,
+  UnitRatingSchema,
+} from '@/infrastructure/persistence/schemas/unit-rating.schema';
+import {
+  RefundRequestDocument,
+  RefundRequestSchema,
+} from '@/infrastructure/persistence/schemas/refund-request.schema';
+import { REFUND_REQUEST_REPOSITORY } from '@/domain/refund/repositories/refund-request.repository';
+import { MongoRefundRequestRepository } from '@/infrastructure/persistence/repositories/mongo-refund-request.repository';
+import { UNIT_RATING_REPOSITORY } from '@/domain/unit-rating/repositories/unit-rating.repository';
+import { MongoUnitRatingRepository } from '@/infrastructure/persistence/repositories/mongo-unit-rating.repository';
 
 @Module({
   imports: [
@@ -132,12 +165,17 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       { name: AuditLogDocument.name, schema: AuditLogSchema },
       { name: IncidentReportDocument.name, schema: IncidentReportSchema },
       { name: ReservationDocument.name, schema: ReservationSchema },
+          { name: CartDocument.name, schema: CartSchema },
       { name: InventoryItemDocument.name, schema: InventoryItemSchema },
       {
         name: InventoryMovementDocument.name,
         schema: InventoryMovementSchema,
       },
       { name: SupplierDocument.name, schema: SupplierSchema },
+      {
+        name: InventoryItemCategoryDocument.name,
+        schema: InventoryItemCategorySchema,
+      },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
@@ -146,7 +184,14 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
         schema: GuestPreferenceCatalogItemSchema,
       },
       { name: ExperienceDocument.name, schema: ExperienceSchema },
+      { name: PaymentSessionDocument.name, schema: PaymentSessionSchema },
+      {
+        name: ExperiencePurchaseDocument.name,
+        schema: ExperiencePurchaseSchema,
+      },
       { name: GuestTagDocument.name, schema: GuestTagSchema },
+      { name: UnitRatingDocument.name, schema: UnitRatingSchema },
+      { name: RefundRequestDocument.name, schema: RefundRequestSchema },
     ]),
   ],
   providers: [
@@ -195,6 +240,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       useClass: MongoReservationRepository,
     },
     {
+      provide: CART_REPOSITORY,
+      useClass: MongoCartRepository,
+    },
+    {
       provide: GUEST_RESERVATIONS_READ_REPOSITORY,
       useExisting: RESERVATION_REPOSITORY,
     },
@@ -209,6 +258,10 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
     {
       provide: SUPPLIER_REPOSITORY,
       useClass: MongoSupplierRepository,
+    },
+    {
+      provide: INVENTORY_ITEM_CATEGORY_REPOSITORY,
+      useClass: MongoInventoryItemCategoryRepository,
     },
     {
       provide: GUEST_NOTE_REPOSITORY,
@@ -233,6 +286,12 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
     {
       provide: METRICS_READ_REPOSITORY,
       useClass: MongoMetricsReadRepository,
+      provide: PAYMENT_SESSION_REPOSITORY,
+      useClass: MongoPaymentSessionRepository,
+    },
+    {
+      provide: EXPERIENCE_PURCHASE_REPOSITORY,
+      useClass: MongoExperiencePurchaseRepository,
     },
     RoleSeedService,
     {
@@ -240,6 +299,14 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
       useClass: MongoGuestTagRepository,
     },
     GuestTagSeedService,
+    {
+      provide: UNIT_RATING_REPOSITORY,
+      useClass: MongoUnitRatingRepository,
+    },
+    {
+      provide: REFUND_REQUEST_REPOSITORY,
+      useClass: MongoRefundRequestRepository,
+    },
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -257,13 +324,19 @@ import { GuestTagSeedService } from '@/infrastructure/persistence/seeds/guest-ta
     INVENTORY_ITEM_REPOSITORY,
     INVENTORY_MOVEMENT_REPOSITORY,
     SUPPLIER_REPOSITORY,
+    INVENTORY_ITEM_CATEGORY_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
     GUEST_PREFERENCE_CATALOG_REPOSITORY,
     EXPERIENCE_REPOSITORY,
     METRICS_READ_REPOSITORY,
+    PAYMENT_SESSION_REPOSITORY,
+    EXPERIENCE_PURCHASE_REPOSITORY,
+    CART_REPOSITORY,
     GUEST_TAG_REPOSITORY,
+    UNIT_RATING_REPOSITORY,
+    REFUND_REQUEST_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

@@ -12,6 +12,11 @@ import {
   PROPERTY_REPOSITORY,
   type PropertyRepository,
 } from '@/domain/property/repositories/property.repository';
+import {
+  INVENTORY_ITEM_CATEGORY_REPOSITORY,
+  type InventoryItemCategoryRepository,
+} from '@/domain/inventory/repositories/inventory-item-category.repository';
+import { InventoryItemCategoryId } from '@/domain/inventory/value-objects/inventory-item-category-id.vo';
 import { InventoryItem } from '@/domain/inventory/entities/inventory-item.entity';
 
 @CommandHandler(CreateInventoryItemCommand)
@@ -24,6 +29,8 @@ export class CreateInventoryItemHandler implements ICommandHandler<
     private readonly inventoryItemRepository: InventoryItemRepository,
     @Inject(PROPERTY_REPOSITORY)
     private readonly propertyRepository: PropertyRepository,
+    @Inject(INVENTORY_ITEM_CATEGORY_REPOSITORY)
+    private readonly categoryRepository: InventoryItemCategoryRepository,
   ) {}
 
   async execute(
@@ -40,6 +47,12 @@ export class CreateInventoryItemHandler implements ICommandHandler<
       propertyTenantId !== tenantId.toString()
     ) {
       throw new NotFoundException('Property not found');
+    }
+
+    const categoryId = InventoryItemCategoryId.create(command.categoryId);
+    const category = await this.categoryRepository.findById(categoryId);
+    if (!category || category.getTenantId().toString() !== tenantId.toString()) {
+      throw new NotFoundException('Inventory item category not found');
     }
 
     const existingItem =
@@ -59,7 +72,7 @@ export class CreateInventoryItemHandler implements ICommandHandler<
       propertyId,
       sku: command.sku,
       name: command.name,
-      category: command.category,
+      categoryId,
       unit: command.unit,
       minStock: command.minStock,
       initialStock: command.initialStock,
