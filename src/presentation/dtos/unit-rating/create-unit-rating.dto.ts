@@ -12,11 +12,6 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateUnitRatingDto {
-  @ApiProperty({ example: '64f1a2b3c4d5e6f7a8b9c0d1', description: 'Tenant ID' })
-  @IsMongoId()
-  @IsNotEmpty()
-  tenantId: string;
-
   @ApiProperty({ example: '64f1a2b3c4d5e6f7a8b9c0d2', description: 'Reservation ID' })
   @IsMongoId()
   @IsNotEmpty()
