@@ -33,6 +33,9 @@ export class GetUnitRatingsHandler
     if (!unit) {
       throw new NotFoundException('Unit not found');
     }
+    if (query.tenantId && unit.getTenantId().toString() !== query.tenantId) {
+      throw new NotFoundException('Unit not found');
+    }
 
     const { ratings, total } =
       await this.unitRatingRepository.findByUnitIdPaginated(

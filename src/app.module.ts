@@ -15,6 +15,7 @@ import { ReservationInfrastructureModule } from '@/infrastructure/reservation/re
 import { InventoryInfrastructureModule } from '@/infrastructure/inventory/inventory-infrastructure.module';
 import { GuestPreferenceInfrastructureModule } from '@/infrastructure/guest-preference/guest-preference-infrastructure.module';
 import { ChannexInfrastructureModule } from '@/infrastructure/channex/channex-infrastructure.module';
+import { PaymentModule } from '@/infrastructure/payment/payment.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ChannexInfrastructureModule } from '@/infrastructure/channex/channex-in
     ReservationInfrastructureModule,
     InventoryInfrastructureModule,
     GuestPreferenceInfrastructureModule,
+    PaymentModule,
     ChannexInfrastructureModule,
   ],
   controllers: [AppController],

@@ -20,6 +20,7 @@ export class MongoCartRepository implements CartRepository {
 
   async save(cart: Cart): Promise<string> {
     const id = cart.getId()?.toString();
+    const reservationItem = cart.getReservationItem();
     const doc = {
       guestAccountId: new Types.ObjectId(cart.getGuestAccountId().toString()),
       status: cart.getStatus().toString(),
@@ -34,14 +35,20 @@ export class MongoCartRepository implements CartRepository {
           ? new Types.ObjectId(item.reservationId)
           : null,
       })),
-      reservationItem: cart.getReservationItem()
+      reservationItem: reservationItem
         ? {
-            tenantId: new Types.ObjectId(cart.getReservationItem()!.tenantId),
-            reservationId: new Types.ObjectId(
-              cart.getReservationItem()!.reservationId,
-            ),
-            totalPriceCopSnapshot:
-              cart.getReservationItem()!.totalPriceCopSnapshot,
+            tenantId: new Types.ObjectId(reservationItem.tenantId),
+            propertyId: new Types.ObjectId(reservationItem.propertyId),
+            unitId: new Types.ObjectId(reservationItem.unitId),
+            checkIn: reservationItem.checkIn,
+            checkOut: reservationItem.checkOut,
+            guestsCount: reservationItem.guestsCount,
+            notes: reservationItem.notes,
+            pricePerNight: reservationItem.pricePerNight,
+            totalPriceCopSnapshot: reservationItem.totalPriceCopSnapshot,
+            reservationId: reservationItem.reservationId
+              ? new Types.ObjectId(reservationItem.reservationId)
+              : null,
           }
         : null,
     };
@@ -50,6 +57,16 @@ export class MongoCartRepository implements CartRepository {
       await this.cartModel.findByIdAndUpdate(id, doc);
       return id;
     }
+
+    const existing = await this.cartModel.findOne({
+      guestAccountId: new Types.ObjectId(cart.getGuestAccountId().toString()),
+    });
+
+    if (existing) {
+      await this.cartModel.findByIdAndUpdate(existing._id, doc);
+      return existing._id.toString();
+    }
+
     const created = await this.cartModel.create(doc);
     return created._id.toString();
   }
@@ -65,6 +82,25 @@ export class MongoCartRepository implements CartRepository {
       status: CartStatusEnum.OPEN,
     });
     return doc ? this.toDomainEntity(doc) : null;
+  }
+
+  async findByGuestAccountId(
+    guestAccountId: GuestAccountId,
+  ): Promise<Cart | null> {
+    const doc = await this.cartModel
+      .findOne({
+        guestAccountId: new Types.ObjectId(guestAccountId.toString()),
+      })
+      .sort({ createdAt: -1 });
+    return doc ? this.toDomainEntity(doc) : null;
+  }
+
+  async findPendingPaymentCartsOlderThan(date: Date): Promise<Cart[]> {
+    const docs = await this.cartModel.find({
+      status: CartStatusEnum.PENDING_PAYMENT,
+      updatedAt: { $lt: date },
+    });
+    return docs.map((doc) => this.toDomainEntity(doc));
   }
 
   private toDomainEntity(doc: CartDocument): Cart {
@@ -87,9 +123,15 @@ export class MongoCartRepository implements CartRepository {
       reservationItem: doc.reservationItem
         ? CartReservationItem.create({
             tenantId: doc.reservationItem.tenantId.toString(),
-            reservationId: doc.reservationItem.reservationId.toString(),
-            totalPriceCopSnapshot:
-              doc.reservationItem.totalPriceCopSnapshot,
+            propertyId: doc.reservationItem.propertyId.toString(),
+            unitId: doc.reservationItem.unitId.toString(),
+            checkIn: doc.reservationItem.checkIn,
+            checkOut: doc.reservationItem.checkOut,
+            guestsCount: doc.reservationItem.guestsCount,
+            notes: doc.reservationItem.notes,
+            pricePerNight: doc.reservationItem.pricePerNight,
+            totalPriceCopSnapshot: doc.reservationItem.totalPriceCopSnapshot,
+            reservationId: doc.reservationItem.reservationId?.toString() ?? null,
           })
         : null,
       status: CartStatus.create(doc.status as CartStatusEnum),

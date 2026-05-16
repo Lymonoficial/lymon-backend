@@ -2,11 +2,15 @@ import { ExperiencePurchase } from '@/domain/experience-purchase/entities/experi
 import { ExperiencePurchaseId } from '@/domain/experience-purchase/value-objects/experience-purchase-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 
 export const EXPERIENCE_PURCHASE_REPOSITORY = 'EXPERIENCE_PURCHASE_REPOSITORY';
 
 export interface ExperiencePurchaseRepository {
-  save(purchase: ExperiencePurchase): Promise<string>;
+  save(
+    purchase: ExperiencePurchase,
+    ctx?: TransactionContextData,
+  ): Promise<string>;
   findById(id: ExperiencePurchaseId): Promise<ExperiencePurchase | null>;
   findByGuestAccountId(
     guestAccountId: GuestAccountId,

@@ -86,12 +86,30 @@ export class Cart {
     this.touch();
   }
 
+  clearExperienceItems(): void {
+    this.assertOpen();
+    this.experienceItems = [];
+    this.touch();
+  }
+
   checkout(): void {
     this.assertOpen();
     if (this.experienceItems.length === 0 && !this.reservationItem) {
       throw new DomainException('Cannot checkout an empty cart');
     }
-    this.status = CartStatus.create(CartStatusEnum.CHECKED_OUT);
+    this.status = CartStatus.create(CartStatusEnum.PENDING_PAYMENT);
+    this.touch();
+  }
+
+  markPaid(): void {
+    this.assertPendingPayment();
+    this.status = CartStatus.create(CartStatusEnum.PAID);
+    this.touch();
+  }
+
+  reopen(): void {
+    this.assertPendingPayment();
+    this.status = CartStatus.open();
     this.touch();
   }
 
@@ -134,6 +152,12 @@ export class Cart {
   private assertOpen(): void {
     if (!this.status.isOpen()) {
       throw new DomainException('Cart is not open');
+    }
+  }
+
+  private assertPendingPayment(): void {
+    if (!this.status.isPendingPayment()) {
+      throw new DomainException('Cart is not pending payment');
     }
   }
 

@@ -8,4 +8,6 @@ export interface CartRepository {
   save(cart: Cart): Promise<string>;
   findById(id: CartId): Promise<Cart | null>;
   findOpenByGuest(guestAccountId: GuestAccountId): Promise<Cart | null>;
+  findByGuestAccountId(guestAccountId: GuestAccountId): Promise<Cart | null>;
+  findPendingPaymentCartsOlderThan(date: Date): Promise<Cart[]>;
 }

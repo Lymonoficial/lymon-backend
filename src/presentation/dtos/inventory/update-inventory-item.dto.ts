@@ -23,4 +23,10 @@ export class UpdateInventoryItemDto {
   @IsInt()
   @Min(0)
   minStock?: number;
+
+  @ApiPropertyOptional({ example: 50, minimum: 0 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  currentStock?: number;
 }

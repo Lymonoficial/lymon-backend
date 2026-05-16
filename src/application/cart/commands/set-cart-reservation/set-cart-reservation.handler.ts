@@ -1,4 +1,4 @@
-import { Inject, NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SetCartReservationCommand } from './set-cart-reservation.command';
 import {
@@ -6,31 +6,30 @@ import {
   type CartRepository,
 } from '@/domain/cart/repositories/cart.repository';
 import {
+  UNIT_REPOSITORY,
+  type UnitRepository,
+} from '@/domain/unit/repositories/unit.repository';
+import {
   RESERVATION_REPOSITORY,
   type ReservationRepository,
 } from '@/domain/reservation/repositories/reservation.repository';
-import {
-  GUEST_REPOSITORY,
-  type GuestRepository,
-} from '@/domain/guest/repositories/guest.repository';
 import { Cart } from '@/domain/cart/entities/cart.entity';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { ReservationId } from '@/domain/reservation/value-objects/reservation-id.vo';
-import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
-import { GuestReservationOverlapChecker } from '@/domain/reservation/services/guest-reservation-overlap-checker.domain-service';
-import { DomainException } from '@/domain/shared/exceptions/domain.exception';
+import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
+import { DateRange } from '@/domain/reservation/value-objects/date-range.vo';
+import { AvailabilityChecker } from '@/domain/reservation/services/availability-checker.domain-service';
 
 @CommandHandler(SetCartReservationCommand)
 export class SetCartReservationHandler implements ICommandHandler<SetCartReservationCommand> {
   constructor(
     @Inject(CART_REPOSITORY)
     private readonly cartRepository: CartRepository,
+    @Inject(UNIT_REPOSITORY)
+    private readonly unitRepository: UnitRepository,
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,
-    @Inject(GUEST_REPOSITORY)
-    private readonly guestRepository: GuestRepository,
   ) {}
 
   async execute(command: SetCartReservationCommand): Promise<void> {
@@ -38,43 +37,32 @@ export class SetCartReservationHandler implements ICommandHandler<SetCartReserva
       command.guestAccountId,
     );
     const tenantId = TenantId.createFromString(command.tenantId);
+    const unitId = UnitId.create(command.unitId);
 
-    const guest = await this.guestRepository.findByGuestAccountId(
-      tenantId,
-      guestAccountId,
-    );
-    if (!guest) {
-      throw new NotFoundException('Guest profile not found for this tenant');
+    const unit = await this.unitRepository.findById(unitId);
+    if (!unit) {
+      throw new NotFoundException('Unit not found');
     }
 
-    const reservation = await this.reservationRepository.findById(
-      ReservationId.create(command.reservationId),
-    );
-    if (!reservation) {
-      throw new NotFoundException('Reservation not found');
-    }
-    if (reservation.getGuestId().toString() !== guest.getId()!.toString()) {
-      throw new DomainException('Reservation does not belong to this guest');
-    }
-    if (reservation.getStatus().getValue() !== ReservationStatusEnum.PENDING) {
-      throw new DomainException(
-        'Only PENDING reservations can be added to cart for payment',
+    const dateRange = DateRange.create(command.checkIn, command.checkOut);
+
+    const existingReservations =
+      await this.reservationRepository.findByUnitAndDateRange(unitId, dateRange);
+
+    if (
+      !AvailabilityChecker.isAvailable(
+        dateRange,
+        existingReservations,
+        unit.getInventoryCount(),
+      )
+    ) {
+      throw new ConflictException(
+        'Unit is not available for the requested dates',
       );
     }
 
-    const guestReservations = await this.reservationRepository.findByGuestId(
-      command.tenantId,
-      guest.getId()!.toString(),
-      1,
-      200,
-    );
-
-    GuestReservationOverlapChecker.check(
-      guestReservations,
-      reservation.getPropertyId().toString(),
-      reservation.getDateRange(),
-      command.reservationId,
-    );
+    const nights = dateRange.nights();
+    const totalPrice = command.pricePerNight * nights;
 
     let cart = await this.cartRepository.findOpenByGuest(guestAccountId);
     cart ??= Cart.create({ guestAccountId });
@@ -82,8 +70,15 @@ export class SetCartReservationHandler implements ICommandHandler<SetCartReserva
     cart.setReservationItem(
       CartReservationItem.create({
         tenantId: command.tenantId,
-        reservationId: command.reservationId,
-        totalPriceCopSnapshot: reservation.getTotalPrice(),
+        propertyId: command.propertyId,
+        unitId: command.unitId,
+        checkIn: command.checkIn,
+        checkOut: command.checkOut,
+        guestsCount: command.guestsCount,
+        notes: command.notes,
+        pricePerNight: command.pricePerNight,
+        totalPriceCopSnapshot: totalPrice,
+        reservationId: null,
       }),
     );
 

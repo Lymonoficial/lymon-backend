@@ -11,6 +11,7 @@ import { AssignGuestTagsHandler } from './commands/assign-guest-tags.handler';
 import { SaveGuestPreferencesHandler } from './commands/preferences/save-guest-preferences.handler';
 import { UpdateGuestProfileHandler } from './commands/update-guest-profile/update-guest-profile.handler';
 import { ConfirmGuestEmailChangeHandler } from './commands/confirm-email-change/confirm-guest-email-change.handler';
+import { UpdateGuestProfileHandler } from './commands/update-guest-profile/update-guest-profile.handler';
 
 const CommandHandlers = [
   CreateGuestHandler,
@@ -18,6 +19,7 @@ const CommandHandlers = [
   SaveGuestPreferencesHandler,
   UpdateGuestProfileHandler,
   ConfirmGuestEmailChangeHandler,
+  UpdateGuestProfileHandler,
 ];
 const QueryHandlers = [
   SearchGuestsQuery,

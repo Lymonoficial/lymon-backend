@@ -9,6 +9,7 @@ export class UpdateInventoryItemCommand implements ICommand {
     public readonly categoryId: string | undefined,
     public readonly unit: string | undefined,
     public readonly minStock: number | undefined,
+    public readonly currentStock: number | undefined,
     public readonly actorId: string,
     public readonly actorEmail: string,
   ) {}
