@@ -52,6 +52,7 @@ export interface UnitReconstituteInput extends UnitCreateInput {
   id: UnitId;
   timestamps: UnitTimestamps;
   channexRoomTypeId?: string | null;
+  rating?: number | null;
 }
 
 export class Unit {
@@ -71,6 +72,7 @@ export class Unit {
     private mediaKeys: string[],
     private pricePerNight: number,
     private externalIds: ExternalIds,
+    private rating: number | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
     private readonly deletedAt: Date | null,
@@ -129,6 +131,7 @@ export class Unit {
       input.mediaKeys ?? [],
       pricingConfig.pricePerNight,
       externalIds,
+      null,
       new Date(),
       new Date(),
       null,
@@ -167,6 +170,7 @@ export class Unit {
       input.mediaKeys ?? [],
       pricingConfig.pricePerNight,
       externalIds,
+      input.rating ?? null,
       timestamps.createdAt,
       timestamps.updatedAt,
       null,
@@ -325,6 +329,15 @@ export class Unit {
 
   setChannexRoomTypeId(id: string): void {
     this.channexRoomTypeId = id;
+    this.updatedAt = new Date();
+  }
+
+  getRating(): number | null {
+    return this.rating;
+  }
+
+  updateRating(newRating: number | null): void {
+    this.rating = newRating;
     this.updatedAt = new Date();
   }
 }

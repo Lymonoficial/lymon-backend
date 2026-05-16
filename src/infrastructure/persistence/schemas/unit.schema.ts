@@ -88,6 +88,9 @@ export class UnitDocument extends Document {
   @Prop({ type: String, default: null })
   channexRoomTypeId: string | null;
 
+  @Prop({ type: Number, default: null })
+  rating: number | null;
+
   @Prop()
   createdAt: Date;
 

@@ -64,6 +64,7 @@ export class GetUnitsByPropertyQueryHandler implements IQueryHandler<
         unit.getAmenities(),
         unit.getPricePerNight(),
         unit.getCreatedAt(),
+        unit.getRating(),
       );
     });
 

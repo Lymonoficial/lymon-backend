@@ -24,6 +24,7 @@ import { GuestExperienceController } from '@/presentation/controllers/guest-expe
 import { GuestTagController } from '@/presentation/controllers/guest-tag.controller';
 import { StorageController } from '@/presentation/controllers/storage.controller';
 import { ChannexWebhookController } from '@/presentation/controllers/channex-webhook.controller';
+import { UnitRatingController } from '@/presentation/controllers/unit-rating.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule, ChannexInfrastructureModule],
@@ -50,6 +51,7 @@ import { ChannexWebhookController } from '@/presentation/controllers/channex-web
     GuestTagController,
     ChannexWebhookController,
     StorageController,
+    UnitRatingController,
   ],
 })
 export class PresentationModule {}

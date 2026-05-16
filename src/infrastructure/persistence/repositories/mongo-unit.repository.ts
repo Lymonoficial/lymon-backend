@@ -40,6 +40,7 @@ export class MongoUnitRepository implements UnitRepository {
       pricePerNight: unit.getPricePerNight(),
       externalIds: unit.getExternalIds().toObject(),
       channexRoomTypeId: unit.getChannexRoomTypeId() ?? undefined,
+      rating: unit.getRating(),
       updatedAt: unit.getUpdatedAt(),
     };
 
@@ -194,6 +195,7 @@ export class MongoUnitRepository implements UnitRepository {
         document.externalIds?.bookingId,
         document.externalIds?.vrboId,
       ),
+      rating: document.rating ?? null,
       timestamps: {
         createdAt: document.createdAt,
         updatedAt: document.updatedAt,
