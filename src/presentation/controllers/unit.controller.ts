@@ -166,9 +166,30 @@ export class UnitController {
     type: Number,
     description: 'Filter units by minimum number of guests (maxGuests)',
   })
-  @ApiQuery({ name: 'propertyId', required: false, type: String, description: 'Filter by property ID' })
-  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date for availability check (ISO)' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'End date for availability check (ISO)' })
+  @ApiQuery({
+    name: 'propertyId',
+    required: false,
+    type: String,
+    description: 'Filter by property ID',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'Start date for availability check (ISO)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'End date for availability check (ISO)',
+  })
+  @ApiQuery({
+    name: 'sortByPrice',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort units by price per night',
+  })
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getAllPublic(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -177,12 +198,23 @@ export class UnitController {
     @Query('propertyId') propertyId?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('sortByPrice') sortByPrice?: string,
   ) {
     const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
+    const priceSortDir =
+      sortByPrice === 'asc' || sortByPrice === 'desc' ? sortByPrice : undefined;
 
-    const query = new GetAllPublicUnitsQuery(page, limit, minGuestsNum, propertyId, start, end);
+    const query = new GetAllPublicUnitsQuery(
+      page,
+      limit,
+      minGuestsNum,
+      propertyId,
+      start,
+      end,
+      priceSortDir,
+    );
 
     const result = await this.queryBus.execute<
       GetAllPublicUnitsQuery,
@@ -226,9 +258,24 @@ export class UnitController {
     type: Number,
     description: 'Filter units by minimum number of guests (maxGuests)',
   })
-  @ApiQuery({ name: 'propertyId', required: false, type: String, description: 'Filter by property ID' })
-  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date for availability check (ISO)' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'End date for availability check (ISO)' })
+  @ApiQuery({
+    name: 'propertyId',
+    required: false,
+    type: String,
+    description: 'Filter by property ID',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'Start date for availability check (ISO)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'End date for availability check (ISO)',
+  })
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getPublicByTenant(
     @Param('tenantId') tenantId: string,
