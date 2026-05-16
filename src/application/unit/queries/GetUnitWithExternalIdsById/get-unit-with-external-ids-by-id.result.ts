@@ -25,6 +25,7 @@ export class UnitWithExternalIdsDto extends PublicUnitDto {
     pricePerNight: number,
     tenantId: string,
     propertyId: string,
+    rating: number | null,
     public readonly externalIds: ExternalIdsDto,
   ) {
     super(
@@ -40,6 +41,7 @@ export class UnitWithExternalIdsDto extends PublicUnitDto {
       pricePerNight,
       tenantId,
       propertyId,
+      rating,
     );
   }
 }
