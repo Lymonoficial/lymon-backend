@@ -133,7 +133,7 @@ export class ChannexHttpService implements IChannexService {
     entries: ChannexAvailabilityEntry[],
   ): Promise<void> {
     const body = {
-      availability: entries.map((e) => ({
+      values: entries.map((e) => ({
         property_id: propertyChannexId,
         room_type_id: roomTypeId,
         date: e.date,
@@ -142,12 +142,12 @@ export class ChannexHttpService implements IChannexService {
     };
 
     this.logger.debug(
-      `[CHANNEX] PUT /availability body: ${JSON.stringify(body)}`,
+      `[CHANNEX] POST /availability body: ${JSON.stringify(body)}`,
     );
 
     try {
       await firstValueFrom(
-        this.httpService.put(`${CHANNEX_BASE_URL}/availability`, body, {
+        this.httpService.post(`${CHANNEX_BASE_URL}/availability`, body, {
           headers: { 'user-api-key': this.apiKey },
         }),
       );

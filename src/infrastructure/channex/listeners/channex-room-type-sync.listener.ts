@@ -11,6 +11,7 @@ import {
 } from '@/domain/unit/repositories/unit.repository';
 import type { UnitRepository } from '@/domain/unit/repositories/unit.repository';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
+import type { ChannexAvailabilityEntry } from '@/application/shared/services/channex.service';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
@@ -24,6 +25,28 @@ export class ChannexRoomTypeSyncListener {
     @Inject(UNIT_REPOSITORY)
     private readonly unitRepository: UnitRepository,
   ) {}
+
+  private async pushInitialAvailability(
+    propertyChannexId: string,
+    roomTypeId: string,
+    inventoryCount: number,
+  ): Promise<void> {
+    const entries: ChannexAvailabilityEntry[] = [];
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setUTCDate(today.getUTCDate() + i);
+      entries.push({ date: d.toISOString().slice(0, 10), availability: inventoryCount });
+    }
+    try {
+      await this.channexService.updateAvailability(propertyChannexId, roomTypeId, entries);
+      this.logger.log(`[CHANNEX] Initial availability set for room type ${roomTypeId}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(`[CHANNEX] Failed to set initial availability for room type ${roomTypeId}: ${message}`);
+    }
+  }
 
   @OnEvent(CHANNEX_ROOM_TYPE_SYNC_EVENT)
   async handleRoomTypeSync(event: ChannexRoomTypeSyncEvent): Promise<void> {
@@ -45,6 +68,12 @@ export class ChannexRoomTypeSyncListener {
 
       this.logger.log(
         `[CHANNEX] Unit ${event.unitId} synced as room type ${roomTypeId}`,
+      );
+
+      await this.pushInitialAvailability(
+        event.propertyChannexId,
+        roomTypeId,
+        event.countOfRooms,
       );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
