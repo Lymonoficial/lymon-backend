@@ -65,6 +65,7 @@ export class GetUnitWithExternalIdsByIdQueryHandler
       unit.getPricePerNight(),
       unit.getTenantId().toString(),
       unit.getPropertyId().toString(),
+      unit.getRating(),
       externalIdsDto,
     );
 
