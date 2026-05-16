@@ -21,6 +21,7 @@ import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import {
+  applyDecorators,
   Body,
   Controller,
   DefaultValuePipe,
@@ -45,6 +46,47 @@ import {
 } from '@nestjs/swagger';
 import { CreateUnitDto } from '@/presentation/dtos/unit/create-unit.dto';
 import { UpdateUnitDto } from '@/presentation/dtos/unit/update-unit.dto';
+
+function PublicUnitQueryParams() {
+  return applyDecorators(
+    ApiQuery({
+      name: 'page',
+      required: false,
+      type: Number,
+      description: 'Page number for pagination',
+    }),
+    ApiQuery({
+      name: 'limit',
+      required: false,
+      type: Number,
+      description: 'Items per page (default: 10)',
+    }),
+    ApiQuery({
+      name: 'minGuests',
+      required: false,
+      type: Number,
+      description: 'Filter units by minimum number of guests (maxGuests)',
+    }),
+    ApiQuery({
+      name: 'propertyId',
+      required: false,
+      type: String,
+      description: 'Filter by property ID',
+    }),
+    ApiQuery({
+      name: 'startDate',
+      required: false,
+      type: String,
+      description: 'Start date for availability check (ISO)',
+    }),
+    ApiQuery({
+      name: 'endDate',
+      required: false,
+      type: String,
+      description: 'End date for availability check (ISO)',
+    }),
+  );
+}
 
 @ApiTags('units')
 @ApiBearerAuth('JWT-auth')
@@ -148,27 +190,13 @@ export class UnitController {
   @ApiOperation({
     summary: 'Get all public units (no authentication required)',
   })
+  @PublicUnitQueryParams()
   @ApiQuery({
-    name: 'page',
+    name: 'sortByPrice',
     required: false,
-    type: Number,
-    description: 'Page number for pagination',
+    enum: ['asc', 'desc'],
+    description: 'Sort units by price per night',
   })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Items per page (default: 10)',
-  })
-  @ApiQuery({
-    name: 'minGuests',
-    required: false,
-    type: Number,
-    description: 'Filter units by minimum number of guests (maxGuests)',
-  })
-  @ApiQuery({ name: 'propertyId', required: false, type: String, description: 'Filter by property ID' })
-  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date for availability check (ISO)' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'End date for availability check (ISO)' })
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getAllPublic(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -177,30 +205,32 @@ export class UnitController {
     @Query('propertyId') propertyId?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('sortByPrice') sortByPrice?: string,
   ) {
-    const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
-    const start = startDate ? new Date(startDate) : undefined;
-    const end = endDate ? new Date(endDate) : undefined;
+    const { minGuestsNum, start, end } = this.parsePublicUnitFilters(
+      minGuests,
+      startDate,
+      endDate,
+    );
+    const priceSortDir =
+      sortByPrice === 'asc' || sortByPrice === 'desc' ? sortByPrice : undefined;
 
-    const query = new GetAllPublicUnitsQuery(page, limit, minGuestsNum, propertyId, start, end);
+    const query = new GetAllPublicUnitsQuery(
+      page,
+      limit,
+      minGuestsNum,
+      propertyId,
+      start,
+      end,
+      priceSortDir,
+    );
 
     const result = await this.queryBus.execute<
       GetAllPublicUnitsQuery,
       GetAllPublicUnitsResult
     >(query);
 
-    return {
-      message: 'Units retrieved successfully',
-      data: {
-        units: result.units,
-        pagination: {
-          total: result.total,
-          page: result.page,
-          limit: result.limit,
-          totalPages: result.totalPages,
-        },
-      },
-    };
+    return this.buildPaginatedUnitsResponse(result);
   }
 
   @Public()
@@ -208,27 +238,7 @@ export class UnitController {
   @ApiOperation({
     summary: 'Get all units for a tenant (public, no authentication required)',
   })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-    description: 'Page number for pagination',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Items per page (default: 10)',
-  })
-  @ApiQuery({
-    name: 'minGuests',
-    required: false,
-    type: Number,
-    description: 'Filter units by minimum number of guests (maxGuests)',
-  })
-  @ApiQuery({ name: 'propertyId', required: false, type: String, description: 'Filter by property ID' })
-  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date for availability check (ISO)' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'End date for availability check (ISO)' })
+  @PublicUnitQueryParams()
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getPublicByTenant(
     @Param('tenantId') tenantId: string,
@@ -238,9 +248,11 @@ export class UnitController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    const minGuestsNum = minGuests ? parseInt(minGuests, 10) : undefined;
-    const start = startDate ? new Date(startDate) : undefined;
-    const end = endDate ? new Date(endDate) : undefined;
+    const { minGuestsNum, start, end } = this.parsePublicUnitFilters(
+      minGuests,
+      startDate,
+      endDate,
+    );
 
     const query = new GetPublicUnitsByTenantQuery(
       tenantId,
@@ -256,8 +268,37 @@ export class UnitController {
       GetPublicUnitsByTenantResult
     >(query);
 
+    return this.buildPaginatedUnitsResponse(result);
+  }
+
+  private parsePublicUnitFilters(
+    minGuests?: string,
+    startDate?: string,
+    endDate?: string,
+  ): {
+    minGuestsNum: number | undefined;
+    start: Date | undefined;
+    end: Date | undefined;
+  } {
     return {
-      message: 'Units retrieved successfully',
+      minGuestsNum: minGuests ? Number.parseInt(minGuests, 10) : undefined,
+      start: startDate ? new Date(startDate) : undefined,
+      end: endDate ? new Date(endDate) : undefined,
+    };
+  }
+
+  private buildPaginatedUnitsResponse(
+    result: {
+      units: unknown[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    },
+    message = 'Units retrieved successfully',
+  ) {
+    return {
+      message,
       data: {
         units: result.units,
         pagination: {

@@ -45,9 +45,15 @@ export class GetInventoryItemsByPropertyQueryHandler implements IQueryHandler<
       propertyId,
     );
 
-    const total = items.length;
+    const filtered = query.supplierId
+      ? items.filter(
+          (item) => item.getSupplierId()?.toString() === query.supplierId,
+        )
+      : items;
+
+    const total = filtered.length;
     const start = (query.page - 1) * query.limit;
-    const paginatedItems = items.slice(start, start + query.limit);
+    const paginatedItems = filtered.slice(start, start + query.limit);
 
     return new GetInventoryItemsByPropertyResult(
       paginatedItems.map(toInventoryItemDto),

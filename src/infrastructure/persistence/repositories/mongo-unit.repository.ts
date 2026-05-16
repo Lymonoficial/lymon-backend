@@ -130,6 +130,7 @@ export class MongoUnitRepository implements UnitRepository {
     limit: number,
     minGuests?: number,
     propertyId?: string,
+    sortByPrice?: 'asc' | 'desc',
   ): Promise<{ units: Unit[]; total: number }> {
     const filter: any = { deletedAt: null };
     if (minGuests !== undefined) {
@@ -139,9 +140,12 @@ export class MongoUnitRepository implements UnitRepository {
       filter.propertyId = new Types.ObjectId(propertyId);
     }
     const total = await this.unitModel.countDocuments(filter);
+    const sortOrder: Record<string, 1 | -1> = sortByPrice
+      ? { pricePerNight: sortByPrice === 'asc' ? 1 : -1 }
+      : { createdAt: -1 };
     const documents = await this.unitModel
       .find(filter)
-      .sort({ createdAt: -1 })
+      .sort(sortOrder)
       .skip((page - 1) * limit)
       .limit(limit);
     return {
