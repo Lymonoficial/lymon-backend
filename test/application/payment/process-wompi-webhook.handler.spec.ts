@@ -93,8 +93,15 @@ describe('ProcessWompiWebhookHandler', () => {
     const cartItem = makeCartItem({ quantity: 2 });
     const reservationItem = CartReservationItem.create({
       tenantId: TENANT_ID,
-      reservationId: RESERVATION_ID,
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9c3',
+      unitId: '65f1a1a2b3c4d5e6f7a8b9c4',
+      checkIn: new Date('2030-06-01'),
+      checkOut: new Date('2030-06-05'),
+      guestsCount: 2,
+      notes: null,
+      pricePerNight: 100000,
       totalPriceCopSnapshot: 400000,
+      reservationId: RESERVATION_ID,
     });
     const cart = makeCart({
       id: CART_ID,
@@ -169,7 +176,7 @@ describe('ProcessWompiWebhookHandler', () => {
 
     expect(transactionManager.executeInTransaction).not.toHaveBeenCalled();
     expect(paymentSessionRepository.save).toHaveBeenCalledTimes(1);
-    expect(cartRepository.findById).not.toHaveBeenCalled();
+    expect(cartRepository.findById).toHaveBeenCalledTimes(1);
     expect(reservationRepository.save).not.toHaveBeenCalled();
     expect(experiencePurchaseRepository.save).not.toHaveBeenCalled();
   });

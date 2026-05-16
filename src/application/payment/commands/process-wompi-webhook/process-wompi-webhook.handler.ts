@@ -77,18 +77,22 @@ export class ProcessWompiWebhookHandler implements ICommandHandler<ProcessWompiW
       case 'DECLINED':
       case 'ERROR':
         session.decline(transaction.id);
-        break;
+        await this.paymentSessionRepository.save(session);
+        await this.handleFailedSession(session);
+        return;
       case 'VOIDED':
         session.cancel(transaction.id);
-        break;
+        await this.paymentSessionRepository.save(session);
+        await this.handleFailedSession(session);
+        return;
       case 'EXPIRED':
         session.expire(transaction.id);
-        break;
+        await this.paymentSessionRepository.save(session);
+        await this.handleFailedSession(session);
+        return;
       default:
         return;
     }
-
-    await this.paymentSessionRepository.save(session);
   }
 
   private async handleApprovedSession(
@@ -111,7 +115,7 @@ export class ProcessWompiWebhookHandler implements ICommandHandler<ProcessWompiW
       }
 
       const reservationItem = cart.getReservationItem();
-      if (reservationItem) {
+      if (reservationItem?.reservationId) {
         const reservation = await this.reservationRepository.findById(
           ReservationId.create(reservationItem.reservationId),
         );
@@ -152,10 +156,47 @@ export class ProcessWompiWebhookHandler implements ICommandHandler<ProcessWompiW
         );
       }
 
+      if (cart.getStatus().isPendingPayment()) {
+        cart.markPaid();
+        await this.cartRepository.save(cart);
+      }
+
       this.eventEmitter.emit('wompi.payment.approved', {
         reference: session.getReference(),
         providerReference,
       });
     });
+  }
+
+  private async handleFailedSession(
+    session: Awaited<
+      ReturnType<PaymentSessionRepository['findByReference']>
+    > extends infer T
+      ? Exclude<T, null>
+      : never,
+  ): Promise<void> {
+    const cart = await this.cartRepository.findById(session.getCartId());
+    if (!cart) {
+      return;
+    }
+
+    const reservationItem = cart.getReservationItem();
+    if (reservationItem?.reservationId) {
+      const reservation = await this.reservationRepository.findById(
+        ReservationId.create(reservationItem.reservationId),
+      );
+      if (
+        reservation &&
+        reservation.getStatus().getValue() === ReservationStatusEnum.PENDING
+      ) {
+        reservation.cancel('Payment failed');
+        await this.reservationRepository.save(reservation);
+      }
+    }
+
+    if (cart.getStatus().isPendingPayment()) {
+      cart.reopen();
+      await this.cartRepository.save(cart);
+    }
   }
 }
