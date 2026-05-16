@@ -1,3 +1,11 @@
+export interface RefundPolicyInfo {
+  eligible: boolean;
+  refundAmount: number;
+  policy: string;
+  daysBeforeCheckIn: number;
+  refundRequestId: string | null;
+}
+
 export interface GuestReservationDetailResult {
   id: string;
   bookingReference: string;
@@ -22,6 +30,7 @@ export interface GuestReservationDetailResult {
     nights: number;
     totalPrice: number;
   };
+  refundPolicy: RefundPolicyInfo;
   actions: {
     contactSupport: {
       enabled: true;

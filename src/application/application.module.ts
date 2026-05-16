@@ -38,6 +38,7 @@ import { GuestTagApplicationModule } from '@/application/guest-tag/guest-tag-app
 import { StorageApplicationModule } from '@/application/storage/storage-application.module';
 import { UnitRatingApplicationModule } from '@/application/unit-rating/unit-rating-application.module';
 import { CartApplicationModule } from '@/application/cart/cart-application.module';
+import { RefundApplicationModule } from '@/application/refund/refund-application.module';
 import { ProcessWompiWebhookHandler } from '@/application/payment/commands/process-wompi-webhook/process-wompi-webhook.handler';
 import { GetPaymentSessionStatusHandler } from '@/application/payment/queries/get-payment-session-status/get-payment-session-status.handler';
 
@@ -87,6 +88,7 @@ const QueryHandlers = [GetShiftsHandler];
     StorageApplicationModule,
     UnitRatingApplicationModule,
     CartApplicationModule,
+    RefundApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [

@@ -141,6 +141,12 @@ import {
   UnitRatingDocument,
   UnitRatingSchema,
 } from '@/infrastructure/persistence/schemas/unit-rating.schema';
+import {
+  RefundRequestDocument,
+  RefundRequestSchema,
+} from '@/infrastructure/persistence/schemas/refund-request.schema';
+import { REFUND_REQUEST_REPOSITORY } from '@/domain/refund/repositories/refund-request.repository';
+import { MongoRefundRequestRepository } from '@/infrastructure/persistence/repositories/mongo-refund-request.repository';
 import { UNIT_RATING_REPOSITORY } from '@/domain/unit-rating/repositories/unit-rating.repository';
 import { MongoUnitRatingRepository } from '@/infrastructure/persistence/repositories/mongo-unit-rating.repository';
 
@@ -183,6 +189,7 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
       },
       { name: GuestTagDocument.name, schema: GuestTagSchema },
       { name: UnitRatingDocument.name, schema: UnitRatingSchema },
+      { name: RefundRequestDocument.name, schema: RefundRequestSchema },
     ]),
   ],
   providers: [
@@ -292,6 +299,10 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
       provide: UNIT_RATING_REPOSITORY,
       useClass: MongoUnitRatingRepository,
     },
+    {
+      provide: REFUND_REQUEST_REPOSITORY,
+      useClass: MongoRefundRequestRepository,
+    },
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -320,6 +331,7 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
     CART_REPOSITORY,
     GUEST_TAG_REPOSITORY,
     UNIT_RATING_REPOSITORY,
+    REFUND_REQUEST_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

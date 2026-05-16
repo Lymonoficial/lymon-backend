@@ -15,11 +15,13 @@ import { GetGuestReservationHandler } from '@/application/reservation/queries/ge
 import { GetGuestReservationsHandler } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query-handler';
 import { GetUnitOccupancyHandler } from '@/application/reservation/queries/get-unit-occupancy/get-unit-occupancy.query-handler';
 import { ProcessChannexBookingHandler } from '@/application/reservation/commands/process-channex-booking/process-channex-booking.handler';
+import { CancelGuestReservationHandler } from '@/application/reservation/commands/cancel-guest-reservation/cancel-guest-reservation.handler';
 
 const CommandHandlers = [
   CreateReservationHandler,
   ConfirmReservationHandler,
   CancelReservationHandler,
+  CancelGuestReservationHandler,
   CheckInHandler,
   CheckOutHandler,
   MarkNoShowHandler,
