@@ -61,7 +61,7 @@ export class GetGuestReservationsHandler implements IQueryHandler<
 
     const [reservations, total] = await Promise.all([
       this.guestReservationsReadRepository.findByGuestIds(guestIds, {
-        status: query.status,
+        statuses: query.statuses,
         fromDate: query.fromDate,
         toDate: query.toDate,
         sortBy: query.sortBy,
@@ -70,7 +70,7 @@ export class GetGuestReservationsHandler implements IQueryHandler<
         limit: query.limit,
       }),
       this.guestReservationsReadRepository.countByGuestIds(guestIds, {
-        status: query.status,
+        statuses: query.statuses,
         fromDate: query.fromDate,
         toDate: query.toDate,
       }),

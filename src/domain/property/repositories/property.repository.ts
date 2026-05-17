@@ -14,4 +14,6 @@ export interface PropertyRepository {
   findByTenantId(tenantId: TenantId): Promise<Property[]>;
   countByTenantId(tenantId: TenantId): Promise<number>;
   delete(id: PropertyId): Promise<void>;
+  findFailedChannexSync(): Promise<Property[]>;
+  findByChannexId(channexId: string): Promise<Property | null>;
 }

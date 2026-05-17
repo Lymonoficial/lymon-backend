@@ -1,5 +1,8 @@
 import { Experience } from '@/domain/experience/entities/experience.entity';
-import { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
+import {
+  AvailableExperienceFilters,
+  ExperienceRepository,
+} from '@/domain/experience/repositories/experience.repository';
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
@@ -51,6 +54,7 @@ export class MongoExperienceRepository implements ExperienceRepository {
       blackoutRanges: experience.getBlackoutRanges(),
       allowStandalonePurchase: experience.getAllowStandalonePurchase(),
       allowReservationPurchase: experience.getAllowReservationPurchase(),
+      mediaKeys: experience.getMediaKeys(),
       minNoticeHours: experience.getMinNoticeHours(),
       purchaseCutoffHours: experience.getPurchaseCutoffHours(),
       status: experience.getStatus().toString(),
@@ -136,6 +140,50 @@ export class MongoExperienceRepository implements ExperienceRepository {
     };
   }
 
+  async findAvailableForGuestPaginated(
+    filters: AvailableExperienceFilters,
+    page: number,
+    limit: number,
+  ): Promise<{ experiences: Experience[]; total: number }> {
+    const query: Record<string, unknown> = {
+      status: ExperienceStatus.active().toString(),
+      deletedAt: null,
+    };
+
+    if (filters.tenantId) {
+      query.tenantId = new Types.ObjectId(filters.tenantId.toString());
+    }
+
+    if (filters.propertyId) {
+      query.propertyId = new Types.ObjectId(filters.propertyId.toString());
+    }
+
+    if (filters.category) {
+      query.category = filters.category.toString();
+    }
+
+    const [documents, total] = await Promise.all([
+      this.experienceModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      this.experienceModel.countDocuments(query),
+    ]);
+
+    return {
+      experiences: documents.map((document) => this.toDomain(document)),
+      total,
+    };
+  }
+
+  async delete(id: ExperienceId): Promise<void> {
+    await this.experienceModel.findByIdAndUpdate(id.toString(), {
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
   private toDomain(document: ExperienceDocument): Experience {
     return Experience.reconstitute({
       id: ExperienceId.create(document._id.toString()),
@@ -178,6 +226,7 @@ export class MongoExperienceRepository implements ExperienceRepository {
       })),
       allowStandalonePurchase: document.allowStandalonePurchase,
       allowReservationPurchase: document.allowReservationPurchase,
+      mediaKeys: document.mediaKeys ?? [],
       minNoticeHours: document.minNoticeHours,
       purchaseCutoffHours: document.purchaseCutoffHours,
       status: ExperienceStatus.create(document.status),

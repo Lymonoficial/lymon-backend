@@ -103,7 +103,9 @@ describe('SuppliersController', () => {
   });
 
   it('creates a supplier and returns supplier id', async () => {
-    commandBus.execute.mockResolvedValue({ supplierId: '65f1a1a2b3c4d5e6f7a8b9c4' });
+    commandBus.execute.mockResolvedValue({
+      supplierId: '65f1a1a2b3c4d5e6f7a8b9c4',
+    });
 
     const result = await controller.createSupplier(user, {
       name: 'Fresh Supplies Inc.',

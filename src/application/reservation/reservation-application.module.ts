@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 import { CreateReservationHandler } from './commands/create-reservation/create-reservation.handler';
-import { CreateGuestReservationHandler } from '@/application/reservation/commands/create-guest-reservation/create-guest-reservation.handler';
 import { ConfirmReservationHandler } from '@/application/reservation/commands/confirm-reservation/confirm-reservation.handler';
 import { CancelReservationHandler } from '@/application/reservation/commands/cancel-reservation/cancel-reservation.handler';
 import { CheckInHandler } from '@/application/reservation/commands/check-in/check-in.handler';
@@ -14,16 +13,20 @@ import { GetReservationsByTenantHandler } from '@/application/reservation/querie
 import { GetReservationsByUnitHandler } from '@/application/reservation/queries/get-reservations-by-unit/get-reservations-by-unit.query-handler';
 import { GetGuestReservationHandler } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.query-handler';
 import { GetGuestReservationsHandler } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query-handler';
+import { GetUnitOccupancyHandler } from '@/application/reservation/queries/get-unit-occupancy/get-unit-occupancy.query-handler';
+import { ProcessChannexBookingHandler } from '@/application/reservation/commands/process-channex-booking/process-channex-booking.handler';
+import { CancelGuestReservationHandler } from '@/application/reservation/commands/cancel-guest-reservation/cancel-guest-reservation.handler';
 
 const CommandHandlers = [
   CreateReservationHandler,
-  CreateGuestReservationHandler,
   ConfirmReservationHandler,
   CancelReservationHandler,
+  CancelGuestReservationHandler,
   CheckInHandler,
   CheckOutHandler,
   MarkNoShowHandler,
   UpdateReservationHandler,
+  ProcessChannexBookingHandler,
 ];
 
 const QueryHandlers = [
@@ -32,6 +35,7 @@ const QueryHandlers = [
   GetReservationsByUnitHandler,
   GetGuestReservationHandler,
   GetGuestReservationsHandler,
+  GetUnitOccupancyHandler,
 ];
 
 @Module({

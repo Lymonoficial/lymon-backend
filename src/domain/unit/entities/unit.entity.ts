@@ -40,6 +40,7 @@ export interface UnitCreateInput {
   pricingConfig: UnitPricingConfig;
   amenities: string[];
   externalIds: ExternalIds;
+  mediaKeys?: string[];
 }
 
 export interface UnitTimestamps {
@@ -50,6 +51,8 @@ export interface UnitTimestamps {
 export interface UnitReconstituteInput extends UnitCreateInput {
   id: UnitId;
   timestamps: UnitTimestamps;
+  channexRoomTypeId?: string | null;
+  rating?: number | null;
 }
 
 export class Unit {
@@ -66,11 +69,14 @@ export class Unit {
     private bathroomsCount: number,
     private isShared: boolean,
     private amenities: string[],
+    private mediaKeys: string[],
     private pricePerNight: number,
     private externalIds: ExternalIds,
+    private rating: number | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
-    private deletedAt: Date | null,
+    private readonly deletedAt: Date | null,
+    private channexRoomTypeId: string | null = null,
   ) {}
 
   static create(input: UnitCreateInput): Unit {
@@ -122,8 +128,10 @@ export class Unit {
       physicalFeatures.bathroomsCount,
       physicalFeatures.isShared,
       amenities,
+      input.mediaKeys ?? [],
       pricingConfig.pricePerNight,
       externalIds,
+      null,
       new Date(),
       new Date(),
       null,
@@ -143,6 +151,7 @@ export class Unit {
       amenities,
       externalIds,
       timestamps,
+      channexRoomTypeId,
     } = input;
 
     return new Unit(
@@ -158,11 +167,14 @@ export class Unit {
       physicalFeatures.bathroomsCount,
       physicalFeatures.isShared,
       amenities,
+      input.mediaKeys ?? [],
       pricingConfig.pricePerNight,
       externalIds,
+      input.rating ?? null,
       timestamps.createdAt,
       timestamps.updatedAt,
       null,
+      channexRoomTypeId ?? null,
     );
   }
 
@@ -212,6 +224,10 @@ export class Unit {
 
   getAmenities(): string[] {
     return this.amenities;
+  }
+
+  getMediaKeys(): string[] {
+    return this.mediaKeys;
   }
 
   getPricePerNight(): number {
@@ -297,8 +313,31 @@ export class Unit {
     this.updatedAt = new Date();
   }
 
+  updateMediaKeys(mediaKeys: string[]): void {
+    this.mediaKeys = mediaKeys;
+    this.updatedAt = new Date();
+  }
+
   updateExternalIds(externalIds: ExternalIds): void {
     this.externalIds = externalIds;
+    this.updatedAt = new Date();
+  }
+
+  getChannexRoomTypeId(): string | null {
+    return this.channexRoomTypeId;
+  }
+
+  setChannexRoomTypeId(id: string): void {
+    this.channexRoomTypeId = id;
+    this.updatedAt = new Date();
+  }
+
+  getRating(): number | null {
+    return this.rating;
+  }
+
+  updateRating(newRating: number | null): void {
+    this.rating = newRating;
     this.updatedAt = new Date();
   }
 }

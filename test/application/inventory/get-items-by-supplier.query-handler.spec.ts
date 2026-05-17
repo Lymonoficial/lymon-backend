@@ -25,7 +25,10 @@ describe('GetItemsBySupplierQueryHandler', () => {
 
   it('returns items for the supplier with pagination metadata', async () => {
     supplierRepository.findById.mockResolvedValue(
-      makeSupplier({ id: '65f1a1a2b3c4d5e6f7a8b9c4', tenantId: '65f1a1a2b3c4d5e6f7a8b9c0' }),
+      makeSupplier({
+        id: '65f1a1a2b3c4d5e6f7a8b9c4',
+        tenantId: '65f1a1a2b3c4d5e6f7a8b9c0',
+      }),
     );
     inventoryItemRepository.findBySupplierId.mockResolvedValue([
       makeInventoryItem({
@@ -41,7 +44,12 @@ describe('GetItemsBySupplierQueryHandler', () => {
     ]);
 
     const result = await handler.execute(
-      new GetItemsBySupplierQuery('65f1a1a2b3c4d5e6f7a8b9c0', '65f1a1a2b3c4d5e6f7a8b9c4', 1, 10),
+      new GetItemsBySupplierQuery(
+        '65f1a1a2b3c4d5e6f7a8b9c0',
+        '65f1a1a2b3c4d5e6f7a8b9c4',
+        1,
+        10,
+      ),
     );
 
     expect(result.total).toBe(2);
@@ -57,7 +65,12 @@ describe('GetItemsBySupplierQueryHandler', () => {
 
     await expect(
       handler.execute(
-        new GetItemsBySupplierQuery('65f1a1a2b3c4d5e6f7a8b9c0', '65f1a1a2b3c4d5e6f7a8b9c4', 1, 10),
+        new GetItemsBySupplierQuery(
+          '65f1a1a2b3c4d5e6f7a8b9c0',
+          '65f1a1a2b3c4d5e6f7a8b9c4',
+          1,
+          10,
+        ),
       ),
     ).rejects.toThrow(NotFoundException);
 

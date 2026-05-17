@@ -9,6 +9,7 @@ import {
   UNIT_REPOSITORY,
   type UnitRepository,
 } from '@/domain/unit/repositories/unit.repository';
+import { Unit } from '@/domain/unit/entities/unit.entity';
 import { ExternalIds } from '@/domain/unit/value-objects/external-ids.vo';
 import { BedTypeEnum } from '@/domain/unit/value-objects/bed-type.vo';
 import {
@@ -46,32 +47,18 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       UnitId.create(command.unitId),
     );
 
-    if (!unit || unit.getTenantId().toString() !== command.tenantId) {
+    if (!unit || unit?.getTenantId().toString() !== command.tenantId) {
       throw new NotFoundException('Unit not found');
     }
 
     const previousInventoryCount = unit.getInventoryCount();
 
-    if (
-      command.inventoryCount !== undefined &&
-      command.inventoryCount < unit.getInventoryCount()
-    ) {
-      const activeReservations =
-        await this.reservationRepository.findActiveByUnitFromDate(
-          UnitId.create(command.unitId),
-          new Date(),
-        );
-
-      const minimumAllowedInventory =
-        InventoryCountValidator.getMinimumRequiredInventory(activeReservations);
-
-      if (command.inventoryCount < minimumAllowedInventory) {
-        throw new ConflictException(
-          `Cannot reduce inventory count below ${minimumAllowedInventory} because there are active reservations in overlapping dates`,
-        );
-      }
-
-      unit.updateInventoryCount(command.inventoryCount);
+    if (command.inventoryCount !== undefined) {
+      await this.validateAndApplyInventoryCount(
+        command.inventoryCount,
+        command.unitId,
+        unit,
+      );
     }
 
     if (command.name !== undefined || command.description !== undefined) {
@@ -114,6 +101,10 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       unit.updateAmenities(command.amenities);
     }
 
+    if (command.mediaKeys !== undefined) {
+      unit.updateMediaKeys(command.mediaKeys);
+    }
+
     if (command.pricePerNight !== undefined) {
       unit.updatePrice(command.pricePerNight);
     }
@@ -142,20 +133,45 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
           command.unitId,
           {
             changedFields: this.getChangedFields(command),
-            ...(command.inventoryCount !== undefined
-              ? {
+            ...(command.inventoryCount === undefined
+              ? {}
+              : {
                   inventoryCount: {
                     before: previousInventoryCount,
                     after: command.inventoryCount,
                   },
-                }
-              : {}),
+                }),
           },
         ),
       );
     }
 
     return new UpdateUnitResult(command.unitId);
+  }
+
+  private async validateAndApplyInventoryCount(
+    inventoryCount: number,
+    unitId: string,
+    unit: Unit,
+  ): Promise<void> {
+    if (inventoryCount >= unit.getInventoryCount()) return;
+
+    const activeReservations =
+      await this.reservationRepository.findActiveByUnitFromDate(
+        UnitId.create(unitId),
+        new Date(),
+      );
+
+    const minimumAllowedInventory =
+      InventoryCountValidator.getMinimumRequiredInventory(activeReservations);
+
+    if (inventoryCount < minimumAllowedInventory) {
+      throw new ConflictException(
+        `Cannot reduce inventory count below ${minimumAllowedInventory} because there are active reservations in overlapping dates`,
+      );
+    }
+
+    unit.updateInventoryCount(inventoryCount);
   }
 
   private validateAtLeastOneField(command: UpdateUnitCommand): void {
@@ -169,6 +185,7 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       command.bathroomsCount !== undefined ||
       command.isShared !== undefined ||
       command.amenities !== undefined ||
+      command.mediaKeys !== undefined ||
       command.pricePerNight !== undefined ||
       command.externalIds !== undefined;
 
@@ -194,6 +211,7 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       changedFields.push('bathroomsCount');
     if (command.isShared !== undefined) changedFields.push('isShared');
     if (command.amenities !== undefined) changedFields.push('amenities');
+    if (command.mediaKeys !== undefined) changedFields.push('mediaKeys');
     if (command.pricePerNight !== undefined)
       changedFields.push('pricePerNight');
     if (command.externalIds !== undefined) changedFields.push('externalIds');

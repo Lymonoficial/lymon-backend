@@ -20,9 +20,15 @@ export interface UnitRepository {
     tenantId: TenantId,
     page: number,
     limit: number,
+    minGuests?: number,
+    propertyId?: string,
   ): Promise<{ units: Unit[]; total: number }>;
   findAllPaginated(
     page: number,
     limit: number,
+    minGuests?: number,
+    propertyId?: string,
+    sortByPrice?: 'asc' | 'desc',
   ): Promise<{ units: Unit[]; total: number }>;
+  findByChannexRoomTypeId(roomTypeId: string): Promise<Unit | null>;
 }

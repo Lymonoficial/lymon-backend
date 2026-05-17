@@ -73,11 +73,27 @@ export class GuestDocument extends Document {
   })
   status: GuestStatusEnum;
 
-  @Prop({ type: [String], default: [] })
-  tags: string[];
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'GuestTagDocument' }],
+    default: [],
+  })
+  tags: Types.ObjectId[];
 
-  @Prop({ default: '' })
-  preferencesNotes: string;
+  @Prop({
+    type: [
+      {
+        catalogItemId: { type: String, required: true },
+        labelSnapshot: { type: String, required: true },
+        category: { type: String, required: true },
+      },
+    ],
+    default: [],
+  })
+  preferences: Array<{
+    catalogItemId: string;
+    labelSnapshot: string;
+    category: string;
+  }>;
 
   @Prop({
     type: {
@@ -103,6 +119,15 @@ export class GuestDocument extends Document {
     lastUnitId: Types.ObjectId | null;
   };
 
+  @Prop({ type: String, default: null })
+  pendingEmail: string | null;
+
+  @Prop({ type: String, default: null })
+  emailChangeToken: string | null;
+
+  @Prop({ type: Date, default: null })
+  emailChangeExpiry: Date | null;
+
   @Prop()
   createdAt: Date;
 
@@ -119,3 +144,4 @@ GuestSchema.index(
   { sparse: true },
 );
 GuestSchema.index({ tenantId: 1, guestAccountId: 1 }, { sparse: true });
+GuestSchema.index({ emailChangeToken: 1 }, { sparse: true });

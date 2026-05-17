@@ -27,10 +27,10 @@ import { RequirePermission } from '@/infrastructure/auth/decorators/require-perm
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
-import { CreateInventoryItemDto } from '@/presentation/dtos/create-inventory-item.dto';
-import { UpdateInventoryItemDto } from '@/presentation/dtos/update-inventory-item.dto';
-import { RecordInventoryMovementDto } from '@/presentation/dtos/record-inventory-movement.dto';
-import { UpdateInventoryItemSupplierDto } from '@/presentation/dtos/update-inventory-item-supplier.dto';
+import { CreateInventoryItemDto } from '@/presentation/dtos/inventory/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from '@/presentation/dtos/inventory/update-inventory-item.dto';
+import { RecordInventoryMovementDto } from '@/presentation/dtos/inventory/record-inventory-movement.dto';
+import { UpdateInventoryItemSupplierDto } from '@/presentation/dtos/inventory/update-inventory-item-supplier.dto';
 import { CreateInventoryItemCommand } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.command';
 import { CreateInventoryItemResult } from '@/application/inventory/commands/create-inventory-item/create-inventory-item.result';
 import { UpdateInventoryItemCommand } from '@/application/inventory/commands/update-inventory-item/update-inventory-item.command';
@@ -78,7 +78,7 @@ export class InventoryController {
         propertyId,
         dto.sku,
         dto.name,
-        dto.category,
+        dto.categoryId,
         dto.unit,
         dto.minStock,
         dto.initialStock ?? 0,
@@ -116,9 +116,10 @@ export class InventoryController {
         propertyId,
         itemId,
         dto.name,
-        dto.category,
+        dto.categoryId,
         dto.unit,
         dto.minStock,
+        dto.currentStock,
         user.userId,
         user.email,
       ),
@@ -182,6 +183,12 @@ export class InventoryController {
     type: Number,
     description: 'Items per page (default: 10)',
   })
+  @ApiQuery({
+    name: 'supplierId',
+    required: false,
+    type: String,
+    description: 'Filter by supplier ID',
+  })
   @ApiResponse({
     status: 200,
     description: 'Inventory items retrieved successfully',
@@ -191,6 +198,7 @@ export class InventoryController {
     @Param('propertyId') propertyId: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('supplierId') supplierId?: string,
   ) {
     const result: GetInventoryItemsByPropertyResult =
       await this.queryBus.execute<
@@ -202,6 +210,7 @@ export class InventoryController {
           propertyId,
           page,
           limit,
+          supplierId,
         ),
       );
 

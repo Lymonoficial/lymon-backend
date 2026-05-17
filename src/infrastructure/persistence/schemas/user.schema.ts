@@ -43,9 +43,22 @@ export class UserDocument extends Document {
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
+
+  @Prop()
+  fullName?: string;
+
+  @Prop()
+  document?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);
 
-UserSchema.index({ email: 1, tenantId: 1, deletedAt: 1 }, { unique: true });
+UserSchema.index(
+  { email: 1, tenantId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { deletedAt: null },
+    name: 'users_unique_active_email_tenant',
+  },
+);
 UserSchema.index({ tenantId: 1, deletedAt: 1 });

@@ -83,7 +83,13 @@ describe('User Entity - Full Coverage', () => {
         const roleAssignments: RoleAssignment[] = [
           {
             roleId: 'VIEWER',
-            scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1', '65f1a1a2b3c4d5e6f7a8b9cd'] },
+            scope: {
+              type: 'PROPERTY',
+              resourceIds: [
+                '65f1a1a2b3c4d5e6f7a8b9c1',
+                '65f1a1a2b3c4d5e6f7a8b9cd',
+              ],
+            },
           },
           {
             roleId: 'EDITOR',
@@ -151,7 +157,10 @@ describe('User Entity - Full Coverage', () => {
       const roleAssignments: RoleAssignment[] = [
         {
           roleId: 'VIEWER',
-          scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1'] },
+          scope: {
+            type: 'PROPERTY',
+            resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1'],
+          },
         },
       ];
       const user = User.createStaff(
@@ -503,9 +512,18 @@ describe('User Entity - Full Coverage', () => {
         { roleId: 'ADMIN', scope: { type: 'TENANT' } },
         {
           roleId: 'EDITOR',
-          scope: { type: 'PROPERTY', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c1', '65f1a1a2b3c4d5e6f7a8b9cd'] },
+          scope: {
+            type: 'PROPERTY',
+            resourceIds: [
+              '65f1a1a2b3c4d5e6f7a8b9c1',
+              '65f1a1a2b3c4d5e6f7a8b9cd',
+            ],
+          },
         },
-        { roleId: 'VIEWER', scope: { type: 'UNIT', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c8'] } },
+        {
+          roleId: 'VIEWER',
+          scope: { type: 'UNIT', resourceIds: ['65f1a1a2b3c4d5e6f7a8b9c8'] },
+        },
       ];
 
       const user = User.createStaff(

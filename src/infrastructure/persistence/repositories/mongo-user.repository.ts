@@ -9,78 +9,100 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UserDocument } from '@/infrastructure/persistence/schemas/user.schema';
 import { Model, Types } from 'mongoose';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, OnModuleInit } from '@nestjs/common';
 import { MongoServerError } from 'mongodb';
 
-export class MongoUserRepository implements UserRepository {
+export class MongoUserRepository implements UserRepository, OnModuleInit {
   constructor(
     @InjectModel(UserDocument.name)
     private readonly userModel: Model<UserDocument>,
   ) {}
 
+  async onModuleInit(): Promise<void> {
+    await this.userModel.syncIndexes();
+  }
+
   async save(user: User): Promise<void> {
+    const id = user.getId()?.toString();
+    const document = this.buildDocument(user);
+
     try {
-      const id = user.getId()?.toString();
-
-      const document: Partial<UserDocument> = {
-        email: user.getEmail().toString(),
-        passwordHash: user.getPasswordHash(),
-        tenantId: user.getTenantId().toString(),
-        isOwner: user.isOwner(),
-        roleAssignments: user.getRoleAssignments(),
-        emailVerified: user.isEmailVerified(),
-        updatedAt: new Date(),
-        deletedAt: user.getDeletedAt(),
-      };
-
-      const resetPasswordToken = user.getResetPasswordToken();
-      const resetPasswordExpires = user.getResetPasswordExpires();
-      const passwordChangedAt = user.getPasswordChangedAt();
-
-      // Set or unset optional fields
-      if (resetPasswordToken !== undefined) {
-        document.resetPasswordToken = resetPasswordToken;
-      }
-      if (resetPasswordExpires !== undefined) {
-        document.resetPasswordExpires = resetPasswordExpires;
-      }
-      if (passwordChangedAt !== undefined) {
-        document.passwordChangedAt = passwordChangedAt;
-      }
-
       if (id) {
-        const updateOperation: {
-          $set: Partial<UserDocument>;
-          $unset?: Record<string, string>;
-        } = { $set: document };
-
-        const unsetFields: Record<string, string> = {};
-        if (resetPasswordToken === undefined) {
-          unsetFields.resetPasswordToken = '';
-        }
-        if (resetPasswordExpires === undefined) {
-          unsetFields.resetPasswordExpires = '';
-        }
-
-        if (Object.keys(unsetFields).length > 0) {
-          updateOperation.$unset = unsetFields;
-        }
-
-        await this.userModel.findByIdAndUpdate(id, updateOperation, {
-          new: true,
-        });
+        await this.updateUser(id, document, user);
       } else {
         await this.userModel.create({ ...document, createdAt: new Date() });
       }
     } catch (error) {
       if (error instanceof MongoServerError && error.code === 11000) {
         throw new ConflictException(
-          'This email is already registered. If this should be allowed across tenants, verify Mongo indexes and keep only the unique composite index { email, tenantId }.',
+          'This email is already registered for an active user in this tenant.',
         );
       }
 
       throw error;
     }
+  }
+
+  private buildDocument(user: User): Partial<UserDocument> {
+    const document: Partial<UserDocument> = {
+      email: user.getEmail().toString(),
+      passwordHash: user.getPasswordHash(),
+      tenantId: user.getTenantId().toString(),
+      isOwner: user.isOwner(),
+      roleAssignments: user.getRoleAssignments(),
+      emailVerified: user.isEmailVerified(),
+      updatedAt: new Date(),
+      deletedAt: user.getDeletedAt(),
+    };
+
+    const optionalFields = [
+      { key: 'resetPasswordToken', value: user.getResetPasswordToken() },
+      { key: 'resetPasswordExpires', value: user.getResetPasswordExpires() },
+      { key: 'passwordChangedAt', value: user.getPasswordChangedAt() },
+      { key: 'fullName', value: user.getFullName() },
+      { key: 'document', value: user.getDocument() },
+    ] as const;
+
+    for (const field of optionalFields) {
+      this.assignOptionalField(document, field.key, field.value);
+    }
+
+    return document;
+  }
+
+  private assignOptionalField<K extends keyof Partial<UserDocument>>(
+    document: Partial<UserDocument>,
+    key: K,
+    value: Partial<UserDocument>[K] | undefined,
+  ): void {
+    if (value !== undefined) {
+      document[key] = value;
+    }
+  }
+
+  private async updateUser(
+    id: string,
+    document: Partial<UserDocument>,
+    user: User,
+  ): Promise<void> {
+    const updateOperation: {
+      $set: Partial<UserDocument>;
+      $unset?: Record<string, string>;
+    } = { $set: document };
+
+    const unsetFields: Record<string, string> = {};
+    if (user.getResetPasswordToken() === undefined) {
+      unsetFields.resetPasswordToken = '';
+    }
+    if (user.getResetPasswordExpires() === undefined) {
+      unsetFields.resetPasswordExpires = '';
+    }
+
+    if (Object.keys(unsetFields).length > 0) {
+      updateOperation.$unset = unsetFields;
+    }
+
+    await this.userModel.findByIdAndUpdate(id, updateOperation, { new: true });
   }
 
   async findById(id: UserId): Promise<User | null> {
@@ -142,6 +164,8 @@ export class MongoUserRepository implements UserRepository {
       resetPasswordExpires: doc.resetPasswordExpires,
       passwordChangedAt: doc.passwordChangedAt,
       deletedAt: doc.deletedAt,
+      fullName: doc.fullName,
+      document: doc.document,
     });
   }
 }

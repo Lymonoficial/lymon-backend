@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterGuestAccountCommand } from '@/application/guest-auth/commands/register-guest-account/register-guest-account.command';
 import { RegisterGuestAccountResult } from '@/application/guest-auth/commands/register-guest-account/register-guest-account.result';
 import { VerifyGuestEmailCommand } from '@/application/guest-auth/commands/verify-guest-email/verify-guest-email.command';
 import { VerifyGuestEmailResult } from '@/application/guest-auth/commands/verify-guest-email/verify-guest-email.handler';
+import { ConfirmGuestEmailChangeCommand } from '@/application/guest/commands/confirm-email-change/confirm-guest-email-change.command';
 import { GuestLoginCommand } from '@/application/guest-auth/commands/login-guest/login-guest.command';
 import { GuestLoginResult } from '@/application/guest-auth/commands/login-guest/login-guest.result';
 import { RecoverGuestPasswordCommand } from '@/application/guest-auth/commands/recover-guest-password/recover-guest-password.command';
@@ -14,11 +15,11 @@ import { ConfirmRecoverGuestPasswordResult } from '@/application/guest-auth/comm
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { GuestPublic } from '@/infrastructure/guest-auth/decorators/guest-public.decorator';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
-import { RegisterGuestAccountDto } from '@/presentation/dtos/register-guest-account.dto';
-import { GuestLoginDto } from '@/presentation/dtos/guest-login.dto';
-import { RecoverGuestPasswordDto } from '@/presentation/dtos/recover-guest-password.dto';
-import { ConfirmRecoverGuestPasswordDto } from '@/presentation/dtos/confirm-recover-guest-password.dto';
-import { RefreshTokenDto } from '@/presentation/dtos/refresh-token.dto';
+import { RegisterGuestAccountDto } from '@/presentation/dtos/guest/register-guest-account.dto';
+import { GuestLoginDto } from '@/presentation/dtos/guest/guest-login.dto';
+import { RecoverGuestPasswordDto } from '@/presentation/dtos/guest/recover-guest-password.dto';
+import { ConfirmRecoverGuestPasswordDto } from '@/presentation/dtos/guest/confirm-recover-guest-password.dto';
+import { RefreshTokenDto } from '@/presentation/dtos/auth/refresh-token.dto';
 import { RefreshGuestTokenCommand } from '@/application/guest-auth/commands/refresh-guest-token/refresh-guest-token.command';
 import { RefreshGuestTokenResult } from '@/application/guest-auth/commands/refresh-guest-token/refresh-guest-token.result';
 import { LogoutGuestCommand } from '@/application/guest-auth/commands/logout-guest/logout-guest.command';
@@ -60,15 +61,23 @@ export class GuestAuthController {
 
   @GuestPublic()
   @Get('verify-email')
-  @ApiOperation({ summary: 'Verify guest email address' })
+  @ApiOperation({ summary: 'Verify guest email address or confirm email change' })
   @ApiResponse({ status: 200, description: 'Email verified' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async verifyEmail(@Query('token') token: string) {
-    const result = await this.commandBus.execute<
-      VerifyGuestEmailCommand,
-      VerifyGuestEmailResult
-    >(new VerifyGuestEmailCommand(token));
-
-    return { message: result.message };
+    try {
+      const result = await this.commandBus.execute<
+        VerifyGuestEmailCommand,
+        VerifyGuestEmailResult
+      >(new VerifyGuestEmailCommand(token));
+      return { message: result.message };
+    } catch (e) {
+      if (e instanceof BadRequestException) {
+        await this.commandBus.execute(new ConfirmGuestEmailChangeCommand(token));
+        return { message: 'Email updated successfully' };
+      }
+      throw e;
+    }
   }
 
   @GuestPublic()

@@ -6,7 +6,7 @@ export const GUEST_RESERVATIONS_READ_REPOSITORY =
   'GUEST_RESERVATIONS_READ_REPOSITORY';
 
 export interface GuestReservationFilters {
-  status?: ReservationStatusEnum;
+  statuses?: ReservationStatusEnum[];
   fromDate?: Date;
   toDate?: Date;
 }

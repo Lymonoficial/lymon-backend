@@ -125,7 +125,7 @@ describe('GetGuestByIdHandler', () => {
 
       expect(result.item?.firstName).toBeNull();
       expect(result.item?.lastName).toBeNull();
-      expect(result.item?.preferencesNotes).toBeNull();
+      expect(result.item?.preferences).toEqual([]);
     });
   });
 

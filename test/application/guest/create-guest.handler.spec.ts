@@ -4,16 +4,21 @@ import { CreateGuestCommand } from '@/application/guest/commands/create-guest.co
 import { CreateGuestResult } from '@/application/guest/commands/create-guest.result';
 import { Guest } from '@/domain/guest/entities/guest.entity';
 import { GuestRepository } from '@/domain/guest/repositories/guest.repository';
+import { CatalogPreferenceBuilderService } from '@/application/guest-preference/services/catalog-preference-builder.service';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
+import { createCatalogPreferenceBuilderMock } from '@test/shared/mocks/services/catalog-preference-builder.mock';
 
 describe('CreateGuestHandler', () => {
   let handler: CreateGuestHandler;
   let guestRepository: jest.Mocked<GuestRepository>;
+  let catalogPreferenceBuilder: jest.Mocked<CatalogPreferenceBuilderService>;
 
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
-    handler = new CreateGuestHandler(guestRepository);
+    catalogPreferenceBuilder = createCatalogPreferenceBuilderMock();
+    catalogPreferenceBuilder.build.mockResolvedValue([]);
+    handler = new CreateGuestHandler(guestRepository, catalogPreferenceBuilder);
   });
 
   describe('when the primary email already exists in the tenant', () => {
@@ -106,7 +111,6 @@ describe('CreateGuestHandler', () => {
         ['jane.alt@example.com'],
         [{ number: '+12025550123', type: 'mobile', isPrimary: true }],
         ['vip'],
-        'Late check-in',
       );
 
       const result = await handler.execute(command);
@@ -128,7 +132,9 @@ describe('CreateGuestHandler', () => {
       // Validates guest was saved with normalized and mapped values
       expect(guestRepository.save).toHaveBeenCalledTimes(1);
       const savedGuest: Guest = guestRepository.save.mock.calls[0][0];
-      expect(savedGuest.getTenantId().toString()).toBe('65f1a1a2b3c4d5e6f7a8b9c0');
+      expect(savedGuest.getTenantId().toString()).toBe(
+        '65f1a1a2b3c4d5e6f7a8b9c0',
+      );
       expect(savedGuest.getFullName()).toBe('Jane Smith');
       expect(savedGuest.getPrimaryEmail()).toBe('jane@example.com');
       expect(savedGuest.getEmails()).toEqual(
@@ -144,8 +150,8 @@ describe('CreateGuestHandler', () => {
       expect(savedGuest.getPhones()).toEqual([
         { number: '+12025550123', type: 'mobile', isPrimary: true },
       ]);
-      expect(savedGuest.getTags()).toEqual(['vip']);
-      expect(savedGuest.getPreferencesNotes()).toBe('Late check-in');
+      expect(savedGuest.getTags()).toEqual([]);
+      expect(savedGuest.getPreferences()).toEqual([]);
     });
   });
 });

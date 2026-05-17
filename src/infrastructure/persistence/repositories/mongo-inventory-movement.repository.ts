@@ -93,18 +93,18 @@ export class MongoInventoryMovementRepository implements InventoryMovementReposi
   }
 
   private toDomain(document: InventoryMovementDocument): InventoryMovement {
-    return InventoryMovement.reconstitute(
-      InventoryMovementId.create(document._id.toString()),
-      TenantId.createFromString(document.tenantId.toString()),
-      PropertyId.create(document.propertyId.toString()),
-      InventoryItemId.create(document.itemId.toString()),
-      document.type as InventoryMovementType,
-      document.quantity,
-      document.reason,
-      document.reference,
-      document.actorId,
-      document.actorEmail,
-      document.createdAt,
-    );
+    return InventoryMovement.reconstitute({
+      id: InventoryMovementId.create(document._id.toString()),
+      tenantId: TenantId.createFromString(document.tenantId.toString()),
+      propertyId: PropertyId.create(document.propertyId.toString()),
+      itemId: InventoryItemId.create(document.itemId.toString()),
+      type: document.type as InventoryMovementType,
+      quantity: document.quantity,
+      reason: document.reason,
+      reference: document.reference,
+      actorId: document.actorId,
+      actorEmail: document.actorEmail,
+      createdAt: document.createdAt,
+    });
   }
 }

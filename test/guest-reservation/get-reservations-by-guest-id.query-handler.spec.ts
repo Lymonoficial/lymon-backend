@@ -62,24 +62,24 @@ function makeGuest(guestId: string, tenantId: string): Guest {
     lastUnitId: null,
   };
 
-  return Guest.reconstitute(
-    GuestId.createFromString(guestId),
-    TenantId.createFromString(tenantId),
-    GuestAccountId.createFromString(GUEST_ACCOUNT_ID),
+  return Guest.reconstitute({
+    id: GuestId.createFromString(guestId),
+    tenantId: TenantId.createFromString(tenantId),
+    guestAccountId: GuestAccountId.createFromString(GUEST_ACCOUNT_ID),
     identity,
-    'John',
-    'Doe',
-    'John Doe',
-    'john@example.com',
-    ['john@example.com'],
-    [],
-    GuestStatusEnum.ACTIVE,
-    [],
-    '',
+    firstName: 'John',
+    lastName: 'Doe',
+    fullName: 'John Doe',
+    primaryEmail: 'john@example.com',
+    emails: ['john@example.com'],
+    phones: [],
+    status: GuestStatusEnum.ACTIVE,
+    tags: [],
+    preferences: [],
     summary,
-    new Date(),
-    new Date(),
-  );
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
 }
 
 function makeReservation(

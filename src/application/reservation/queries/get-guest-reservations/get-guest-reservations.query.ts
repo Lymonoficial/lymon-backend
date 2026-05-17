@@ -5,7 +5,7 @@ export class GetGuestReservationsQuery {
     public readonly guestAccountId: string,
     public readonly page: number,
     public readonly limit: number,
-    public readonly status?: ReservationStatusEnum,
+    public readonly statuses?: ReservationStatusEnum[],
     public readonly fromDate?: Date,
     public readonly toDate?: Date,
     public readonly sortBy: 'date' | 'status' | 'createdAt' = 'date',

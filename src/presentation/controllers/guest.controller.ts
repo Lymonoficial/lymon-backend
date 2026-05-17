@@ -7,6 +7,10 @@ import { CreateGuestResult } from '@/application/guest/commands/create-guest.res
 import { SearchGuestsQuery } from '@/application/guest/queries/search-guests.query';
 import { GetGuestByIdQuery } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.query';
 import type { GetGuestByIdResult } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.result';
+import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
+import { UpdateGuestProfileCommand } from '@/application/guest/commands/update-guest-profile/update-guest-profile.command';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
@@ -16,13 +20,11 @@ import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
 import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-guest.decorator';
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
-import { ChangePasswordDto } from '@/presentation/dtos/change-password.dto';
-import { CreateGuestDto } from '@/presentation/dtos/create-guest.dto';
-import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
-import { UpdateTagsDto } from '../dtos/update-tags.dto';
-import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
-import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
-import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferences.dto';
+import { ChangePasswordDto } from '@/presentation/dtos/auth/change-password.dto';
+import { CreateGuestDto } from '@/presentation/dtos/guest/create-guest.dto';
+import { UpdateTagsDto } from '@/presentation/dtos/guest/update-tags.dto';
+import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
+import { UpdateGuestProfileDto } from '@/presentation/dtos/guest/update-guest-profile.dto';
 import {
   Body,
   Controller,
@@ -77,7 +79,7 @@ export class GuestController {
         dto.emails,
         dto.phones,
         dto.tags,
-        dto.preferencesNotes,
+        dto.preferences?.map((p) => p.catalogItemId),
       ),
     );
 
@@ -120,7 +122,7 @@ export class GuestController {
         emails: guest.getEmails(),
         phones: guest.getPhones(),
         status: guest.getStatus(),
-        tags: guest.getTags(),
+        tags: guest.getTags().map((t) => t.getName()),
         createdAt: guest.getCreatedAt(),
         updatedAt: guest.getUpdatedAt(),
       })),
@@ -185,6 +187,35 @@ export class GuestController {
     };
   }
 
+  @Patch(':guestId')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Update profile fields of a specific guest' })
+  @ApiResponse({ status: 200, description: 'Guest profile updated successfully' })
+  @ApiResponse({ status: 404, description: 'Guest not found' })
+  @ApiResponse({ status: 409, description: 'A guest with this primary email already exists' })
+  async updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Param('guestId') guestId: string,
+    @Body() dto: UpdateGuestProfileDto,
+  ) {
+    await this.commandBus.execute(
+      new UpdateGuestProfileCommand(
+        user.tenantId,
+        guestId,
+        dto.fullName,
+        dto.firstName,
+        dto.lastName,
+        dto.primaryEmail,
+        dto.emails,
+        dto.phones,
+        dto.identity,
+      ),
+    );
+
+    return { message: 'Guest profile updated successfully' };
+  }
+
   @Patch(':guestId/tags')
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.CRM_MANAGE)
@@ -233,7 +264,7 @@ export class GuestController {
       new SaveGuestPreferencesCommand(
         user.tenantId,
         guestId,
-        dto.preferencesNotes,
+        dto.preferences.map((p) => p.catalogItemId),
         user.activePlan,
       ),
     );

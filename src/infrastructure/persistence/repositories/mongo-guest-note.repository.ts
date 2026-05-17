@@ -101,17 +101,17 @@ export class MongoGuestNoteRepository implements GuestNoteRepository {
   }
 
   private toDomain(doc: GuestNoteDocument): GuestNote {
-    return GuestNote.reconstitute(
-      GuestNoteId.createFromString(doc._id.toString()),
-      TenantId.createFromString(doc.tenantId.toString()),
-      GuestId.createFromString(doc.guestId.toString()),
-      doc.note,
-      doc.type,
-      doc.status,
-      doc.createdBy,
-      doc.createdAt,
-      doc.updatedAt,
-      doc.deletedAt,
-    );
+    return GuestNote.reconstitute({
+      id: GuestNoteId.createFromString(doc._id.toString()),
+      tenantId: TenantId.createFromString(doc.tenantId.toString()),
+      guestId: GuestId.createFromString(doc.guestId.toString()),
+      note: doc.note,
+      type: doc.type,
+      status: doc.status,
+      createdBy: doc.createdBy,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+      deletedAt: doc.deletedAt,
+    });
   }
 }

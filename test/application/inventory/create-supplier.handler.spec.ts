@@ -138,7 +138,9 @@ describe('CreateSupplierHandler', () => {
 
       expect(supplierRepository.save).toHaveBeenCalledTimes(1);
       const savedSupplier = supplierRepository.save.mock.calls[0][0];
-      expect(savedSupplier.getTenantId().toString()).toBe('65f1a1a2b3c4d5e6f7a8b9c0');
+      expect(savedSupplier.getTenantId().toString()).toBe(
+        '65f1a1a2b3c4d5e6f7a8b9c0',
+      );
       expect(savedSupplier.getName()).toBe('Fresh Supplies Inc.');
       expect(savedSupplier.getContactEmail()).toBe('contact@freshsupplies.com');
       expect(savedSupplier.getContactPhone()).toBe('+12025550123');

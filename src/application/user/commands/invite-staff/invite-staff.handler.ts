@@ -94,6 +94,8 @@ export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
       passwordHash,
       tenantId,
       command.roleAssignments,
+      command.fullName,
+      command.document,
     );
     await this.userRepository.save(staffUser);
 
@@ -115,20 +117,14 @@ export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
     );
   }
 
-  /**
-   * Validates that every roleId exists (system or tenant) and
-   * every resourceId in each scope actually belongs to this tenant.
-   */
   private async validateRoleAssignments(
     assignments: RoleAssignment[],
     tenantId: string,
   ): Promise<void> {
-    // Cache property and unit IDs per tenant
     let validPropertyIds: Set<string> | null = null;
     let validUnitIds: Set<string> | null = null;
 
     for (const assignment of assignments) {
-      // Validate roleId exists (system roles only)
       const roleId = RoleId.createFromString(assignment.roleId);
       const role = await this.roleRepository.findById(roleId);
       if (!role) {
@@ -137,41 +133,60 @@ export class InviteStaffHandler implements ICommandHandler<InviteStaffCommand> {
         );
       }
 
-      // Validate scope resources
       if (assignment.scope.type === 'PROPERTY') {
-        if (!validPropertyIds) {
-          const tid = TenantId.createFromString(tenantId);
-          const properties = await this.propertyRepository.findByTenantId(tid);
-          validPropertyIds = new Set(
-            properties.map((property) => property.getId()!.toString()),
-          );
-        }
-        const invalid = assignment.scope.resourceIds.filter(
-          (id) => !validPropertyIds!.has(id),
+        validPropertyIds = await this.validatePropertyScope(
+          assignment.scope.resourceIds,
+          tenantId,
+          validPropertyIds,
         );
-        if (invalid.length > 0) {
-          throw new BadRequestException(
-            `Property IDs not found in this tenant: ${invalid.join(', ')}`,
-          );
-        }
       }
 
       if (assignment.scope.type === 'UNIT') {
-        if (!validUnitIds) {
-          const tid = TenantId.createFromString(tenantId);
-          const units = await this.unitRepository.findByTenantId(tid);
-          validUnitIds = new Set(units.map((unit) => unit.getId()!.toString()));
-        }
-        const invalid = assignment.scope.resourceIds.filter(
-          (id) => !validUnitIds!.has(id),
+        validUnitIds = await this.validateUnitScope(
+          assignment.scope.resourceIds,
+          tenantId,
+          validUnitIds,
         );
-        if (invalid.length > 0) {
-          throw new BadRequestException(
-            `Unit IDs not found in this tenant: ${invalid.join(', ')}`,
-          );
-        }
       }
     }
+  }
+
+  private async validatePropertyScope(
+    resourceIds: string[],
+    tenantId: string,
+    cache: Set<string> | null,
+  ): Promise<Set<string>> {
+    if (!cache) {
+      const tid = TenantId.createFromString(tenantId);
+      const properties = await this.propertyRepository.findByTenantId(tid);
+      cache = new Set(properties.map((p) => p.getId()!.toString()));
+    }
+    const invalid = resourceIds.filter((id) => !cache.has(id));
+    if (invalid.length > 0) {
+      throw new BadRequestException(
+        `Property IDs not found in this tenant: ${invalid.join(', ')}`,
+      );
+    }
+    return cache;
+  }
+
+  private async validateUnitScope(
+    resourceIds: string[],
+    tenantId: string,
+    cache: Set<string> | null,
+  ): Promise<Set<string>> {
+    if (!cache) {
+      const tid = TenantId.createFromString(tenantId);
+      const units = await this.unitRepository.findByTenantId(tid);
+      cache = new Set(units.map((u) => u.getId()!.toString()));
+    }
+    const invalid = resourceIds.filter((id) => !cache.has(id));
+    if (invalid.length > 0) {
+      throw new BadRequestException(
+        `Unit IDs not found in this tenant: ${invalid.join(', ')}`,
+      );
+    }
+    return cache;
   }
 
   private async validatePlanLimits(tenantId: TenantId, staffLimit: number) {

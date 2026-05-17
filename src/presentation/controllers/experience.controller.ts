@@ -1,20 +1,34 @@
 import { CreateExperienceCommand } from '@/application/experience/commands/create-experience.command';
 import { CreateExperienceResult } from '@/application/experience/commands/create-experience.result';
+import {
+  ExperienceActor,
+  UpdateExperienceCommand,
+} from '@/application/experience/commands/update-experience/update-experience.command';
+import { ExperienceChanges } from '@/domain/experience/entities/experience.entity';
+import { pickDefined } from '@/presentation/common/utils/pick-defined.util';
+import { DeleteExperienceCommand } from '@/application/experience/commands/delete-experience.command';
 import { GetExperiencesByTenantQuery } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.query';
 import { GetExperiencesByTenantResult } from '@/application/experience/queries/GetExperiencesByTenant/get-experiences-by-tenant.result';
+import { GetExperienceByIdQuery } from '@/application/experience/queries/GetExperienceById/get-experience-by-id.query';
+import { GetExperienceByIdResult } from '@/application/experience/queries/GetExperienceById/get-experience-by-id.result';
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
 import { RequirePermission } from '@/infrastructure/auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '@/infrastructure/auth/guards/permission.guard';
-import { CreateExperienceDto } from '@/presentation/dtos/create-experience.dto';
+import { CreateExperienceDto } from '@/presentation/dtos/experience/create-experience.dto';
+import { UpdateExperienceDto } from '@/presentation/dtos/experience/update-experience.dto';
 import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
+  Param,
+  HttpCode,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -87,6 +101,24 @@ export class ExperienceController {
           totalPages: result.totalPages,
         },
       },
+    };
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.PROPERTY_VIEW)
+  @ApiOperation({ summary: 'Get experience by ID' })
+  @ApiResponse({ status: 200, description: 'Experience retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Experience not found' })
+  async getById(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    const result = await this.queryBus.execute<
+      GetExperienceByIdQuery,
+      GetExperienceByIdResult
+    >(new GetExperienceByIdQuery(id, user.tenantId));
+
+    return {
+      message: 'Experience retrieved successfully',
+      data: result.experience,
     };
   }
 
@@ -213,5 +245,75 @@ export class ExperienceController {
         experienceId: result.experienceId,
       },
     };
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.EXPERIENCE_EDIT)
+  @ApiOperation({ summary: 'Update an existing experience' })
+  @ApiResponse({ status: 200, description: 'Experience updated successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or no fields provided',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Insufficient permissions or not the owner',
+  })
+  @ApiResponse({ status: 404, description: 'Experience not found' })
+  async update(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: UpdateExperienceDto,
+  ) {
+    const changes: ExperienceChanges = {
+      ...pickDefined({
+        name: dto.name,
+        description: dto.description,
+        priceCop: dto.priceCop,
+        durationHours: dto.durationHours,
+        capacity: dto.capacity,
+        coverImageUrl: dto.coverImageUrl,
+        location: dto.location,
+        availabilityType: dto.availabilityType,
+        recurrence: dto.recurrence,
+        allowStandalonePurchase: dto.allowStandalonePurchase,
+        allowReservationPurchase: dto.allowReservationPurchase,
+      }),
+      ...(dto.startAt !== undefined && { startAt: new Date(dto.startAt) }),
+      ...(dto.endAt !== undefined && { endAt: new Date(dto.endAt) }),
+      ...(dto.blackoutRanges !== undefined && {
+        blackoutRanges: dto.blackoutRanges.map((r) => ({
+          startAt: new Date(r.startAt),
+          endAt: new Date(r.endAt),
+        })),
+      }),
+      ...(dto.mediaKeys !== undefined && { mediaKeys: dto.mediaKeys }),
+    };
+
+    const actor: ExperienceActor = { id: user.userId, email: user.email };
+
+    await this.commandBus.execute(
+      new UpdateExperienceCommand(id, user.tenantId, changes, actor),
+    );
+
+    return { message: 'Experience updated successfully' };
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(Permission.EXPERIENCE_DELETE)
+  @ApiOperation({ summary: 'Delete an experience' })
+  @ApiResponse({ status: 204, description: 'Experience deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Experience not found' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  async delete(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new DeleteExperienceCommand(id, user.tenantId, user.userId, user.email),
+    );
   }
 }

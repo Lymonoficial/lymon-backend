@@ -14,6 +14,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseBoolPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -34,12 +35,12 @@ import { CreateGuestNoteResult } from '@/application/guest-note/commands/create-
 import { UpdateGuestNoteCommand } from '@/application/guest-note/commands/update-guest-note.command';
 import { DeleteGuestNoteCommand } from '@/application/guest-note/commands/delete-guest-note.command';
 import { TogglePinGuestNoteCommand } from '@/application/guest-note/commands/toggle-pin-guest-note.command';
-import { CreateGuestNoteDto } from '@/presentation/dtos/create-guest-note.dto';
-import { UpdateGuestNoteDto } from '@/presentation/dtos/update-guest-note.dto';
-import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
-import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
 import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.query';
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
+import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
+import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
@@ -50,6 +51,18 @@ import { SaveGuestPreferencesDto } from '@/presentation/dtos/save-guest-preferen
 import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
 import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { ListCatalogItemsByTenantQuery } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.query';
+import { ListCatalogItemsByTenantResult } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.result';
+import { ToggleCatalogItemCommand } from '@/application/guest-preference/commands/toggle-catalog-item/toggle-catalog-item.command';
+import { CreateCustomCatalogItemCommand } from '@/application/guest-preference/commands/create-custom-catalog-item/create-custom-catalog-item.command';
+import { UpdateCustomCatalogItemCommand } from '@/application/guest-preference/commands/update-custom-catalog-item/update-custom-catalog-item.command';
+import { DeleteCustomCatalogItemCommand } from '@/application/guest-preference/commands/delete-custom-catalog-item/delete-custom-catalog-item.command';
+import { CreateGuestNoteDto } from '@/presentation/dtos/guest-note/create-guest-note.dto';
+import { UpdateGuestNoteDto } from '@/presentation/dtos/guest-note/update-guest-note.dto';
+import { SendGuestMessageDto } from '@/presentation/dtos/guest/send-guest-message.dto';
+import { CreateCatalogItemDto } from '@/presentation/dtos/catalog/create-catalog-item.dto';
+import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog-item.dto';
+import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -114,7 +127,7 @@ export class CrmController {
             primaryEmail: guest.getPrimaryEmail(),
             phones: guest.getPhones(),
             status: guest.getStatus(),
-            tags: guest.getTags(),
+            tags: guest.getTags().map((t) => t.getName()),
             lifecycleStatus: lifecycleStatuses.get(currentId) || GuestLifecycleStatus.NO_RESERVATION,
           };
         }),
@@ -168,7 +181,10 @@ export class CrmController {
   @RequirePermission(Permission.CRM_MANAGE)
   @ApiOperation({ summary: 'Edit a guest note' })
   @ApiResponse({ status: 200, description: 'Guest note updated successfully' })
-  @ApiResponse({ status: 400, description: 'No fields provided or invalid type' })
+  @ApiResponse({
+    status: 400,
+    description: 'No fields provided or invalid type',
+  })
   @ApiResponse({ status: 404, description: 'Guest note not found' })
   async updateGuestNote(
     @Param('noteId') noteId: string,
@@ -358,7 +374,7 @@ export class CrmController {
       new SaveGuestPreferencesCommand(
         user.tenantId,
         guestId,
-        dto.preferencesNotes,
+        dto.preferences.map((p) => p.catalogItemId),
         user.activePlan,
       ),
     );
@@ -440,5 +456,149 @@ export class CrmController {
       message: 'Message sent and recorded successfully',
       data: result,
     };
+  }
+
+  // ── Catalog endpoints ────────────────────────────────────────────────────────
+
+  @Get('catalog')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'List preference catalog items for the tenant' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalog items retrieved successfully',
+  })
+  async listCatalogItems(
+    @CurrentUser() user: JwtPayload,
+    @Query('includeInactive', new DefaultValuePipe(false), ParseBoolPipe)
+    includeInactive: boolean,
+  ) {
+    const result = await this.queryBus.execute<
+      ListCatalogItemsByTenantQuery,
+      ListCatalogItemsByTenantResult
+    >(new ListCatalogItemsByTenantQuery(user.tenantId, includeInactive));
+
+    return {
+      message: 'Catalog items retrieved successfully',
+      data: result.items,
+    };
+  }
+
+  @Patch('catalog/:itemId/toggle')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Activate or deactivate a catalog item' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalog item toggled successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Catalog item not found' })
+  async toggleCatalogItem(
+    @Param('itemId') itemId: string,
+    @Body() dto: ToggleCatalogItemDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new ToggleCatalogItemCommand(user.tenantId, itemId, dto.activate),
+    );
+
+    return { message: 'Catalog item toggled successfully' };
+  }
+
+  @Post('catalog')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @ApiOperation({ summary: 'Create a custom catalog item' })
+  @ApiResponse({
+    status: 201,
+    description: 'Catalog item created successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Plan does not allow custom catalog items',
+  })
+  async createCatalogItem(
+    @Body() dto: CreateCatalogItemDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const itemId = await this.commandBus.execute<
+      CreateCustomCatalogItemCommand,
+      string
+    >(
+      new CreateCustomCatalogItemCommand(
+        user.tenantId,
+        user.activePlan,
+        dto.category,
+        dto.label,
+      ),
+    );
+
+    return {
+      message: 'Catalog item created successfully',
+      data: { itemId },
+    };
+  }
+
+  @Patch('catalog/:itemId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a custom catalog item' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalog item updated successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Plan does not allow custom catalog management or item is not custom',
+  })
+  @ApiResponse({ status: 404, description: 'Catalog item not found' })
+  async updateCatalogItem(
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateCatalogItemDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new UpdateCustomCatalogItemCommand(
+        user.tenantId,
+        user.activePlan,
+        itemId,
+        dto.label,
+        dto.category,
+      ),
+    );
+
+    return { message: 'Catalog item updated successfully' };
+  }
+
+  @Delete('catalog/:itemId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete a custom catalog item' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalog item deleted successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Plan does not allow custom catalog management or item is not custom',
+  })
+  @ApiResponse({ status: 404, description: 'Catalog item not found' })
+  async deleteCatalogItem(
+    @Param('itemId') itemId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new DeleteCustomCatalogItemCommand(
+        user.tenantId,
+        user.activePlan,
+        itemId,
+      ),
+    );
+
+    return { message: 'Catalog item deleted successfully' };
   }
 }

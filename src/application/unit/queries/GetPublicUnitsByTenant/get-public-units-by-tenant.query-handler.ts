@@ -8,6 +8,12 @@ import type { TenantRepository } from '@/domain/tenant/repositories/tenant.repos
 import { UNIT_REPOSITORY } from '@/domain/unit/repositories/unit.repository';
 import type { UnitRepository } from '@/domain/unit/repositories/unit.repository';
 import { mapUnitToPublicDto } from '@/application/reservation/queries/shared/unit.mapper';
+import {
+  RESERVATION_REPOSITORY,
+  type ReservationRepository,
+} from '@/domain/reservation/repositories/reservation.repository';
+import { AvailabilityChecker } from '@/domain/reservation/services/availability-checker.domain-service';
+import { DateRange } from '@/domain/reservation/value-objects/date-range.vo';
 
 @QueryHandler(GetPublicUnitsByTenantQuery)
 export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
@@ -19,6 +25,8 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
     private readonly unitRepository: UnitRepository,
     @Inject(TENANT_REPOSITORY)
     private readonly tenantRepository: TenantRepository,
+    @Inject(RESERVATION_REPOSITORY)
+    private readonly reservationRepository: ReservationRepository,
   ) {}
 
   async execute(
@@ -27,10 +35,50 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
     const tenantId = TenantId.createFromString(String(query.tenantId));
     const tenant = await this.tenantRepository.findById(tenantId);
     if (!tenant) throw new NotFoundException('Tenant not found');
+
+    // Si hay fechas, necesitamos filtrar por disponibilidad
+    if (query.startDate && query.endDate) {
+      const dateRange = DateRange.create(query.startDate, query.endDate);
+
+      // Obtenemos todas las unidades candidatas del tenant (sin paginar en DB para filtrar luego)
+      const { units } = await this.unitRepository.findByTenantIdPaginated(
+        tenantId,
+        1,
+        1000,
+        query.minGuests,
+      );
+
+      const availableUnits: any[] = [];
+      for (const unit of units) {
+        const reservations = await this.reservationRepository.findByUnitAndDateRange(
+          unit.getId()!,
+          dateRange,
+        );
+
+        const isAvailable = AvailabilityChecker.isAvailable(
+          dateRange,
+          reservations,
+          unit.getInventoryCount(),
+        );
+
+        if (isAvailable) {
+          availableUnits.push(unit);
+        }
+      }
+
+      const total = availableUnits.length;
+      const skip = (query.page - 1) * query.limit;
+      const paginatedUnits = availableUnits.slice(skip, skip + query.limit);
+      const dtos = paginatedUnits.map(mapUnitToPublicDto);
+
+      return new GetPublicUnitsByTenantResult(dtos, total, query.page, query.limit);
+    }
+
     const { units, total } = await this.unitRepository.findByTenantIdPaginated(
       tenantId,
       query.page,
       query.limit,
+      query.minGuests,
     );
     const dtos = units.map(mapUnitToPublicDto);
 

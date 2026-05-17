@@ -78,7 +78,10 @@ describe('GetGuestReservationHandler', () => {
     } as any);
 
     const result = await handler.execute(
-      new GetGuestReservationQuery('65f1a1a2b3c4d5e6f7a8b9c3', '65f1a1a2b3c4d5e6f7a8b9c5'),
+      new GetGuestReservationQuery(
+        '65f1a1a2b3c4d5e6f7a8b9c3',
+        '65f1a1a2b3c4d5e6f7a8b9c5',
+      ),
     );
 
     expect(result).toMatchObject({
@@ -104,7 +107,10 @@ describe('GetGuestReservationHandler', () => {
 
     await expect(
       handler.execute(
-        new GetGuestReservationQuery('65f1a1a2b3c4d5e6f7a8b9cf', '65f1a1a2b3c4d5e6f7a8b9c5'),
+        new GetGuestReservationQuery(
+          '65f1a1a2b3c4d5e6f7a8b9cf',
+          '65f1a1a2b3c4d5e6f7a8b9c5',
+        ),
       ),
     ).rejects.toThrow(NotFoundException);
   });
@@ -125,7 +131,12 @@ describe('GetGuestReservationHandler', () => {
     guestRepository.findById.mockResolvedValue(guest as any);
 
     await expect(
-      handler.execute(new GetGuestReservationQuery('65f1a1a2b3c4d5e6f7a8b9c3', '65f1a1a2b3c4d5e6f7a8b9c5')),
+      handler.execute(
+        new GetGuestReservationQuery(
+          '65f1a1a2b3c4d5e6f7a8b9c3',
+          '65f1a1a2b3c4d5e6f7a8b9c5',
+        ),
+      ),
     ).rejects.toThrow(ForbiddenException);
   });
 });

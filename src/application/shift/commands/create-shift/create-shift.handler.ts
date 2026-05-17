@@ -51,7 +51,7 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
     const staffMembers = await this.getStaffMembers(staffMemberIds, tenantId);
 
     const property = await this.propertyRepository.findById(propertyId);
-    if (!property || !property.getTenantId().equals(tenantId)) {
+    if (!property?.getTenantId().equals(tenantId)) {
       throw new NotFoundException('Property not found for the tenant');
     }
 
@@ -193,9 +193,9 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
       ),
     );
 
-    for (let index = 0; index < staffMembers.length; index += 1) {
-      const staffMember = staffMembers[index];
-      if (!staffMember || !staffMember.getTenantId().equals(tenantId)) {
+    for (const element of staffMembers) {
+      const staffMember = element;
+      if (!staffMember?.getTenantId().equals(tenantId)) {
         throw new NotFoundException('Staff member not found for the tenant');
       }
 
