@@ -8,9 +8,7 @@ import {
 } from '@/domain/guest/repositories/guest.repository';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
-import { GetGuestLifecycleStatusHandler } from '../get-guest-lifecycle-status/get-guest-lifecycle-status.handler';
 import { GetGuestLifecycleStatusQuery } from '../get-guest-lifecycle-status/get-guest-lifecycle-status.query';
-import { Guest } from '@/domain/guest/entities/guest.entity';
 import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 
 @QueryHandler(GetGuestByIdQuery)
