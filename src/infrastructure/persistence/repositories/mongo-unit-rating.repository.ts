@@ -104,6 +104,40 @@ export class MongoUnitRatingRepository implements UnitRatingRepository {
     return Math.round(result[0].avg * 10) / 10;
   }
 
+  async findByGuestIdPaginated(
+    guestId: GuestId,
+    page: number,
+    limit: number,
+  ): Promise<{ ratings: UnitRating[]; total: number }> {
+    const filter = {
+      guestId: new Types.ObjectId(guestId.toString()),
+      deletedAt: null,
+    };
+    const [total, docs] = await Promise.all([
+      this.unitRatingModel.countDocuments(filter),
+      this.unitRatingModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+    ]);
+    return { ratings: docs.map((d) => this.toDomain(d)), total };
+  }
+
+  async calculateAverageForGuest(guestId: GuestId): Promise<number | null> {
+    const result = await this.unitRatingModel.aggregate([
+      {
+        $match: {
+          guestId: new Types.ObjectId(guestId.toString()),
+          deletedAt: null,
+        },
+      },
+      { $group: { _id: null, avg: { $avg: '$rate' } } },
+    ]);
+    if (!result.length) return null;
+    return Math.round(result[0].avg * 10) / 10;
+  }
+
   private toDomain(doc: UnitRatingDocument): UnitRating {
     return UnitRating.reconstitute({
       id: UnitRatingId.create(doc._id.toString()),
