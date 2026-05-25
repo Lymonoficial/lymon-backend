@@ -48,7 +48,7 @@ describe('GetGuestRatingsHandler', () => {
       ratings: [rating],
       total: 1,
     });
-    unitRatingRepository.calculateAverageForGuest.mockResolvedValue(4.0);
+    unitRatingRepository.calculateAverageForGuest.mockResolvedValue(4);
     unitRepository.findById.mockResolvedValue(makeUnitFixture('Casa del Mar'));
 
     const result = await handler.execute(
@@ -60,7 +60,7 @@ describe('GetGuestRatingsHandler', () => {
     expect(result.ratings[0].unitName).toBe('Casa del Mar');
     expect(result.ratings[0].rate).toBe(4);
     expect(result.ratings[0].message).toBe('Great unit!');
-    expect(result.averageRating).toBe(4.0);
+    expect(result.averageRating).toBe(4);
     expect(result.totalPages).toBe(1);
   });
 
@@ -87,7 +87,7 @@ describe('GetGuestRatingsHandler', () => {
       ratings: [rating],
       total: 1,
     });
-    unitRatingRepository.calculateAverageForGuest.mockResolvedValue(4.0);
+    unitRatingRepository.calculateAverageForGuest.mockResolvedValue(4);
     unitRepository.findById.mockResolvedValue(null);
 
     const result = await handler.execute(
