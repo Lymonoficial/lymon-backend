@@ -7,9 +7,6 @@ import { CreateGuestResult } from '@/application/guest/commands/create-guest.res
 import { SearchGuestsQuery } from '@/application/guest/queries/search-guests.query';
 import { GetGuestByIdQuery } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.query';
 import type { GetGuestByIdResult } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.result';
-import { AssignGuestTagsCommand } from '@/application/guest/commands/assign-guest-tags.command';
-import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
-import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { UpdateGuestProfileCommand } from '@/application/guest/commands/update-guest-profile/update-guest-profile.command';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -22,8 +19,6 @@ import { CurrentGuest } from '@/infrastructure/guest-auth/decorators/current-gue
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
 import { ChangePasswordDto } from '@/presentation/dtos/auth/change-password.dto';
 import { CreateGuestDto } from '@/presentation/dtos/guest/create-guest.dto';
-import { UpdateTagsDto } from '@/presentation/dtos/guest/update-tags.dto';
-import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
 import { UpdateGuestProfileDto } from '@/presentation/dtos/guest/update-guest-profile.dto';
 import {
   Body,
@@ -216,64 +211,4 @@ export class GuestController {
     return { message: 'Guest profile updated successfully' };
   }
 
-  @Patch(':guestId/tags')
-  @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission(Permission.CRM_MANAGE)
-  @ApiOperation({ summary: 'Assign tags to a specific guest' })
-  @ApiResponse({ status: 200, description: 'Tags assigned successfully' })
-  @ApiResponse({ status: 404, description: 'Guest not found' })
-  async assignTags(
-    @CurrentUser() user: JwtPayload,
-    @Param('guestId') guestId: string,
-    @Body() dto: UpdateTagsDto,
-  ) {
-    await this.commandBus.execute(
-      new AssignGuestTagsCommand(guestId, dto.tags, user.tenantId, user.userId, user.email),
-    );
-
-    return {
-      message: 'Tags assigned successfully',
-    };
-  }
-
-  @Patch(':guestId/preferences')
-  @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission(Permission.CRM_MANAGE)
-  @ApiOperation({
-    summary:
-      'Guardar (crear o actualizar) las notas de preferencias de un huésped',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Preferencias del huésped guardadas correctamente',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Plan no permite esta funcionalidad o permisos insuficientes',
-  })
-  @ApiResponse({ status: 404, description: 'Huésped no encontrado' })
-  async savePreferences(
-    @Param('guestId') guestId: string,
-    @Body() dto: SaveGuestPreferencesDto,
-    @CurrentUser() user: JwtPayload,
-  ) {
-    const result = await this.commandBus.execute<
-      SaveGuestPreferencesCommand,
-      SaveGuestPreferencesResult
-    >(
-      new SaveGuestPreferencesCommand(
-        user.tenantId,
-        guestId,
-        dto.preferences.map((p) => p.catalogItemId),
-        user.activePlan,
-        user.userId,
-        user.email,
-      ),
-    );
-
-    return {
-      message: 'Guest preferences saved successfully',
-      data: { guestId: result.guestId, wasCreated: result.wasCreated },
-    };
-  }
 }
