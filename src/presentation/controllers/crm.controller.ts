@@ -47,7 +47,6 @@ import { SaveGuestPreferencesResult } from '@/application/guest/commands/prefere
 import { SaveGuestPreferencesDto } from '../dtos/guest/save-guest-preferences.dto';
 import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
 import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
-import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { ListCatalogItemsByTenantQuery } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.query';
 import { ListCatalogItemsByTenantResult } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.result';
 import { ToggleCatalogItemCommand } from '@/application/guest-preference/commands/toggle-catalog-item/toggle-catalog-item.command';
