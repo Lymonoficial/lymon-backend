@@ -148,6 +148,7 @@ export class CrmController {
         dto.note,
         dto.type,
         user.userId,
+        user.email,
         dto.status,
       ),
     );
@@ -178,6 +179,7 @@ export class CrmController {
         user.tenantId,
         noteId,
         user.userId,
+        user.email,
         dto.note,
         dto.type,
       ),
@@ -197,7 +199,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute<DeleteGuestNoteCommand, void>(
-      new DeleteGuestNoteCommand(user.tenantId, noteId, user.userId),
+      new DeleteGuestNoteCommand(user.tenantId, noteId, user.userId, user.email),
     );
   }
 
@@ -212,7 +214,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute<TogglePinGuestNoteCommand, void>(
-      new TogglePinGuestNoteCommand(user.tenantId, noteId, user.userId),
+      new TogglePinGuestNoteCommand(user.tenantId, noteId, user.userId, user.email),
     );
     return { message: 'Guest note pin status toggled' };
   }
@@ -322,7 +324,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute(
-      new AssignGuestTagsCommand(guestId, tags, user.tenantId),
+      new AssignGuestTagsCommand(guestId, tags, user.tenantId, user.userId, user.email),
     );
 
     return {
@@ -358,6 +360,8 @@ export class CrmController {
         guestId,
         dto.preferences.map((p) => p.catalogItemId),
         user.activePlan,
+        user.userId,
+        user.email,
       ),
     );
 
@@ -431,6 +435,7 @@ export class CrmController {
         dto.templateId,
         dto.attachments,
         user.userId,
+        user.email,
       ),
     );
 
@@ -481,7 +486,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute(
-      new ToggleCatalogItemCommand(user.tenantId, itemId, dto.activate),
+      new ToggleCatalogItemCommand(user.tenantId, itemId, dto.activate, user.userId, user.email),
     );
 
     return { message: 'Catalog item toggled successfully' };
@@ -512,6 +517,8 @@ export class CrmController {
         user.activePlan,
         dto.category,
         dto.label,
+        user.userId,
+        user.email,
       ),
     );
 
@@ -548,6 +555,8 @@ export class CrmController {
         itemId,
         dto.label,
         dto.category,
+        user.userId,
+        user.email,
       ),
     );
 
@@ -578,6 +587,8 @@ export class CrmController {
         user.tenantId,
         user.activePlan,
         itemId,
+        user.userId,
+        user.email,
       ),
     );
 

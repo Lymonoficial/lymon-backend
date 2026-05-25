@@ -228,7 +228,7 @@ export class GuestController {
     @Body() dto: UpdateTagsDto,
   ) {
     await this.commandBus.execute(
-      new AssignGuestTagsCommand(guestId, dto.tags, user.tenantId),
+      new AssignGuestTagsCommand(guestId, dto.tags, user.tenantId, user.userId, user.email),
     );
 
     return {
@@ -266,6 +266,8 @@ export class GuestController {
         guestId,
         dto.preferences.map((p) => p.catalogItemId),
         user.activePlan,
+        user.userId,
+        user.email,
       ),
     );
 

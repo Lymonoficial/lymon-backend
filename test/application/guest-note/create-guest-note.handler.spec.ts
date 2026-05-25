@@ -35,10 +35,13 @@ describe('CreateGuestNoteHandler', () => {
     status: GuestNoteStatusEnum.NOT_PINNED,
   };
 
+  let mockEventEmitter: { emit: jest.Mock };
+
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
     guestNoteRepository = createGuestNoteRepositoryMock();
-    handler = new CreateGuestNoteHandler(guestNoteRepository, guestRepository);
+    mockEventEmitter = { emit: jest.fn() };
+    handler = new CreateGuestNoteHandler(guestNoteRepository, guestRepository, mockEventEmitter as any);
   });
 
   describe('Validation errors (DTO equivalent coverage in handler)', () => {
@@ -49,6 +52,7 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.note,
         defaultProps.type,
         defaultProps.createdBy,
+        'actor@test.com',
         defaultProps.status,
       );
 
@@ -67,6 +71,7 @@ describe('CreateGuestNoteHandler', () => {
         '   ', // nota con solo espacios
         defaultProps.type,
         defaultProps.createdBy,
+        'actor@test.com',
         defaultProps.status,
       );
 
@@ -85,6 +90,7 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.note,
         'INTERNAL_SECRET' as any, // Tipo inválido forzado
         defaultProps.createdBy,
+        'actor@test.com',
         defaultProps.status,
       );
 
@@ -107,6 +113,7 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.note,
         defaultProps.type,
         defaultProps.createdBy,
+        'actor@test.com',
         defaultProps.status,
       );
 
@@ -126,6 +133,7 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.note,
         defaultProps.type,
         defaultProps.createdBy,
+        'actor@test.com',
         defaultProps.status,
       );
 
@@ -149,6 +157,7 @@ describe('CreateGuestNoteHandler', () => {
         defaultProps.note,
         defaultProps.type,
         defaultProps.createdBy,
+        'actor@test.com',
         defaultProps.status,
       );
 
