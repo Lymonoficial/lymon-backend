@@ -39,6 +39,8 @@ import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/ge
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { GetGuestMonthlySpendingQuery } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.query';
+import { GetGuestMonthlySpendingResult } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.result';
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
@@ -305,6 +307,28 @@ export class CrmController {
           totalPages: result.totalPages,
         },
       },
+    };
+  }
+
+  @Get('guests/:guestId/spending/monthly')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get monthly spending breakdown for a guest (last 12 rolling months)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest monthly spending retrieved successfully',
+  })
+  async getGuestMonthlySpending(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestMonthlySpendingQuery,
+      GetGuestMonthlySpendingResult
+    >(new GetGuestMonthlySpendingQuery(user.tenantId, guestId));
+    return {
+      message: 'Guest monthly spending retrieved successfully',
+      data: result.items,
     };
   }
 
