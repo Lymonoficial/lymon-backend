@@ -143,7 +143,7 @@ describe('GetGuestMonthlySpendingHandler', () => {
       const query = new GetGuestMonthlySpendingQuery(tenantId, guestId);
       const result = await handler.execute(query);
 
-      const lastItem = result.items[result.items.length - 1];
+      const lastItem = result.items.at(-1)!
       expect(lastItem.label).toBe(expectedCurrentLabel);
     });
   });
