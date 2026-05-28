@@ -16,5 +16,6 @@ export function createReservationRepositoryMock(): jest.Mocked<ReservationReposi
     countByTenantId: jest.fn(),
     countByGuestId: jest.fn(),
     findConfirmedDueForCheckIn: jest.fn(),
+    getMonthlySpendingByGuestId: jest.fn(),
   };
 }
