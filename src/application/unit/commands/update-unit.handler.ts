@@ -67,66 +67,7 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       );
     }
 
-    if (command.name !== undefined || command.description !== undefined) {
-      unit.updateDetails(
-        command.name ?? unit.getName(),
-        command.description ?? unit.getDescription(),
-      );
-    }
-
-    if (
-      command.maxGuests !== undefined ||
-      command.standardGuests !== undefined
-    ) {
-      unit.updateCapacity(
-        command.maxGuests ?? unit.getMaxGuests(),
-        command.standardGuests ?? unit.getStandardGuests(),
-      );
-    }
-
-    if (command.bedrooms !== undefined) {
-      const bedrooms = command.bedrooms.map((bedroom) => ({
-        roomName: bedroom.roomName,
-        beds: bedroom.beds.map((bed) => ({
-          type: bed.type as BedTypeEnum,
-          count: bed.count,
-        })),
-      }));
-      unit.updateBedrooms(bedrooms);
-    }
-
-    if (command.bathroomsCount !== undefined) {
-      unit.updateBathroomsCount(command.bathroomsCount);
-    }
-
-    if (command.isShared !== undefined) {
-      unit.updateShared(command.isShared);
-    }
-
-    if (command.amenities !== undefined) {
-      unit.updateAmenities(command.amenities);
-    }
-
-    const oldMediaKeys =
-      command.mediaKeys !== undefined ? unit.getMediaKeys() : [];
-
-    if (command.mediaKeys !== undefined) {
-      unit.updateMediaKeys(command.mediaKeys);
-    }
-
-    if (command.pricePerNight !== undefined) {
-      unit.updatePrice(command.pricePerNight);
-    }
-
-    if (command.externalIds !== undefined) {
-      unit.updateExternalIds(
-        ExternalIds.create(
-          command.externalIds.airbnbId,
-          command.externalIds.bookingId,
-          command.externalIds.vrboId,
-        ),
-      );
-    }
+    const oldMediaKeys = this.applyFieldUpdates(unit, command);
 
     await this.unitRepository.save(unit);
 
@@ -163,6 +104,55 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
     }
 
     return new UpdateUnitResult(command.unitId);
+  }
+
+  private applyFieldUpdates(unit: Unit, command: UpdateUnitCommand): string[] {
+    if (command.name !== undefined || command.description !== undefined) {
+      unit.updateDetails(
+        command.name ?? unit.getName(),
+        command.description ?? unit.getDescription(),
+      );
+    }
+
+    if (command.maxGuests !== undefined || command.standardGuests !== undefined) {
+      unit.updateCapacity(
+        command.maxGuests ?? unit.getMaxGuests(),
+        command.standardGuests ?? unit.getStandardGuests(),
+      );
+    }
+
+    if (command.bedrooms !== undefined) {
+      unit.updateBedrooms(
+        command.bedrooms.map((bedroom) => ({
+          roomName: bedroom.roomName,
+          beds: bedroom.beds.map((bed) => ({
+            type: bed.type as BedTypeEnum,
+            count: bed.count,
+          })),
+        })),
+      );
+    }
+
+    if (command.bathroomsCount !== undefined) unit.updateBathroomsCount(command.bathroomsCount);
+    if (command.isShared !== undefined) unit.updateShared(command.isShared);
+    if (command.amenities !== undefined) unit.updateAmenities(command.amenities);
+
+    const oldMediaKeys = command.mediaKeys === undefined ? [] : unit.getMediaKeys();
+    if (command.mediaKeys !== undefined) unit.updateMediaKeys(command.mediaKeys);
+
+    if (command.pricePerNight !== undefined) unit.updatePrice(command.pricePerNight);
+
+    if (command.externalIds !== undefined) {
+      unit.updateExternalIds(
+        ExternalIds.create(
+          command.externalIds.airbnbId,
+          command.externalIds.bookingId,
+          command.externalIds.vrboId,
+        ),
+      );
+    }
+
+    return oldMediaKeys;
   }
 
   private async validateAndApplyInventoryCount(

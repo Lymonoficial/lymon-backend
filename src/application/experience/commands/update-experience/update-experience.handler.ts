@@ -56,9 +56,9 @@ export class UpdateExperienceHandler implements ICommandHandler<
     }
 
     const oldMediaKeys =
-      command.changes.mediaKeys !== undefined
-        ? experience.getMediaKeys()
-        : [];
+      command.changes.mediaKeys === undefined
+        ? []
+        : experience.getMediaKeys();
 
     try {
       experience.update(command.changes);
