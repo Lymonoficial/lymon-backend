@@ -29,6 +29,10 @@ import {
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
 import { InventoryCountValidator } from '@/domain/reservation/services/inventory-count-validator.domain-service';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @CommandHandler(UpdateUnitCommand)
 export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
@@ -38,6 +42,8 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,
     private readonly eventEmitter: EventEmitter2,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly r2StorageService: R2StorageService,
   ) {}
 
   async execute(command: UpdateUnitCommand): Promise<UpdateUnitResult> {
@@ -101,6 +107,9 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       unit.updateAmenities(command.amenities);
     }
 
+    const oldMediaKeys =
+      command.mediaKeys !== undefined ? unit.getMediaKeys() : [];
+
     if (command.mediaKeys !== undefined) {
       unit.updateMediaKeys(command.mediaKeys);
     }
@@ -120,6 +129,13 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
     }
 
     await this.unitRepository.save(unit);
+
+    if (command.mediaKeys !== undefined) {
+      const orphaned = oldMediaKeys.filter(
+        (k) => !command.mediaKeys!.includes(k),
+      );
+      await this.r2StorageService.deleteObjects(orphaned);
+    }
 
     if (command.actorId && command.actorEmail) {
       this.eventEmitter.emit(
