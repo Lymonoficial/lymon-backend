@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectsCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export const R2_STORAGE_SERVICE = 'R2_STORAGE_SERVICE';
@@ -39,6 +43,16 @@ export class R2StorageService {
     });
 
     return getSignedUrl(this.client, command, { expiresIn: expiresInSeconds });
+  }
+
+  async deleteObjects(keys: string[]): Promise<void> {
+    if (keys.length === 0) return;
+    await this.client.send(
+      new DeleteObjectsCommand({
+        Bucket: this.bucket,
+        Delete: { Objects: keys.map((k) => ({ Key: k })) },
+      }),
+    );
   }
 
   getPublicUrl(key: string): string {
