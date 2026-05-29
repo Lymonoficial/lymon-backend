@@ -20,6 +20,10 @@ import {
   Inject,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -32,6 +36,8 @@ export class UpdateExperienceHandler implements ICommandHandler<
     @Inject(EXPERIENCE_REPOSITORY)
     private readonly experienceRepository: ExperienceRepository,
     private readonly eventEmitter: EventEmitter2,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly r2StorageService: R2StorageService,
   ) {}
 
   async execute(command: UpdateExperienceCommand): Promise<void> {
@@ -49,6 +55,11 @@ export class UpdateExperienceHandler implements ICommandHandler<
       );
     }
 
+    const oldMediaKeys =
+      command.changes.mediaKeys !== undefined
+        ? experience.getMediaKeys()
+        : [];
+
     try {
       experience.update(command.changes);
     } catch (error) {
@@ -58,6 +69,13 @@ export class UpdateExperienceHandler implements ICommandHandler<
     }
 
     await this.experienceRepository.save(experience);
+
+    if (command.changes.mediaKeys !== undefined) {
+      const orphaned = oldMediaKeys.filter(
+        (k) => !command.changes.mediaKeys!.includes(k),
+      );
+      await this.r2StorageService.deleteObjects(orphaned);
+    }
 
     this.eventEmitter.emit(
       AUDIT_LOG_EVENT,
