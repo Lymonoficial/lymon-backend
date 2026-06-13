@@ -5,10 +5,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SendGuestMessageHandler } from '@/application/guest-message/commands/send-guest-message/send-guest-message.handler';
 import { SendGuestMessageCommand } from '@/application/guest-message/commands/send-guest-message/send-guest-message.command';
 import { GUEST_MESSAGE_CREATED_EVENT } from '@/application/guest-message/events/guest-message-created.event';
-import {
-  AUDIT_LOG_EVENT,
-  AuditLoggedEvent,
-} from '@/infrastructure/audit/events/audit-logged.event';
+import { AUDIT_LOG_EVENT } from '@/infrastructure/audit/events/audit-logged.event';
 import {
   AuditAction,
   AuditEntityType,

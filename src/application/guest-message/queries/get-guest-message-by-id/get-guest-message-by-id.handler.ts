@@ -24,7 +24,7 @@ export class GetGuestMessageByIdHandler
       GuestMessageId.createFromString(query.messageId),
     );
 
-    if (!message || message.getTenantId().toString() !== query.tenantId) {
+    if (message?.getTenantId().toString() !== query.tenantId) {
       throw new NotFoundException('Mensaje no encontrado');
     }
 
@@ -33,9 +33,7 @@ export class GetGuestMessageByIdHandler
     if (providerMessageId) {
       body = await this.messageBodyProvider.getBody(providerMessageId);
     }
-    if (body === null) {
-      body = message.getPreview();
-    }
+    body ??= message.getPreview();
 
     return {
       id: message.getId().toString(),

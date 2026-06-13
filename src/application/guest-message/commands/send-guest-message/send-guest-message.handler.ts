@@ -131,7 +131,7 @@ export class SendGuestMessageHandler
       `;
     }
 
-    const preview = resolvedBody.replace(/<[^>]+>/g, '').slice(0, 200);
+    const preview = resolvedBody.replace(/<[^>]{0,9999}>/g, '').slice(0, 200);
 
     const guestMessage = GuestMessage.create({
       tenantId,
@@ -141,7 +141,7 @@ export class SendGuestMessageHandler
       status: GuestMessageStatus.PENDING,
       from: '',
       to: [guest.getPrimaryEmail()],
-      templateId: command.templateId ?? null,
+      templateId: command.templateId,
       sentBy: {
         actorId: command.sentById ?? '',
         actorEmail: command.actorEmail ?? '',
