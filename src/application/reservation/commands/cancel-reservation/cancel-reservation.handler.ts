@@ -15,10 +15,6 @@ import {
   AuditLoggedEvent,
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
-import {
-  CHANNEX_AVAILABILITY_UPDATE_EVENT,
-  ChannexAvailabilityUpdateEvent,
-} from '@/infrastructure/channex/events/channex-availability-update.event';
 
 @CommandHandler(CancelReservationCommand)
 export class CancelReservationHandler implements ICommandHandler<CancelReservationCommand> {
@@ -49,16 +45,6 @@ export class CancelReservationHandler implements ICommandHandler<CancelReservati
     }
 
     await this.reservationRepository.save(reservation);
-
-    const dateRange = reservation.getDateRange();
-    this.eventEmitter.emit(
-      CHANNEX_AVAILABILITY_UPDATE_EVENT,
-      new ChannexAvailabilityUpdateEvent(
-        reservation.getUnitId().toString(),
-        dateRange.getCheckIn(),
-        dateRange.getCheckOut(),
-      ),
-    );
 
     this.eventEmitter.emit(
       AUDIT_LOG_EVENT,

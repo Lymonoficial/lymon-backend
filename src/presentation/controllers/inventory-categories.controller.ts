@@ -66,7 +66,10 @@ export class InventoryCategoriesController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiResponse({ status: 200, description: 'Categories retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Categories retrieved successfully',
+  })
   async listCategories(
     @CurrentUser() user: JwtPayload,
     @Query() params: GetCategoriesQueryParams,

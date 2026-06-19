@@ -48,7 +48,8 @@ export class UnitRatingDocument extends Document {
   updatedAt: Date;
 }
 
-export const UnitRatingSchema = SchemaFactory.createForClass(UnitRatingDocument);
+export const UnitRatingSchema =
+  SchemaFactory.createForClass(UnitRatingDocument);
 
 UnitRatingSchema.index({ unitId: 1, deletedAt: 1, createdAt: -1 });
 UnitRatingSchema.index({ guestId: 1, createdAt: -1 });

@@ -13,7 +13,8 @@ const baseUser = {
 } as any;
 
 const presignedUrlResult = {
-  presignedUrl: 'https://bucket.account.r2.cloudflarestorage.com/key?X-Amz-Signature=abc',
+  presignedUrl:
+    'https://bucket.account.r2.cloudflarestorage.com/key?X-Amz-Signature=abc',
   fileUrl: 'https://pub-xxx.r2.dev/65f1a1a2b3c4d5e6f7a8b9c0/1234-photo.jpg',
   key: '65f1a1a2b3c4d5e6f7a8b9c0/1234-photo.jpg',
 };
@@ -58,7 +59,8 @@ describe('StorageController', () => {
         expect.any(GeneratePresignedUrlQuery),
       );
 
-      const query: GeneratePresignedUrlQuery = queryBus.execute.mock.calls[0][0];
+      const query: GeneratePresignedUrlQuery =
+        queryBus.execute.mock.calls[0][0];
       expect(query.fileName).toBe('photo.jpg');
       expect(query.contentType).toBe('image/jpeg');
       expect(query.tenantId).toBe(baseUser.tenantId);

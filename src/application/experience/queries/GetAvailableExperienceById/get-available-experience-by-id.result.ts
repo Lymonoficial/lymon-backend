@@ -3,4 +3,3 @@ import { PublicExperienceDto } from '@/application/experience/queries/shared/exp
 export class GetAvailableExperienceByIdResult {
   constructor(public readonly experience: PublicExperienceDto) {}
 }
-

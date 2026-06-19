@@ -8,9 +8,7 @@ import {
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 
 @CommandHandler(RemoveCartReservationCommand)
-export class RemoveCartReservationHandler
-  implements ICommandHandler<RemoveCartReservationCommand>
-{
+export class RemoveCartReservationHandler implements ICommandHandler<RemoveCartReservationCommand> {
   constructor(
     @Inject(CART_REPOSITORY)
     private readonly cartRepository: CartRepository,

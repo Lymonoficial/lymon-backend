@@ -34,6 +34,7 @@ export class GetExperiencesByTenantQueryHandler implements IQueryHandler<
         query.page,
         query.limit,
         propertyId,
+        query.minCapacity,
       );
 
     return new GetExperiencesByTenantResult(

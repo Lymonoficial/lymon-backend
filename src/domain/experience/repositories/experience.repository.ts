@@ -11,6 +11,7 @@ export interface AvailableExperienceFilters {
   tenantId?: TenantId;
   propertyId?: PropertyId;
   category?: ExperienceCategory;
+  sortByPrice?: 'asc' | 'desc';
 }
 
 export interface ExperienceRepository {
@@ -28,6 +29,7 @@ export interface ExperienceRepository {
     page: number,
     limit: number,
     propertyId?: PropertyId,
+    minCapacity?: number,
   ): Promise<{ experiences: Experience[]; total: number }>;
   findAvailableForGuestPaginated(
     filters: AvailableExperienceFilters,

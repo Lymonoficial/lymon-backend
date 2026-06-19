@@ -13,13 +13,10 @@ import { type InventoryItemCategory } from '@/domain/inventory/entities/inventor
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @QueryHandler(GetInventoryItemCategoriesQuery)
-export class GetInventoryItemCategoriesQueryHandler
-  implements
-    IQueryHandler<
-      GetInventoryItemCategoriesQuery,
-      GetInventoryItemCategoriesResult
-    >
-{
+export class GetInventoryItemCategoriesQueryHandler implements IQueryHandler<
+  GetInventoryItemCategoriesQuery,
+  GetInventoryItemCategoriesResult
+> {
   constructor(
     @Inject(INVENTORY_ITEM_CATEGORY_REPOSITORY)
     private readonly categoryRepository: InventoryItemCategoryRepository,
@@ -33,8 +30,7 @@ export class GetInventoryItemCategoriesQueryHandler
     const limit = query.limit > 0 ? query.limit : 10;
     const normalizedSearch = query.search?.trim().toLowerCase() ?? '';
 
-    const categories =
-      await this.categoryRepository.findByTenantId(tenantId);
+    const categories = await this.categoryRepository.findByTenantId(tenantId);
 
     const filtered = normalizedSearch
       ? categories.filter((c) =>
@@ -54,7 +50,9 @@ export class GetInventoryItemCategoriesQueryHandler
     );
   }
 
-  private toDto(category: InventoryItemCategory): InventoryItemCategoryListItemDto {
+  private toDto(
+    category: InventoryItemCategory,
+  ): InventoryItemCategoryListItemDto {
     return {
       id: category.getId()?.toString() ?? '',
       name: category.getName(),

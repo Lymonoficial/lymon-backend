@@ -28,6 +28,7 @@ import { ReservationApplicationModule } from '@/application/reservation/reservat
 import { InventoryApplicationModule } from '@/application/inventory/inventory-application.module';
 import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-application.module';
 import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
+import { GuestMessageApplicationModule } from '@/application/guest-message/guest-message-application.module';
 import { UserApplicationModule } from '@/application/user/user-application.module';
 import { GuestPreferenceApplicationModule } from '@/application/guest-preference/guest-preference-application.module';
 import { ShiftApplicationModule } from '@/application/shift/shift-application.module';
@@ -42,6 +43,7 @@ import { CartApplicationModule } from '@/application/cart/cart-application.modul
 import { RefundApplicationModule } from '@/application/refund/refund-application.module';
 import { ProcessWompiWebhookHandler } from '@/application/payment/commands/process-wompi-webhook/process-wompi-webhook.handler';
 import { GetPaymentSessionStatusHandler } from '@/application/payment/queries/get-payment-session-status/get-payment-session-status.handler';
+import { RoleAssignmentValidator } from '@/application/user/services/role-assignment-validator.service';
 
 const CommandHandlers = [
   RegisterTenantHandler,
@@ -81,6 +83,7 @@ const QueryHandlers = [GetShiftsHandler];
     InventoryApplicationModule,
     GuestNoteApplicationModule,
     GuestEmailApplicationModule,
+    GuestMessageApplicationModule,
     UserApplicationModule,
     GuestPreferenceApplicationModule,
     ShiftApplicationModule,
@@ -92,7 +95,7 @@ const QueryHandlers = [GetShiftsHandler];
     CartApplicationModule,
     RefundApplicationModule,
   ],
-  providers: [...CommandHandlers, ...QueryHandlers],
+  providers: [...CommandHandlers, ...QueryHandlers, RoleAssignmentValidator],
   exports: [
     ...CommandHandlers,
     ...QueryHandlers,

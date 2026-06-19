@@ -4,7 +4,8 @@ import { GeneratePresignedUrlResult } from '@/application/storage/queries/genera
 import { createR2StorageServiceMock } from '@test/shared/mocks/services/r2-storage.mock';
 
 const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
-const PRESIGNED_URL = 'https://bucket.account.r2.cloudflarestorage.com/key?X-Amz-Signature=abc';
+const PRESIGNED_URL =
+  'https://bucket.account.r2.cloudflarestorage.com/key?X-Amz-Signature=abc';
 const PUBLIC_URL = 'https://pub-xxx.r2.dev';
 
 describe('GeneratePresignedUrlQueryHandler', () => {
@@ -19,7 +20,9 @@ describe('GeneratePresignedUrlQueryHandler', () => {
   describe('when generating a presigned URL', () => {
     it('returns presignedUrl, fileUrl and key', async () => {
       storageService.generatePresignedPutUrl.mockResolvedValue(PRESIGNED_URL);
-      storageService.getPublicUrl.mockReturnValue(`${PUBLIC_URL}/${TENANT_ID}/1234-photo.jpg`);
+      storageService.getPublicUrl.mockReturnValue(
+        `${PUBLIC_URL}/${TENANT_ID}/1234-photo.jpg`,
+      );
 
       const result = await handler.execute(
         new GeneratePresignedUrlQuery('photo.jpg', 'image/jpeg', TENANT_ID),
@@ -48,7 +51,11 @@ describe('GeneratePresignedUrlQueryHandler', () => {
       storageService.getPublicUrl.mockReturnValue(`${PUBLIC_URL}/key`);
 
       const result = await handler.execute(
-        new GeneratePresignedUrlQuery('my photo (1).jpg', 'image/jpeg', TENANT_ID),
+        new GeneratePresignedUrlQuery(
+          'my photo (1).jpg',
+          'image/jpeg',
+          TENANT_ID,
+        ),
       );
 
       expect(result.key).not.toContain(' ');
@@ -78,8 +85,12 @@ describe('GeneratePresignedUrlQueryHandler', () => {
         new GeneratePresignedUrlQuery('photo.jpg', 'image/jpeg', TENANT_ID),
       );
 
-      const keyUsedForPresigned = (storageService.generatePresignedPutUrl.mock.calls[0] as [string, string])[0];
-      const keyUsedForPublic = (storageService.getPublicUrl.mock.calls[0] as [string])[0];
+      const keyUsedForPresigned = (
+        storageService.generatePresignedPutUrl.mock.calls[0] as [string, string]
+      )[0];
+      const keyUsedForPublic = (
+        storageService.getPublicUrl.mock.calls[0] as [string]
+      )[0];
 
       expect(keyUsedForPresigned).toBe(keyUsedForPublic);
     });
