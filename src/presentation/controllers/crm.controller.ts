@@ -59,6 +59,8 @@ import { SendGuestMessageDto } from '@/presentation/dtos/guest/send-guest-messag
 import { CreateCatalogItemDto } from '@/presentation/dtos/catalog/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog-item.dto';
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
+import { GetGuestMetricsQuery } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.query';
+import { GetGuestMetricsResult } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.result';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -597,4 +599,28 @@ export class CrmController {
 
     return { message: 'Catalog item deleted successfully' };
   }
+
+  @Get('guests/:guestId/metrics')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get CRM metrics for a specific guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest metrics retrieved successfully',
+  })
+  async getGuestMetrics(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestMetricsQuery,
+      GetGuestMetricsResult
+    >(new GetGuestMetricsQuery(user.tenantId, guestId));
+
+    return {
+      message: 'Guest metrics retrieved successfully',
+      data: result,
+    };
+  }
+
 }
