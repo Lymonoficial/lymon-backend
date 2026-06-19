@@ -62,4 +62,10 @@ export interface ReservationRepository {
     propertyId: string,
   ): Promise<boolean>;
   findConfirmedDueForCheckIn(date: Date): Promise<Reservation[]>;
+  getMonthlySpendingByGuestId(
+    tenantId: string,
+    guestId: string,
+    fromDate: Date,
+    toDate: Date,
+  ): Promise<{ year: number; month: number; totalSpend: number }[]>;
 }

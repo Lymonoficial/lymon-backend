@@ -325,6 +325,47 @@ export class MongoReservationRepository
     return docs.map((d) => this.toDomain(d));
   }
 
+  async getMonthlySpendingByGuestId(
+    tenantId: string,
+    guestId: string,
+    fromDate: Date,
+    toDate: Date,
+  ): Promise<{ year: number; month: number; totalSpend: number }[]> {
+    return this.reservationModel.aggregate([
+      {
+        $match: {
+          tenantId: new Types.ObjectId(tenantId),
+          guestId: new Types.ObjectId(guestId),
+          checkIn: { $gte: fromDate, $lte: toDate },
+          status: {
+            $in: [
+              ReservationStatusEnum.CONFIRMED,
+              ReservationStatusEnum.CHECKED_IN,
+              ReservationStatusEnum.CHECKED_OUT,
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$checkIn' },
+            month: { $month: '$checkIn' },
+          },
+          totalSpend: { $sum: '$totalPrice' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          year: '$_id.year',
+          month: '$_id.month',
+          totalSpend: 1,
+        },
+      },
+      { $sort: { year: 1, month: 1 } },
+    ]);
+  }
   async getLifecycleStatusByGuestIds(
   guestIds: string[],
 ): Promise<Map<string, GuestLifecycleStatus>> {

@@ -39,6 +39,8 @@ import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/ge
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { GetGuestMonthlySpendingQuery } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.query';
+import { GetGuestMonthlySpendingResult } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.result';
 import { GetGuestBookingOriginsQuery } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.query';
 import { GetGuestBookingOriginsResult } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.result';
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
@@ -328,6 +330,15 @@ export class CrmController {
     };
   }
 
+  @Get('guests/:guestId/spending/monthly')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get monthly spending breakdown for a guest (last 12 rolling months)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest monthly spending retrieved successfully',
+  })
+  async getGuestMonthlySpending(
   @Get('guests/:guestId/booking-origins')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)
@@ -341,6 +352,12 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     const result = await this.queryBus.execute<
+      GetGuestMonthlySpendingQuery,
+      GetGuestMonthlySpendingResult
+    >(new GetGuestMonthlySpendingQuery(user.tenantId, guestId));
+    return {
+      message: 'Guest monthly spending retrieved successfully',
+      data: result.items,
       GetGuestBookingOriginsQuery,
       GetGuestBookingOriginsResult
     >(new GetGuestBookingOriginsQuery(user.tenantId, guestId));
