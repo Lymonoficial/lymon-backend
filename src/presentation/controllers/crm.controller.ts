@@ -59,6 +59,8 @@ import { SendGuestMessageDto } from '@/presentation/dtos/guest/send-guest-messag
 import { CreateCatalogItemDto } from '@/presentation/dtos/catalog/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog-item.dto';
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
+import { GetGuestRatingsQuery } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.query';
+import { GetGuestRatingsResult } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.result';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -408,6 +410,42 @@ export class CrmController {
       message: 'Guest communication history retrieved successfully',
       data: {
         items: result.items,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
+      },
+    };
+  }
+
+  @Get('guests/:guestId/ratings')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get all ratings given by a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest ratings retrieved successfully',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getGuestRatings(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestRatingsQuery,
+      GetGuestRatingsResult
+    >(new GetGuestRatingsQuery(user.tenantId, guestId, page, limit));
+
+    return {
+      message: 'Guest ratings retrieved successfully',
+      data: {
+        items: result.ratings,
+        averageRating: result.averageRating,
         pagination: {
           total: result.total,
           page: result.page,
