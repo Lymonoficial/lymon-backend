@@ -464,4 +464,34 @@ export class MongoReservationRepository
       updatedAt: doc.updatedAt,
     });
   }
+
+  async getBookingValueStats(tenantId: string, guestId: string): Promise<{ totalRevenue: number; bookingCount: number }> {
+  const matchStatus = ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'];
+
+  const result = await this.reservationModel.aggregate([
+    {
+      $match: {
+        tenantId,
+        guestId,
+        status: { $in: matchStatus }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { $sum: '$totalPrice' }, 
+        bookingCount: { $sum: 1 }           
+      }
+    }
+  ]);
+
+  if (result.length === 0) {
+    return { totalRevenue: 0, bookingCount: 0 };
+  }
+
+  return {
+    totalRevenue: result[0].totalRevenue ?? 0,
+    bookingCount: result[0].bookingCount ?? 0
+  };
+}
 }
