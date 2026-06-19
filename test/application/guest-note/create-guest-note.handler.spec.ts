@@ -18,6 +18,7 @@ function createGuestNoteRepositoryMock(): jest.Mocked<GuestNoteRepository> {
     findById: jest.fn(),
     findByGuestId: jest.fn(),
     delete: jest.fn(),
+    findByGuestIdPaginated: jest.fn(),
   };
 }
 

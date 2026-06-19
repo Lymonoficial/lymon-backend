@@ -12,5 +12,7 @@ export function createGuestRepositoryMock(): jest.Mocked<GuestRepository> {
     countByTenantId: jest.fn(),
     delete: jest.fn(),
     search: jest.fn(),
+    findByTenantIdPaginated: jest.fn(),
+    searchPaginated: jest.fn(),
   };
 }

@@ -39,11 +39,14 @@ import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/ge
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
-import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
-import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
+import { SaveGuestPreferencesDto } from '../dtos/guest/save-guest-preferences.dto';
+import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
+import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 import { ListCatalogItemsByTenantQuery } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.query';
 import { ListCatalogItemsByTenantResult } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.result';
 import { ToggleCatalogItemCommand } from '@/application/guest-preference/commands/toggle-catalog-item/toggle-catalog-item.command';
@@ -53,7 +56,6 @@ import { DeleteCustomCatalogItemCommand } from '@/application/guest-preference/c
 import { CreateGuestNoteDto } from '@/presentation/dtos/guest-note/create-guest-note.dto';
 import { UpdateGuestNoteDto } from '@/presentation/dtos/guest-note/update-guest-note.dto';
 import { SendGuestMessageDto } from '@/presentation/dtos/guest/send-guest-message.dto';
-import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
 import { CreateCatalogItemDto } from '@/presentation/dtos/catalog/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog-item.dto';
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
@@ -102,17 +104,29 @@ export class CrmController {
       sortDirection,
     );
 
+    const guestIds = guests.map((guest) => guest.getId()?.toString()).filter(Boolean) as string[];
+
+    const lifecycleStatuses = await this.queryBus.execute<
+      GetGuestLifecycleStatusQuery,
+      Map<string, GuestLifecycleStatus>
+    >(new GetGuestLifecycleStatusQuery(user.tenantId, guestIds));
+
     return {
       message: 'CRM guests retrieved successfully',
       data: {
-        items: guests.map((guest) => ({
-          guestId: guest.getId()?.toString(),
-          fullName: guest.getFullName(),
-          primaryEmail: guest.getPrimaryEmail(),
-          phones: guest.getPhones(),
-          status: guest.getStatus(),
-          tags: guest.getTags().map((t) => t.getName()),
-        })),
+        items: guests.map((guest) => {
+          const currentId = guest.getId()?.toString() || '';
+          
+          return {
+            guestId: currentId,
+            fullName: guest.getFullName(),
+            primaryEmail: guest.getPrimaryEmail(),
+            phones: guest.getPhones(),
+            status: guest.getStatus(),
+            tags: guest.getTags().map((t) => t.getName()),
+            lifecycleStatus: lifecycleStatuses.get(currentId) || GuestLifecycleStatus.NO_RESERVATION,
+          };
+        }),
         pagination: {
           total,
           page,
