@@ -25,4 +25,12 @@
     "noFallthroughCasesInSwitch": false,
     "types": ["node"]
   }
+    "noFallthroughCasesInSwitch": false
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "cypress",
+    "cypress.config.ts"
+  ]
 }

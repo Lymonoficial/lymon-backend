@@ -29,6 +29,10 @@ import {
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
 import { InventoryCountValidator } from '@/domain/reservation/services/inventory-count-validator.domain-service';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @CommandHandler(UpdateUnitCommand)
 export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
@@ -38,6 +42,8 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,
     private readonly eventEmitter: EventEmitter2,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly r2StorageService: R2StorageService,
   ) {}
 
   async execute(command: UpdateUnitCommand): Promise<UpdateUnitResult> {
@@ -61,65 +67,16 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
       );
     }
 
-    if (command.name !== undefined || command.description !== undefined) {
-      unit.updateDetails(
-        command.name ?? unit.getName(),
-        command.description ?? unit.getDescription(),
-      );
-    }
-
-    if (
-      command.maxGuests !== undefined ||
-      command.standardGuests !== undefined
-    ) {
-      unit.updateCapacity(
-        command.maxGuests ?? unit.getMaxGuests(),
-        command.standardGuests ?? unit.getStandardGuests(),
-      );
-    }
-
-    if (command.bedrooms !== undefined) {
-      const bedrooms = command.bedrooms.map((bedroom) => ({
-        roomName: bedroom.roomName,
-        beds: bedroom.beds.map((bed) => ({
-          type: bed.type as BedTypeEnum,
-          count: bed.count,
-        })),
-      }));
-      unit.updateBedrooms(bedrooms);
-    }
-
-    if (command.bathroomsCount !== undefined) {
-      unit.updateBathroomsCount(command.bathroomsCount);
-    }
-
-    if (command.isShared !== undefined) {
-      unit.updateShared(command.isShared);
-    }
-
-    if (command.amenities !== undefined) {
-      unit.updateAmenities(command.amenities);
-    }
-
-    if (command.mediaKeys !== undefined) {
-      unit.updateMediaKeys(command.mediaKeys);
-    }
-
-    if (command.pricePerNight !== undefined) {
-      unit.updatePrice(command.pricePerNight);
-    }
-
-    if (command.externalIds !== undefined) {
-      unit.updateExternalIds(
-        ExternalIds.create(
-          command.externalIds.airbnbId,
-          command.externalIds.bookingId,
-          command.externalIds.vrboId,
-        ),
-      );
-    }
+    const oldMediaKeys = this.applyFieldUpdates(unit, command);
 
     await this.unitRepository.save(unit);
+
+    if (command.mediaKeys !== undefined) {
+      const orphaned = oldMediaKeys.filter(
+        (k) => !command.mediaKeys!.includes(k),
+      );
+      await this.r2StorageService.deleteObjects(orphaned);
+    }
 
     if (command.actorId && command.actorEmail) {
       this.eventEmitter.emit(
@@ -147,6 +104,55 @@ export class UpdateUnitHandler implements ICommandHandler<UpdateUnitCommand> {
     }
 
     return new UpdateUnitResult(command.unitId);
+  }
+
+  private applyFieldUpdates(unit: Unit, command: UpdateUnitCommand): string[] {
+    if (command.name !== undefined || command.description !== undefined) {
+      unit.updateDetails(
+        command.name ?? unit.getName(),
+        command.description ?? unit.getDescription(),
+      );
+    }
+
+    if (command.maxGuests !== undefined || command.standardGuests !== undefined) {
+      unit.updateCapacity(
+        command.maxGuests ?? unit.getMaxGuests(),
+        command.standardGuests ?? unit.getStandardGuests(),
+      );
+    }
+
+    if (command.bedrooms !== undefined) {
+      unit.updateBedrooms(
+        command.bedrooms.map((bedroom) => ({
+          roomName: bedroom.roomName,
+          beds: bedroom.beds.map((bed) => ({
+            type: bed.type as BedTypeEnum,
+            count: bed.count,
+          })),
+        })),
+      );
+    }
+
+    if (command.bathroomsCount !== undefined) unit.updateBathroomsCount(command.bathroomsCount);
+    if (command.isShared !== undefined) unit.updateShared(command.isShared);
+    if (command.amenities !== undefined) unit.updateAmenities(command.amenities);
+
+    const oldMediaKeys = command.mediaKeys === undefined ? [] : unit.getMediaKeys();
+    if (command.mediaKeys !== undefined) unit.updateMediaKeys(command.mediaKeys);
+
+    if (command.pricePerNight !== undefined) unit.updatePrice(command.pricePerNight);
+
+    if (command.externalIds !== undefined) {
+      unit.updateExternalIds(
+        ExternalIds.create(
+          command.externalIds.airbnbId,
+          command.externalIds.bookingId,
+          command.externalIds.vrboId,
+        ),
+      );
+    }
+
+    return oldMediaKeys;
   }
 
   private async validateAndApplyInventoryCount(

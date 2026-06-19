@@ -118,6 +118,8 @@ import {
 } from '@/infrastructure/persistence/schemas/experience.schema';
 import { EXPERIENCE_REPOSITORY } from '@/domain/experience/repositories/experience.repository';
 import { MongoExperienceRepository } from '@/infrastructure/persistence/repositories/mongo-experience.repository';
+import { METRICS_READ_REPOSITORY } from '@/domain/metrics/repositories/metrics-read.repository';
+import { MongoMetricsReadRepository } from '@/infrastructure/persistence/repositories/mongo-metrics-read.repository';
 import {
   PaymentSessionDocument,
   PaymentSessionSchema,
@@ -290,6 +292,8 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
       useClass: MongoExperienceRepository,
     },
     {
+      provide: METRICS_READ_REPOSITORY,
+      useClass: MongoMetricsReadRepository,
       provide: PAYMENT_SESSION_REPOSITORY,
       useClass: MongoPaymentSessionRepository,
     },
@@ -339,6 +343,7 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
     SHIFT_REPOSITORY,
     GUEST_PREFERENCE_CATALOG_REPOSITORY,
     EXPERIENCE_REPOSITORY,
+    METRICS_READ_REPOSITORY,
     PAYMENT_SESSION_REPOSITORY,
     EXPERIENCE_PURCHASE_REPOSITORY,
     CART_REPOSITORY,

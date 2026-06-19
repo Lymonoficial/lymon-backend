@@ -21,6 +21,7 @@ import {
 import { GetReservationsByGuestIdHandler } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query-handler';
 import { GetReservationsByGuestIdQuery } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.query';
 import { GetReservationsByGuestIdResult } from '@/application/reservation/queries/get-reservations-by-guest-id/get-reservations-by-guest-id.result';
+import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
 
 const GUEST_ACCOUNT_ID = '65f1a1a2b3c4d5e6f7a8b900';
 const GUEST_ID_1 = '65f1a1a2b3c4d5e6f7a8b9d1';
@@ -30,23 +31,10 @@ function createGuestReservationsReadRepositoryMock(): jest.Mocked<GuestReservati
   return {
     findByGuestIds: jest.fn(),
     countByGuestIds: jest.fn(),
+    getLifecycleStatusByGuestIds: jest.fn().mockResolvedValue(new Map()),
   };
 }
 
-function createGuestRepositoryMock(): jest.Mocked<GuestRepository> {
-  return {
-    save: jest.fn(),
-    findById: jest.fn(),
-    findByTenantId: jest.fn(),
-    findByPrimaryEmail: jest.fn(),
-    findByDocumentNumber: jest.fn(),
-    findByGuestAccountId: jest.fn(),
-    findAllByGuestAccountId: jest.fn(),
-    countByTenantId: jest.fn(),
-    delete: jest.fn(),
-    search: jest.fn(),
-  };
-}
 
 function makeGuest(guestId: string, tenantId: string): Guest {
   const identity: GuestIdentity = {};

@@ -20,6 +20,7 @@ import { InventoryCategoriesController } from '@/presentation/controllers/invent
 import { SuppliersController } from '@/presentation/controllers/suppliers.controller';
 import { ShiftsController } from '@/presentation/controllers/shifts.controller';
 import { ExperienceController } from '@/presentation/controllers/experience.controller';
+import { MetricsController } from '@/presentation/controllers/metrics.controller';
 import { GuestExperienceController } from '@/presentation/controllers/guest-experience.controller';
 import { GuestTagController } from '@/presentation/controllers/guest-tag.controller';
 import { StorageController } from '@/presentation/controllers/storage.controller';
@@ -49,6 +50,7 @@ import { RefundController } from '@/presentation/controllers/refund.controller';
     SuppliersController,
     ShiftsController,
     ExperienceController,
+    MetricsController,
     GuestExperienceController,
     GuestTagController,
     ChannexWebhookController,

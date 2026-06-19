@@ -1,3 +1,4 @@
+
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, ClientSession } from 'mongoose';
@@ -24,6 +25,7 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
+import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 
 const ACTIVE_RESERVATION_STATUSES = [
   ReservationStatusEnum.PENDING,
@@ -173,6 +175,26 @@ export class MongoReservationRepository
     });
   }
 
+  async countByGuestIdGroupedBySource(
+    tenantId: string,
+    guestId: string,
+  ): Promise<Array<{ source: string; count: number }>> {
+    const result = await this.reservationModel.aggregate<{
+      _id: string;
+      count: number;
+    }>([
+      {
+        $match: {
+          tenantId: new Types.ObjectId(tenantId),
+          guestId: new Types.ObjectId(guestId),
+        },
+      },
+      { $group: { _id: '$source', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+    return result.map((r) => ({ source: r._id, count: r.count }));
+  }
+
   async findByGuestIds(
     guestIds: string[],
     options: GuestReservationQueryOptions,
@@ -302,6 +324,93 @@ export class MongoReservationRepository
     });
     return docs.map((d) => this.toDomain(d));
   }
+
+  async getMonthlySpendingByGuestId(
+    tenantId: string,
+    guestId: string,
+    fromDate: Date,
+    toDate: Date,
+  ): Promise<{ year: number; month: number; totalSpend: number }[]> {
+    return this.reservationModel.aggregate([
+      {
+        $match: {
+          tenantId: new Types.ObjectId(tenantId),
+          guestId: new Types.ObjectId(guestId),
+          checkIn: { $gte: fromDate, $lte: toDate },
+          status: {
+            $in: [
+              ReservationStatusEnum.CONFIRMED,
+              ReservationStatusEnum.CHECKED_IN,
+              ReservationStatusEnum.CHECKED_OUT,
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$checkIn' },
+            month: { $month: '$checkIn' },
+          },
+          totalSpend: { $sum: '$totalPrice' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          year: '$_id.year',
+          month: '$_id.month',
+          totalSpend: 1,
+        },
+      },
+      { $sort: { year: 1, month: 1 } },
+    ]);
+  }
+  async getLifecycleStatusByGuestIds(
+  guestIds: string[],
+): Promise<Map<string, GuestLifecycleStatus>> {
+  if (guestIds.length === 0) {
+    return new Map();
+  }
+
+  const guestObjectIds = guestIds.map((id) => new Types.ObjectId(id));
+
+  const results = await this.reservationModel.aggregate([
+    {
+      $match: {
+        guestId: { $in: guestObjectIds },
+      },
+    },
+    {
+      $group: {
+        _id: '$guestId',
+        statuses: { $push: '$status' },
+      },
+    },
+  ]);
+
+  const statusMap = new Map<string, GuestLifecycleStatus>();
+
+  results.forEach((res) => {
+    const guestId = res._id.toHexString(); // ObjectId → string
+    const guestStatuses: string[] = res.statuses;
+
+    let finalStatus = GuestLifecycleStatus.NO_RESERVATION;
+
+    if (guestStatuses.includes(ReservationStatusEnum.CHECKED_IN)) {
+      finalStatus = GuestLifecycleStatus.CHECKED_IN;
+    } else if (guestStatuses.includes(ReservationStatusEnum.CONFIRMED)) {
+      finalStatus = GuestLifecycleStatus.UPCOMING_STAY;
+    } else if (guestStatuses.includes(ReservationStatusEnum.CHECKED_OUT)) {
+      finalStatus = GuestLifecycleStatus.PAST_GUEST;
+    }
+
+    statusMap.set(guestId, finalStatus);
+  });
+
+  return statusMap;
+}
+
 
   private buildGuestFilters(
     guestIds: Types.ObjectId[],

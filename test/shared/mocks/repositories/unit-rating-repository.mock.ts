@@ -7,5 +7,7 @@ export function createUnitRatingRepositoryMock(): jest.Mocked<UnitRatingReposito
     findByReservationId: jest.fn(),
     findByUnitIdPaginated: jest.fn(),
     calculateAverageForUnit: jest.fn(),
+    findByGuestIdPaginated: jest.fn(),
+    calculateAverageForGuest: jest.fn(),
   };
 }
