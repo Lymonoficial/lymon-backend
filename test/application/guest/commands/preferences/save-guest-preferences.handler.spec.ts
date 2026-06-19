@@ -45,6 +45,8 @@ function makeCommand(
     overrides.guestId ?? GUEST_ID,
     overrides.catalogItemIds ?? [CATALOG_ITEM_ID_1],
     overrides.activePlan ?? PlanTypeEnum.LYMON_PLUS,
+    'actor-id',
+    'actor@test.com',
   );
 }
 
@@ -53,12 +55,16 @@ describe('SaveGuestPreferencesHandler', () => {
   let guestRepository: jest.Mocked<GuestRepository>;
   let catalogPreferenceBuilder: jest.Mocked<CatalogPreferenceBuilderService>;
 
+  let mockEventEmitter: { emit: jest.Mock };
+
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
     catalogPreferenceBuilder = createCatalogPreferenceBuilderMock();
+    mockEventEmitter = { emit: jest.fn() };
     handler = new SaveGuestPreferencesHandler(
       guestRepository,
       catalogPreferenceBuilder,
+      mockEventEmitter as any,
     );
   });
 

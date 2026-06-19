@@ -3,5 +3,7 @@ export class AssignGuestTagsCommand {
     public readonly guestId: string,
     public readonly tags: string[],
     public readonly tenantId: string,
+    public readonly actorId: string,
+    public readonly actorEmail: string,
   ) {}
 }

@@ -4,5 +4,6 @@ export function createGuestReservationsReadRepositoryMock(): jest.Mocked<GuestRe
   return {
     findByGuestIds: jest.fn(),
     countByGuestIds: jest.fn(),
+    getLifecycleStatusByGuestIds: jest.fn().mockResolvedValue(new Map()),
   };
 }

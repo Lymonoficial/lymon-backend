@@ -1,3 +1,4 @@
+
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, ClientSession } from 'mongoose';
@@ -24,6 +25,7 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
+import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 
 const ACTIVE_RESERVATION_STATUSES = [
   ReservationStatusEnum.PENDING,
@@ -322,6 +324,52 @@ export class MongoReservationRepository
     });
     return docs.map((d) => this.toDomain(d));
   }
+
+  async getLifecycleStatusByGuestIds(
+  guestIds: string[],
+): Promise<Map<string, GuestLifecycleStatus>> {
+  if (guestIds.length === 0) {
+    return new Map();
+  }
+
+  const guestObjectIds = guestIds.map((id) => new Types.ObjectId(id));
+
+  const results = await this.reservationModel.aggregate([
+    {
+      $match: {
+        guestId: { $in: guestObjectIds },
+      },
+    },
+    {
+      $group: {
+        _id: '$guestId',
+        statuses: { $push: '$status' },
+      },
+    },
+  ]);
+
+  const statusMap = new Map<string, GuestLifecycleStatus>();
+
+  results.forEach((res) => {
+    const guestId = res._id.toHexString(); // ObjectId → string
+    const guestStatuses: string[] = res.statuses;
+
+    let finalStatus = GuestLifecycleStatus.NO_RESERVATION;
+
+    if (guestStatuses.includes(ReservationStatusEnum.CHECKED_IN)) {
+      finalStatus = GuestLifecycleStatus.CHECKED_IN;
+    } else if (guestStatuses.includes(ReservationStatusEnum.CONFIRMED)) {
+      finalStatus = GuestLifecycleStatus.UPCOMING_STAY;
+    } else if (guestStatuses.includes(ReservationStatusEnum.CHECKED_OUT)) {
+      finalStatus = GuestLifecycleStatus.PAST_GUEST;
+    }
+
+    statusMap.set(guestId, finalStatus);
+  });
+
+  return statusMap;
+}
+
 
   private buildGuestFilters(
     guestIds: Types.ObjectId[],

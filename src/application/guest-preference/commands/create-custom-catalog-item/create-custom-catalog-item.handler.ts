@@ -1,5 +1,6 @@
 import { ForbiddenException, Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateCustomCatalogItemCommand } from './create-custom-catalog-item.command';
 import {
   GUEST_PREFERENCE_CATALOG_REPOSITORY,
@@ -11,6 +12,14 @@ import {
 } from '@/domain/guest-preference/entities/guest-preference-catalog-item.entity';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { PLANS_WITH_CUSTOM_CATALOG } from '@/application/guest-preference/guest-preference.constants';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(CreateCustomCatalogItemCommand)
 export class CreateCustomCatalogItemHandler implements ICommandHandler<
@@ -20,6 +29,7 @@ export class CreateCustomCatalogItemHandler implements ICommandHandler<
   constructor(
     @Inject(GUEST_PREFERENCE_CATALOG_REPOSITORY)
     private readonly repository: GuestPreferenceCatalogRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: CreateCustomCatalogItemCommand): Promise<string> {
@@ -34,7 +44,21 @@ export class CreateCustomCatalogItemHandler implements ICommandHandler<
       label: command.label,
     });
 
-    return this.repository.save(item);
+    const itemId = await this.repository.save(item);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId,
+        command.actorEmail,
+        AuditAction.GUEST_CATALOG_ITEM_CREATED,
+        AuditEntityType.GUEST_CATALOG_ITEM,
+        itemId,
+      ),
+    );
+
+    return itemId;
   }
 
   private validatePlanAccess(activePlan: string): void {
