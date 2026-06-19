@@ -39,11 +39,15 @@ import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/ge
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { GetGuestMonthlySpendingQuery } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.query';
+import { GetGuestMonthlySpendingResult } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.result';
+import { GetGuestBookingOriginsQuery } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.query';
+import { GetGuestBookingOriginsResult } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.result';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
-import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
-import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { SaveGuestPreferencesDto } from '../dtos/guest/save-guest-preferences.dto';
 import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
 import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
@@ -59,8 +63,8 @@ import { SendGuestMessageDto } from '@/presentation/dtos/guest/send-guest-messag
 import { CreateCatalogItemDto } from '@/presentation/dtos/catalog/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog-item.dto';
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
-import { GetGuestMetricsQuery } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.query';
-import { GetGuestMetricsResult } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.result';
+import { GetGuestRatingsQuery } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.query';
+import { GetGuestRatingsResult } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.result';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -164,6 +168,7 @@ export class CrmController {
         dto.note,
         dto.type,
         user.userId,
+        user.email,
         dto.status,
       ),
     );
@@ -194,6 +199,7 @@ export class CrmController {
         user.tenantId,
         noteId,
         user.userId,
+        user.email,
         dto.note,
         dto.type,
       ),
@@ -213,7 +219,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute<DeleteGuestNoteCommand, void>(
-      new DeleteGuestNoteCommand(user.tenantId, noteId, user.userId),
+      new DeleteGuestNoteCommand(user.tenantId, noteId, user.userId, user.email),
     );
   }
 
@@ -228,7 +234,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute<TogglePinGuestNoteCommand, void>(
-      new TogglePinGuestNoteCommand(user.tenantId, noteId, user.userId),
+      new TogglePinGuestNoteCommand(user.tenantId, noteId, user.userId, user.email),
     );
     return { message: 'Guest note pin status toggled' };
   }
@@ -324,6 +330,47 @@ export class CrmController {
     };
   }
 
+  @Get('guests/:guestId/spending/monthly')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get monthly spending breakdown for a guest (last 12 rolling months)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest monthly spending retrieved successfully',
+  })
+  async getGuestMonthlySpending(
+  @Get('guests/:guestId/booking-origins')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get booking source distribution for a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest booking origins retrieved successfully',
+  })
+  async getGuestBookingOrigins(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestMonthlySpendingQuery,
+      GetGuestMonthlySpendingResult
+    >(new GetGuestMonthlySpendingQuery(user.tenantId, guestId));
+    return {
+      message: 'Guest monthly spending retrieved successfully',
+      data: result.items,
+      GetGuestBookingOriginsQuery,
+      GetGuestBookingOriginsResult
+    >(new GetGuestBookingOriginsQuery(user.tenantId, guestId));
+
+    return {
+      message: 'Guest booking origins retrieved successfully',
+      data: {
+        total: result.total,
+        sources: result.sources,
+      },
+    };
+  }
+
   @Patch('guests/:guestId/tags')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_MANAGE)
@@ -338,7 +385,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute(
-      new AssignGuestTagsCommand(guestId, tags, user.tenantId),
+      new AssignGuestTagsCommand(guestId, tags, user.tenantId, user.userId, user.email),
     );
 
     return {
@@ -374,6 +421,8 @@ export class CrmController {
         guestId,
         dto.preferences.map((p) => p.catalogItemId),
         user.activePlan,
+        user.userId,
+        user.email,
       ),
     );
 
@@ -420,6 +469,42 @@ export class CrmController {
     };
   }
 
+  @Get('guests/:guestId/ratings')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get all ratings given by a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest ratings retrieved successfully',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getGuestRatings(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestRatingsQuery,
+      GetGuestRatingsResult
+    >(new GetGuestRatingsQuery(user.tenantId, guestId, page, limit));
+
+    return {
+      message: 'Guest ratings retrieved successfully',
+      data: {
+        items: result.ratings,
+        averageRating: result.averageRating,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
+      },
+    };
+  }
+
   @Post('guests/:guestId/messages')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_MANAGE)
@@ -447,6 +532,7 @@ export class CrmController {
         dto.templateId,
         dto.attachments,
         user.userId,
+        user.email,
       ),
     );
 
@@ -497,7 +583,7 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     await this.commandBus.execute(
-      new ToggleCatalogItemCommand(user.tenantId, itemId, dto.activate),
+      new ToggleCatalogItemCommand(user.tenantId, itemId, dto.activate, user.userId, user.email),
     );
 
     return { message: 'Catalog item toggled successfully' };
@@ -528,6 +614,8 @@ export class CrmController {
         user.activePlan,
         dto.category,
         dto.label,
+        user.userId,
+        user.email,
       ),
     );
 
@@ -564,6 +652,8 @@ export class CrmController {
         itemId,
         dto.label,
         dto.category,
+        user.userId,
+        user.email,
       ),
     );
 
@@ -594,6 +684,8 @@ export class CrmController {
         user.tenantId,
         user.activePlan,
         itemId,
+        user.userId,
+        user.email,
       ),
     );
 

@@ -16,6 +16,14 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { EmailTemplateService } from '@/infrastructure/common/email-template.service';
 import { SendGuestMessageCommand } from './send-guest-message.command';
 import { GuestEmailCreatedEvent } from '../../events/guest-email-created.event';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(SendGuestMessageCommand)
 export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessageCommand> {
@@ -127,7 +135,6 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
 
     await this.guestEmailRepository.save(guestEmail);
 
-    // Pasamos el NOMBRE DE LA PROPIEDAD como remitente visual
     this.eventEmitter.emit(
       'guest-email.created',
       new GuestEmailCreatedEvent(
@@ -135,6 +142,18 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
         subject,
         htmlContent,
         propertyName,
+      ),
+    );
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.sentById ?? '',
+        command.actorEmail ?? '',
+        AuditAction.GUEST_MESSAGE_SENT,
+        AuditEntityType.GUEST_EMAIL,
+        guestEmail.getId().toString(),
       ),
     );
 

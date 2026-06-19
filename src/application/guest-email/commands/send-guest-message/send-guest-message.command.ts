@@ -5,9 +5,10 @@ export class SendGuestMessageCommand {
     public readonly tenantId: string,
     public readonly guestId: string,
     public readonly subject: string,
-    public readonly body?: string, // Texto libre
-    public readonly templateId?: string, // ID de plantilla predefinida
+    public readonly body?: string,
+    public readonly templateId?: string,
     public readonly attachments: GuestEmailAttachment[] = [],
     public readonly sentById?: string,
+    public readonly actorEmail?: string,
   ) {}
 }

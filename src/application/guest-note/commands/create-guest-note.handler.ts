@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { GuestNote } from '@/domain/guest-note/entities/guest-note.entity';
 import { GuestNoteTypeEnum } from '@/domain/guest-note/value-objects/guest-node-type.vo';
 import {
@@ -19,6 +20,14 @@ import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CreateGuestNoteCommand } from '@/application/guest-note/commands/create-guest-note.command';
 import { CreateGuestNoteResult } from '@/application/guest-note/commands/create-guest-note.result';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(CreateGuestNoteCommand)
 export class CreateGuestNoteHandler implements ICommandHandler<CreateGuestNoteCommand> {
@@ -27,6 +36,7 @@ export class CreateGuestNoteHandler implements ICommandHandler<CreateGuestNoteCo
     private readonly guestNoteRepository: GuestNoteRepository,
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(
@@ -70,6 +80,18 @@ export class CreateGuestNoteHandler implements ICommandHandler<CreateGuestNoteCo
     });
 
     await this.guestNoteRepository.save(guestNote);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.createdBy,
+        command.actorEmail,
+        AuditAction.GUEST_NOTE_CREATED,
+        AuditEntityType.GUEST_NOTE,
+        guestNote.getId()?.toString(),
+      ),
+    );
 
     return new CreateGuestNoteResult(guestNote.getId()?.toString() || '');
   }
