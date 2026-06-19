@@ -47,12 +47,17 @@ export class R2StorageService {
 
   async deleteObjects(keys: string[]): Promise<void> {
     if (keys.length === 0) return;
-    await this.client.send(
-      new DeleteObjectsCommand({
-        Bucket: this.bucket,
-        Delete: { Objects: keys.map((k) => ({ Key: k })) },
-      }),
-    );
+    try {
+      await this.client.send(
+        new DeleteObjectsCommand({
+          Bucket: this.bucket,
+          Delete: { Objects: keys.map((k) => ({ Key: k })) },
+        }),
+      );
+    } catch (err) {
+      // ponytail: orphan cleanup is best-effort; never fail the committed update. Add a retry queue if orphan buildup becomes real.
+      console.error('R2 orphan cleanup failed', { keys, err });
+    }
   }
 
   getPublicUrl(key: string): string {
