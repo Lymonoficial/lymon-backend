@@ -1,7 +1,4 @@
-import {
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateUnitRatingHandler } from '@/application/unit-rating/commands/create-unit-rating/create-unit-rating.handler';
 import { CreateUnitRatingCommand } from '@/application/unit-rating/commands/create-unit-rating/create-unit-rating.command';
@@ -13,8 +10,14 @@ import { createUnitRatingRepositoryMock } from '@test/shared/mocks/repositories/
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
 import { createReservationRepositoryMock } from '@test/shared/mocks/repositories/reservation-repository.mock';
 import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
-import { makeReservation, RESERVATION_FIXTURE_DEFAULTS } from '@test/shared/fixtures/reservation.fixture';
-import { makeGuest, GUEST_FIXTURE_DEFAULTS } from '@test/shared/fixtures/guest.fixture';
+import {
+  makeReservation,
+  RESERVATION_FIXTURE_DEFAULTS,
+} from '@test/shared/fixtures/reservation.fixture';
+import {
+  makeGuest,
+  GUEST_FIXTURE_DEFAULTS,
+} from '@test/shared/fixtures/guest.fixture';
 import { Unit } from '@/domain/unit/entities/unit.entity';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -30,7 +33,9 @@ const GUEST_ID = GUEST_FIXTURE_DEFAULTS.id;
 const RESERVATION_ID = RESERVATION_FIXTURE_DEFAULTS.id;
 const GUEST_ACCOUNT_ID = '65f1a1a2b3c4d5e6f7a8b901';
 
-function makeUnitFixture(overrides?: Partial<{ tenantId: string; id: string }>): Unit {
+function makeUnitFixture(
+  overrides?: Partial<{ tenantId: string; id: string }>,
+): Unit {
   return Unit.reconstitute({
     id: UnitId.create(overrides?.id ?? UNIT_ID),
     tenantId: TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
@@ -85,7 +90,9 @@ describe('CreateUnitRatingHandler', () => {
         status: ReservationStatusEnum.CHECKED_OUT,
       });
       const guest = makeGuest({ id: GUEST_ID, tenantId: TENANT_ID });
-      jest.spyOn(guest, 'getId').mockReturnValue(GuestId.createFromString(GUEST_ID));
+      jest
+        .spyOn(guest, 'getId')
+        .mockReturnValue(GuestId.createFromString(GUEST_ID));
 
       reservationRepository.findById.mockResolvedValue(reservation);
       guestRepository.findByGuestAccountId.mockResolvedValue(guest);
@@ -112,7 +119,9 @@ describe('CreateUnitRatingHandler', () => {
     it('throws NotFoundException when reservation not found', async () => {
       reservationRepository.findById.mockResolvedValue(null);
 
-      await expect(handler.execute(defaultCommand)).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(defaultCommand)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws DomainException when reservation is not CHECKED_OUT', async () => {
@@ -122,10 +131,14 @@ describe('CreateUnitRatingHandler', () => {
       });
       reservationRepository.findById.mockResolvedValue(reservation);
       const guest = makeGuest({ id: GUEST_ID, tenantId: TENANT_ID });
-      jest.spyOn(guest, 'getId').mockReturnValue(GuestId.createFromString(GUEST_ID));
+      jest
+        .spyOn(guest, 'getId')
+        .mockReturnValue(GuestId.createFromString(GUEST_ID));
       guestRepository.findByGuestAccountId.mockResolvedValue(guest);
 
-      await expect(handler.execute(defaultCommand)).rejects.toThrow(DomainException);
+      await expect(handler.execute(defaultCommand)).rejects.toThrow(
+        DomainException,
+      );
       await expect(handler.execute(defaultCommand)).rejects.toThrow(
         'Ratings can only be submitted after checkout',
       );
@@ -139,7 +152,9 @@ describe('CreateUnitRatingHandler', () => {
       reservationRepository.findById.mockResolvedValue(reservation);
       guestRepository.findByGuestAccountId.mockResolvedValue(null);
 
-      await expect(handler.execute(defaultCommand)).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(defaultCommand)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws DomainException when guest does not match reservation', async () => {
@@ -147,14 +162,19 @@ describe('CreateUnitRatingHandler', () => {
         guestId: GUEST_ID,
         status: ReservationStatusEnum.CHECKED_OUT,
       });
-      const otherGuest = makeGuest({ id: '65f1a1a2b3c4d5e6f7a8b9ff', tenantId: TENANT_ID });
-      jest.spyOn(otherGuest, 'getId').mockReturnValue(
-        GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9ff'),
-      );
+      const otherGuest = makeGuest({
+        id: '65f1a1a2b3c4d5e6f7a8b9ff',
+        tenantId: TENANT_ID,
+      });
+      jest
+        .spyOn(otherGuest, 'getId')
+        .mockReturnValue(GuestId.createFromString('65f1a1a2b3c4d5e6f7a8b9ff'));
       reservationRepository.findById.mockResolvedValue(reservation);
       guestRepository.findByGuestAccountId.mockResolvedValue(otherGuest);
 
-      await expect(handler.execute(defaultCommand)).rejects.toThrow(DomainException);
+      await expect(handler.execute(defaultCommand)).rejects.toThrow(
+        DomainException,
+      );
       await expect(handler.execute(defaultCommand)).rejects.toThrow(
         'This reservation does not belong to the authenticated guest',
       );
@@ -166,14 +186,22 @@ describe('CreateUnitRatingHandler', () => {
         status: ReservationStatusEnum.CHECKED_OUT,
       });
       const guest = makeGuest({ id: GUEST_ID, tenantId: TENANT_ID });
-      jest.spyOn(guest, 'getId').mockReturnValue(GuestId.createFromString(GUEST_ID));
-      const existingRating = { getId: () => ({ toString: () => 'existing-id' }) } as any;
+      jest
+        .spyOn(guest, 'getId')
+        .mockReturnValue(GuestId.createFromString(GUEST_ID));
+      const existingRating = {
+        getId: () => ({ toString: () => 'existing-id' }),
+      } as any;
 
       reservationRepository.findById.mockResolvedValue(reservation);
       guestRepository.findByGuestAccountId.mockResolvedValue(guest);
-      unitRatingRepository.findByReservationId.mockResolvedValue(existingRating);
+      unitRatingRepository.findByReservationId.mockResolvedValue(
+        existingRating,
+      );
 
-      await expect(handler.execute(defaultCommand)).rejects.toThrow(ConflictException);
+      await expect(handler.execute(defaultCommand)).rejects.toThrow(
+        ConflictException,
+      );
       await expect(handler.execute(defaultCommand)).rejects.toThrow(
         'A rating for this reservation already exists',
       );

@@ -15,13 +15,10 @@ import {
 } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.result';
 
 @QueryHandler(GetUnitWithExternalIdsByIdQuery)
-export class GetUnitWithExternalIdsByIdQueryHandler
-  implements
-    IQueryHandler<
-      GetUnitWithExternalIdsByIdQuery,
-      GetUnitWithExternalIdsByIdResult
-    >
-{
+export class GetUnitWithExternalIdsByIdQueryHandler implements IQueryHandler<
+  GetUnitWithExternalIdsByIdQuery,
+  GetUnitWithExternalIdsByIdResult
+> {
   constructor(
     @Inject(UNIT_REPOSITORY)
     private readonly unitRepository: UnitRepository,

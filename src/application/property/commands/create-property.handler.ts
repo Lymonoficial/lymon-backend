@@ -35,10 +35,6 @@ import {
   AuditAction,
   AuditEntityType,
 } from '@/domain/audit/value-objects/audit-action.vo';
-import {
-  CHANNEX_PROPERTY_SYNC_EVENT,
-  ChannexPropertySyncEvent,
-} from '@/infrastructure/channex/events/channex-property-sync.event';
 
 @CommandHandler(CreatePropertyCommand)
 export class CreatePropertyHandler implements ICommandHandler<CreatePropertyCommand> {
@@ -99,7 +95,6 @@ export class CreatePropertyHandler implements ICommandHandler<CreatePropertyComm
           propertyId,
         ),
       );
-      this.emitChannexSync(propertyId, command);
       return new CreatePropertyResult(propertyId);
     }
 
@@ -170,27 +165,7 @@ export class CreatePropertyHandler implements ICommandHandler<CreatePropertyComm
         ),
       );
     }
-    this.emitChannexSync(result.propertyId, command);
     return result;
-  }
-
-  private emitChannexSync(propertyId: string, command: CreatePropertyCommand): void {
-    this.eventEmitter.emit(
-      CHANNEX_PROPERTY_SYNC_EVENT,
-      new ChannexPropertySyncEvent(
-        propertyId,
-        command.name,
-        command.hostEmail,
-        command.hostPhone,
-        command.address,
-        command.city,
-        command.state,
-        command.country,
-        command.zipCode,
-        command.location.lat,
-        command.location.lng,
-      ),
-    );
   }
 
   private async validatePlanLimits(

@@ -2,12 +2,11 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 import { SaveGuestEmailHandler } from './commands/save-guest-email.handler';
-import { SendGuestMessageHandler } from './commands/send-guest-message/send-guest-message.handler';
 import { GetGuestEmailsByGuestIdHandler } from './queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.handler';
 
 import { EmailModule } from '@/infrastructure/email/email.module';
 
-const CommandHandlers = [SaveGuestEmailHandler, SendGuestMessageHandler];
+const CommandHandlers = [SaveGuestEmailHandler];
 const QueryHandlers = [GetGuestEmailsByGuestIdHandler];
 
 @Module({

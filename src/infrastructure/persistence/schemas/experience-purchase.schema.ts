@@ -56,5 +56,9 @@ export const ExperiencePurchaseSchema = SchemaFactory.createForClass(
   ExperiencePurchaseDocument,
 );
 
-ExperiencePurchaseSchema.index({ guestAccountId: 1, tenantId: 1, createdAt: -1 });
+ExperiencePurchaseSchema.index({
+  guestAccountId: 1,
+  tenantId: 1,
+  createdAt: -1,
+});
 ExperiencePurchaseSchema.index({ experienceId: 1, selectedDate: 1, status: 1 });

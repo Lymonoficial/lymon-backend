@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
 
@@ -27,4 +27,8 @@ export class GetAvailableExperiencesQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 10;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortByPrice?: 'asc' | 'desc';
 }

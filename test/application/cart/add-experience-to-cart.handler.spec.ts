@@ -6,10 +6,22 @@ import { createCartRepositoryMock } from '@test/shared/mocks/repositories/cart-r
 import { createExperienceRepositoryMock } from '@test/shared/mocks/repositories/experience-repository.mock';
 import { makeExperience } from '@test/shared/fixtures/experience.fixture';
 import { makeCart } from '@test/shared/fixtures/cart.fixture';
-import { ExperienceStatus, ExperienceStatusEnum } from '@/domain/experience/value-objects/experience-status.vo';
-import { ExperienceScope, ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
-import { ExperienceCategory, ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceAvailabilityType, ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
+import {
+  ExperienceStatus,
+  ExperienceStatusEnum,
+} from '@/domain/experience/value-objects/experience-status.vo';
+import {
+  ExperienceScope,
+  ExperienceScopeEnum,
+} from '@/domain/experience/value-objects/experience-scope.vo';
+import {
+  ExperienceCategory,
+  ExperienceCategoryEnum,
+} from '@/domain/experience/value-objects/experience-category.vo';
+import {
+  ExperienceAvailabilityType,
+  ExperienceAvailabilityTypeEnum,
+} from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { Experience } from '@/domain/experience/entities/experience.entity';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -33,7 +45,9 @@ function makeArchivedExperience(): Experience {
     capacity: 5,
     coverImageUrl: 'https://example.com/img.jpg',
     location: { label: 'Lobby', lat: 4.6097, lng: -74.0817 },
-    availabilityType: ExperienceAvailabilityType.create(ExperienceAvailabilityTypeEnum.DATE_RANGE),
+    availabilityType: ExperienceAvailabilityType.create(
+      ExperienceAvailabilityTypeEnum.DATE_RANGE,
+    ),
     startAt: new Date('2099-01-10'),
     endAt: new Date('2099-01-20'),
     blackoutRanges: [],
@@ -117,6 +131,8 @@ describe('AddExperienceToCartHandler', () => {
     jest.spyOn(experience, 'getAllowStandalonePurchase').mockReturnValue(false);
     experienceRepository.findById.mockResolvedValue(experience);
 
-    await expect(handler.execute(makeCommand())).rejects.toThrow(DomainException);
+    await expect(handler.execute(makeCommand())).rejects.toThrow(
+      DomainException,
+    );
   });
 });

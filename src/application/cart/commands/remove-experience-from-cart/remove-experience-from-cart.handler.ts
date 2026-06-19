@@ -9,9 +9,7 @@ import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-accou
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 
 @CommandHandler(RemoveExperienceFromCartCommand)
-export class RemoveExperienceFromCartHandler
-  implements ICommandHandler<RemoveExperienceFromCartCommand>
-{
+export class RemoveExperienceFromCartHandler implements ICommandHandler<RemoveExperienceFromCartCommand> {
   constructor(
     @Inject(CART_REPOSITORY)
     private readonly cartRepository: CartRepository,

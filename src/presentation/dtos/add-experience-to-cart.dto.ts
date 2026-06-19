@@ -22,12 +22,16 @@ export class AddExperienceToCartDto {
   @IsPositive()
   quantity: number;
 
-  @ApiPropertyOptional({ description: 'ISO date string for fixed-date experiences' })
+  @ApiPropertyOptional({
+    description: 'ISO date string for fixed-date experiences',
+  })
   @IsOptional()
   @IsDateString()
   selectedDate?: string;
 
-  @ApiPropertyOptional({ description: 'Reservation ID if purchasing as add-on' })
+  @ApiPropertyOptional({
+    description: 'Reservation ID if purchasing as add-on',
+  })
   @IsOptional()
   @IsString()
   reservationId?: string;
