@@ -1,10 +1,6 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from '@/infrastructure/auth/decorators/public.decorator';
 import { GuestPublic } from '@/infrastructure/guest-auth/decorators/guest-public.decorator';
 import { GuestJwtAuthGuard } from '@/infrastructure/guest-auth/guards/guest-jwt-auth.guard';
@@ -47,6 +43,7 @@ export class GuestExperienceController {
         query.tenantId,
         query.propertyId,
         query.category,
+        query.sortByPrice,
       ),
     );
 
@@ -85,6 +82,7 @@ export class GuestExperienceController {
   ): PublicExperienceCatalogDto {
     return {
       id: experience.id,
+      tenantId: experience.tenantId,
       scope: experience.scope,
       propertyId: experience.propertyId,
       name: experience.name,
@@ -111,7 +109,8 @@ export class GuestExperienceController {
           )
         : null,
       blackoutRanges: experience.blackoutRanges.map(
-        (range) => new PublicExperienceBlackoutRangeDto(range.startAt, range.endAt),
+        (range) =>
+          new PublicExperienceBlackoutRangeDto(range.startAt, range.endAt),
       ),
       allowStandalonePurchase: experience.allowStandalonePurchase,
       allowReservationPurchase: experience.allowReservationPurchase,
@@ -123,6 +122,7 @@ export class GuestExperienceController {
 
 interface PublicExperienceCatalogDto {
   id: string;
+  tenantId: string;
   scope: string;
   propertyId: string | null;
   name: string;

@@ -39,7 +39,6 @@ export class MongoUnitRepository implements UnitRepository {
       mediaKeys: unit.getMediaKeys(),
       pricePerNight: unit.getPricePerNight(),
       externalIds: unit.getExternalIds().toObject(),
-      channexRoomTypeId: unit.getChannexRoomTypeId() ?? undefined,
       rating: unit.getRating(),
       updatedAt: unit.getUpdatedAt(),
     };
@@ -204,16 +203,15 @@ export class MongoUnitRepository implements UnitRepository {
         createdAt: document.createdAt,
         updatedAt: document.updatedAt,
       },
-      channexRoomTypeId: document.channexRoomTypeId ?? null,
     });
   }
 
-  async findByChannexRoomTypeId(roomTypeId: string): Promise<Unit | null> {
-    const document = await this.unitModel.findOne({
-      channexRoomTypeId: roomTypeId,
+  async findByIds(ids: UnitId[]): Promise<Unit[]> {
+    if (!ids.length) return [];
+    const documents = await this.unitModel.find({
+      _id: { $in: ids.map((id) => new Types.ObjectId(id.toString())) },
       deletedAt: null,
     });
-    if (!document) return null;
-    return this.toDomain(document);
+    return documents.map((doc) => this.toDomain(doc));
   }
 }

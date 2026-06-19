@@ -4,4 +4,3 @@ export class GetExperienceByIdQuery {
     public readonly tenantId: string,
   ) {}
 }
-

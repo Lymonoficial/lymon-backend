@@ -34,9 +34,7 @@ import {
 } from '@/infrastructure/audit/events/audit-logged.event';
 
 @CommandHandler(CreateUnitRatingCommand)
-export class CreateUnitRatingHandler
-  implements ICommandHandler<CreateUnitRatingCommand>
-{
+export class CreateUnitRatingHandler implements ICommandHandler<CreateUnitRatingCommand> {
   constructor(
     @Inject(UNIT_RATING_REPOSITORY)
     private readonly unitRatingRepository: UnitRatingRepository,
@@ -54,7 +52,8 @@ export class CreateUnitRatingHandler
   ): Promise<CreateUnitRatingResult> {
     const reservationId = ReservationId.create(command.reservationId);
 
-    const reservation = await this.reservationRepository.findById(reservationId);
+    const reservation =
+      await this.reservationRepository.findById(reservationId);
     if (!reservation) {
       throw new NotFoundException('Reservation not found');
     }
@@ -64,9 +63,7 @@ export class CreateUnitRatingHandler
     if (
       reservation.getStatus().getValue() !== ReservationStatusEnum.CHECKED_OUT
     ) {
-      throw new DomainException(
-        'Ratings can only be submitted after checkout',
-      );
+      throw new DomainException('Ratings can only be submitted after checkout');
     }
 
     const guestAccountId = GuestAccountId.createFromString(command.actorId);
@@ -85,9 +82,8 @@ export class CreateUnitRatingHandler
       );
     }
 
-    const existing = await this.unitRatingRepository.findByReservationId(
-      reservationId,
-    );
+    const existing =
+      await this.unitRatingRepository.findByReservationId(reservationId);
     if (existing) {
       throw new ConflictException(
         'A rating for this reservation already exists',
@@ -112,9 +108,8 @@ export class CreateUnitRatingHandler
 
     const ratingId = await this.unitRatingRepository.save(rating);
 
-    const newAverage = await this.unitRatingRepository.calculateAverageForUnit(
-      unitId,
-    );
+    const newAverage =
+      await this.unitRatingRepository.calculateAverageForUnit(unitId);
     unit.updateRating(newAverage);
     await this.unitRepository.save(unit);
 

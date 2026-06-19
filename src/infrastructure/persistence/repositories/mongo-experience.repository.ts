@@ -117,6 +117,7 @@ export class MongoExperienceRepository implements ExperienceRepository {
     page: number,
     limit: number,
     propertyId?: PropertyId,
+    minCapacity?: number,
   ): Promise<{ experiences: Experience[]; total: number }> {
     const filter: Record<string, unknown> = {
       tenantId: new Types.ObjectId(tenantId.toString()),
@@ -125,6 +126,10 @@ export class MongoExperienceRepository implements ExperienceRepository {
 
     if (propertyId) {
       filter.propertyId = new Types.ObjectId(propertyId.toString());
+    }
+
+    if (minCapacity) {
+      filter.capacity = { $gte: minCapacity };
     }
 
     const total = await this.experienceModel.countDocuments(filter);
@@ -162,10 +167,14 @@ export class MongoExperienceRepository implements ExperienceRepository {
       query.category = filters.category.toString();
     }
 
+    const sort: Record<string, 1 | -1> = filters.sortByPrice
+      ? { priceCop: filters.sortByPrice === 'asc' ? 1 : -1 }
+      : { createdAt: -1 };
+
     const [documents, total] = await Promise.all([
       this.experienceModel
         .find(query)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit),
       this.experienceModel.countDocuments(query),

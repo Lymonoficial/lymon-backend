@@ -10,9 +10,10 @@ import { DateRange } from '@/domain/reservation/value-objects/date-range.vo';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 @QueryHandler(GetUnitOccupancyQuery)
-export class GetUnitOccupancyHandler
-  implements IQueryHandler<GetUnitOccupancyQuery, { checkIn: Date; checkOut: Date }[]>
-{
+export class GetUnitOccupancyHandler implements IQueryHandler<
+  GetUnitOccupancyQuery,
+  { checkIn: Date; checkOut: Date }[]
+> {
   constructor(
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,
@@ -24,10 +25,11 @@ export class GetUnitOccupancyHandler
     // Reconstitute date range to avoid "past date" validation during querying
     const searchRange = DateRange.reconstitute(query.startDate, query.endDate);
 
-    const reservations = await this.reservationRepository.findByUnitAndDateRange(
-      unitId,
-      searchRange,
-    );
+    const reservations =
+      await this.reservationRepository.findByUnitAndDateRange(
+        unitId,
+        searchRange,
+      );
 
     const INACTIVE_STATUSES = new Set<ReservationStatusEnum>([
       ReservationStatusEnum.CANCELLED,

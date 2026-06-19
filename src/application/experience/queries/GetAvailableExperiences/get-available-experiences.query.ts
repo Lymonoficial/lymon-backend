@@ -7,5 +7,6 @@ export class GetAvailableExperiencesQuery implements IQuery {
     public readonly tenantId?: string,
     public readonly propertyId?: string,
     public readonly category?: string,
+    public readonly sortByPrice?: 'asc' | 'desc',
   ) {}
 }

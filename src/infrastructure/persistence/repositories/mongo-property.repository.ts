@@ -5,10 +5,6 @@ import { PropertyType } from '@/domain/property/value-objects/property-type.vo';
 import { CancellationPolicy } from '@/domain/property/value-objects/cancellation-policy.vo';
 import { Location } from '@/domain/property/value-objects/location.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import {
-  ChannexSyncStatus,
-  ChannexSyncStatusEnum,
-} from '@/domain/property/value-objects/channex-sync-status.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -46,8 +42,6 @@ export class MongoPropertyRepository implements PropertyRepository {
       hostPhone: property.getHostPhone(),
       hostEmail: property.getHostEmail(),
       updatedAt: property.getUpdatedAt(),
-      channexId: property.getChannexId() ?? undefined,
-      channexSyncStatus: property.getChannexSyncStatus().toString(),
     };
 
     if (id) {
@@ -105,23 +99,6 @@ export class MongoPropertyRepository implements PropertyRepository {
     });
   }
 
-  async findByChannexId(channexId: string): Promise<Property | null> {
-    const document = await this.propertyModel.findOne({
-      channexId,
-      deletedAt: null,
-    });
-    if (!document) return null;
-    return this.toDomain(document);
-  }
-
-  async findFailedChannexSync(): Promise<Property[]> {
-    const documents = await this.propertyModel.find({
-      channexSyncStatus: ChannexSyncStatusEnum.FAILED,
-      deletedAt: null,
-    });
-    return documents.map((doc) => this.toDomain(doc));
-  }
-
   private toDomain(document: PropertyDocument): Property {
     return Property.reconstitute({
       id: PropertyId.create(document._id.toString()),
@@ -145,10 +122,6 @@ export class MongoPropertyRepository implements PropertyRepository {
       createdAt: document.createdAt,
       updatedAt: document.updatedAt,
       deletedAt: document.deletedAt ?? null,
-      channexId: document.channexId ?? null,
-      channexSyncStatus: document.channexSyncStatus
-        ? ChannexSyncStatus.create(document.channexSyncStatus)
-        : ChannexSyncStatus.pending(),
     });
   }
 }

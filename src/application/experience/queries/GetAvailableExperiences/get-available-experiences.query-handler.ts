@@ -46,7 +46,7 @@ export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
 
     const { experiences, total } =
       await this.experienceRepository.findAvailableForGuestPaginated(
-        { tenantId, propertyId, category },
+        { tenantId, propertyId, category, sortByPrice: query.sortByPrice },
         query.page,
         query.limit,
       );

@@ -84,11 +84,12 @@ export class ExperienceController {
     @Query('propertyId') propertyId: string | undefined,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('minCapacity', new DefaultValuePipe(undefined), new ParseIntPipe({ optional: true })) minCapacity: number | undefined,
   ) {
     const result = await this.queryBus.execute<
       GetExperiencesByTenantQuery,
       GetExperiencesByTenantResult
-    >(new GetExperiencesByTenantQuery(user.tenantId, page, limit, propertyId));
+    >(new GetExperiencesByTenantQuery(user.tenantId, page, limit, propertyId, minCapacity));
 
     return {
       message: 'Experiences retrieved successfully',
@@ -108,7 +109,10 @@ export class ExperienceController {
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.PROPERTY_VIEW)
   @ApiOperation({ summary: 'Get experience by ID' })
-  @ApiResponse({ status: 200, description: 'Experience retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Experience retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Experience not found' })
   async getById(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     const result = await this.queryBus.execute<
@@ -118,7 +122,11 @@ export class ExperienceController {
 
     return {
       message: 'Experience retrieved successfully',
-      data: result.experience,
+      data: {
+        ...result.experience,
+        propertyName: result.propertyName,
+        units: result.units,
+      },
     };
   }
 

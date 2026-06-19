@@ -9,6 +9,12 @@ export class GeneratePresignedUrlDto {
 
   @ApiProperty({ example: 'image/jpeg' })
   @IsString()
-  @IsIn(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'])
+  @IsIn([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'application/pdf',
+  ])
   contentType: string;
 }

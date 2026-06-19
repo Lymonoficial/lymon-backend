@@ -70,4 +70,3 @@ describe('GuestExperienceController', () => {
     expect(result.data).not.toHaveProperty('status');
   });
 });
-

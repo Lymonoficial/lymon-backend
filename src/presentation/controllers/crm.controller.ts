@@ -340,6 +340,19 @@ export class CrmController {
     description: 'Guest monthly spending retrieved successfully',
   })
   async getGuestMonthlySpending(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestMonthlySpendingQuery,
+      GetGuestMonthlySpendingResult
+    >(new GetGuestMonthlySpendingQuery(user.tenantId, guestId));
+    return {
+      message: 'Guest monthly spending retrieved successfully',
+      data: result.items,
+    };
+  }
+
   @Get('guests/:guestId/booking-origins')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)
@@ -353,12 +366,6 @@ export class CrmController {
     @CurrentUser() user: JwtPayload,
   ) {
     const result = await this.queryBus.execute<
-      GetGuestMonthlySpendingQuery,
-      GetGuestMonthlySpendingResult
-    >(new GetGuestMonthlySpendingQuery(user.tenantId, guestId));
-    return {
-      message: 'Guest monthly spending retrieved successfully',
-      data: result.items,
       GetGuestBookingOriginsQuery,
       GetGuestBookingOriginsResult
     >(new GetGuestBookingOriginsQuery(user.tenantId, guestId));

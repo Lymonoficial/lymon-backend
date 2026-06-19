@@ -35,10 +35,6 @@ import {
   AuditLoggedEvent,
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
-import {
-  CHANNEX_AVAILABILITY_UPDATE_EVENT,
-  ChannexAvailabilityUpdateEvent,
-} from '@/infrastructure/channex/events/channex-availability-update.event';
 
 export interface CancelGuestReservationResult {
   cancelled: true;
@@ -149,16 +145,6 @@ export class CancelGuestReservationHandler
     refundAmount: number,
     refundRequestId: string | null,
   ): void {
-    const dateRange = reservation.getDateRange();
-    this.eventEmitter.emit(
-      CHANNEX_AVAILABILITY_UPDATE_EVENT,
-      new ChannexAvailabilityUpdateEvent(
-        reservation.getUnitId().toString(),
-        dateRange.getCheckIn(),
-        dateRange.getCheckOut(),
-      ),
-    );
-
     this.eventEmitter.emit(
       AUDIT_LOG_EVENT,
       new AuditLoggedEvent(

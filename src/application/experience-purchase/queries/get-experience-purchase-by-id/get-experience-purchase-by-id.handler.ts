@@ -9,9 +9,7 @@ import { ExperiencePurchaseId } from '@/domain/experience-purchase/value-objects
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 
 @QueryHandler(GetExperiencePurchaseByIdQuery)
-export class GetExperiencePurchaseByIdHandler
-  implements IQueryHandler<GetExperiencePurchaseByIdQuery>
-{
+export class GetExperiencePurchaseByIdHandler implements IQueryHandler<GetExperiencePurchaseByIdQuery> {
   constructor(
     @Inject(EXPERIENCE_PURCHASE_REPOSITORY)
     private readonly purchaseRepository: ExperiencePurchaseRepository,

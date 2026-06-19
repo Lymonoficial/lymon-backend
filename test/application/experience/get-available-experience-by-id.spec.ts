@@ -88,4 +88,3 @@ describe('GetAvailableExperienceByIdQueryHandler', () => {
     ).rejects.toThrow(NotFoundException);
   });
 });
-

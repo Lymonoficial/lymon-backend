@@ -239,13 +239,20 @@ export class SuppliersController {
   async getSupplierItems(
     @CurrentUser() user: JwtPayload,
     @Param('supplierId') supplierId: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
   ) {
     const result: GetItemsBySupplierResult = await this.queryBus.execute<
       GetItemsBySupplierQuery,
       GetItemsBySupplierResult
-    >(new GetItemsBySupplierQuery(user.tenantId, supplierId, page, limit));
+    >(
+      new GetItemsBySupplierQuery(
+        user.tenantId,
+        supplierId,
+        page ?? 1,
+        limit ?? 20,
+      ),
+    );
 
     return {
       message: 'Supplier items retrieved successfully',
