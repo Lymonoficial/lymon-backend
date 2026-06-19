@@ -13,9 +13,12 @@ describe('TogglePinGuestNoteHandler', () => {
   let handler: TogglePinGuestNoteHandler;
   let guestNoteRepository: jest.Mocked<GuestNoteRepository>;
 
+  let mockEventEmitter: { emit: jest.Mock };
+
   beforeEach(() => {
     guestNoteRepository = createGuestNoteRepositoryMock();
-    handler = new TogglePinGuestNoteHandler(guestNoteRepository);
+    mockEventEmitter = { emit: jest.fn() };
+    handler = new TogglePinGuestNoteHandler(guestNoteRepository, mockEventEmitter as any);
   });
 
   describe('when the note does not exist', () => {
@@ -28,6 +31,7 @@ describe('TogglePinGuestNoteHandler', () => {
             GUEST_NOTE_FIXTURE_DEFAULTS.tenantId,
             GUEST_NOTE_FIXTURE_DEFAULTS.id,
             '65f1a1a2b3c4d5e6f7a8b9c2',
+            'actor@test.com',
           ),
         ),
       ).rejects.toThrow(NotFoundException);

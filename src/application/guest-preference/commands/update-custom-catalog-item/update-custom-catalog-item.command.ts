@@ -7,5 +7,7 @@ export class UpdateCustomCatalogItemCommand {
     public readonly itemId: string,
     public readonly label: string,
     public readonly category: GuestPreferenceCategoryEnum,
+    public readonly actorId: string,
+    public readonly actorEmail: string,
   ) {}
 }

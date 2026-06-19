@@ -1,4 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AssignGuestTagsCommand } from './assign-guest-tags.command';
 import {
   BadRequestException,
@@ -11,6 +12,14 @@ import type { GuestRepository } from '@/domain/guest/repositories/guest.reposito
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import type { GuestTagRepository } from '@/domain/guest-tag/repositories/guest-tag.repository';
 import { GUEST_TAG_REPOSITORY } from '@/domain/guest-tag/repositories/guest-tag.repository';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(AssignGuestTagsCommand)
 export class AssignGuestTagsHandler implements ICommandHandler<AssignGuestTagsCommand> {
@@ -19,6 +28,7 @@ export class AssignGuestTagsHandler implements ICommandHandler<AssignGuestTagsCo
     private readonly repository: GuestRepository,
     @Inject(GUEST_TAG_REPOSITORY)
     private readonly tagRepository: GuestTagRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: AssignGuestTagsCommand): Promise<void> {
@@ -56,5 +66,17 @@ export class AssignGuestTagsHandler implements ICommandHandler<AssignGuestTagsCo
 
     guest.setTags(foundTags);
     await this.repository.save(guest);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId,
+        command.actorEmail,
+        AuditAction.GUEST_TAGS_ASSIGNED,
+        AuditEntityType.GUEST,
+        command.guestId,
+      ),
+    );
   }
 }
