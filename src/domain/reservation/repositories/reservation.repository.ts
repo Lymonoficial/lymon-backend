@@ -35,6 +35,10 @@ export interface ReservationRepository {
     sortDirection?: 'asc' | 'desc',
   ): Promise<Reservation[]>;
   countByGuestId(tenantId: string, guestId: string): Promise<number>;
+  countByGuestIdGroupedBySource(
+    tenantId: string,
+    guestId: string,
+  ): Promise<Array<{ source: string; count: number }>>;
   findByUnitAndDateRange(
     unitId: UnitId,
     dateRange: DateRange,

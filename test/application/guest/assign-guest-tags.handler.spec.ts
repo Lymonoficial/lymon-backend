@@ -23,10 +23,13 @@ describe('AssignGuestTagsHandler', () => {
   let guestRepository: jest.Mocked<GuestRepository>;
   let tagRepository: jest.Mocked<GuestTagRepository>;
 
+  let mockEventEmitter: { emit: jest.Mock };
+
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
     tagRepository = createGuestTagRepositoryMock();
-    handler = new AssignGuestTagsHandler(guestRepository, tagRepository);
+    mockEventEmitter = { emit: jest.fn() };
+    handler = new AssignGuestTagsHandler(guestRepository, tagRepository, mockEventEmitter as any);
   });
 
   describe('when all tags exist in the catalog', () => {
@@ -46,6 +49,8 @@ describe('AssignGuestTagsHandler', () => {
         GUEST_ID,
         ['vip', 'family'],
         TENANT_ID,
+        'actor-id',
+        'actor@test.com',
       );
       await handler.execute(command);
 
@@ -74,6 +79,8 @@ describe('AssignGuestTagsHandler', () => {
         GUEST_ID,
         ['VIP', '  Vip  '],
         TENANT_ID,
+        'actor-id',
+        'actor@test.com',
       );
       await handler.execute(command);
 
@@ -96,6 +103,8 @@ describe('AssignGuestTagsHandler', () => {
         GUEST_ID,
         ['vip', 'vip', 'VIP'],
         TENANT_ID,
+        'actor-id',
+        'actor@test.com',
       );
       await handler.execute(command);
 
@@ -115,6 +124,8 @@ describe('AssignGuestTagsHandler', () => {
         GUEST_ID,
         ['vip', 'nonexistent', 'another-unknown'],
         TENANT_ID,
+        'actor-id',
+        'actor@test.com',
       );
 
       await expect(handler.execute(command)).rejects.toThrow(
@@ -135,6 +146,8 @@ describe('AssignGuestTagsHandler', () => {
         GUEST_ID,
         ['ghost'],
         TENANT_ID,
+        'actor-id',
+        'actor@test.com',
       );
 
       await expect(handler.execute(command)).rejects.toThrow(
@@ -150,7 +163,7 @@ describe('AssignGuestTagsHandler', () => {
       guestRepository.findById.mockResolvedValue(guest);
       guestRepository.save.mockResolvedValue(GUEST_ID);
 
-      const command = new AssignGuestTagsCommand(GUEST_ID, [], TENANT_ID);
+      const command = new AssignGuestTagsCommand(GUEST_ID, [], TENANT_ID, 'actor-id', 'actor@test.com');
       await handler.execute(command);
 
       expect(tagRepository.findByNames).toHaveBeenCalledWith([], TENANT_ID);
@@ -167,7 +180,7 @@ describe('AssignGuestTagsHandler', () => {
       ]);
       guestRepository.findById.mockResolvedValue(null);
 
-      const command = new AssignGuestTagsCommand(GUEST_ID, ['vip'], TENANT_ID);
+      const command = new AssignGuestTagsCommand(GUEST_ID, ['vip'], TENANT_ID, 'actor-id', 'actor@test.com');
 
       await expect(handler.execute(command)).rejects.toThrow(NotFoundException);
     });
@@ -181,7 +194,7 @@ describe('AssignGuestTagsHandler', () => {
       const guest = makeGuest({ tenantId: 'different-tenant-000000000' });
       guestRepository.findById.mockResolvedValue(guest);
 
-      const command = new AssignGuestTagsCommand(GUEST_ID, ['vip'], TENANT_ID);
+      const command = new AssignGuestTagsCommand(GUEST_ID, ['vip'], TENANT_ID, 'actor-id', 'actor@test.com');
 
       await expect(handler.execute(command)).rejects.toThrow(
         ForbiddenException,

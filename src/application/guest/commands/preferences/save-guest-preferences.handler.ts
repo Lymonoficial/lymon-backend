@@ -1,4 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { SaveGuestPreferencesCommand } from './save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from './save-guest-preferences.result';
@@ -7,6 +8,14 @@ import type { GuestRepository } from '@/domain/guest/repositories/guest.reposito
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
 import { CatalogPreferenceBuilderService } from '@/application/guest-preference/services/catalog-preference-builder.service';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 const PLANS_WITH_PREFERENCES_ACCESS = new Set<string>([
   PlanTypeEnum.LYMON_PLUS,
@@ -22,6 +31,7 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
     @Inject(GUEST_REPOSITORY)
     private readonly repository: GuestRepository,
     private readonly catalogPreferenceBuilder: CatalogPreferenceBuilderService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(
@@ -54,6 +64,18 @@ export class SaveGuestPreferencesHandler implements ICommandHandler<
 
     guest.setPreferences(preferences);
     await this.repository.save(guest);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId,
+        command.actorEmail,
+        AuditAction.GUEST_PREFERENCES_SAVED,
+        AuditEntityType.GUEST,
+        command.guestId,
+      ),
+    );
 
     return new SaveGuestPreferencesResult(guestId, wasCreated);
   }
