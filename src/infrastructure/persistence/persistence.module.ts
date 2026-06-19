@@ -83,6 +83,13 @@ import { REFUND_REQUEST_REPOSITORY } from '@/domain/refund/repositories/refund-r
 import { MongoRefundRequestRepository } from '@/infrastructure/persistence/repositories/mongo-refund-request.repository';
 import { PAYMENT_SESSION_REPOSITORY } from '@/domain/payment/repositories/payment-session.repository';
 import { MongoPaymentSessionRepository } from '@/infrastructure/persistence/repositories/mongo-payment-session.repository';
+import {
+  GuestMessageDocument,
+  GuestMessageSchema,
+} from '@/infrastructure/persistence/schemas/guest-message.schema';
+import { GUEST_MESSAGE_REPOSITORY } from '@/domain/guest-message/repositories/guest-message.repository';
+import { MongoGuestMessageRepository } from '@/infrastructure/persistence/repositories/mongo-guest-message.repository';
+import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-email-backfill.migration';
 
 @Module({
   imports: [
@@ -112,6 +119,7 @@ import { MongoPaymentSessionRepository } from '@/infrastructure/persistence/repo
       { name: UnitRatingDocument.name, schema: UnitRatingSchema },
       { name: RefundRequestDocument.name, schema: RefundRequestSchema },
       { name: PaymentSessionDocument.name, schema: PaymentSessionSchema },
+      { name: GuestMessageDocument.name, schema: GuestMessageSchema },
     ]),
   ],
   providers: [
@@ -145,6 +153,19 @@ import { MongoPaymentSessionRepository } from '@/infrastructure/persistence/repo
     { provide: PAYMENT_SESSION_REPOSITORY, useClass: MongoPaymentSessionRepository },
     RoleSeedService,
     GuestTagSeedService,
+    {
+      provide: UNIT_RATING_REPOSITORY,
+      useClass: MongoUnitRatingRepository,
+    },
+    {
+      provide: REFUND_REQUEST_REPOSITORY,
+      useClass: MongoRefundRequestRepository,
+    },
+    {
+      provide: GUEST_MESSAGE_REPOSITORY,
+      useClass: MongoGuestMessageRepository,
+    },
+    GuestEmailBackfillMigration,
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -175,6 +196,7 @@ import { MongoPaymentSessionRepository } from '@/infrastructure/persistence/repo
     UNIT_RATING_REPOSITORY,
     REFUND_REQUEST_REPOSITORY,
     PAYMENT_SESSION_REPOSITORY,
+    GUEST_MESSAGE_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

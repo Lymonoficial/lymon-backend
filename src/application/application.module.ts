@@ -28,6 +28,7 @@ import { ReservationApplicationModule } from '@/application/reservation/reservat
 import { InventoryApplicationModule } from '@/application/inventory/inventory-application.module';
 import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-application.module';
 import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
+import { GuestMessageApplicationModule } from '@/application/guest-message/guest-message-application.module';
 import { UserApplicationModule } from '@/application/user/user-application.module';
 import { GuestPreferenceApplicationModule } from '@/application/guest-preference/guest-preference-application.module';
 import { ShiftApplicationModule } from '@/application/shift/shift-application.module';
@@ -82,6 +83,7 @@ const QueryHandlers = [GetShiftsHandler];
     InventoryApplicationModule,
     GuestNoteApplicationModule,
     GuestEmailApplicationModule,
+    GuestMessageApplicationModule,
     UserApplicationModule,
     GuestPreferenceApplicationModule,
     ShiftApplicationModule,
