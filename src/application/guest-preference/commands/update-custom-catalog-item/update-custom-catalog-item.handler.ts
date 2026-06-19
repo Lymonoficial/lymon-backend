@@ -1,5 +1,6 @@
 import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UpdateCustomCatalogItemCommand } from './update-custom-catalog-item.command';
 import {
   GUEST_PREFERENCE_CATALOG_REPOSITORY,
@@ -8,6 +9,14 @@ import {
 import { GuestPreferenceSourceEnum } from '@/domain/guest-preference/entities/guest-preference-catalog-item.entity';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { PLANS_WITH_CUSTOM_CATALOG } from '@/application/guest-preference/guest-preference.constants';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(UpdateCustomCatalogItemCommand)
 export class UpdateCustomCatalogItemHandler implements ICommandHandler<
@@ -17,6 +26,7 @@ export class UpdateCustomCatalogItemHandler implements ICommandHandler<
   constructor(
     @Inject(GUEST_PREFERENCE_CATALOG_REPOSITORY)
     private readonly repository: GuestPreferenceCatalogRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: UpdateCustomCatalogItemCommand): Promise<void> {
@@ -36,6 +46,18 @@ export class UpdateCustomCatalogItemHandler implements ICommandHandler<
     item.update(command.label, command.category);
 
     await this.repository.save(item);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId,
+        command.actorEmail,
+        AuditAction.GUEST_CATALOG_ITEM_UPDATED,
+        AuditEntityType.GUEST_CATALOG_ITEM,
+        command.itemId,
+      ),
+    );
   }
 
   private validatePlanAccess(activePlan: string): void {

@@ -22,6 +22,8 @@ function makeCommand(
     activePlan,
     overrides.category ?? GuestPreferenceCategoryEnum.ROOM,
     overrides.label ?? 'Habitación silenciosa',
+    'actor-id',
+    'actor@test.com',
   );
 }
 
@@ -29,9 +31,12 @@ describe('CreateCustomCatalogItemHandler', () => {
   let handler: CreateCustomCatalogItemHandler;
   let repository: jest.Mocked<GuestPreferenceCatalogRepository>;
 
+  let mockEventEmitter: { emit: jest.Mock };
+
   beforeEach(() => {
     repository = createGuestPreferenceCatalogRepositoryMock();
-    handler = new CreateCustomCatalogItemHandler(repository);
+    mockEventEmitter = { emit: jest.fn() };
+    handler = new CreateCustomCatalogItemHandler(repository, mockEventEmitter as any);
   });
 
   // ── Scenario 2: Plan Gate ──────────────────────────────────────────────────

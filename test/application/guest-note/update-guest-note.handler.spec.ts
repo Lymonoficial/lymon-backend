@@ -13,9 +13,12 @@ describe('UpdateGuestNoteHandler', () => {
   let handler: UpdateGuestNoteHandler;
   let guestNoteRepository: jest.Mocked<GuestNoteRepository>;
 
+  let mockEventEmitter: { emit: jest.Mock };
+
   beforeEach(() => {
     guestNoteRepository = createGuestNoteRepositoryMock();
-    handler = new UpdateGuestNoteHandler(guestNoteRepository);
+    mockEventEmitter = { emit: jest.fn() };
+    handler = new UpdateGuestNoteHandler(guestNoteRepository, mockEventEmitter as any);
   });
 
   describe('when no fields are provided', () => {
@@ -26,6 +29,7 @@ describe('UpdateGuestNoteHandler', () => {
             GUEST_NOTE_FIXTURE_DEFAULTS.tenantId,
             GUEST_NOTE_FIXTURE_DEFAULTS.id,
             '65f1a1a2b3c4d5e6f7a8b9c2',
+            'actor@test.com',
             undefined,
             undefined,
           ),
@@ -46,6 +50,7 @@ describe('UpdateGuestNoteHandler', () => {
             GUEST_NOTE_FIXTURE_DEFAULTS.tenantId,
             GUEST_NOTE_FIXTURE_DEFAULTS.id,
             '65f1a1a2b3c4d5e6f7a8b9c2',
+            'actor@test.com',
             'Updated content',
             undefined,
           ),
@@ -66,6 +71,7 @@ describe('UpdateGuestNoteHandler', () => {
           GUEST_NOTE_FIXTURE_DEFAULTS.tenantId,
           GUEST_NOTE_FIXTURE_DEFAULTS.id,
           '65f1a1a2b3c4d5e6f7a8b9c2',
+          'actor@test.com',
           'New note content',
           undefined,
         ),
@@ -88,6 +94,7 @@ describe('UpdateGuestNoteHandler', () => {
           GUEST_NOTE_FIXTURE_DEFAULTS.tenantId,
           GUEST_NOTE_FIXTURE_DEFAULTS.id,
           '65f1a1a2b3c4d5e6f7a8b9c2',
+          'actor@test.com',
           undefined,
           GuestNoteTypeEnum.INCIDENT,
         ),
@@ -110,6 +117,7 @@ describe('UpdateGuestNoteHandler', () => {
           GUEST_NOTE_FIXTURE_DEFAULTS.tenantId,
           GUEST_NOTE_FIXTURE_DEFAULTS.id,
           '65f1a1a2b3c4d5e6f7a8b9c2',
+          'actor@test.com',
           'Updated note text',
           GuestNoteTypeEnum.BEHAVIOR,
         ),
