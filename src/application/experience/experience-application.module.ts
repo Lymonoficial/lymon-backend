@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
+import { StorageModule } from '@/infrastructure/storage/storage.module';
 import { CreateExperienceHandler } from '@/application/experience/commands/create-experience.handler';
 import { UpdateExperienceHandler } from '@/application/experience/commands/update-experience/update-experience.handler';
 import { DeleteExperienceHandler } from '@/application/experience/commands/delete-experience.handler';
@@ -22,7 +23,7 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, PersistenceModule],
+  imports: [CqrsModule, PersistenceModule, StorageModule],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers],
 })

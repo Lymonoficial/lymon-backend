@@ -26,6 +26,7 @@ import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { createExperienceRepositoryMock } from '@test/shared/mocks/repositories/experience-repository.mock';
 import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitter.mock';
+import { createR2StorageServiceMock } from '@test/shared/mocks/services/r2-storage.mock';
 
 const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
 const OTHER_TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9ff';
@@ -35,7 +36,10 @@ const DEFAULT_ACTOR: ExperienceActor = {
   email: 'host@example.com',
 };
 
-function makeExperience(overrides?: { tenantId?: string }): Experience {
+function makeExperience(overrides?: {
+  tenantId?: string;
+  mediaKeys?: string[];
+}): Experience {
   return Experience.reconstitute({
     id: ExperienceId.create(EXPERIENCE_ID),
     tenantId: TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
@@ -66,6 +70,7 @@ function makeExperience(overrides?: { tenantId?: string }): Experience {
     minNoticeHours: 2,
     purchaseCutoffHours: 24,
     status: ExperienceStatus.create('ACTIVE'),
+    mediaKeys: overrides?.mediaKeys ?? [],
     createdAt: new Date('2099-01-01T00:00:00.000Z'),
     updatedAt: new Date('2099-01-01T00:00:00.000Z'),
     deletedAt: null,
@@ -90,13 +95,18 @@ describe('UpdateExperienceHandler', () => {
   let handler: UpdateExperienceHandler;
   let experienceRepository: jest.Mocked<ExperienceRepository>;
   let eventEmitter: ReturnType<typeof createEventEmitterMock>;
+  let r2StorageService: ReturnType<typeof createR2StorageServiceMock>;
 
   beforeEach(() => {
     experienceRepository = createExperienceRepositoryMock();
     eventEmitter = createEventEmitterMock();
+    r2StorageService = createR2StorageServiceMock();
+    r2StorageService.deleteObjects.mockResolvedValue(undefined);
+
     handler = new UpdateExperienceHandler(
       experienceRepository,
       eventEmitter as any,
+      r2StorageService as any,
     );
   });
 
@@ -167,5 +177,43 @@ describe('UpdateExperienceHandler', () => {
 
     expect(experienceRepository.save).toHaveBeenCalledTimes(1);
     expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+  });
+
+  it('deletes orphaned R2 keys after save when mediaKeys is updated', async () => {
+    const oldKeys = ['tenant/exp-1.jpg', 'tenant/exp-2.jpg'];
+    const newKeys = ['tenant/exp-2.jpg', 'tenant/exp-3.jpg'];
+    experienceRepository.findById.mockResolvedValue(
+      makeExperience({ mediaKeys: oldKeys }),
+    );
+    experienceRepository.save.mockResolvedValue(EXPERIENCE_ID);
+
+    await handler.execute(
+      makeCommand({ changes: { mediaKeys: newKeys } }),
+    );
+
+    expect(r2StorageService.deleteObjects).toHaveBeenCalledWith(['tenant/exp-1.jpg']);
+  });
+
+  it('does not call deleteObjects when mediaKeys is not in the command', async () => {
+    experienceRepository.findById.mockResolvedValue(
+      makeExperience({ mediaKeys: ['tenant/exp-1.jpg'] }),
+    );
+    experienceRepository.save.mockResolvedValue(EXPERIENCE_ID);
+
+    await handler.execute(makeCommand({ changes: { name: 'Updated' } }));
+
+    expect(r2StorageService.deleteObjects).not.toHaveBeenCalled();
+  });
+
+  it('calls deleteObjects with empty array when no keys were removed', async () => {
+    const keys = ['tenant/exp-1.jpg'];
+    experienceRepository.findById.mockResolvedValue(
+      makeExperience({ mediaKeys: keys }),
+    );
+    experienceRepository.save.mockResolvedValue(EXPERIENCE_ID);
+
+    await handler.execute(makeCommand({ changes: { mediaKeys: keys } }));
+
+    expect(r2StorageService.deleteObjects).toHaveBeenCalledWith([]);
   });
 });

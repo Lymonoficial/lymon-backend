@@ -17,6 +17,7 @@ import { BedTypeEnum } from '@/domain/unit/value-objects/bed-type.vo';
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
 import { createReservationRepositoryMock } from '@test/shared/mocks/repositories/reservation-repository.mock';
 import { createEventEmitterMock } from '@test/shared/mocks/services/event-emitter.mock';
+import { createR2StorageServiceMock } from '@test/shared/mocks/services/r2-storage.mock';
 import { makeReservation } from '@test/shared/fixtures/reservation.fixture';
 
 const UNIT_ID = '65f1a1a2b3c4d5e6f7a8b9c4';
@@ -24,7 +25,11 @@ const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c2';
 const PROPERTY_ID = '65f1a1a2b3c4d5e6f7a8b9c3';
 
 function makeUnit(
-  overrides?: Partial<{ tenantId: string; inventoryCount: number }>,
+  overrides?: Partial<{
+    tenantId: string;
+    inventoryCount: number;
+    mediaKeys: string[];
+  }>,
 ): Unit {
   return Unit.reconstitute({
     id: UnitId.create(UNIT_ID),
@@ -52,6 +57,7 @@ function makeUnit(
       pricePerNight: 200,
     },
     amenities: ['wifi'],
+    mediaKeys: overrides?.mediaKeys ?? [],
     externalIds: ExternalIds.create('airbnb-1', undefined, undefined),
     timestamps: {
       createdAt: new Date('2030-01-01T00:00:00.000Z'),
@@ -95,16 +101,20 @@ describe('UpdateUnitHandler', () => {
   let unitRepository: jest.Mocked<UnitRepository>;
   let reservationRepository: jest.Mocked<ReservationRepository>;
   let eventEmitter: ReturnType<typeof createEventEmitterMock>;
+  let r2StorageService: ReturnType<typeof createR2StorageServiceMock>;
 
   beforeEach(() => {
     unitRepository = createUnitRepositoryMock();
     reservationRepository = createReservationRepositoryMock();
     eventEmitter = createEventEmitterMock();
+    r2StorageService = createR2StorageServiceMock();
+    r2StorageService.deleteObjects.mockResolvedValue(undefined);
 
     handler = new UpdateUnitHandler(
       unitRepository,
       reservationRepository,
       eventEmitter as any,
+      r2StorageService as any,
     );
   });
 
@@ -207,5 +217,55 @@ describe('UpdateUnitHandler', () => {
       expect.any(String),
       expect.objectContaining({ entityType: 'UNIT' }),
     );
+  });
+
+  it('deletes orphaned R2 keys after save when mediaKeys is updated', async () => {
+    const oldKeys = ['tenant/photo-1.jpg', 'tenant/photo-2.jpg'];
+    const newKeys = ['tenant/photo-2.jpg', 'tenant/photo-3.jpg'];
+    unitRepository.findById.mockResolvedValue(makeUnit({ mediaKeys: oldKeys }));
+    unitRepository.save.mockResolvedValue(UNIT_ID);
+
+    await handler.execute(
+      new UpdateUnitCommand(
+        TENANT_ID, UNIT_ID,
+        undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined, undefined,
+        newKeys,
+        undefined, undefined,
+        'user-1', 'owner@example.com',
+      ),
+    );
+
+    expect(r2StorageService.deleteObjects).toHaveBeenCalledWith(['tenant/photo-1.jpg']);
+  });
+
+  it('does not call deleteObjects when mediaKeys is not in the command', async () => {
+    unitRepository.findById.mockResolvedValue(
+      makeUnit({ mediaKeys: ['tenant/photo-1.jpg'] }),
+    );
+    unitRepository.save.mockResolvedValue(UNIT_ID);
+
+    await handler.execute(makeCommand({ name: 'Updated' }));
+
+    expect(r2StorageService.deleteObjects).not.toHaveBeenCalled();
+  });
+
+  it('calls deleteObjects with empty array when no keys were removed', async () => {
+    const keys = ['tenant/photo-1.jpg'];
+    unitRepository.findById.mockResolvedValue(makeUnit({ mediaKeys: keys }));
+    unitRepository.save.mockResolvedValue(UNIT_ID);
+
+    await handler.execute(
+      new UpdateUnitCommand(
+        TENANT_ID, UNIT_ID,
+        undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined, undefined,
+        keys,
+        undefined, undefined,
+        'user-1', 'owner@example.com',
+      ),
+    );
+
+    expect(r2StorageService.deleteObjects).toHaveBeenCalledWith([]);
   });
 });
