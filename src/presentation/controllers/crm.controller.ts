@@ -65,6 +65,8 @@ import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
 import { GetGuestRatingsQuery } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.query';
 import { GetGuestRatingsResult } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.result';
+import { GetGuestMetricsQuery } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.query';
+import { GetGuestMetricsResult } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.result';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')

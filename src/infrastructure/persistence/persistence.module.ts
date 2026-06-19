@@ -286,6 +286,8 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
     {
       provide: METRICS_READ_REPOSITORY,
       useClass: MongoMetricsReadRepository,
+    },
+    {
       provide: PAYMENT_SESSION_REPOSITORY,
       useClass: MongoPaymentSessionRepository,
     },
