@@ -28,8 +28,8 @@ export class GetAvailableExperienceByIdQueryHandler implements IQueryHandler<
     );
 
     if (
-      !experience ||
-      experience.getStatus().toString() !== ExperienceStatus.active().toString()
+      experience?.getStatus().toString() !==
+      ExperienceStatus.active().toString()
     ) {
       throw new NotFoundException(
         `Experience with id "${query.experienceId}" not found`,

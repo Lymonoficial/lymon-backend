@@ -158,11 +158,6 @@ export class Reservation {
     this.touch();
   }
 
-  updateDateRange(dateRange: DateRange): void {
-    this.dateRange = dateRange;
-    this.totalPrice = this.pricePerNight * dateRange.nights();
-    this.touch();
-  }
 
   updateGuestsCount(count: number): void {
     this.guestsCount = count;
