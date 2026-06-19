@@ -1,21 +1,20 @@
-import { Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { GuestMessage } from '@/domain/guest-message/entities/guest-message.entity';
+import { GUEST_MESSAGE_REPOSITORY } from '@/domain/guest-message/repositories/guest-message.repository';
+import type { GuestMessageRepository } from '@/domain/guest-message/repositories/guest-message.repository';
+import { GuestMessageChannel } from '@/domain/guest-message/value-objects/guest-message-channel.vo';
+import { GuestMessageDirection } from '@/domain/guest-message/value-objects/guest-message-direction.vo';
+import { GuestMessageStatus } from '@/domain/guest-message/value-objects/guest-message-status.vo';
 import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import type { GuestRepository } from '@/domain/guest/repositories/guest.repository';
-import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
-import type { ReservationRepository } from '@/domain/reservation/repositories/reservation.repository';
+import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { PROPERTY_REPOSITORY } from '@/domain/property/repositories/property.repository';
 import type { PropertyRepository } from '@/domain/property/repositories/property.repository';
-import { GUEST_EMAIL_REPOSITORY } from '@/domain/guest-email/repositories/guest-email.repository';
-import type { GuestEmailRepository } from '@/domain/guest-email/repositories/guest-email.repository';
-import { GuestEmail } from '@/domain/guest-email/entities/guest-email.entity';
-import { GuestEmailStatusEnum } from '@/domain/guest-email/value-objects/guest-email-status.vo';
-import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
+import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
+import type { ReservationRepository } from '@/domain/reservation/repositories/reservation.repository';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { EmailTemplateService } from '@/infrastructure/common/email-template.service';
-import { SendGuestMessageCommand } from './send-guest-message.command';
-import { GuestEmailCreatedEvent } from '../../events/guest-email-created.event';
 import {
   AUDIT_LOG_EVENT,
   AuditLoggedEvent,
@@ -24,9 +23,17 @@ import {
   AuditAction,
   AuditEntityType,
 } from '@/domain/audit/value-objects/audit-action.vo';
+import { EmailTemplateService } from '@/infrastructure/common/email-template.service';
+import {
+  GUEST_MESSAGE_CREATED_EVENT,
+  GuestMessageCreatedEvent,
+} from '../../events/guest-message-created.event';
+import { SendGuestMessageCommand } from './send-guest-message.command';
 
 @CommandHandler(SendGuestMessageCommand)
-export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessageCommand> {
+export class SendGuestMessageHandler
+  implements ICommandHandler<SendGuestMessageCommand>
+{
   constructor(
     @Inject(GUEST_REPOSITORY)
     private readonly guestRepository: GuestRepository,
@@ -34,8 +41,8 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
     private readonly reservationRepository: ReservationRepository,
     @Inject(PROPERTY_REPOSITORY)
     private readonly propertyRepository: PropertyRepository,
-    @Inject(GUEST_EMAIL_REPOSITORY)
-    private readonly guestEmailRepository: GuestEmailRepository,
+    @Inject(GUEST_MESSAGE_REPOSITORY)
+    private readonly guestMessageRepository: GuestMessageRepository,
     private readonly templateService: EmailTemplateService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -86,9 +93,9 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
 
     const dynamicVariables = {
       guestName: guest.getFullName(),
-      propertyName: propertyName,
-      checkInDate: checkInDate,
-      checkOutDate: checkOutDate,
+      propertyName,
+      checkInDate,
+      checkOutDate,
       subject: command.subject || '',
       body: command.body || '',
     };
@@ -111,7 +118,7 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
       htmlContent = this.templateService.renderTemplate(templateName, {
         ...dynamicVariables,
         body: resolvedBody,
-        subject: subject,
+        subject,
       });
     } else {
       htmlContent = `
@@ -124,23 +131,39 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
       `;
     }
 
-    const guestEmail = GuestEmail.create({
+    const preview = resolvedBody.replace(/<[^>]{0,9999}>/g, '').slice(0, 200);
+
+    const guestMessage = GuestMessage.create({
       tenantId,
       guestId,
-      subject: subject,
-      status: GuestEmailStatusEnum.PENDING,
+      reservationId: lastReservation?.getId().toString() ?? null,
+      channel: GuestMessageChannel.EMAIL,
+      direction: GuestMessageDirection.OUTBOUND,
+      status: GuestMessageStatus.PENDING,
+      from: '',
+      to: [guest.getPrimaryEmail()],
+      templateId: command.templateId,
+      sentBy: {
+        actorId: command.sentById ?? '',
+        actorEmail: command.actorEmail ?? '',
+      },
       attachments: command.attachments,
-      sentById: command.sentById,
+      preview,
+      body: null,
+      bodyHtml: null,
     });
 
-    await this.guestEmailRepository.save(guestEmail);
+    await this.guestMessageRepository.save(guestMessage);
 
     this.eventEmitter.emit(
-      'guest-email.created',
-      new GuestEmailCreatedEvent(
-        guestEmail.getId().toString(),
+      GUEST_MESSAGE_CREATED_EVENT,
+      new GuestMessageCreatedEvent(
+        guestMessage.getId().toString(),
         subject,
         htmlContent,
+        [guest.getPrimaryEmail()],
+        [guest.getFullName()],
+        guestMessage.getAttachments().map((att) => ({ url: att.url, name: att.name })),
         propertyName,
       ),
     );
@@ -153,10 +176,10 @@ export class SendGuestMessageHandler implements ICommandHandler<SendGuestMessage
         command.actorEmail ?? '',
         AuditAction.GUEST_MESSAGE_SENT,
         AuditEntityType.GUEST_EMAIL,
-        guestEmail.getId().toString(),
+        guestMessage.getId().toString(),
       ),
     );
 
-    return { id: guestEmail.getId().toString() };
+    return { id: guestMessage.getId().toString() };
   }
 }

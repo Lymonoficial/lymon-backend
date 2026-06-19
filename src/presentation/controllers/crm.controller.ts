@@ -47,10 +47,11 @@ import { SaveGuestPreferencesCommand } from '@/application/guest/commands/prefer
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
-import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
-import { SaveGuestPreferencesDto } from '../dtos/guest/save-guest-preferences.dto';
-import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
-import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
+import { SendGuestMessageCommand } from '@/application/guest-message/commands/send-guest-message/send-guest-message.command';
+import { GetGuestMessagesByGuestIdQuery } from '@/application/guest-message/queries/get-guest-messages-by-guest-id/get-guest-messages-by-guest-id.query';
+import { GetGuestMessagesByGuestIdResult } from '@/application/guest-message/queries/get-guest-messages-by-guest-id/get-guest-messages-by-guest-id.result';
+import { GetGuestMessageByIdQuery } from '@/application/guest-message/queries/get-guest-message-by-id/get-guest-message-by-id.query';
+import { GuestMessageDetailDto } from '@/application/guest-message/queries/get-guest-message-by-id/get-guest-message-by-id.result';
 import { ListCatalogItemsByTenantQuery } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.query';
 import { ListCatalogItemsByTenantResult } from '@/application/guest-preference/queries/list-catalog-items-by-tenant/list-catalog-items-by-tenant.result';
 import { ToggleCatalogItemCommand } from '@/application/guest-preference/commands/toggle-catalog-item/toggle-catalog-item.command';
@@ -538,6 +539,70 @@ export class CrmController {
 
     return {
       message: 'Message sent and recorded successfully',
+      data: result,
+    };
+  }
+
+  @Get('guests/:guestId/messages')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({
+    summary: 'Get paginated message history for a guest (preview only, no body)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest messages retrieved successfully',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getGuestMessages(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestMessagesByGuestIdQuery,
+      GetGuestMessagesByGuestIdResult
+    >(new GetGuestMessagesByGuestIdQuery(user.tenantId, guestId, page, limit));
+
+    return {
+      message: 'Guest messages retrieved successfully',
+      data: {
+        items: result.items,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
+      },
+    };
+  }
+
+  @Get('guests/:guestId/messages/:messageId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({
+    summary: 'Get a single guest message with provider-resolved body',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest message retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Message not found' })
+  async getGuestMessageById(
+    @Param('guestId') guestId: string,
+    @Param('messageId') messageId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestMessageByIdQuery,
+      GuestMessageDetailDto
+    >(new GetGuestMessageByIdQuery(user.tenantId, guestId, messageId));
+
+    return {
+      message: 'Guest message retrieved successfully',
       data: result,
     };
   }
