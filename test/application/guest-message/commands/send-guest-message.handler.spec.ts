@@ -23,6 +23,7 @@ import { createReservationRepositoryMock } from '@test/shared/mocks/repositories
 import { createPropertyRepositoryMock } from '@test/shared/mocks/repositories/property-repository.mock';
 import { createGuestMessageRepositoryMock } from '@test/shared/mocks/repositories/guest-message-repository.mock';
 import { makeGuest, GUEST_FIXTURE_DEFAULTS } from '@test/shared/fixtures/guest.fixture';
+import { makeReservation, RESERVATION_FIXTURE_DEFAULTS } from '@test/shared/fixtures/reservation.fixture';
 
 const TENANT_ID = GUEST_FIXTURE_DEFAULTS.tenantId;
 const GUEST_ID = GUEST_FIXTURE_DEFAULTS.id;
@@ -134,6 +135,27 @@ describe('SendGuestMessageHandler', () => {
       );
       expect(emittedEvent).toBeDefined();
       expect(emittedEvent[1].htmlBody).toBe('<p>Template rendered</p>');
+    });
+
+    it('persists the reservationId of the guest last reservation on the saved message', async () => {
+      const reservation = makeReservation({ guestId: GUEST_ID, tenantId: TENANT_ID });
+      reservationRepository.findByGuestId.mockResolvedValue([reservation]);
+
+      const command = makeCommand('Subject', 'Hello');
+      await handler.execute(command);
+
+      const savedMessage = guestMessageRepository.save.mock.calls[0][0];
+      expect(savedMessage.getReservationId()).toBe(RESERVATION_FIXTURE_DEFAULTS.id);
+    });
+
+    it('persists reservationId as null when the guest has no reservations', async () => {
+      reservationRepository.findByGuestId.mockResolvedValue([]);
+
+      const command = makeCommand('Subject', 'Hello');
+      await handler.execute(command);
+
+      const savedMessage = guestMessageRepository.save.mock.calls[0][0];
+      expect(savedMessage.getReservationId()).toBeNull();
     });
 
     it('stores the templateId on the saved guest message when templateId is provided', async () => {
