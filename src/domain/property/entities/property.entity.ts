@@ -3,7 +3,6 @@ import { CancellationPolicy } from '@/domain/property/value-objects/cancellation
 import { Location } from '@/domain/property/value-objects/location.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { PropertyType } from '@/domain/property/value-objects/property-type.vo';
-import { ChannexSyncStatus } from '@/domain/property/value-objects/channex-sync-status.vo';
 
 export interface PropertyProps {
   tenantId: TenantId;
@@ -54,8 +53,6 @@ export interface PropertyReconstituteData {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
-  channexId?: string | null;
-  channexSyncStatus?: ChannexSyncStatus;
 }
 
 export class Property {
@@ -79,8 +76,6 @@ export class Property {
     private readonly createdAt: Date,
     private updatedAt: Date,
     private deletedAt: Date | null,
-    private channexId: string | null = null,
-    private channexSyncStatus: ChannexSyncStatus = ChannexSyncStatus.pending(),
   ) {}
 
   static create(props: PropertyProps): Property {
@@ -136,8 +131,6 @@ export class Property {
       data.createdAt,
       data.updatedAt,
       data.deletedAt ?? null,
-      data.channexId ?? null,
-      data.channexSyncStatus ?? ChannexSyncStatus.pending(),
     );
   }
 
@@ -215,20 +208,6 @@ export class Property {
 
   getDeletedAt(): Date | null {
     return this.deletedAt;
-  }
-
-  getChannexId(): string | null {
-    return this.channexId;
-  }
-
-  getChannexSyncStatus(): ChannexSyncStatus {
-    return this.channexSyncStatus;
-  }
-
-  setChannexSync(channexId: string | null, status: ChannexSyncStatus): void {
-    this.channexId = channexId;
-    this.channexSyncStatus = status;
-    this.updatedAt = new Date();
   }
 
   updateDetails(data: PropertyUpdateData): void {
