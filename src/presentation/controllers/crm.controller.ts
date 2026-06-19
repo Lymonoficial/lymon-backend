@@ -66,6 +66,7 @@ import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
 import { GetGuestRatingsQuery } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.query';
 import { GetGuestRatingsResult } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.result';
+import { SaveGuestPreferencesDto } from '../dtos/guest/save-guest-preferences.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -347,6 +348,7 @@ export class CrmController {
       GetGuestMonthlySpendingQuery,
       GetGuestMonthlySpendingResult
     >(new GetGuestMonthlySpendingQuery(user.tenantId, guestId));
+
     return {
       message: 'Guest monthly spending retrieved successfully',
       data: result.items,
