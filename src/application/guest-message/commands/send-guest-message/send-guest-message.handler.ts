@@ -1,6 +1,11 @@
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Conversation } from '@/domain/conversation/entities/conversation.entity';
+import {
+  CONVERSATION_REPOSITORY,
+} from '@/domain/conversation/repositories/conversation.repository';
+import type { ConversationRepository } from '@/domain/conversation/repositories/conversation.repository';
 import { GuestMessage } from '@/domain/guest-message/entities/guest-message.entity';
 import { GUEST_MESSAGE_REPOSITORY } from '@/domain/guest-message/repositories/guest-message.repository';
 import type { GuestMessageRepository } from '@/domain/guest-message/repositories/guest-message.repository';
@@ -43,6 +48,8 @@ export class SendGuestMessageHandler
     private readonly propertyRepository: PropertyRepository,
     @Inject(GUEST_MESSAGE_REPOSITORY)
     private readonly guestMessageRepository: GuestMessageRepository,
+    @Inject(CONVERSATION_REPOSITORY)
+    private readonly conversationRepository: ConversationRepository,
     private readonly templateService: EmailTemplateService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -152,6 +159,23 @@ export class SendGuestMessageHandler
       bodyHtml: null,
     });
 
+    await this.guestMessageRepository.save(guestMessage);
+
+    let conversation = await this.conversationRepository.findByTenantAndGuest(
+      command.tenantId,
+      command.guestId,
+    );
+    if (!conversation) {
+      conversation = Conversation.create({
+        tenantId: command.tenantId,
+        guestId: command.guestId,
+        reservationId: lastReservation?.getId()?.toString() ?? null,
+        subject,
+      });
+    }
+    conversation.appendMessage(guestMessage);
+    await this.conversationRepository.save(conversation);
+    guestMessage.assignConversation(conversation.getId().toString());
     await this.guestMessageRepository.save(guestMessage);
 
     this.eventEmitter.emit(
