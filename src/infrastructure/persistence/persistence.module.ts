@@ -156,6 +156,13 @@ import {
 import { GUEST_MESSAGE_REPOSITORY } from '@/domain/guest-message/repositories/guest-message.repository';
 import { MongoGuestMessageRepository } from '@/infrastructure/persistence/repositories/mongo-guest-message.repository';
 import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-email-backfill.migration';
+import {
+  ConversationDocument,
+  ConversationSchema,
+} from '@/infrastructure/persistence/schemas/conversation.schema';
+import { CONVERSATION_REPOSITORY } from '@/domain/conversation/repositories/conversation.repository';
+import { MongoConversationRepository } from '@/infrastructure/persistence/repositories/mongo-conversation.repository';
+import { ConversationBackfillMigration } from '@/infrastructure/migrations/conversation-backfill.migration';
 
 @Module({
   imports: [
@@ -198,6 +205,7 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
       { name: UnitRatingDocument.name, schema: UnitRatingSchema },
       { name: RefundRequestDocument.name, schema: RefundRequestSchema },
       { name: GuestMessageDocument.name, schema: GuestMessageSchema },
+      { name: ConversationDocument.name, schema: ConversationSchema },
     ]),
   ],
   providers: [
@@ -316,6 +324,11 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
       useClass: MongoGuestMessageRepository,
     },
     GuestEmailBackfillMigration,
+    {
+      provide: CONVERSATION_REPOSITORY,
+      useClass: MongoConversationRepository,
+    },
+    ConversationBackfillMigration,
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -346,6 +359,7 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
     UNIT_RATING_REPOSITORY,
     REFUND_REQUEST_REPOSITORY,
     GUEST_MESSAGE_REPOSITORY,
+    CONVERSATION_REPOSITORY,
   ],
 })
 export class PersistenceModule {}
