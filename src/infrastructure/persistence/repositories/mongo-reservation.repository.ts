@@ -175,6 +175,26 @@ export class MongoReservationRepository
     });
   }
 
+  async countByGuestIdGroupedBySource(
+    tenantId: string,
+    guestId: string,
+  ): Promise<Array<{ source: string; count: number }>> {
+    const result = await this.reservationModel.aggregate<{
+      _id: string;
+      count: number;
+    }>([
+      {
+        $match: {
+          tenantId: new Types.ObjectId(tenantId),
+          guestId: new Types.ObjectId(guestId),
+        },
+      },
+      { $group: { _id: '$source', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+    return result.map((r) => ({ source: r._id, count: r.count }));
+  }
+
   async findByGuestIds(
     guestIds: string[],
     options: GuestReservationQueryOptions,

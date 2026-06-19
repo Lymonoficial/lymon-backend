@@ -39,11 +39,13 @@ import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/ge
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { GetGuestBookingOriginsQuery } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.query';
+import { GetGuestBookingOriginsResult } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.result';
+import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
+import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
 import { GetGuestEmailsByGuestIdResult } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.result';
 import { SendGuestMessageCommand } from '@/application/guest-email/commands/send-guest-message/send-guest-message.command';
-import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
-import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { SaveGuestPreferencesDto } from '../dtos/guest/save-guest-preferences.dto';
 import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
 import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
@@ -322,6 +324,32 @@ export class CrmController {
           limit: result.limit,
           totalPages: result.totalPages,
         },
+      },
+    };
+  }
+
+  @Get('guests/:guestId/booking-origins')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get booking source distribution for a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest booking origins retrieved successfully',
+  })
+  async getGuestBookingOrigins(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestBookingOriginsQuery,
+      GetGuestBookingOriginsResult
+    >(new GetGuestBookingOriginsQuery(user.tenantId, guestId));
+
+    return {
+      message: 'Guest booking origins retrieved successfully',
+      data: {
+        total: result.total,
+        sources: result.sources,
       },
     };
   }
