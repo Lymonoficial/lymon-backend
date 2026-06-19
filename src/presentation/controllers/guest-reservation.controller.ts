@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -28,6 +30,8 @@ import { GuestReservationDetailResult } from '@/application/reservation/queries/
 import { GetGuestReservationsQuery } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query';
 import { GetGuestReservationsResult } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.result';
 import { GetUnitOccupancyQuery } from '@/application/reservation/queries/get-unit-occupancy/get-unit-occupancy.query';
+import { CancelGuestReservationCommand } from '@/application/reservation/commands/cancel-guest-reservation/cancel-guest-reservation.command';
+import { CancelGuestReservationResult } from '@/application/reservation/commands/cancel-guest-reservation/cancel-guest-reservation.handler';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 @ApiTags('guest-reservations')
@@ -156,9 +160,35 @@ export class GuestReservationController {
     >(new GetGuestReservationQuery(id, guest.guestAccountId));
   }
 
-  private parseStatuses(
-    status?: string,
-  ): ReservationStatusEnum[] | undefined {
+  @Post(':id/cancel')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Cancel a guest reservation' })
+  @ApiResponse({ status: 200, description: 'Reservation cancelled' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Reservation not found' })
+  async cancel(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+  ): Promise<{ message: string; data: CancelGuestReservationResult }> {
+    const result = await this.commandBus.execute<
+      CancelGuestReservationCommand,
+      CancelGuestReservationResult
+    >(
+      new CancelGuestReservationCommand(
+        id,
+        guest.guestAccountId,
+        reason ?? null,
+      ),
+    );
+
+    return {
+      message: 'Reservation cancelled successfully',
+      data: result,
+    };
+  }
+
+  private parseStatuses(status?: string): ReservationStatusEnum[] | undefined {
     if (!status) {
       return undefined;
     }

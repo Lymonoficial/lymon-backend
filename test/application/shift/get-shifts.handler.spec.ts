@@ -66,11 +66,18 @@ describe('GetShiftsHandler', () => {
   });
 
   it('filters by requested staff member when manager asks by id', async () => {
-    const query = new GetShiftsQuery(tenantId, {}, actorUserId, true, otherUserId);
+    const query = new GetShiftsQuery(
+      tenantId,
+      {},
+      actorUserId,
+      true,
+      otherUserId,
+    );
 
     await handler.execute(query);
 
-    const [, , visibleStaffMemberId] = shiftRepository.findByFilters.mock.calls[0];
+    const [, , visibleStaffMemberId] =
+      shiftRepository.findByFilters.mock.calls[0];
     expect(visibleStaffMemberId?.toString()).toBe(otherUserId);
   });
 
@@ -79,7 +86,8 @@ describe('GetShiftsHandler', () => {
 
     await handler.execute(query);
 
-    const [, , visibleStaffMemberId] = shiftRepository.findByFilters.mock.calls[0];
+    const [, , visibleStaffMemberId] =
+      shiftRepository.findByFilters.mock.calls[0];
     expect(visibleStaffMemberId?.toString()).toBe(actorUserId);
   });
 });

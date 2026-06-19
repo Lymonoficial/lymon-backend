@@ -35,7 +35,7 @@ export class Reservation {
     private dateRange: DateRange,
     private readonly source: ReservationSource,
     private status: ReservationStatus,
-    private readonly guestsCount: number,
+    private guestsCount: number,
     private readonly pricePerNight: number,
     private totalPrice: number,
     private notes: string | null,
@@ -155,6 +155,17 @@ export class Reservation {
   updateDates(dateRange: DateRange): void {
     this.dateRange = dateRange;
     this.totalPrice = this.pricePerNight * dateRange.nights();
+    this.touch();
+  }
+
+  updateDateRange(dateRange: DateRange): void {
+    this.dateRange = dateRange;
+    this.totalPrice = this.pricePerNight * dateRange.nights();
+    this.touch();
+  }
+
+  updateGuestsCount(count: number): void {
+    this.guestsCount = count;
     this.touch();
   }
 

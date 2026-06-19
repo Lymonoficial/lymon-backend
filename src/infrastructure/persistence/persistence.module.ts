@@ -67,6 +67,18 @@ import {
   ReservationDocument,
   ReservationSchema,
 } from '@/infrastructure/persistence/schemas/reservation.schema';
+import {
+  CartDocument,
+  CartSchema,
+} from '@/infrastructure/persistence/schemas/cart.schema';
+import { CART_REPOSITORY } from '@/domain/cart/repositories/cart.repository';
+import { MongoCartRepository } from '@/infrastructure/persistence/repositories/mongo-cart.repository';
+import {
+  ExperiencePurchaseDocument,
+  ExperiencePurchaseSchema,
+} from '@/infrastructure/persistence/schemas/experience-purchase.schema';
+import { EXPERIENCE_PURCHASE_REPOSITORY } from '@/domain/experience-purchase/repositories/experience-purchase.repository';
+import { MongoExperiencePurchaseRepository } from '@/infrastructure/persistence/repositories/mongo-experience-purchase.repository';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
 import { GUEST_RESERVATIONS_READ_REPOSITORY } from '@/domain/reservation/repositories/guest-reservations-read.repository';
 import { MongoReservationRepository } from './repositories/mongo-reservation.repository';
@@ -128,6 +140,18 @@ import {
 } from '@/infrastructure/persistence/schemas/unit-rating.schema';
 import { UNIT_RATING_REPOSITORY } from '@/domain/unit-rating/repositories/unit-rating.repository';
 import { MongoUnitRatingRepository } from '@/infrastructure/persistence/repositories/mongo-unit-rating.repository';
+import {
+  RefundRequestDocument,
+  RefundRequestSchema,
+} from '@/infrastructure/persistence/schemas/refund-request.schema';
+import { REFUND_REQUEST_REPOSITORY } from '@/domain/refund/repositories/refund-request.repository';
+import { MongoRefundRequestRepository } from '@/infrastructure/persistence/repositories/mongo-refund-request.repository';
+import {
+  PaymentSessionDocument,
+  PaymentSessionSchema,
+} from '@/infrastructure/persistence/schemas/payment-session.schema';
+import { PAYMENT_SESSION_REPOSITORY } from '@/domain/payment/repositories/payment-session.repository';
+import { MongoPaymentSessionRepository } from '@/infrastructure/persistence/repositories/mongo-payment-session.repository';
 
 @Module({
   imports: [
@@ -142,6 +166,8 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
       { name: AuditLogDocument.name, schema: AuditLogSchema },
       { name: IncidentReportDocument.name, schema: IncidentReportSchema },
       { name: ReservationDocument.name, schema: ReservationSchema },
+      { name: CartDocument.name, schema: CartSchema },
+      { name: ExperiencePurchaseDocument.name, schema: ExperiencePurchaseSchema },
       { name: InventoryItemDocument.name, schema: InventoryItemSchema },
       {
         name: InventoryMovementDocument.name,
@@ -162,6 +188,8 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
       { name: ExperienceDocument.name, schema: ExperienceSchema },
       { name: GuestTagDocument.name, schema: GuestTagSchema },
       { name: UnitRatingDocument.name, schema: UnitRatingSchema },
+      { name: RefundRequestDocument.name, schema: RefundRequestSchema },
+      { name: PaymentSessionDocument.name, schema: PaymentSessionSchema },
     ]),
   ],
   providers: [
@@ -249,6 +277,14 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
       provide: EXPERIENCE_REPOSITORY,
       useClass: MongoExperienceRepository,
     },
+    {
+      provide: CART_REPOSITORY,
+      useClass: MongoCartRepository,
+    },
+    {
+      provide: EXPERIENCE_PURCHASE_REPOSITORY,
+      useClass: MongoExperiencePurchaseRepository,
+    },
     RoleSeedService,
     {
       provide: GUEST_TAG_REPOSITORY,
@@ -258,6 +294,14 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
     {
       provide: UNIT_RATING_REPOSITORY,
       useClass: MongoUnitRatingRepository,
+    },
+    {
+      provide: REFUND_REQUEST_REPOSITORY,
+      useClass: MongoRefundRequestRepository,
+    },
+    {
+      provide: PAYMENT_SESSION_REPOSITORY,
+      useClass: MongoPaymentSessionRepository,
     },
   ],
   exports: [
@@ -284,6 +328,10 @@ import { MongoUnitRatingRepository } from '@/infrastructure/persistence/reposito
     EXPERIENCE_REPOSITORY,
     GUEST_TAG_REPOSITORY,
     UNIT_RATING_REPOSITORY,
+    CART_REPOSITORY,
+    EXPERIENCE_PURCHASE_REPOSITORY,
+    REFUND_REQUEST_REPOSITORY,
+    PAYMENT_SESSION_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

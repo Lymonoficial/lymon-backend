@@ -11,10 +11,10 @@ import { ExperienceStatus } from '@/domain/experience/value-objects/experience-s
 import { mapExperienceToPublicDto } from '@/application/experience/queries/shared/experience.mapper';
 
 @QueryHandler(GetAvailableExperienceByIdQuery)
-export class GetAvailableExperienceByIdQueryHandler
-  implements
-    IQueryHandler<GetAvailableExperienceByIdQuery, GetAvailableExperienceByIdResult>
-{
+export class GetAvailableExperienceByIdQueryHandler implements IQueryHandler<
+  GetAvailableExperienceByIdQuery,
+  GetAvailableExperienceByIdResult
+> {
   constructor(
     @Inject(EXPERIENCE_REPOSITORY)
     private readonly experienceRepository: ExperienceRepository,
@@ -27,7 +27,10 @@ export class GetAvailableExperienceByIdQueryHandler
       ExperienceId.create(query.experienceId),
     );
 
-    if (!experience || experience.getStatus().toString() !== ExperienceStatus.active().toString()) {
+    if (
+      !experience ||
+      experience.getStatus().toString() !== ExperienceStatus.active().toString()
+    ) {
       throw new NotFoundException(
         `Experience with id "${query.experienceId}" not found`,
       );
@@ -38,4 +41,3 @@ export class GetAvailableExperienceByIdQueryHandler
     );
   }
 }
-

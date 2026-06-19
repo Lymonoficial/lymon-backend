@@ -30,4 +30,5 @@ export interface UnitRepository {
     propertyId?: string,
     sortByPrice?: 'asc' | 'desc',
   ): Promise<{ units: Unit[]; total: number }>;
+  findByIds(ids: UnitId[]): Promise<Unit[]>;
 }

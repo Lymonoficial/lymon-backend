@@ -205,4 +205,13 @@ export class MongoUnitRepository implements UnitRepository {
       },
     });
   }
+
+  async findByIds(ids: UnitId[]): Promise<Unit[]> {
+    if (!ids.length) return [];
+    const documents = await this.unitModel.find({
+      _id: { $in: ids.map((id) => new Types.ObjectId(id.toString())) },
+      deletedAt: null,
+    });
+    return documents.map((doc) => this.toDomain(doc));
+  }
 }

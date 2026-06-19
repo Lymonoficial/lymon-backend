@@ -6,7 +6,10 @@ import { Cart } from '@/domain/cart/entities/cart.entity';
 import { CartId } from '@/domain/cart/value-objects/cart-id.vo';
 import { CartItem } from '@/domain/cart/value-objects/cart-item.vo';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
-import { CartStatus, CartStatusEnum } from '@/domain/cart/value-objects/cart-status.vo';
+import {
+  CartStatus,
+  CartStatusEnum,
+} from '@/domain/cart/value-objects/cart-status.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { CartDocument } from '../schemas/cart.schema';
@@ -65,6 +68,14 @@ export class MongoCartRepository implements CartRepository {
       status: CartStatusEnum.OPEN,
     });
     return doc ? this.toDomainEntity(doc) : null;
+  }
+
+  async findPendingPaymentCartsOlderThan(cutoff: Date): Promise<Cart[]> {
+    const docs = await this.cartModel.find({
+      status: CartStatusEnum.PENDING_PAYMENT,
+      updatedAt: { $lt: cutoff },
+    });
+    return docs.map((doc) => this.toDomainEntity(doc));
   }
 
   private toDomainEntity(doc: CartDocument): Cart {

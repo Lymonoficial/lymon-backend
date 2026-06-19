@@ -1,10 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateStaffCommand } from './update-staff.command';
-import {
-  Inject,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   USER_REPOSITORY,
   type UserRepository,
@@ -60,7 +56,9 @@ export class UpdateStaffHandler implements ICommandHandler<UpdateStaffCommand> {
     if (command.tenantId) {
       const tid = TenantId.createFromString(command.tenantId);
       if (!user.getTenantId().equals(tid)) {
-        throw new BadRequestException('User does not belong to the same tenant');
+        throw new BadRequestException(
+          'User does not belong to the same tenant',
+        );
       }
     }
 
@@ -75,12 +73,18 @@ export class UpdateStaffHandler implements ICommandHandler<UpdateStaffCommand> {
 
     if (command.roleAssignments && command.roleAssignments.length > 0) {
       // Full replacement after validation
-      await this.validateRoleAssignments(command.roleAssignments, user.getTenantId().toString());
+      await this.validateRoleAssignments(
+        command.roleAssignments,
+        user.getTenantId().toString(),
+      );
       newAssignments = command.roleAssignments;
     } else {
       // apply add/remove
       if (command.addPermissions && command.addPermissions.length > 0) {
-        await this.validateRoleAssignments(command.addPermissions, user.getTenantId().toString());
+        await this.validateRoleAssignments(
+          command.addPermissions,
+          user.getTenantId().toString(),
+        );
         for (const a of command.addPermissions) {
           if (!this.includesAssignment(newAssignments, a)) {
             newAssignments = [...newAssignments, a];
@@ -90,7 +94,9 @@ export class UpdateStaffHandler implements ICommandHandler<UpdateStaffCommand> {
 
       if (command.removePermissions && command.removePermissions.length > 0) {
         for (const r of command.removePermissions) {
-          newAssignments = newAssignments.filter((existing) => !this.assignmentsEqual(existing, r));
+          newAssignments = newAssignments.filter(
+            (existing) => !this.assignmentsEqual(existing, r),
+          );
         }
       }
     }
@@ -132,15 +138,24 @@ export class UpdateStaffHandler implements ICommandHandler<UpdateStaffCommand> {
     );
   }
 
-  private includesAssignment(list: RoleAssignment[], a: RoleAssignment): boolean {
+  private includesAssignment(
+    list: RoleAssignment[],
+    a: RoleAssignment,
+  ): boolean {
     return list.some((l) => this.assignmentsEqual(l, a));
   }
 
   private assignmentsEqual(a: RoleAssignment, b: RoleAssignment): boolean {
-    return a.roleId === b.roleId && JSON.stringify(a.scope) === JSON.stringify(b.scope);
+    return (
+      a.roleId === b.roleId &&
+      JSON.stringify(a.scope) === JSON.stringify(b.scope)
+    );
   }
 
-  private async validateRoleAssignments(assignments: RoleAssignment[], tenantId: string) {
+  private async validateRoleAssignments(
+    assignments: RoleAssignment[],
+    tenantId: string,
+  ) {
     let validPropertyIds: Set<string> | null = null;
     let validUnitIds: Set<string> | null = null;
 
@@ -148,7 +163,9 @@ export class UpdateStaffHandler implements ICommandHandler<UpdateStaffCommand> {
       const roleId = RoleId.createFromString(assignment.roleId);
       const role = await this.roleRepository.findById(roleId);
       if (!role) {
-        throw new BadRequestException(`Role '${assignment.roleId}' does not exist`);
+        throw new BadRequestException(
+          `Role '${assignment.roleId}' does not exist`,
+        );
       }
 
       if (assignment.scope.type === 'PROPERTY') {
@@ -169,29 +186,41 @@ export class UpdateStaffHandler implements ICommandHandler<UpdateStaffCommand> {
     }
   }
 
-  private async validatePropertyScope(resourceIds: string[], tenantId: string, cache: Set<string> | null): Promise<Set<string>> {
+  private async validatePropertyScope(
+    resourceIds: string[],
+    tenantId: string,
+    cache: Set<string> | null,
+  ): Promise<Set<string>> {
     if (!cache) {
       const tid = TenantId.createFromString(tenantId);
       const properties = await this.propertyRepository.findByTenantId(tid);
       cache = new Set(properties.map((p) => p.getId()!.toString()));
     }
-    const invalid = resourceIds.filter((id) => !cache!.has(id));
+    const invalid = resourceIds.filter((id) => !cache.has(id));
     if (invalid.length > 0) {
-      throw new BadRequestException(`Property IDs not found in this tenant: ${invalid.join(', ')}`);
+      throw new BadRequestException(
+        `Property IDs not found in this tenant: ${invalid.join(', ')}`,
+      );
     }
-    return cache!;
+    return cache;
   }
 
-  private async validateUnitScope(resourceIds: string[], tenantId: string, cache: Set<string> | null): Promise<Set<string>> {
+  private async validateUnitScope(
+    resourceIds: string[],
+    tenantId: string,
+    cache: Set<string> | null,
+  ): Promise<Set<string>> {
     if (!cache) {
       const tid = TenantId.createFromString(tenantId);
       const units = await this.unitRepository.findByTenantId(tid);
       cache = new Set(units.map((u) => u.getId()!.toString()));
     }
-    const invalid = resourceIds.filter((id) => !cache!.has(id));
+    const invalid = resourceIds.filter((id) => !cache.has(id));
     if (invalid.length > 0) {
-      throw new BadRequestException(`Unit IDs not found in this tenant: ${invalid.join(', ')}`);
+      throw new BadRequestException(
+        `Unit IDs not found in this tenant: ${invalid.join(', ')}`,
+      );
     }
-    return cache!;
+    return cache;
   }
 }

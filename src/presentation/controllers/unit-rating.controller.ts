@@ -57,7 +57,10 @@ export class UnitRatingController {
       ),
     );
 
-    return { message: 'Rating submitted successfully', unitRatingId: result.unitRatingId };
+    return {
+      message: 'Rating submitted successfully',
+      unitRatingId: result.unitRatingId,
+    };
   }
 
   @Get('units/:unitId/ratings')
@@ -70,7 +73,8 @@ export class UnitRatingController {
     name: 'sort',
     required: false,
     enum: ['best', 'worst'],
-    description: 'Sort by rate: best (highest first) or worst (lowest first). Default: newest first.',
+    description:
+      'Sort by rate: best (highest first) or worst (lowest first). Default: newest first.',
   })
   @ApiQuery({
     name: 'filterRate',
@@ -85,7 +89,9 @@ export class UnitRatingController {
     @Query('sort') sort?: 'best' | 'worst',
     @Query('filterRate') filterRate?: string,
   ): Promise<GetUnitRatingsResult> {
-    const parsedFilterRate = filterRate ? Number.parseInt(filterRate, 10) : undefined;
+    const parsedFilterRate = filterRate
+      ? Number.parseInt(filterRate, 10)
+      : undefined;
 
     return this.queryBus.execute<GetUnitRatingsQuery, GetUnitRatingsResult>(
       new GetUnitRatingsQuery(

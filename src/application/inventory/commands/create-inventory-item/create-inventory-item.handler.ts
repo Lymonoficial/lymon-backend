@@ -51,7 +51,10 @@ export class CreateInventoryItemHandler implements ICommandHandler<
 
     const categoryId = InventoryItemCategoryId.create(command.categoryId);
     const category = await this.categoryRepository.findById(categoryId);
-    if (!category || category.getTenantId().toString() !== tenantId.toString()) {
+    if (
+      !category ||
+      category.getTenantId().toString() !== tenantId.toString()
+    ) {
       throw new NotFoundException('Inventory item category not found');
     }
 

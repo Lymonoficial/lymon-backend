@@ -8,9 +8,7 @@ import { InventoryItemCategoryId } from '@/domain/inventory/value-objects/invent
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @Injectable()
-export class MongoInventoryItemCategoryRepository
-  implements InventoryItemCategoryRepository
-{
+export class MongoInventoryItemCategoryRepository implements InventoryItemCategoryRepository {
   constructor(
     @InjectModel(InventoryItemCategoryDocument.name)
     private readonly categoryModel: Model<InventoryItemCategoryDocument>,
@@ -48,12 +46,10 @@ export class MongoInventoryItemCategoryRepository
     tenantId: TenantId,
     name: string,
   ): Promise<InventoryItemCategory | null> {
-    const doc = await this.categoryModel.findOne(
-      {
-        tenantId: new Types.ObjectId(tenantId.toString()),
-        name: { $regex: new RegExp(`^${name.trim()}$`, 'i') },
-      },
-    );
+    const doc = await this.categoryModel.findOne({
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      name: { $regex: new RegExp(`^${name.trim()}$`, 'i') },
+    });
     if (!doc) return null;
     return this.toDomain(doc);
   }
@@ -65,9 +61,7 @@ export class MongoInventoryItemCategoryRepository
     return docs.map((doc) => this.toDomain(doc));
   }
 
-  private toDomain(
-    doc: InventoryItemCategoryDocument,
-  ): InventoryItemCategory {
+  private toDomain(doc: InventoryItemCategoryDocument): InventoryItemCategory {
     return InventoryItemCategory.reconstitute({
       id: InventoryItemCategoryId.create(doc._id.toHexString()),
       tenantId: TenantId.createFromString(doc.tenantId.toHexString()),

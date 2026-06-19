@@ -29,9 +29,7 @@ export interface GetExperiencePurchasesByGuestResult {
 }
 
 @QueryHandler(GetExperiencePurchasesByGuestQuery)
-export class GetExperiencePurchasesByGuestHandler
-  implements IQueryHandler<GetExperiencePurchasesByGuestQuery>
-{
+export class GetExperiencePurchasesByGuestHandler implements IQueryHandler<GetExperiencePurchasesByGuestQuery> {
   constructor(
     @Inject(EXPERIENCE_PURCHASE_REPOSITORY)
     private readonly purchaseRepository: ExperiencePurchaseRepository,

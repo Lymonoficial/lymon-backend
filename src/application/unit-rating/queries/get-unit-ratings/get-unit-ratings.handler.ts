@@ -1,10 +1,7 @@
 import { Inject, NotFoundException } from '@nestjs/common';
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
 import { GetUnitRatingsQuery } from './get-unit-ratings.query';
-import {
-  GetUnitRatingsResult,
-  UnitRatingDto,
-} from './get-unit-ratings.result';
+import { GetUnitRatingsResult, UnitRatingDto } from './get-unit-ratings.result';
 import {
   UNIT_RATING_REPOSITORY,
   type UnitRatingRepository,
@@ -16,9 +13,7 @@ import {
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 
 @QueryHandler(GetUnitRatingsQuery)
-export class GetUnitRatingsHandler
-  implements IQueryHandler<GetUnitRatingsQuery>
-{
+export class GetUnitRatingsHandler implements IQueryHandler<GetUnitRatingsQuery> {
   constructor(
     @Inject(UNIT_RATING_REPOSITORY)
     private readonly unitRatingRepository: UnitRatingRepository,

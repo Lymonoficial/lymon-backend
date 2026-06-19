@@ -4,7 +4,10 @@ import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo
 import { CartId } from '@/domain/cart/value-objects/cart-id.vo';
 import { CartItem } from '@/domain/cart/value-objects/cart-item.vo';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
-import { CartStatus, CartStatusEnum } from '@/domain/cart/value-objects/cart-status.vo';
+import {
+  CartStatus,
+  CartStatusEnum,
+} from '@/domain/cart/value-objects/cart-status.vo';
 import { CartCreateParams, ICartData } from './cart.types';
 
 export class Cart {
@@ -55,7 +58,10 @@ export class Cart {
     this.touch();
   }
 
-  removeExperienceItem(experienceId: ExperienceId, selectedDate?: Date | null): void {
+  removeExperienceItem(
+    experienceId: ExperienceId,
+    selectedDate?: Date | null,
+  ): void {
     this.assertOpen();
     const idx = this.experienceItems.findIndex((i) =>
       i.matchesKey(experienceId, selectedDate),
@@ -86,6 +92,14 @@ export class Cart {
     this.touch();
   }
 
+  reopen(): void {
+    if (!this.status.isPendingPayment()) {
+      throw new DomainException('Only pending-payment carts can be reopened');
+    }
+    this.status = CartStatus.open();
+    this.touch();
+  }
+
   checkout(): void {
     this.assertOpen();
     if (this.experienceItems.length === 0 && !this.reservationItem) {
@@ -100,7 +114,9 @@ export class Cart {
       (sum, item) => sum + item.getTotalCop(),
       0,
     );
-    return experiencesTotal + (this.reservationItem?.totalPriceCopSnapshot ?? 0);
+    return (
+      experiencesTotal + (this.reservationItem?.totalPriceCopSnapshot ?? 0)
+    );
   }
 
   getId(): CartId | null {
