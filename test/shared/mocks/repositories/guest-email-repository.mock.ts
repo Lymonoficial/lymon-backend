@@ -5,4 +5,5 @@ export const createGuestEmailRepositoryMock =
     save: jest.fn(),
     findById: jest.fn(),
     findByGuestId: jest.fn(),
+    findByGuestIdPaginated: jest.fn(),
   });

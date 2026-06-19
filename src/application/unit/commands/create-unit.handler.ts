@@ -28,6 +28,10 @@ import {
   AuditAction,
   AuditEntityType,
 } from '@/domain/audit/value-objects/audit-action.vo';
+import {
+  CHANNEX_ROOM_TYPE_SYNC_EVENT,
+  ChannexRoomTypeSyncEvent,
+} from '@/infrastructure/channex/events/channex-room-type-sync.event';
 
 @CommandHandler(CreateUnitCommand)
 export class CreateUnitHandler implements ICommandHandler<CreateUnitCommand> {
@@ -99,6 +103,20 @@ export class CreateUnitHandler implements ICommandHandler<CreateUnitCommand> {
     });
 
     const unitId = await this.unitRepository.save(unit);
+
+    const propertyChannexId = property.getChannexId();
+    if (propertyChannexId) {
+      this.eventEmitter.emit(
+        CHANNEX_ROOM_TYPE_SYNC_EVENT,
+        new ChannexRoomTypeSyncEvent(
+          unitId,
+          propertyChannexId,
+          command.name,
+          command.inventoryCount,
+          command.maxGuests,
+        ),
+      );
+    }
 
     if (command.actorId && command.actorEmail) {
       this.eventEmitter.emit(

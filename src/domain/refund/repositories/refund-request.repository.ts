@@ -1,5 +1,5 @@
-import { RefundRequest } from '@/domain/refund/entities/refund-request.entity';
-import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import type { RefundRequest } from '@/domain/refund/entities/refund-request.entity';
+import type { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 export const REFUND_REQUEST_REPOSITORY = 'REFUND_REQUEST_REPOSITORY';
 

@@ -27,4 +27,7 @@ export interface IGuestData {
   summary: GuestSummary;
   createdAt: Date;
   updatedAt: Date;
+  pendingEmail?: string | null;
+  emailChangeToken?: string | null;
+  emailChangeExpiry?: Date | null;
 }

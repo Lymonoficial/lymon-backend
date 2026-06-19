@@ -8,6 +8,7 @@ export class CreateGuestNoteCommand {
     public readonly note: string,
     public readonly type: GuestNoteTypeEnum,
     public readonly createdBy: string,
+    public readonly actorEmail: string,
     public readonly status?: GuestNoteStatusEnum,
   ) {}
 }

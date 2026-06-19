@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UpdateGuestNoteCommand } from './update-guest-note.command';
 import {
   GUEST_NOTE_REPOSITORY,
@@ -7,6 +8,14 @@ import {
 } from '@/domain/guest-note/repositories/guest-note.repository';
 import { GuestNoteId } from '@/domain/guest-note/value-objects/guest-note-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLoggedEvent,
+} from '@/infrastructure/audit/events/audit-logged.event';
+import {
+  AuditAction,
+  AuditEntityType,
+} from '@/domain/audit/value-objects/audit-action.vo';
 
 @CommandHandler(UpdateGuestNoteCommand)
 export class UpdateGuestNoteHandler implements ICommandHandler<
@@ -16,6 +25,7 @@ export class UpdateGuestNoteHandler implements ICommandHandler<
   constructor(
     @Inject(GUEST_NOTE_REPOSITORY)
     private readonly guestNoteRepository: GuestNoteRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: UpdateGuestNoteCommand): Promise<void> {
@@ -42,5 +52,17 @@ export class UpdateGuestNoteHandler implements ICommandHandler<
     }
 
     await this.guestNoteRepository.save(guestNote);
+
+    this.eventEmitter.emit(
+      AUDIT_LOG_EVENT,
+      new AuditLoggedEvent(
+        command.tenantId,
+        command.actorId,
+        command.actorEmail,
+        AuditAction.GUEST_NOTE_UPDATED,
+        AuditEntityType.GUEST_NOTE,
+        command.noteId,
+      ),
+    );
   }
 }

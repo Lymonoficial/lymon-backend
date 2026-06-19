@@ -158,7 +158,7 @@ describe('CreatePropertyHandler', () => {
         }),
       );
 
-      expect(eventEmitter.emit).toHaveBeenCalledTimes(2);
+      expect(eventEmitter.emit).toHaveBeenCalledTimes(3);
     });
   });
 

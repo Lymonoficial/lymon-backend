@@ -3,6 +3,7 @@ export class UnitRatingDto {
     public readonly id: string,
     public readonly unitId: string,
     public readonly guestId: string,
+    public readonly guestName: string,
     public readonly reservationId: string,
     public readonly rate: number,
     public readonly message: string | null,

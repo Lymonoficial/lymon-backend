@@ -1,16 +1,28 @@
 export class CancellationRefundService {
   static calculate(
-    checkInDate: Date,
+    checkIn: Date,
     cancellationDate: Date,
     totalPrice: number,
   ): number {
-    const msPerDay = 24 * 60 * 60 * 1000;
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const checkInNormalized = new Date(
+      checkIn.getFullYear(),
+      checkIn.getMonth(),
+      checkIn.getDate(),
+    );
+    const cancelNormalized = new Date(
+      cancellationDate.getFullYear(),
+      cancellationDate.getMonth(),
+      cancellationDate.getDate(),
+    );
     const daysUntilCheckIn = Math.floor(
-      (checkInDate.getTime() - cancellationDate.getTime()) / msPerDay,
+      (checkInNormalized.getTime() - cancelNormalized.getTime()) / msPerDay,
     );
 
-    if (daysUntilCheckIn >= 7) return totalPrice;
-    if (daysUntilCheckIn >= 3) return Math.round(totalPrice * 0.5);
+    if (daysUntilCheckIn >= 5) {
+      return totalPrice;
+    }
+
     return 0;
   }
 }

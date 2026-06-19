@@ -15,10 +15,8 @@ describe('GuestReservationController', () => {
   } as any;
 
   beforeEach(() => {
-    commandBus = { execute: jest.fn() };
     queryBus = { execute: jest.fn() };
     controller = new GuestReservationController(
-      commandBus as unknown as CommandBus,
       queryBus as unknown as QueryBus,
     );
   });

@@ -87,7 +87,7 @@ describe('AddExperienceToCartHandler', () => {
   it('creates a new cart and adds experience when no open cart exists', async () => {
     const experience = makeExperience();
     experienceRepository.findById.mockResolvedValue(experience);
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(null);
+    cartRepository.findOpenByGuest.mockResolvedValue(null);
     cartRepository.save.mockResolvedValue('new-cart-id');
 
     await handler.execute(makeCommand());
@@ -102,7 +102,7 @@ describe('AddExperienceToCartHandler', () => {
     const experience = makeExperience();
     experienceRepository.findById.mockResolvedValue(experience);
     const existingCart = makeCart();
-    cartRepository.findOpenByGuestAndTenant.mockResolvedValue(existingCart);
+    cartRepository.findOpenByGuest.mockResolvedValue(existingCart);
     cartRepository.save.mockResolvedValue(existingCart.getId()!.toString());
 
     await handler.execute(makeCommand());

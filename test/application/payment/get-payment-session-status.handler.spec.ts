@@ -11,9 +11,7 @@ describe('GetPaymentSessionStatusHandler', () => {
   it('returns the checkout status for the guest session', async () => {
     const session = PaymentSession.create({
       tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c2'),
-      guestAccountId: GuestAccountId.createFromString(
-        '65f1a1a2b3c4d5e6f7a8b9c0',
-      ),
+      guestAccountId: GuestAccountId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       cartId: CartId.createFromString('65f1a1a2b3c4d5e6f7a8b9d0'),
       reference: 'checkout_65f1a1a2b3c4d5e6f7a8b9d0_test',
       amountInCents: 125000,
@@ -47,9 +45,7 @@ describe('GetPaymentSessionStatusHandler', () => {
   it('rejects sessions from a different guest account', async () => {
     const session = PaymentSession.create({
       tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c2'),
-      guestAccountId: GuestAccountId.createFromString(
-        '65f1a1a2b3c4d5e6f7a8b9c0',
-      ),
+      guestAccountId: GuestAccountId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
       cartId: CartId.createFromString('65f1a1a2b3c4d5e6f7a8b9d0'),
       reference: 'checkout_65f1a1a2b3c4d5e6f7a8b9d0_test',
       amountInCents: 125000,

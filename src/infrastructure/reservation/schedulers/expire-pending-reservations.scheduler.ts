@@ -13,10 +13,13 @@ import {
   type PaymentSessionRepository,
 } from '@/domain/payment/repositories/payment-session.repository';
 import { ReservationId } from '@/domain/reservation/value-objects/reservation-id.vo';
+import { CartId } from '@/domain/cart/value-objects/cart-id.vo';
 
 @Injectable()
 export class ExpirePendingReservationsScheduler {
-  private readonly logger = new Logger(ExpirePendingReservationsScheduler.name);
+  private readonly logger = new Logger(
+    ExpirePendingReservationsScheduler.name,
+  );
 
   constructor(
     @Inject(CART_REPOSITORY)
@@ -29,7 +32,7 @@ export class ExpirePendingReservationsScheduler {
 
   @Cron('*/5 * * * *') // every 5 minutes
   async expireStaleReservations(): Promise<void> {
-    const cutoff = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes ago
+    const cutoff = new Date(Date.now() - 10 * 60 * 1000); // 10 minutes ago
     this.logger.log(
       `Checking for stale pending reservations older than ${cutoff.toISOString()}`,
     );
@@ -41,10 +44,10 @@ export class ExpirePendingReservationsScheduler {
     let reopened = 0;
 
     for (const cart of carts) {
-      const cartId = cart.getId();
-      if (!cartId) continue;
       const pendingSession =
-        await this.paymentSessionRepository.findPendingByCartId(cartId);
+        await this.paymentSessionRepository.findPendingByCartId(
+          cart.getId()!,
+        );
       if (pendingSession) {
         continue; // still has an active payment session
       }
@@ -54,7 +57,10 @@ export class ExpirePendingReservationsScheduler {
         const reservation = await this.reservationRepository.findById(
           ReservationId.create(reservationItem.reservationId),
         );
-        if (reservation && reservation.getStatus().getValue() === 'PENDING') {
+        if (
+          reservation &&
+          reservation.getStatus().getValue() === 'PENDING'
+        ) {
           reservation.cancel('Expired: no payment initiated');
           await this.reservationRepository.save(reservation);
           cancelled++;

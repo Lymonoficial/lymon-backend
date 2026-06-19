@@ -65,6 +65,9 @@ export class MongoGuestRepository implements GuestRepository {
           ? new Types.ObjectId(summary.lastUnitId.toString())
           : null,
       },
+      pendingEmail: guest.getPendingEmail(),
+      emailChangeToken: guest.getEmailChangeToken(),
+      emailChangeExpiry: guest.getEmailChangeExpiry(),
       updatedAt: guest.getUpdatedAt(),
     };
 
@@ -306,6 +309,16 @@ export class MongoGuestRepository implements GuestRepository {
       },
       createdAt: document.createdAt,
       updatedAt: document.updatedAt,
+      pendingEmail: document.pendingEmail ?? null,
+      emailChangeToken: document.emailChangeToken ?? null,
+      emailChangeExpiry: document.emailChangeExpiry ?? null,
     });
+  }
+
+  async findByEmailChangeToken(hashedToken: string): Promise<Guest | null> {
+    const doc = await this.guestModel
+      .findOne({ emailChangeToken: hashedToken })
+      .populate<{ tags: GuestTagDocument[] }>('tags');
+    return doc ? this.toDomain(doc as PopulatedGuestDocument) : null;
   }
 }

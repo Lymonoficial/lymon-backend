@@ -62,7 +62,6 @@ describe('CreateUnitRatingHandler', () => {
   const defaultCommand = new CreateUnitRatingCommand(
     GUEST_ACCOUNT_ID,
     'guest@example.com',
-    TENANT_ID,
     RESERVATION_ID,
     4,
     'Great stay!',
@@ -123,17 +122,6 @@ describe('CreateUnitRatingHandler', () => {
       await expect(handler.execute(defaultCommand)).rejects.toThrow(
         NotFoundException,
       );
-    });
-
-    it('throws NotFoundException when reservation belongs to different tenant', async () => {
-      const reservation = makeReservation({
-        tenantId: 'other-tenant-000000000001',
-        guestId: GUEST_ID,
-        status: ReservationStatusEnum.CHECKED_OUT,
-      });
-      reservationRepository.findById.mockResolvedValue(reservation);
-
-      await expect(handler.execute(defaultCommand)).rejects.toThrow(NotFoundException);
     });
 
     it('throws DomainException when reservation is not CHECKED_OUT', async () => {

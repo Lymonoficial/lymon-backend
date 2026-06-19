@@ -22,9 +22,7 @@ export class MongoRefundRequestRepository implements RefundRequestRepository {
 
     const document = {
       tenantId: new Types.ObjectId(refundRequest.getTenantId().toString()),
-      reservationId: new Types.ObjectId(
-        refundRequest.getReservationId().toString(),
-      ),
+      reservationId: new Types.ObjectId(refundRequest.getReservationId().toString()),
       guestId: new Types.ObjectId(refundRequest.getGuestId().toString()),
       amount: refundRequest.getAmount(),
       status: refundRequest.getStatus().toString(),
@@ -69,7 +67,11 @@ export class MongoRefundRequestRepository implements RefundRequestRepository {
     const skip = (page - 1) * limit;
     const [total, docs] = await Promise.all([
       this.model.countDocuments(filter),
-      this.model.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      this.model
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
     ]);
 
     return {
@@ -78,9 +80,7 @@ export class MongoRefundRequestRepository implements RefundRequestRepository {
     };
   }
 
-  async findByReservationId(
-    reservationId: string,
-  ): Promise<RefundRequest | null> {
+  async findByReservationId(reservationId: string): Promise<RefundRequest | null> {
     const doc = await this.model.findOne({
       reservationId: new Types.ObjectId(reservationId),
     });

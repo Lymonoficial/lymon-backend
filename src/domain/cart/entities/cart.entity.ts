@@ -4,10 +4,7 @@ import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo
 import { CartId } from '@/domain/cart/value-objects/cart-id.vo';
 import { CartItem } from '@/domain/cart/value-objects/cart-item.vo';
 import { CartReservationItem } from '@/domain/cart/value-objects/cart-reservation-item.vo';
-import {
-  CartStatus,
-  CartStatusEnum,
-} from '@/domain/cart/value-objects/cart-status.vo';
+import { CartStatus, CartStatusEnum } from '@/domain/cart/value-objects/cart-status.vo';
 import { CartCreateParams, ICartData } from './cart.types';
 
 export class Cart {
@@ -58,10 +55,7 @@ export class Cart {
     this.touch();
   }
 
-  removeExperienceItem(
-    experienceId: ExperienceId,
-    selectedDate?: Date | null,
-  ): void {
+  removeExperienceItem(experienceId: ExperienceId, selectedDate?: Date | null): void {
     this.assertOpen();
     const idx = this.experienceItems.findIndex((i) =>
       i.matchesKey(experienceId, selectedDate),
@@ -92,11 +86,9 @@ export class Cart {
     this.touch();
   }
 
-  reopen(): void {
-    if (!this.status.isPendingPayment()) {
-      throw new DomainException('Only pending-payment carts can be reopened');
-    }
-    this.status = CartStatus.open();
+  clearExperienceItems(): void {
+    this.assertOpen();
+    this.experienceItems = [];
     this.touch();
   }
 
@@ -105,7 +97,19 @@ export class Cart {
     if (this.experienceItems.length === 0 && !this.reservationItem) {
       throw new DomainException('Cannot checkout an empty cart');
     }
-    this.status = CartStatus.create(CartStatusEnum.CHECKED_OUT);
+    this.status = CartStatus.create(CartStatusEnum.PENDING_PAYMENT);
+    this.touch();
+  }
+
+  markPaid(): void {
+    this.assertPendingPayment();
+    this.status = CartStatus.create(CartStatusEnum.PAID);
+    this.touch();
+  }
+
+  reopen(): void {
+    this.assertPendingPayment();
+    this.status = CartStatus.open();
     this.touch();
   }
 
@@ -114,9 +118,7 @@ export class Cart {
       (sum, item) => sum + item.getTotalCop(),
       0,
     );
-    return (
-      experiencesTotal + (this.reservationItem?.totalPriceCopSnapshot ?? 0)
-    );
+    return experiencesTotal + (this.reservationItem?.totalPriceCopSnapshot ?? 0);
   }
 
   getId(): CartId | null {
@@ -150,6 +152,12 @@ export class Cart {
   private assertOpen(): void {
     if (!this.status.isOpen()) {
       throw new DomainException('Cart is not open');
+    }
+  }
+
+  private assertPendingPayment(): void {
+    if (!this.status.isPendingPayment()) {
+      throw new DomainException('Cart is not pending payment');
     }
   }
 
