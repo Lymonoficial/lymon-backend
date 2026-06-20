@@ -40,7 +40,7 @@ export class GuestMessageCreatedListener {
         subject: event.subject,
         htmlContent: event.htmlBody,
         sender: event.senderName
-          ? { email: 'lymonoficial@outlook.com', name: event.senderName }
+          ? { email: 'lymonoficial@lymon.com.co', name: event.senderName }
           : undefined,
         attachments: event.attachments,
       });

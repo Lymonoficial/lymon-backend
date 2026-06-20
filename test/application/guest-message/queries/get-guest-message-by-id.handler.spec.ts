@@ -38,7 +38,7 @@ describe('GetGuestMessageByIdHandler', () => {
     it('returns full body from provider when providerMessageId is set and provider returns content', async () => {
       // Arrange
       const message = makeGuestMessage({
-        providerMessageId: 'brevo-msg-123',
+        providerMessageId: 'resend-msg-123',
         preview: 'Short preview',
         status: GuestMessageStatus.SENT,
       });
@@ -51,17 +51,17 @@ describe('GetGuestMessageByIdHandler', () => {
       const result = await handler.execute(query);
 
       // Assert
-      expect(messageBodyProvider.getBody).toHaveBeenCalledWith('brevo-msg-123');
+      expect(messageBodyProvider.getBody).toHaveBeenCalledWith('resend-msg-123');
       expect(result.body).toBe('Full email body from provider');
       expect(result.id).toBe(MESSAGE_ID);
       expect(result.preview).toBe('Short preview');
-      expect(result.providerMessageId).toBe('brevo-msg-123');
+      expect(result.providerMessageId).toBe('resend-msg-123');
     });
 
     it('falls back to preview when providerMessageId is set but provider returns null', async () => {
       // Arrange
       const message = makeGuestMessage({
-        providerMessageId: 'brevo-msg-999',
+        providerMessageId: 'resend-msg-999',
         preview: 'Fallback preview text',
         status: GuestMessageStatus.SENT,
       });
@@ -74,7 +74,7 @@ describe('GetGuestMessageByIdHandler', () => {
       const result = await handler.execute(query);
 
       // Assert
-      expect(messageBodyProvider.getBody).toHaveBeenCalledWith('brevo-msg-999');
+      expect(messageBodyProvider.getBody).toHaveBeenCalledWith('resend-msg-999');
       expect(result.body).toBe('Fallback preview text');
     });
 

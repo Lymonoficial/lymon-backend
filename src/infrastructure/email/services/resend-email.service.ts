@@ -17,7 +17,7 @@ export class ResendEmailService implements IEmailService {
     return {
       email:
         this.configService.get<string>('SENDER_EMAIL') ||
-        'lymonoficial@outlook.com',
+        'lymonoficial@lymon.com.co',
       name: 'Lymon',
     };
   }

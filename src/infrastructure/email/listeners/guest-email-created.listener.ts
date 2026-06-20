@@ -53,7 +53,7 @@ export class GuestEmailCreatedListener {
         // Si hay senderName (nombre propiedad), lo usamos para sobreescribir el nombre visual
         sender: event.senderName
           ? {
-              email: 'lymonoficial@outlook.com',
+              email: 'lymonoficial@lymon.com.co',
               name: event.senderName,
             }
           : undefined,

@@ -52,7 +52,7 @@ describe('GuestMessageCreatedListener', () => {
       // Arrange
       const message = makeGuestMessage({ status: GuestMessageStatus.PENDING });
       guestMessageRepository.findById.mockResolvedValue(message);
-      emailService.sendEmail.mockResolvedValue({ messageId: 'brevo-msg-abc' });
+      emailService.sendEmail.mockResolvedValue({ messageId: 'resend-msg-abc' });
       guestMessageRepository.save.mockResolvedValue(undefined);
 
       const event = makeEvent();
@@ -67,11 +67,11 @@ describe('GuestMessageCreatedListener', () => {
           to: [{ email: 'guest@example.com', name: 'John Doe' }],
           subject: 'Test Subject',
           htmlContent: '<p>Hello</p>',
-          sender: { email: 'lymonoficial@outlook.com', name: 'Hotel Property' },
+          sender: { email: 'lymonoficial@lymon.com.co', name: 'Hotel Property' },
         }),
       );
       expect(message.getStatus()).toBe(GuestMessageStatus.SENT);
-      expect(message.getProviderMessageId()).toBe('brevo-msg-abc');
+      expect(message.getProviderMessageId()).toBe('resend-msg-abc');
       expect(guestMessageRepository.save).toHaveBeenCalledWith(message);
     });
 

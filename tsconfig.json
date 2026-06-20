@@ -24,8 +24,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "types": ["node"]
-  }
-    "noFallthroughCasesInSwitch": false
   },
   "exclude": [
     "node_modules",

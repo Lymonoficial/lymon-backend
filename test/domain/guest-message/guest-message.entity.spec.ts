@@ -99,8 +99,8 @@ describe('GuestMessage', () => {
         from: 'noreply@hotel.com',
         to: ['guest@example.com'],
         reservationId: 'res-001',
-        provider: 'brevo',
-        providerMessageId: 'brevo-msg-123',
+        provider: 'resend',
+        providerMessageId: 'resend-msg-123',
         templateId: 'GUEST_WELCOME',
         sentBy: { actorId: 'staff-001', actorEmail: 'staff@hotel.com' },
         attachments: [{ url: 'https://example.com/file.pdf', name: 'Invoice' }],
@@ -112,8 +112,8 @@ describe('GuestMessage', () => {
 
       // Assert
       expect(message.getReservationId()).toBe('res-001');
-      expect(message.getProvider()).toBe('brevo');
-      expect(message.getProviderMessageId()).toBe('brevo-msg-123');
+      expect(message.getProvider()).toBe('resend');
+      expect(message.getProviderMessageId()).toBe('resend-msg-123');
       expect(message.getTemplateId()).toBe('GUEST_WELCOME');
       expect(message.getAttachments()).toEqual([
         { url: 'https://example.com/file.pdf', name: 'Invoice' },
@@ -144,7 +144,7 @@ describe('GuestMessage', () => {
         from: 'guest@example.com',
         to: ['hotel@example.com'],
         reservationId: 'res-abc',
-        provider: 'brevo',
+        provider: 'resend',
         providerMessageId: 'msg-xyz',
         templateId: null,
         sentBy: { actorId: 'actor-1', actorEmail: 'actor@example.com' },
@@ -168,7 +168,7 @@ describe('GuestMessage', () => {
       expect(message.getFrom()).toBe('guest@example.com');
       expect(message.getTo()).toEqual(['hotel@example.com']);
       expect(message.getReservationId()).toBe('res-abc');
-      expect(message.getProvider()).toBe('brevo');
+      expect(message.getProvider()).toBe('resend');
       expect(message.getProviderMessageId()).toBe('msg-xyz');
       expect(message.getTemplateId()).toBeNull();
       expect(message.getPreview()).toBe('A preview text');
@@ -220,10 +220,10 @@ describe('GuestMessage', () => {
       const beforeUpdate = new Date();
 
       // Act
-      message.updateProviderMessageId('brevo-msg-456');
+      message.updateProviderMessageId('resend-msg-456');
 
       // Assert
-      expect(message.getProviderMessageId()).toBe('brevo-msg-456');
+      expect(message.getProviderMessageId()).toBe('resend-msg-456');
       expect(message.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
     });
   });
