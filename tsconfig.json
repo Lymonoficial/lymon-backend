@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "isolatedModules": true,
     "declaration": true,
@@ -24,8 +24,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "types": ["node"]
-  }
-    "noFallthroughCasesInSwitch": false
   },
   "exclude": [
     "node_modules",
