@@ -1,6 +1,5 @@
 import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
 import { GetGuestMetricsHandler } from './get-guest-metrics.handler';
 import { GetGuestMetricsQuery } from './get-guest-metrics.query';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
