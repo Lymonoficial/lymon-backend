@@ -73,7 +73,11 @@ export class GuestExperienceController {
     >(new GetAvailableExperienceByIdQuery(id));
 
     return {
-      data: this.toCatalogExperienceDto(result.experience),
+      data: {
+        ...this.toCatalogExperienceDto(result.experience),
+        propertyName: result.propertyName,
+        units: result.units,
+      },
     };
   }
 
