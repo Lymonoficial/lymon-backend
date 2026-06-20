@@ -4,5 +4,7 @@ export class GetGuestMetricsResult {
     public readonly totalNights: number,
     public readonly avgNightsPerStay: number,
     public readonly averageBookingValue: number,
+    public readonly lastStayAt: string | null,
+    public readonly daysSinceLastStay: number | null,
   ) {}
 }

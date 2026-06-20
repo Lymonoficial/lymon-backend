@@ -41,11 +41,29 @@ export class GetGuestMetricsHandler implements IQueryHandler<GetGuestMetricsQuer
       ? Number.parseFloat((totalNights / totalBookings).toFixed(1)) 
       : 0;
 
+    const lastStayDate = await this.reservationRepository.getLastStayAt(tenantId, guestId);
+
+    let lastStayAt: string | null = null;
+    let daysSinceLastStay: number | null = null;
+
+    if (lastStayDate) {
+      lastStayAt = lastStayDate.toISOString();
+
+      const today = new Date(); // "now" del servidor
+      const diffInMs = today.getTime() - lastStayDate.getTime();
+      
+      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+      daysSinceLastStay = Math.max(0, diffInDays);
+    }
+
     return new GetGuestMetricsResult(
       totalBookings,
       totalNights,
       avgNightsPerStay,
-      averageBookingValue
+      averageBookingValue,
+      lastStayAt,
+      daysSinceLastStay
     );
   }
 }

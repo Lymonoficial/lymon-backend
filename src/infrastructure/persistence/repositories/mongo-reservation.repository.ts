@@ -494,4 +494,36 @@ export class MongoReservationRepository
     bookingCount: result[0].bookingCount ?? 0
   };
 }
+
+async getLastStayAt(tenantId: string, guestId: string): Promise<Date | null> {
+  const result = await this.reservationModel.aggregate([
+    {
+      $match: {
+        tenantId,
+        guestId,
+        status: 'CHECKED_OUT'
+      }
+    },
+    {
+      $sort: {
+        'checkOutActualAt': -1,
+        'dateRange.checkOut': -1
+      }
+    },
+    { 
+      $limit: 1 
+    }
+  ]);
+
+  if (result.length === 0) {
+    return null;
+  }
+
+  const latestReservation = result[0];
+  
+  const lastStayDate = latestReservation.checkOutActualAt ?? latestReservation.dateRange?.checkOut;
+  
+  return lastStayDate ? new Date(lastStayDate) : null;
+}
+
 }
