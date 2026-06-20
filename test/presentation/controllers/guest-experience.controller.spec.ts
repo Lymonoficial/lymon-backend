@@ -55,9 +55,13 @@ describe('GuestExperienceController', () => {
     expect(result.experiences[0]).not.toHaveProperty('status');
   });
 
-  it('by id endpoint dispatches query and omits tenantId/unitIds/status', async () => {
+  it('by id endpoint dispatches query and returns propertyName and units', async () => {
     queryBus.execute.mockResolvedValue(
-      new GetAvailableExperienceByIdResult(experience),
+      new GetAvailableExperienceByIdResult({
+        experience,
+        propertyName: 'Hotel Boutique',
+        units: [{ id: 'unit-1', name: 'Suite 101', maxGuests: 4, pricePerNight: 250000 }],
+      }),
     );
 
     const result = await controller.findById('exp-1');
@@ -65,8 +69,9 @@ describe('GuestExperienceController', () => {
     expect(queryBus.execute).toHaveBeenCalledWith(
       expect.any(GetAvailableExperienceByIdQuery),
     );
-    expect(result.data).not.toHaveProperty('tenantId');
-    expect(result.data).not.toHaveProperty('unitIds');
-    expect(result.data).not.toHaveProperty('status');
+    expect(result.data.propertyName).toBe('Hotel Boutique');
+    expect(result.data.units).toEqual([
+      { id: 'unit-1', name: 'Suite 101', maxGuests: 4, pricePerNight: 250000 },
+    ]);
   });
 });

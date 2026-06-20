@@ -4,6 +4,8 @@ import { GetAvailableExperienceByIdQueryHandler } from '@/application/experience
 import { GetAvailableExperienceByIdResult } from '@/application/experience/queries/GetAvailableExperienceById/get-available-experience-by-id.result';
 import { Experience } from '@/domain/experience/entities/experience.entity';
 import type { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
+import type { PropertyRepository } from '@/domain/property/repositories/property.repository';
+import type { UnitRepository } from '@/domain/unit/repositories/unit.repository';
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
@@ -13,6 +15,8 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { createExperienceRepositoryMock } from '@test/shared/mocks/repositories/experience-repository.mock';
+import { createPropertyRepositoryMock } from '@test/shared/mocks/repositories/property-repository.mock';
+import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
 
 const EXPERIENCE_ID = 'experience-123';
 
@@ -55,10 +59,20 @@ function makeExperience(status: 'ACTIVE' | 'ARCHIVED' = 'ACTIVE') {
 describe('GetAvailableExperienceByIdQueryHandler', () => {
   let handler: GetAvailableExperienceByIdQueryHandler;
   let experienceRepository: jest.Mocked<ExperienceRepository>;
+  let propertyRepository: jest.Mocked<PropertyRepository>;
+  let unitRepository: jest.Mocked<UnitRepository>;
 
   beforeEach(() => {
     experienceRepository = createExperienceRepositoryMock();
-    handler = new GetAvailableExperienceByIdQueryHandler(experienceRepository);
+    propertyRepository = createPropertyRepositoryMock();
+    unitRepository = createUnitRepositoryMock();
+    handler = new GetAvailableExperienceByIdQueryHandler(
+      experienceRepository,
+      propertyRepository,
+      unitRepository,
+    );
+    propertyRepository.findById.mockResolvedValue(null);
+    unitRepository.findByIds.mockResolvedValue([]);
   });
 
   it('returns active experience by id', async () => {
