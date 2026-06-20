@@ -2,7 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { NotFoundException, Inject } from '@nestjs/common';
 import { GetGuestMetricsQuery } from './get-guest-metrics.query';
 import { GetGuestMetricsResult } from './get-guest-metrics.result';
-import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
+import { GUEST_REPOSITORY, type GuestRepository} from '@/domain/guest/repositories/guest.repository';
 import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { RESERVATION_REPOSITORY, type ReservationRepository } from '@/domain/reservation/repositories/reservation.repository';
 
