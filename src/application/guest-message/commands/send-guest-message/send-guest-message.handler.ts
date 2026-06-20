@@ -136,7 +136,7 @@ export class SendGuestMessageHandler
     const guestMessage = GuestMessage.create({
       tenantId,
       guestId,
-      reservationId: lastReservation?.getId().toString() ?? null,
+      reservationId: lastReservation?.getId()?.toString() ?? undefined,
       channel: GuestMessageChannel.EMAIL,
       direction: GuestMessageDirection.OUTBOUND,
       status: GuestMessageStatus.PENDING,
