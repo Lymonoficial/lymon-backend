@@ -28,7 +28,7 @@ export class GetGuestMetricsHandler implements IQueryHandler<GetGuestMetricsQuer
 
     const stats = await this.reservationRepository.getBookingValueStats(tenantId, guestId);
 
-    let averageBookingValue = 0;
+    let averageBookingValue: number = 0;
 
     if (stats.bookingCount > 0) {
       averageBookingValue = Math.round(stats.totalRevenue / stats.bookingCount);
@@ -40,6 +40,12 @@ export class GetGuestMetricsHandler implements IQueryHandler<GetGuestMetricsQuer
     const avgNightsPerStay = totalBookings > 0 
       ? Number.parseFloat((totalNights / totalBookings).toFixed(1)) 
       : 0;
+    
+    const bookingValueStats = await this.reservationRepository.getBookingValueStats(tenantId, guestId);
+
+    if (bookingValueStats.bookingCount > 0) {
+      averageBookingValue = Math.round(bookingValueStats.totalRevenue / bookingValueStats.bookingCount);
+    }
 
     const lastStayDate = await this.reservationRepository.getLastStayAt(tenantId, guestId);
 
@@ -63,7 +69,7 @@ export class GetGuestMetricsHandler implements IQueryHandler<GetGuestMetricsQuer
       avgNightsPerStay,
       averageBookingValue,
       lastStayAt,
-      daysSinceLastStay
+      daysSinceLastStay,
     );
   }
 }

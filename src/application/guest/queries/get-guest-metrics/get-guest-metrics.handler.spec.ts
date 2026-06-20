@@ -43,8 +43,7 @@ describe('GetGuestMetricsHandler', () => {
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
     reservationRepositoryMock.getLastStayAt.mockResolvedValue(fiveDaysAgo);
 
-   // Escenario 1 (Caso Normal): Cambiar 'guest-456' por un ID de 24 caracteres
-  const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439011');
+    const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439011');
     const result = await handler.execute(query);
 
     expect(result.lastStayAt).toBe(fiveDaysAgo.toISOString());
@@ -59,8 +58,8 @@ describe('GetGuestMetricsHandler', () => {
     
     reservationRepositoryMock.getLastStayAt.mockResolvedValue(null);
 
-// Escenario 2 (Sin Estancias): Igual, cambiar 'guest-456'
-  const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439012');    const result = await handler.execute(query);
+    const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439012');
+    const result = await handler.execute(query);
 
     expect(result.lastStayAt).toBeNull();
     expect(result.daysSinceLastStay).toBeNull();
@@ -75,8 +74,8 @@ describe('GetGuestMetricsHandler', () => {
     const justNow = new Date();
     reservationRepositoryMock.getLastStayAt.mockResolvedValue(justNow);
 
-// Escenario 3 (Límite a Cero): Igual, cambiar 'guest-456'
-  const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439013');    const result = await handler.execute(query);
+    const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439013');
+    const result = await handler.execute(query);
 
     expect(result.daysSinceLastStay).toBe(0);
   });
@@ -84,8 +83,22 @@ describe('GetGuestMetricsHandler', () => {
   it('should throw a NotFoundException if the guest does not exist', async () => {
     guestRepositoryMock.findById.mockResolvedValue(null);
 
-// Escenario 4 (Huésped no existe): Cambiar 'guest-invalid'
-  const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439014');
+    const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439014');
     await expect(handler.execute(query)).rejects.toThrow(NotFoundException);
+  });
+
+  it('should calculate average booking value correctly', async () => {
+    const fakeGuest = { getSummary: () => ({ totalBookings: 2, totalNights: 4 }) };
+    guestRepositoryMock.findById.mockResolvedValue(fakeGuest);
+    
+    reservationRepositoryMock.getBookingValueStats = jest.fn().mockImplementation(() => 
+      Promise.resolve({ bookingCount: 2, totalRevenue: 100000 })
+    );
+
+    const query = new GetGuestMetricsQuery('tenant-123', '507f1f77bcf86cd799439011');
+    const result = (await handler.execute(query)) as any;
+
+    expect(result.averageBookingValue).toBe(50000);
+    expect(result.avgNightsPerStay).toBe(2);
   });
 });

@@ -66,11 +66,11 @@ import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
 import { GetGuestRatingsQuery } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.query';
 import { GetGuestRatingsResult } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.result';
-import { GetGuestMetricsQuery } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.query';
-import { GetGuestMetricsResult } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.result';
 import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
 import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
+import { GetGuestMetricsQuery } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.query';
+import { GetGuestMetricsResult } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.result';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
