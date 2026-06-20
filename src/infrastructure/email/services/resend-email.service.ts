@@ -4,14 +4,14 @@ import {
   SendLowStockAlertEmailParams,
 } from '@/application/shared/services/email.service';
 import { Injectable, Logger } from '@nestjs/common';
-import { BrevoClient } from '@getbrevo/brevo';
+import { Resend } from 'resend';
 import { ConfigService } from '@nestjs/config';
 import { EmailTemplateService } from '@/infrastructure/common/email-template.service';
 
 @Injectable()
-export class BrevoEmailService implements IEmailService {
-  private readonly logger = new Logger(BrevoEmailService.name);
-  private readonly client: BrevoClient;
+export class ResendEmailService implements IEmailService {
+  private readonly logger = new Logger(ResendEmailService.name);
+  private readonly client: Resend;
 
   private get defaultSender() {
     return {
@@ -26,34 +26,53 @@ export class BrevoEmailService implements IEmailService {
     private readonly configService: ConfigService,
     private readonly emailTemplateService: EmailTemplateService,
   ) {
-    const apiKey = this.configService.get<string>('BREVO_API_KEY');
-    if (!apiKey) throw new Error('BREVO_API_KEY is not configured');
-    this.client = new BrevoClient({ apiKey });
+    const apiKey = this.configService.get<string>('RESEND_API_KEY') ?? '';
+    if (!apiKey) throw new Error('RESEND_API_KEY is not configured');
+    this.client = new Resend(apiKey);
   }
 
   async sendEmail(params: SendEmailParams): Promise<{ messageId: string }> {
     try {
       const sender = params.sender || this.defaultSender;
-      const response = await this.client.transactionalEmails.sendTransacEmail({
-        htmlContent: params.htmlContent,
-        sender: sender,
-        subject: params.subject,
-        to: params.to,
-        cc: params.cc,
-        bcc: params.bcc,
-        ...(params.attachments &&
-          params.attachments.length > 0 && { attachment: params.attachments }),
-      });
+      const from = `${sender.name} <${sender.email}>`;
 
-      const messageId = response.messageId || 'SENT';
+      const payload: Parameters<typeof this.client.emails.send>[0] = {
+        from,
+        to: params.to.map((r) => r.email),
+        subject: params.subject,
+        html: params.htmlContent,
+      };
+
+      if (params.cc && params.cc.length > 0) {
+        payload.cc = params.cc.map((r) => r.email);
+      }
+
+      if (params.bcc && params.bcc.length > 0) {
+        payload.bcc = params.bcc.map((r) => r.email);
+      }
+
+      if (params.attachments && params.attachments.length > 0) {
+        payload.attachments = params.attachments.map((att) => ({
+          filename: att.name,
+          path: att.url,
+        }));
+      }
+
+      const { data, error } = await this.client.emails.send(payload);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const messageId = data?.id ?? 'SENT';
       this.logger.log(
-        `[BREVO] Email enviado con éxito desde ${sender.email} a ${params.to[0].email} (ID: ${messageId})`,
+        `[RESEND] Email enviado con éxito desde ${sender.email} a ${params.to[0].email} (ID: ${messageId})`,
       );
       return { messageId };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(
-        `[BREVO_ERROR] Fallo al enviar email desde ${params.sender?.email || this.defaultSender.email}: ${message}`,
+        `[RESEND_ERROR] Fallo al enviar email desde ${params.sender?.email || this.defaultSender.email}: ${message}`,
       );
       throw new Error(`Failed to send email: ${message}`);
     }
