@@ -21,7 +21,7 @@ export class ArchiveConversationHandler
       ConversationId.createFromString(command.conversationId),
     );
 
-    if (!conversation || conversation.getTenantId() !== command.tenantId) {
+    if (conversation?.getTenantId() !== command.tenantId) {
       throw new NotFoundException('Conversation not found');
     }
 

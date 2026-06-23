@@ -42,7 +42,7 @@ export class GetConversationThreadHandler
       ConversationId.createFromString(query.conversationId),
     );
 
-    if (!conversation || conversation.getTenantId() !== query.tenantId) {
+    if (conversation?.getTenantId() !== query.tenantId) {
       throw new NotFoundException('Conversation not found');
     }
 

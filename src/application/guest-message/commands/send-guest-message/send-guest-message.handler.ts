@@ -166,14 +166,12 @@ export class SendGuestMessageHandler
       command.tenantId,
       command.guestId,
     );
-    if (!conversation) {
-      conversation = Conversation.create({
-        tenantId: command.tenantId,
-        guestId: command.guestId,
-        reservationId: lastReservation?.getId()?.toString() ?? null,
-        subject,
-      });
-    }
+    conversation ??= Conversation.create({
+      tenantId: command.tenantId,
+      guestId: command.guestId,
+      reservationId: lastReservation?.getId()?.toString() ?? null,
+      subject,
+    });
     conversation.appendMessage(guestMessage);
     await this.conversationRepository.save(conversation);
     guestMessage.assignConversation(conversation.getId().toString());
