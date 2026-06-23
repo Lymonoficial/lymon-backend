@@ -15,10 +15,6 @@ import {
   AuditLoggedEvent,
   AUDIT_LOG_EVENT,
 } from '@/infrastructure/audit/events/audit-logged.event';
-import {
-  CHANNEX_PROPERTY_UPDATE_EVENT,
-  ChannexPropertyUpdateEvent,
-} from '@/infrastructure/channex/events/channex-property-update.event';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -90,27 +86,6 @@ export class UpdatePropertyHandler implements ICommandHandler<
     }
 
     const updatedPropertyId = await this.propertyRepository.save(property);
-
-    const channexId = property.getChannexId();
-    if (channexId) {
-      const loc = property.getLocation().toObject();
-      this.eventEmitter.emit(
-        CHANNEX_PROPERTY_UPDATE_EVENT,
-        new ChannexPropertyUpdateEvent(
-          channexId,
-          property.getName(),
-          property.getHostEmail(),
-          property.getHostPhone(),
-          property.getAddress(),
-          property.getCity(),
-          property.getState(),
-          property.getCountry(),
-          property.getZipCode(),
-          loc.lat,
-          loc.lng,
-        ),
-      );
-    }
 
     this.eventEmitter.emit(
       AUDIT_LOG_EVENT,

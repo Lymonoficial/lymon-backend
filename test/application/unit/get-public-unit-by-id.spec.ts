@@ -6,7 +6,10 @@ import { GetPublicUnitByIdQuery } from '@/application/unit/queries/GetPublicUnit
 import { GetPublicUnitByIdResult } from '@/application/unit/queries/GetPublicUnitById/get-public-unit-by-id.result';
 import type { UnitRepository } from '@/domain/unit/repositories/unit.repository';
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
-import { makeUnit, UNIT_FIXTURE_DEFAULTS } from '@test/shared/fixtures/unit.fixture';
+import {
+  makeUnit,
+  UNIT_FIXTURE_DEFAULTS,
+} from '@test/shared/fixtures/unit.fixture';
 import { UnitController } from '@/presentation/controllers/unit.controller';
 
 const UNIT_ID = UNIT_FIXTURE_DEFAULTS.id;

@@ -50,10 +50,11 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
 
       const availableUnits: any[] = [];
       for (const unit of units) {
-        const reservations = await this.reservationRepository.findByUnitAndDateRange(
-          unit.getId()!,
-          dateRange,
-        );
+        const reservations =
+          await this.reservationRepository.findByUnitAndDateRange(
+            unit.getId()!,
+            dateRange,
+          );
 
         const isAvailable = AvailabilityChecker.isAvailable(
           dateRange,
@@ -71,7 +72,12 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
       const paginatedUnits = availableUnits.slice(skip, skip + query.limit);
       const dtos = paginatedUnits.map(mapUnitToPublicDto);
 
-      return new GetPublicUnitsByTenantResult(dtos, total, query.page, query.limit);
+      return new GetPublicUnitsByTenantResult(
+        dtos,
+        total,
+        query.page,
+        query.limit,
+      );
     }
 
     const { units, total } = await this.unitRepository.findByTenantIdPaginated(

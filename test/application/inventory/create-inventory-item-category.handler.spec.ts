@@ -78,7 +78,9 @@ describe('CreateInventoryItemCategoryHandler', () => {
 
   describe('when category name already exists', () => {
     beforeEach(() => {
-      categoryRepository.findByName.mockResolvedValue(makeInventoryItemCategory());
+      categoryRepository.findByName.mockResolvedValue(
+        makeInventoryItemCategory(),
+      );
     });
 
     it('throws ConflictException', async () => {

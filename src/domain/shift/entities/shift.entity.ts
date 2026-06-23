@@ -54,8 +54,8 @@ export class Shift {
   ) {}
 
   static create(params: CreateShiftParams): Shift {
-    if (params.endMinutes <= params.startMinutes) {
-      throw new Error('Shift end time must be after start time');
+    if (params.endMinutes === params.startMinutes) {
+      throw new Error('Shift start and end time cannot be the same');
     }
 
     if (
@@ -284,8 +284,8 @@ export class Shift {
     startMinutes: number,
     endMinutes: number,
   ): void {
-    if (endMinutes <= startMinutes) {
-      throw new Error('Shift end time must be after start time');
+    if (endMinutes === startMinutes) {
+      throw new Error('Shift start and end time cannot be the same');
     }
   }
 

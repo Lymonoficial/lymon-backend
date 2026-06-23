@@ -39,6 +39,10 @@ import { GetGuestNotesByGuestIdQuery } from '@/application/guest-note/queries/ge
 import { GetGuestNotesByGuestIdResult } from '@/application/guest-note/queries/get-guest-notes-by-guest-id/get-guest-notes-by-guest-id.result';
 import { GetGuestBookingsQuery } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.query';
 import { GetGuestBookingsResult } from '@/application/guest/queries/get-guest-bookings/get-guest-bookings.result';
+import { GetGuestMonthlySpendingQuery } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.query';
+import { GetGuestMonthlySpendingResult } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.result';
+import { GetGuestBookingOriginsQuery } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.query';
+import { GetGuestBookingOriginsResult } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.result';
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
@@ -57,7 +61,6 @@ import { DeleteCustomCatalogItemCommand } from '@/application/guest-preference/c
 import { CreateGuestNoteDto } from '@/presentation/dtos/guest-note/create-guest-note.dto';
 import { UpdateGuestNoteDto } from '@/presentation/dtos/guest-note/update-guest-note.dto';
 import { SendGuestMessageDto } from '@/presentation/dtos/guest/send-guest-message.dto';
-import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
 import { CreateCatalogItemDto } from '@/presentation/dtos/catalog/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog-item.dto';
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
@@ -65,6 +68,11 @@ import { GetConversationsByTenantQuery } from '@/application/conversation/querie
 import { GetConversationThreadQuery } from '@/application/conversation/queries/get-conversation-thread/get-conversation-thread.query';
 import { MarkConversationReadCommand } from '@/application/conversation/commands/mark-conversation-read/mark-conversation-read.command';
 import { ArchiveConversationCommand } from '@/application/conversation/commands/archive-conversation/archive-conversation.command';
+import { GetGuestRatingsQuery } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.query';
+import { GetGuestRatingsResult } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.result';
+import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
+import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
+import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
 
 @ApiTags('crm')
 @ApiBearerAuth('JWT-auth')
@@ -110,17 +118,29 @@ export class CrmController {
       sortDirection,
     );
 
+    const guestIds = guests.map((guest) => guest.getId()?.toString()).filter(Boolean) as string[];
+
+    const lifecycleStatuses = await this.queryBus.execute<
+      GetGuestLifecycleStatusQuery,
+      Map<string, GuestLifecycleStatus>
+    >(new GetGuestLifecycleStatusQuery(user.tenantId, guestIds));
+
     return {
       message: 'CRM guests retrieved successfully',
       data: {
-        items: guests.map((guest) => ({
-          guestId: guest.getId()?.toString(),
-          fullName: guest.getFullName(),
-          primaryEmail: guest.getPrimaryEmail(),
-          phones: guest.getPhones(),
-          status: guest.getStatus(),
-          tags: guest.getTags().map((t) => t.getName()),
-        })),
+        items: guests.map((guest) => {
+          const currentId = guest.getId()?.toString() || '';
+          
+          return {
+            guestId: currentId,
+            fullName: guest.getFullName(),
+            primaryEmail: guest.getPrimaryEmail(),
+            phones: guest.getPhones(),
+            status: guest.getStatus(),
+            tags: guest.getTags().map((t) => t.getName()),
+            lifecycleStatus: lifecycleStatuses.get(currentId) || GuestLifecycleStatus.NO_RESERVATION,
+          };
+        }),
         pagination: {
           total,
           page,
@@ -318,6 +338,54 @@ export class CrmController {
     };
   }
 
+  @Get('guests/:guestId/spending/monthly')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get monthly spending breakdown for a guest (last 12 rolling months)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest monthly spending retrieved successfully',
+  })
+  async getGuestMonthlySpending(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestMonthlySpendingQuery,
+      GetGuestMonthlySpendingResult
+    >(new GetGuestMonthlySpendingQuery(user.tenantId, guestId));
+    return {
+      message: 'Guest monthly spending retrieved successfully',
+      data: result.items,
+    };
+  }
+
+  @Get('guests/:guestId/booking-origins')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get booking source distribution for a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest booking origins retrieved successfully',
+  })
+  async getGuestBookingOrigins(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestBookingOriginsQuery,
+      GetGuestBookingOriginsResult
+    >(new GetGuestBookingOriginsQuery(user.tenantId, guestId));
+
+    return {
+      message: 'Guest booking origins retrieved successfully',
+      data: {
+        total: result.total,
+        sources: result.sources,
+      },
+    };
+  }
+
   @Patch('guests/:guestId/tags')
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_MANAGE)
@@ -406,6 +474,42 @@ export class CrmController {
       message: 'Guest communication history retrieved successfully',
       data: {
         items: result.items,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
+      },
+    };
+  }
+
+  @Get('guests/:guestId/ratings')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get all ratings given by a guest' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest ratings retrieved successfully',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getGuestRatings(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const result = await this.queryBus.execute<
+      GetGuestRatingsQuery,
+      GetGuestRatingsResult
+    >(new GetGuestRatingsQuery(user.tenantId, guestId, page, limit));
+
+    return {
+      message: 'Guest ratings retrieved successfully',
+      data: {
+        items: result.ratings,
+        averageRating: result.averageRating,
         pagination: {
           total: result.total,
           page: result.page,

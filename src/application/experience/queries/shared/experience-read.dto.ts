@@ -22,6 +22,15 @@ export class PublicExperienceBlackoutRangeDto {
   ) {}
 }
 
+export class ExperienceUnitSummaryDto {
+  constructor(
+    public readonly id: string,
+    public readonly name: string,
+    public readonly maxGuests: number,
+    public readonly pricePerNight: number,
+  ) {}
+}
+
 export class PublicExperienceDto {
   constructor(
     public readonly id: string,

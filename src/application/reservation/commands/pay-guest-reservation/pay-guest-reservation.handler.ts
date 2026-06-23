@@ -24,9 +24,7 @@ import {
 } from '@/infrastructure/audit/events/audit-logged.event';
 
 @CommandHandler(PayGuestReservationCommand)
-export class PayGuestReservationHandler
-  implements ICommandHandler<PayGuestReservationCommand>
-{
+export class PayGuestReservationHandler implements ICommandHandler<PayGuestReservationCommand> {
   constructor(
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,

@@ -7,14 +7,17 @@ import {
   GUEST_FIXTURE_DEFAULTS,
 } from '@test/shared/fixtures/guest.fixture';
 import { GuestStatusEnum } from '@/domain/guest/entities/guest.types';
+import { QueryBus } from '@nestjs/cqrs';
 
 describe('GetGuestByIdHandler', () => {
   let handler: GetGuestByIdHandler;
   let guestRepository: jest.Mocked<GuestRepository>;
+  let queryBus : QueryBus;
 
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
-    handler = new GetGuestByIdHandler(guestRepository);
+    queryBus = { execute: jest.fn() } as any;
+    handler = new GetGuestByIdHandler(guestRepository, queryBus);
   });
 
   describe('when the guest exists and belongs to the tenant', () => {

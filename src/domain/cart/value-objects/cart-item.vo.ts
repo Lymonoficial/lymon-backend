@@ -22,7 +22,9 @@ export class CartItem {
     reservationId?: string | null;
   }): CartItem {
     if (!Number.isInteger(params.quantity) || params.quantity <= 0) {
-      throw new DomainException('Cart item quantity must be a positive integer');
+      throw new DomainException(
+        'Cart item quantity must be a positive integer',
+      );
     }
     return new CartItem(
       params.tenantId,

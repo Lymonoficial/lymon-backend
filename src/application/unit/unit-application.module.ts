@@ -9,6 +9,7 @@ import { GetPublicUnitByIdQueryHandler } from '@/application/unit/queries/GetPub
 import { GetAllPublicUnitsQueryHandler } from '@/application/unit/queries/GetAllPublicUnits/get-all-public-units.query-handler';
 import { GetUnitWithExternalIdsByIdQueryHandler } from '@/application/unit/queries/GetUnitWithExternalIdsById/get-unit-with-external-ids-by-id.query-handler';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
+import { StorageModule } from '@/infrastructure/storage/storage.module';
 
 const CommandHandlers = [
   CreateUnitHandler,
@@ -24,7 +25,7 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, PersistenceModule],
+  imports: [CqrsModule, PersistenceModule, StorageModule],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers],
 })

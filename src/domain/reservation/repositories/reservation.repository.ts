@@ -35,6 +35,10 @@ export interface ReservationRepository {
     sortDirection?: 'asc' | 'desc',
   ): Promise<Reservation[]>;
   countByGuestId(tenantId: string, guestId: string): Promise<number>;
+  countByGuestIdGroupedBySource(
+    tenantId: string,
+    guestId: string,
+  ): Promise<Array<{ source: string; count: number }>>;
   findByUnitAndDateRange(
     unitId: UnitId,
     dateRange: DateRange,
@@ -58,4 +62,10 @@ export interface ReservationRepository {
     propertyId: string,
   ): Promise<boolean>;
   findConfirmedDueForCheckIn(date: Date): Promise<Reservation[]>;
+  getMonthlySpendingByGuestId(
+    tenantId: string,
+    guestId: string,
+    fromDate: Date,
+    toDate: Date,
+  ): Promise<{ year: number; month: number; totalSpend: number }[]>;
 }

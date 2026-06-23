@@ -221,9 +221,18 @@ export class UserController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update staff profile (fullName, document)' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Staff profile updated successfully' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized - Invalid or missing JWT token' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Staff profile updated successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized - Invalid or missing JWT token',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Forbidden - Insufficient permissions',
+  })
   async updateStaffProfile(
     @Param('id') userId: string,
     @Body() dto: UpdateStaffProfileDto,
@@ -258,13 +267,14 @@ export class UserController {
     @Body() dto: AddRolesDto,
     @CurrentUser() jwtPayload: JwtPayload,
   ) {
-    const command = new (require('@/application/user/commands/add-roles.command').AddRolesCommand)(
-      userId,
-      dto.roleAssignments,
-      jwtPayload.tenantId,
-      jwtPayload.userId,
-      jwtPayload.email,
-    );
+    const command =
+      new (require('@/application/user/commands/add-roles.command').AddRolesCommand)(
+        userId,
+        dto.roleAssignments,
+        jwtPayload.tenantId,
+        jwtPayload.userId,
+        jwtPayload.email,
+      );
     await this.commandBus.execute(command);
     return { message: 'Roles added successfully' };
   }
@@ -278,12 +288,13 @@ export class UserController {
     @Param('id') userId: string,
     @CurrentUser() jwtPayload: JwtPayload,
   ) {
-    const command = new (require('@/application/user/commands/remove-all-roles.command').RemoveAllRolesCommand)(
-      userId,
-      jwtPayload.tenantId,
-      jwtPayload.userId,
-      jwtPayload.email,
-    );
+    const command =
+      new (require('@/application/user/commands/remove-all-roles.command').RemoveAllRolesCommand)(
+        userId,
+        jwtPayload.tenantId,
+        jwtPayload.userId,
+        jwtPayload.email,
+      );
     await this.commandBus.execute(command);
     return { message: 'All roles removed successfully' };
   }
@@ -292,15 +303,39 @@ export class UserController {
   @RequirePermission(Permission.TENANT_USERS_MANAGE)
   @Delete('staff/:id/roles/:roleId')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Remove a specific role assignment from a staff member' })
+  @ApiOperation({
+    summary: 'Remove a specific role assignment from a staff member',
+  })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiParam({ name: 'roleId', description: 'Role ID to remove' })
-  @ApiQuery({ name: 'scopeType', required: false, description: "Optional scope type (TENANT|PROPERTY|UNIT). If omitted, all assignments with roleId will be removed." })
-  @ApiQuery({ name: 'resourceId', required: false, description: 'Optional resource id (e.g., propertyId or unitId) to remove a specific assignment' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Role removed successfully' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request - invalid scope or payload' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized - Invalid or missing JWT token' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden - Insufficient permissions' })
+  @ApiQuery({
+    name: 'scopeType',
+    required: false,
+    description:
+      'Optional scope type (TENANT|PROPERTY|UNIT). If omitted, all assignments with roleId will be removed.',
+  })
+  @ApiQuery({
+    name: 'resourceId',
+    required: false,
+    description:
+      'Optional resource id (e.g., propertyId or unitId) to remove a specific assignment',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Role removed successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request - invalid scope or payload',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized - Invalid or missing JWT token',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Forbidden - Insufficient permissions',
+  })
   async removeRoleFromStaff(
     @Param('id') userId: string,
     @Param('roleId') roleId: string,
@@ -313,14 +348,15 @@ export class UserController {
       scope = { type: scopeType, resourceIds: [resourceId] };
     }
 
-    const command = new (require('@/application/user/commands/remove-role.command').RemoveRoleCommand)(
-      userId,
-      roleId,
-      scope,
-      jwtPayload.tenantId,
-      jwtPayload.userId,
-      jwtPayload.email,
-    );
+    const command =
+      new (require('@/application/user/commands/remove-role.command').RemoveRoleCommand)(
+        userId,
+        roleId,
+        scope,
+        jwtPayload.tenantId,
+        jwtPayload.userId,
+        jwtPayload.email,
+      );
     await this.commandBus.execute(command);
     return { message: 'Role removed successfully' };
   }

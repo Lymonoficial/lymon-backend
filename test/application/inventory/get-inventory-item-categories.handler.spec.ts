@@ -42,7 +42,10 @@ describe('GetInventoryItemCategoriesQueryHandler', () => {
     });
 
     beforeEach(() => {
-      categoryRepository.findByTenantId.mockResolvedValue([categoryA, categoryB]);
+      categoryRepository.findByTenantId.mockResolvedValue([
+        categoryA,
+        categoryB,
+      ]);
     });
 
     it('returns a GetInventoryItemCategoriesResult', async () => {
@@ -64,7 +67,9 @@ describe('GetInventoryItemCategoriesQueryHandler', () => {
       const dto = result.categories.find((c) => c.name === 'Limpieza');
       expect(dto).toBeDefined();
       expect(dto?.id).toBe(INVENTORY_ITEM_CATEGORY_FIXTURE_DEFAULTS.id);
-      expect(dto?.description).toBe(INVENTORY_ITEM_CATEGORY_FIXTURE_DEFAULTS.description);
+      expect(dto?.description).toBe(
+        INVENTORY_ITEM_CATEGORY_FIXTURE_DEFAULTS.description,
+      );
     });
 
     it('filters by search term', async () => {

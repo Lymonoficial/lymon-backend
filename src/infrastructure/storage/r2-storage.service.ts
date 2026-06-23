@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectsCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export const R2_STORAGE_SERVICE = 'R2_STORAGE_SERVICE';
@@ -21,7 +25,9 @@ export class R2StorageService {
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId: this.configService.get<string>('R2_ACCESS_KEY_ID')!,
-        secretAccessKey: this.configService.get<string>('R2_SECRET_ACCESS_KEY')!,
+        secretAccessKey: this.configService.get<string>(
+          'R2_SECRET_ACCESS_KEY',
+        )!,
       },
       requestChecksumCalculation: 'WHEN_REQUIRED',
     });
@@ -39,6 +45,21 @@ export class R2StorageService {
     });
 
     return getSignedUrl(this.client, command, { expiresIn: expiresInSeconds });
+  }
+
+  async deleteObjects(keys: string[]): Promise<void> {
+    if (keys.length === 0) return;
+    try {
+      await this.client.send(
+        new DeleteObjectsCommand({
+          Bucket: this.bucket,
+          Delete: { Objects: keys.map((k) => ({ Key: k })) },
+        }),
+      );
+    } catch (err) {
+      // ponytail: orphan cleanup is best-effort; never fail the committed update. Add a retry queue if orphan buildup becomes real.
+      console.error('R2 orphan cleanup failed', { keys, err });
+    }
   }
 
   getPublicUrl(key: string): string {

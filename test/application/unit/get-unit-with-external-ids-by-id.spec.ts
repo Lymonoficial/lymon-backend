@@ -60,7 +60,10 @@ describe('GetUnitWithExternalIdsById', () => {
     it('Handler should throw NotFoundException if unit does not exist', async () => {
       unitRepository.findById.mockResolvedValue(null);
 
-      const query = new GetUnitWithExternalIdsByIdQuery('invalid-id', TENANT_ID);
+      const query = new GetUnitWithExternalIdsByIdQuery(
+        'invalid-id',
+        TENANT_ID,
+      );
       await expect(handler.execute(query)).rejects.toThrow(NotFoundException);
     });
 
@@ -82,9 +85,15 @@ describe('GetUnitWithExternalIdsById', () => {
       const result = await handler.execute(query);
 
       expect(result.unit).toHaveProperty('externalIds');
-      expect(result.unit.externalIds.airbnbId).toBe(UNIT_FIXTURE_DEFAULTS.externalIds.airbnbId);
-      expect(result.unit.externalIds.bookingId).toBe(UNIT_FIXTURE_DEFAULTS.externalIds.bookingId);
-      expect(result.unit.externalIds.vrboId).toBe(UNIT_FIXTURE_DEFAULTS.externalIds.vrboId);
+      expect(result.unit.externalIds.airbnbId).toBe(
+        UNIT_FIXTURE_DEFAULTS.externalIds.airbnbId,
+      );
+      expect(result.unit.externalIds.bookingId).toBe(
+        UNIT_FIXTURE_DEFAULTS.externalIds.bookingId,
+      );
+      expect(result.unit.externalIds.vrboId).toBe(
+        UNIT_FIXTURE_DEFAULTS.externalIds.vrboId,
+      );
     });
   });
 
@@ -103,8 +112,15 @@ describe('GetUnitWithExternalIdsById', () => {
       } as any);
       (queryBus.execute as jest.Mock).mockResolvedValue(mockResult);
 
-      const fakeUser = { tenantId: TENANT_ID, userId: 'user-1', email: 'a@b.com' } as any;
-      const response = await controller.getByIdWithExternalIds(fakeUser, UNIT_ID);
+      const fakeUser = {
+        tenantId: TENANT_ID,
+        userId: 'user-1',
+        email: 'a@b.com',
+      } as any;
+      const response = await controller.getByIdWithExternalIds(
+        fakeUser,
+        UNIT_ID,
+      );
 
       expect(queryBus.execute).toHaveBeenCalledWith(
         expect.objectContaining({
