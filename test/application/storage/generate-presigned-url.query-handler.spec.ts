@@ -2,6 +2,7 @@ import { GeneratePresignedUrlQueryHandler } from '@/application/storage/queries/
 import { GeneratePresignedUrlQuery } from '@/application/storage/queries/generate-presigned-url/generate-presigned-url.query';
 import { GeneratePresignedUrlResult } from '@/application/storage/queries/generate-presigned-url/generate-presigned-url.result';
 import { createR2StorageServiceMock } from '@test/shared/mocks/services/r2-storage.mock';
+import { MediaCategory } from '@/application/storage/media-category.enum';
 
 const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
 const PRESIGNED_URL =
@@ -25,7 +26,12 @@ describe('GeneratePresignedUrlQueryHandler', () => {
       );
 
       const result = await handler.execute(
-        new GeneratePresignedUrlQuery('photo.jpg', 'image/jpeg', TENANT_ID),
+        new GeneratePresignedUrlQuery(
+          'photo.jpg',
+          'image/jpeg',
+          TENANT_ID,
+          MediaCategory.Experiences,
+        ),
       );
 
       expect(result).toBeInstanceOf(GeneratePresignedUrlResult);
@@ -40,10 +46,33 @@ describe('GeneratePresignedUrlQueryHandler', () => {
       storageService.getPublicUrl.mockReturnValue(`${PUBLIC_URL}/key`);
 
       const result = await handler.execute(
-        new GeneratePresignedUrlQuery('photo.jpg', 'image/jpeg', TENANT_ID),
+        new GeneratePresignedUrlQuery(
+          'photo.jpg',
+          'image/jpeg',
+          TENANT_ID,
+          MediaCategory.Experiences,
+        ),
       );
 
       expect(result.key.startsWith(TENANT_ID)).toBe(true);
+    });
+
+    it('places the key under the category subfolder', async () => {
+      storageService.generatePresignedPutUrl.mockResolvedValue(PRESIGNED_URL);
+      storageService.getPublicUrl.mockReturnValue(`${PUBLIC_URL}/key`);
+
+      const result = await handler.execute(
+        new GeneratePresignedUrlQuery(
+          'photo.jpg',
+          'image/jpeg',
+          TENANT_ID,
+          MediaCategory.Properties,
+        ),
+      );
+
+      expect(result.key).toMatch(
+        new RegExp(`^${TENANT_ID}/${MediaCategory.Properties}/\\d+-photo\\.jpg$`),
+      );
     });
 
     it('sanitizes special characters in filename', async () => {
@@ -55,6 +84,7 @@ describe('GeneratePresignedUrlQueryHandler', () => {
           'my photo (1).jpg',
           'image/jpeg',
           TENANT_ID,
+          MediaCategory.Units,
         ),
       );
 
@@ -68,7 +98,12 @@ describe('GeneratePresignedUrlQueryHandler', () => {
       storageService.getPublicUrl.mockReturnValue(`${PUBLIC_URL}/key`);
 
       await handler.execute(
-        new GeneratePresignedUrlQuery('photo.jpg', 'image/png', TENANT_ID),
+        new GeneratePresignedUrlQuery(
+          'photo.jpg',
+          'image/png',
+          TENANT_ID,
+          MediaCategory.Experiences,
+        ),
       );
 
       expect(storageService.generatePresignedPutUrl).toHaveBeenCalledWith(
@@ -82,7 +117,12 @@ describe('GeneratePresignedUrlQueryHandler', () => {
       storageService.getPublicUrl.mockReturnValue(`${PUBLIC_URL}/key`);
 
       await handler.execute(
-        new GeneratePresignedUrlQuery('photo.jpg', 'image/jpeg', TENANT_ID),
+        new GeneratePresignedUrlQuery(
+          'photo.jpg',
+          'image/jpeg',
+          TENANT_ID,
+          MediaCategory.Experiences,
+        ),
       );
 
       const keyUsedForPresigned = (
