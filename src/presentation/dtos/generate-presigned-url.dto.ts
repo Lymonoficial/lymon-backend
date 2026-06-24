@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsIn, IsString, MaxLength } from 'class-validator';
+import { MediaCategory } from '@/application/storage/media-category.enum';
 
 export class GeneratePresignedUrlDto {
   @ApiProperty({ example: 'photo.jpg' })
@@ -17,4 +18,8 @@ export class GeneratePresignedUrlDto {
     'application/pdf',
   ])
   contentType: string;
+
+  @ApiProperty({ enum: MediaCategory, example: MediaCategory.Experiences })
+  @IsEnum(MediaCategory)
+  category: MediaCategory;
 }

@@ -38,6 +38,7 @@ export class StorageController {
         dto.fileName,
         dto.contentType,
         user.tenantId,
+        dto.category,
       ),
     );
 
