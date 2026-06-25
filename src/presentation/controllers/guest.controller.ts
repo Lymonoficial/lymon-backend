@@ -1,6 +1,10 @@
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { ChangeGuestPasswordCommand } from '@/application/guest-auth/commands/change-guest-password/change-guest-password.command';
 import { ChangeGuestPasswordResult } from '@/application/guest-auth/commands/change-guest-password/change-guest-password.handler';
+import { UpdateGuestProfilePhotoCommand } from '@/application/guest-auth/commands/update-guest-profile-photo/update-guest-profile-photo.command';
+import { UpdateGuestProfilePhotoResult } from '@/application/guest-auth/commands/update-guest-profile-photo/update-guest-profile-photo.handler';
+import { GenerateGuestProfilePhotoUrlQuery } from '@/application/guest-auth/queries/generate-guest-profile-photo-url/generate-guest-profile-photo-url.query';
+import { GenerateGuestProfilePhotoUrlResult } from '@/application/guest-auth/queries/generate-guest-profile-photo-url/generate-guest-profile-photo-url.result';
 import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
 import { CreateGuestCommand } from '@/application/guest/commands/create-guest.command';
 import { CreateGuestResult } from '@/application/guest/commands/create-guest.result';
@@ -39,6 +43,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { GuestProfilePhotoUrlDto } from '@/presentation/dtos/guest/guest-profile-photo-url.dto';
+import { SaveGuestProfilePhotoDto } from '@/presentation/dtos/guest/save-guest-profile-photo.dto';
 
 @ApiTags('guests')
 @ApiBearerAuth('JWT-auth')
@@ -152,6 +158,63 @@ export class GuestController {
     );
 
     return { message: result.message };
+  }
+
+  @Public()
+  @UseGuards(GuestJwtAuthGuard)
+  @Post('profile-photo/presigned-url')
+  @ApiBearerAuth('GuestJWT-auth')
+  @ApiOperation({
+    summary: 'Get a presigned R2 URL to upload the guest profile photo',
+  })
+  @ApiResponse({ status: 201, description: 'Presigned URL generated' })
+  @ApiResponse({ status: 400, description: 'Unsupported image type' })
+  async getProfilePhotoUploadUrl(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Body() dto: GuestProfilePhotoUrlDto,
+  ) {
+    const result = await this.queryBus.execute<
+      GenerateGuestProfilePhotoUrlQuery,
+      GenerateGuestProfilePhotoUrlResult
+    >(
+      new GenerateGuestProfilePhotoUrlQuery(
+        guest.guestAccountId,
+        dto.contentType,
+      ),
+    );
+
+    return {
+      message: 'Presigned URL generated',
+      data: {
+        presignedUrl: result.presignedUrl,
+        fileUrl: result.fileUrl,
+        key: result.key,
+      },
+    };
+  }
+
+  @Public()
+  @UseGuards(GuestJwtAuthGuard)
+  @Post('profile-photo')
+  @ApiBearerAuth('GuestJWT-auth')
+  @ApiOperation({
+    summary: 'Save the uploaded profile photo and remove the previous one',
+  })
+  @ApiResponse({ status: 201, description: 'Profile photo updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid profile photo key' })
+  async saveProfilePhoto(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Body() dto: SaveGuestProfilePhotoDto,
+  ) {
+    const result = await this.commandBus.execute<
+      UpdateGuestProfilePhotoCommand,
+      UpdateGuestProfilePhotoResult
+    >(new UpdateGuestProfilePhotoCommand(guest.guestAccountId, dto.key));
+
+    return {
+      message: 'Profile photo updated successfully',
+      data: { profilePhotoUrl: result.profilePhotoUrl },
+    };
   }
 
   @Get(':guestId')
