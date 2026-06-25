@@ -44,6 +44,7 @@ export class Reservation {
     private cancellationReason: string | null,
     private checkInActualAt: Date | null,
     private checkOutActualAt: Date | null,
+    private reservationNumber: number | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
   ) {}
@@ -66,6 +67,7 @@ export class Reservation {
       totalPrice,
       params.notes ?? null,
       params.externalReservationId ?? null,
+      null,
       null,
       null,
       null,
@@ -100,6 +102,7 @@ export class Reservation {
       data.cancellationReason,
       data.checkInActualAt,
       data.checkOutActualAt,
+      data.reservationNumber,
       data.createdAt,
       data.updatedAt,
     );
@@ -157,7 +160,6 @@ export class Reservation {
     this.totalPrice = this.pricePerNight * dateRange.nights();
     this.touch();
   }
-
 
   updateGuestsCount(count: number): void {
     this.guestsCount = count;
@@ -234,6 +236,14 @@ export class Reservation {
 
   getCheckOutActualAt(): Date | null {
     return this.checkOutActualAt;
+  }
+
+  getReservationNumber(): number | null {
+    return this.reservationNumber;
+  }
+
+  setReservationNumber(reservationNumber: number): void {
+    this.reservationNumber = reservationNumber;
   }
 
   getCreatedAt(): Date {

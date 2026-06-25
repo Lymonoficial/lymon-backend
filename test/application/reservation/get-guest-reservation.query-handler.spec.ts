@@ -86,7 +86,7 @@ describe('GetGuestReservationHandler', () => {
 
     expect(result).toMatchObject({
       id: '65f1a1a2b3c4d5e6f7a8b9c3',
-      bookingReference: '65f1a1a2b3c4d5e6f7a8b9c3',
+      bookingReference: '1',
       propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
       propertyName: 'Casa del lago',
       unitId: '65f1a1a2b3c4d5e6f7a8b9c8',

@@ -22,6 +22,7 @@ export function toReservationDto(r: Reservation): ReservationDto {
   dto.cancellationReason = r.getCancellationReason();
   dto.checkInActualAt = r.getCheckInActualAt();
   dto.checkOutActualAt = r.getCheckOutActualAt();
+  dto.reservationNumber = r.getReservationNumber() ?? 0;
   dto.createdAt = r.getCreatedAt();
   dto.updatedAt = r.getUpdatedAt();
   return dto;
