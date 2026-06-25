@@ -87,7 +87,6 @@ export class GuestExperienceController {
     return {
       id: experience.id,
       tenantId: experience.tenantId,
-      scope: experience.scope,
       propertyId: experience.propertyId,
       name: experience.name,
       description: experience.description,
@@ -127,7 +126,6 @@ export class GuestExperienceController {
 interface PublicExperienceCatalogDto {
   id: string;
   tenantId: string;
-  scope: string;
   propertyId: string | null;
   name: string;
   description: string;

@@ -1,10 +1,6 @@
 import { Experience } from '@/domain/experience/entities/experience.entity';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import {
-  ExperienceScope,
-  ExperienceScopeEnum,
-} from '@/domain/experience/value-objects/experience-scope.vo';
-import {
   ExperienceCategory,
   ExperienceCategoryEnum,
 } from '@/domain/experience/value-objects/experience-category.vo';
@@ -45,7 +41,6 @@ export function makeExperience(
   return Experience.reconstitute({
     id: ExperienceId.create(merged.id),
     tenantId: TenantId.createFromString(merged.tenantId),
-    scope: ExperienceScope.create(ExperienceScopeEnum.PROPERTY),
     propertyId: PropertyId.create(merged.propertyId),
     unitIds: [],
     name: merged.name,
