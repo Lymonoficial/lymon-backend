@@ -26,6 +26,7 @@ export class GeneratePresignedUrlQueryHandler implements IQueryHandler<
     const presignedUrl = await this.storageService.generatePresignedPutUrl(
       key,
       query.contentType,
+      query.fileSize,
     );
     const fileUrl = this.storageService.getPublicUrl(key);
 
