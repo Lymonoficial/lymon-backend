@@ -162,12 +162,7 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
         minimumParticipants: command.minimumParticipants,
         capacity: command.capacity,
         coverImageUrl: command.coverImageUrl,
-        location: {
-          label: command.location.label,
-          address: command.location.address,
-          lat: command.location.lat,
-          lng: command.location.lng,
-        },
+        location: command.location,
         availabilityType: ExperienceAvailabilityType.create(
           command.availabilityType,
         ),

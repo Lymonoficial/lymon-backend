@@ -11,10 +11,10 @@ import { ExperienceStatus } from '@/domain/experience/value-objects/experience-s
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 
 export interface ExperienceLocation {
-  label: string;
+  label?: string;
   address?: string;
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
 }
 
 export interface ExperienceBlackoutRange {
@@ -36,11 +36,11 @@ export interface ExperienceProps {
   description: string;
   category: ExperienceCategory;
   priceCop: number;
-  durationHours: number;
+  durationHours?: number | null;
   minimumParticipants?: number;
   capacity: number;
   coverImageUrl: string;
-  location: ExperienceLocation;
+  location?: ExperienceLocation | null;
   availabilityType: ExperienceAvailabilityType;
   startAt?: Date;
   endAt?: Date;
@@ -60,11 +60,11 @@ export interface ExperienceReconstituteData {
   description: string;
   category: ExperienceCategory;
   priceCop: number;
-  durationHours: number;
+  durationHours?: number | null;
   minimumParticipants?: number;
   capacity: number;
   coverImageUrl: string;
-  location: ExperienceLocation;
+  location?: ExperienceLocation | null;
   availabilityType: ExperienceAvailabilityType;
   startAt?: Date;
   endAt?: Date;
@@ -84,11 +84,11 @@ export interface ExperienceChanges {
   name?: string;
   description?: string;
   priceCop?: number;
-  durationHours?: number;
+  durationHours?: number | null;
   minimumParticipants?: number;
   capacity?: number;
   coverImageUrl?: string;
-  location?: ExperienceLocation;
+  location?: ExperienceLocation | null;
   availabilityType?: ExperienceAvailabilityTypeEnum;
   startAt?: Date;
   endAt?: Date;
@@ -109,11 +109,11 @@ export class Experience {
     private description: string,
     private readonly category: ExperienceCategory,
     private priceCop: number,
-    private durationHours: number,
+    private durationHours: number | null,
     private minimumParticipants: number,
     private capacity: number,
     private coverImageUrl: string,
-    private location: ExperienceLocation,
+    private location: ExperienceLocation | null,
     private availabilityType: ExperienceAvailabilityType,
     private startAt: Date | null,
     private endAt: Date | null,
@@ -151,9 +151,7 @@ export class Experience {
       throw new Error('Experience price must be greater than zero');
     }
 
-    if (!Number.isFinite(props.durationHours) || props.durationHours <= 0) {
-      throw new Error('Experience duration must be greater than zero');
-    }
+    Experience.validateDurationHours(props.durationHours);
 
     const minimumParticipants = props.minimumParticipants ?? 1;
     Experience.validateParticipantLimits(minimumParticipants, props.capacity);
@@ -166,7 +164,7 @@ export class Experience {
       throw new Error('unitIds require propertyId');
     }
 
-    Experience.validateLocation(props.location);
+    const location = Experience.normalizeLocation(props.location);
     Experience.validateAvailability(
       props.availabilityType,
       props.startAt,
@@ -185,16 +183,11 @@ export class Experience {
       description,
       props.category,
       props.priceCop,
-      props.durationHours,
+      props.durationHours ?? null,
       minimumParticipants,
       props.capacity,
       props.coverImageUrl,
-      {
-        label: props.location.label.trim(),
-        address: props.location.address?.trim() || undefined,
-        lat: props.location.lat,
-        lng: props.location.lng,
-      },
+      location,
       props.availabilityType,
       props.startAt ?? null,
       props.endAt ?? null,
@@ -222,11 +215,11 @@ export class Experience {
       data.description,
       data.category,
       data.priceCop,
-      data.durationHours,
+      data.durationHours ?? null,
       data.minimumParticipants ?? 1,
       data.capacity,
       data.coverImageUrl,
-      data.location,
+      data.location ?? null,
       data.availabilityType,
       data.startAt ?? null,
       data.endAt ?? null,
@@ -276,7 +269,7 @@ export class Experience {
     return this.priceCop;
   }
 
-  getDurationHours(): number {
+  getDurationHours(): number | null {
     return this.durationHours;
   }
 
@@ -292,7 +285,7 @@ export class Experience {
     return this.coverImageUrl;
   }
 
-  getLocation(): ExperienceLocation {
+  getLocation(): ExperienceLocation | null {
     return this.location;
   }
 
@@ -372,10 +365,11 @@ export class Experience {
       throw new Error('Experience price must be greater than zero');
     }
 
-    const durationHours = changes.durationHours ?? this.durationHours;
-    if (!Number.isFinite(durationHours) || durationHours <= 0) {
-      throw new Error('Experience duration must be greater than zero');
-    }
+    const durationHours =
+      changes.durationHours === undefined
+        ? this.durationHours
+        : changes.durationHours;
+    Experience.validateDurationHours(durationHours);
 
     const minimumParticipants =
       changes.minimumParticipants ?? this.minimumParticipants;
@@ -390,8 +384,10 @@ export class Experience {
       throw new Error('Experience must be purchasable in at least one mode');
     }
 
-    const location = changes.location ?? this.location;
-    Experience.validateLocation(location);
+    const location =
+      changes.location === undefined
+        ? this.location
+        : Experience.mergeLocation(this.location, changes.location);
 
     const availabilityType = changes.availabilityType
       ? ExperienceAvailabilityType.create(changes.availabilityType)
@@ -417,12 +413,7 @@ export class Experience {
     this.minimumParticipants = minimumParticipants;
     this.capacity = capacity;
     this.coverImageUrl = changes.coverImageUrl ?? this.coverImageUrl;
-    this.location = {
-      label: location.label.trim(),
-      address: location.address?.trim() || undefined,
-      lat: location.lat,
-      lng: location.lng,
-    };
+    this.location = location;
     this.availabilityType = availabilityType;
     this.startAt = startAt ?? null;
     this.endAt = endAt ?? null;
@@ -474,29 +465,68 @@ export class Experience {
     }
 
     if (minimumParticipants > capacity) {
-      throw new Error(
-        'Experience minimum participants cannot exceed capacity',
-      );
+      throw new Error('Experience minimum participants cannot exceed capacity');
     }
   }
 
-  private static validateLocation(location: ExperienceLocation): void {
-    if (!location?.label || location.label.trim() === '') {
-      throw new Error('Experience location label cannot be empty');
+  private static validateDurationHours(
+    durationHours: number | null | undefined,
+  ): void {
+    if (durationHours === null || durationHours === undefined) {
+      return;
     }
 
+    if (!Number.isFinite(durationHours) || durationHours <= 0) {
+      throw new Error('Experience duration must be greater than zero');
+    }
+  }
+
+  private static normalizeLocation(
+    location: ExperienceLocation | null | undefined,
+  ): ExperienceLocation | null {
+    if (!location) {
+      return null;
+    }
+
+    Experience.validateLocation(location);
+
+    return {
+      label: location.label?.trim() || undefined,
+      address: location.address?.trim() || undefined,
+      lat: location.lat,
+      lng: location.lng,
+    };
+  }
+
+  private static mergeLocation(
+    current: ExperienceLocation | null,
+    changes: ExperienceLocation | null,
+  ): ExperienceLocation | null {
+    if (changes === null) {
+      return null;
+    }
+
+    return Experience.normalizeLocation({
+      ...(current ?? {}),
+      ...changes,
+    });
+  }
+
+  private static validateLocation(location: ExperienceLocation): void {
     if (
-      !Number.isFinite(location.lat) ||
-      location.lat < -90 ||
-      location.lat > 90
+      location.lat !== undefined &&
+      (!Number.isFinite(location.lat) ||
+        location.lat < -90 ||
+        location.lat > 90)
     ) {
       throw new Error('Experience location latitude is invalid');
     }
 
     if (
-      !Number.isFinite(location.lng) ||
-      location.lng < -180 ||
-      location.lng > 180
+      location.lng !== undefined &&
+      (!Number.isFinite(location.lng) ||
+        location.lng < -180 ||
+        location.lng > 180)
     ) {
       throw new Error('Experience location longitude is invalid');
     }

@@ -210,12 +210,14 @@ export class MongoExperienceRepository implements ExperienceRepository {
       minimumParticipants: document.minimumParticipants ?? 1,
       capacity: document.capacity,
       coverImageUrl: document.coverImageUrl,
-      location: {
-        label: document.location.label,
-        address: document.location.address,
-        lat: document.location.lat,
-        lng: document.location.lng,
-      },
+      location: document.location
+        ? {
+            label: document.location.label,
+            address: document.location.address,
+            lat: document.location.lat,
+            lng: document.location.lng,
+          }
+        : null,
       availabilityType: ExperienceAvailabilityType.create(
         document.availabilityType,
       ),

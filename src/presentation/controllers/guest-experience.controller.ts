@@ -96,12 +96,14 @@ export class GuestExperienceController {
       minimumParticipants: experience.minimumParticipants,
       capacity: experience.capacity,
       coverImageUrl: experience.coverImageUrl,
-      location: new PublicExperienceLocationDto(
-        experience.location.label,
-        experience.location.address,
-        experience.location.lat,
-        experience.location.lng,
-      ),
+      location: experience.location
+        ? new PublicExperienceLocationDto(
+            experience.location.label,
+            experience.location.address,
+            experience.location.lat,
+            experience.location.lng,
+          )
+        : null,
       availabilityType: experience.availabilityType,
       startAt: experience.startAt,
       endAt: experience.endAt,
@@ -132,11 +134,11 @@ interface PublicExperienceCatalogDto {
   description: string;
   category: string;
   priceCop: number;
-  durationHours: number;
+  durationHours: number | null;
   minimumParticipants: number;
   capacity: number;
   coverImageUrl: string;
-  location: PublicExperienceLocationDto;
+  location: PublicExperienceLocationDto | null;
   availabilityType: string;
   startAt: Date | null;
   endAt: Date | null;
