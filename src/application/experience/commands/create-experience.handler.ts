@@ -170,7 +170,6 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
         priceCop: command.priceCop,
         durationHours: command.durationHours,
         capacity: command.capacity,
-        coverImageUrl: command.coverImageUrl,
         location: {
           label: command.location.label,
           address: command.location.address,
@@ -189,6 +188,7 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
         })),
         allowStandalonePurchase: command.allowStandalonePurchase,
         allowReservationPurchase: command.allowReservationPurchase,
+        mediaKeys: command.mediaKeys,
       });
 
       return {

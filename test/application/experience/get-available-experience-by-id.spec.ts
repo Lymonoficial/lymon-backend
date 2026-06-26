@@ -33,7 +33,6 @@ function makeExperience(status: 'ACTIVE' | 'ARCHIVED' = 'ACTIVE') {
     priceCop: 120000,
     durationHours: 2,
     capacity: 8,
-    coverImageUrl: 'https://image.example.com/cover.jpg',
     location: {
       label: 'Main lobby',
       address: 'Cra 10 #20-30, Bogota',
@@ -70,6 +69,7 @@ describe('GetAvailableExperienceByIdQueryHandler', () => {
       experienceRepository,
       propertyRepository,
       unitRepository,
+      { getPublicUrl: (k: string) => k } as any,
     );
     propertyRepository.findById.mockResolvedValue(null);
     unitRepository.findByIds.mockResolvedValue([]);

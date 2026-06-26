@@ -8,6 +8,7 @@ import {
 
 export function mapExperienceToPublicDto(
   experience: Experience,
+  getPublicUrl: (key: string) => string,
 ): PublicExperienceDto {
   const recurrence = experience.getRecurrence();
 
@@ -23,7 +24,6 @@ export function mapExperienceToPublicDto(
     experience.getPriceCop(),
     experience.getDurationHours(),
     experience.getCapacity(),
-    experience.getCoverImageUrl(),
     new PublicExperienceLocationDto(
       experience.getLocation().label,
       experience.getLocation().address,
@@ -51,5 +51,6 @@ export function mapExperienceToPublicDto(
     experience.getMinNoticeHours(),
     experience.getPurchaseCutoffHours(),
     experience.getStatus().toString(),
+    experience.getMediaKeys().map(getPublicUrl),
   );
 }

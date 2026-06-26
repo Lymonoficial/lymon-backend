@@ -43,7 +43,6 @@ function makeArchivedExperience(): Experience {
     priceCop: 50000,
     durationHours: 2,
     capacity: 5,
-    coverImageUrl: 'https://example.com/img.jpg',
     location: { label: 'Lobby', lat: 4.6097, lng: -74.0817 },
     availabilityType: ExperienceAvailabilityType.create(
       ExperienceAvailabilityTypeEnum.DATE_RANGE,

@@ -40,7 +40,6 @@ function makeExperience(overrides?: Partial<{ id: string; tenantId: string }>) {
     priceCop: 120000,
     durationHours: 2,
     capacity: 8,
-    coverImageUrl: 'https://image.example.com/cover.jpg',
     location: {
       label: 'Main lobby',
       address: 'Cra 10 #20-30, Bogota',
@@ -77,11 +76,16 @@ describe('GetExperiencesByTenant', () => {
     propertyRepository = createPropertyRepositoryMock();
     unitRepository = createUnitRepositoryMock();
 
-    handler = new GetExperiencesByTenantQueryHandler(experienceRepository);
+    const storage = { getPublicUrl: (k: string) => k } as any;
+    handler = new GetExperiencesByTenantQueryHandler(
+      experienceRepository,
+      storage,
+    );
     getByIdHandler = new GetExperienceByIdQueryHandler(
       experienceRepository,
       propertyRepository,
       unitRepository,
+      storage,
     );
 
     const module: TestingModule = await Test.createTestingModule({

@@ -32,7 +32,6 @@ export class CreateExperienceCommand {
     public readonly priceCop: number,
     public readonly durationHours: number,
     public readonly capacity: number,
-    public readonly coverImageUrl: string,
     public readonly location: CreateExperienceLocationInput,
     public readonly availabilityType: ExperienceAvailabilityTypeEnum,
     public readonly startAt: string | undefined,
@@ -43,6 +42,7 @@ export class CreateExperienceCommand {
       | undefined,
     public readonly allowStandalonePurchase: boolean,
     public readonly allowReservationPurchase: boolean,
+    public readonly mediaKeys: string[] | undefined,
     public readonly actorId: string,
     public readonly actorEmail: string,
   ) {}

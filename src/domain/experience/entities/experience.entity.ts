@@ -39,7 +39,6 @@ export interface ExperienceProps {
   priceCop: number;
   durationHours: number;
   capacity: number;
-  coverImageUrl: string;
   location: ExperienceLocation;
   availabilityType: ExperienceAvailabilityType;
   startAt?: Date;
@@ -48,6 +47,7 @@ export interface ExperienceProps {
   blackoutRanges?: ExperienceBlackoutRange[];
   allowStandalonePurchase: boolean;
   allowReservationPurchase: boolean;
+  mediaKeys?: string[];
 }
 
 export interface ExperienceReconstituteData {
@@ -63,7 +63,6 @@ export interface ExperienceReconstituteData {
   priceCop: number;
   durationHours: number;
   capacity: number;
-  coverImageUrl: string;
   location: ExperienceLocation;
   availabilityType: ExperienceAvailabilityType;
   startAt?: Date;
@@ -86,7 +85,6 @@ export interface ExperienceChanges {
   priceCop?: number;
   durationHours?: number;
   capacity?: number;
-  coverImageUrl?: string;
   location?: ExperienceLocation;
   availabilityType?: ExperienceAvailabilityTypeEnum;
   startAt?: Date;
@@ -111,7 +109,6 @@ export class Experience {
     private priceCop: number,
     private durationHours: number,
     private capacity: number,
-    private coverImageUrl: string,
     private location: ExperienceLocation,
     private availabilityType: ExperienceAvailabilityType,
     private startAt: Date | null,
@@ -192,7 +189,6 @@ export class Experience {
       props.priceCop,
       props.durationHours,
       props.capacity,
-      props.coverImageUrl,
       {
         label: props.location.label.trim(),
         address: props.location.address?.trim() || undefined,
@@ -212,7 +208,7 @@ export class Experience {
       now,
       now,
       null,
-      [],
+      props.mediaKeys ?? [],
     );
   }
 
@@ -229,7 +225,6 @@ export class Experience {
       data.priceCop,
       data.durationHours,
       data.capacity,
-      data.coverImageUrl,
       data.location,
       data.availabilityType,
       data.startAt ?? null,
@@ -290,10 +285,6 @@ export class Experience {
 
   getCapacity(): number {
     return this.capacity;
-  }
-
-  getCoverImageUrl(): string {
-    return this.coverImageUrl;
   }
 
   getLocation(): ExperienceLocation {
@@ -419,7 +410,6 @@ export class Experience {
     this.priceCop = priceCop;
     this.durationHours = durationHours;
     this.capacity = capacity;
-    this.coverImageUrl = changes.coverImageUrl ?? this.coverImageUrl;
     this.location = {
       label: location.label.trim(),
       address: location.address?.trim() || undefined,

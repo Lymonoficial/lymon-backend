@@ -30,7 +30,6 @@ export const EXPERIENCE_FIXTURE_DEFAULTS = {
   priceCop: 120000,
   durationHours: 2,
   capacity: 8,
-  coverImageUrl: 'https://cdn.example.com/experience-cover.jpg',
   location: { label: 'Main lobby', lat: 4.6097, lng: -74.0817 },
 };
 
@@ -54,7 +53,6 @@ export function makeExperience(
     priceCop: merged.priceCop,
     durationHours: merged.durationHours,
     capacity: merged.capacity,
-    coverImageUrl: merged.coverImageUrl,
     location: merged.location,
     availabilityType: ExperienceAvailabilityType.create(
       ExperienceAvailabilityTypeEnum.DATE_RANGE,

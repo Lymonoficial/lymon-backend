@@ -21,7 +21,7 @@ describe('GuestExperienceController', () => {
     priceCop: 100000,
     durationHours: 3,
     capacity: 10,
-    coverImageUrl: 'https://img',
+    mediaUrls: ['https://img'],
     location: { label: 'Dock', address: 'Address', lat: 1, lng: 2 },
     availabilityType: 'DATE_RANGE',
     startAt: null,

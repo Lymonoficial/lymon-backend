@@ -45,7 +45,6 @@ export class MongoExperienceRepository implements ExperienceRepository {
       priceCop: experience.getPriceCop(),
       durationHours: experience.getDurationHours(),
       capacity: experience.getCapacity(),
-      coverImageUrl: experience.getCoverImageUrl(),
       location: experience.getLocation(),
       availabilityType: experience.getAvailabilityType().toString(),
       startAt: experience.getStartAt(),
@@ -210,7 +209,6 @@ export class MongoExperienceRepository implements ExperienceRepository {
       priceCop: document.priceCop,
       durationHours: document.durationHours,
       capacity: document.capacity,
-      coverImageUrl: document.coverImageUrl,
       location: {
         label: document.location.label,
         address: document.location.address,

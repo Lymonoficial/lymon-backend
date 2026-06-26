@@ -149,7 +149,6 @@ export class ExperienceController {
           priceCop: 120000,
           durationHours: 2,
           capacity: 8,
-          coverImageUrl: 'https://image.com/experience-cover.jpg',
           location: {
             label: 'Main lobby pickup point',
             address: 'Cra 10 #20-30, Bogota',
@@ -179,7 +178,6 @@ export class ExperienceController {
           priceCop: 80000,
           durationHours: 1,
           capacity: 12,
-          coverImageUrl: 'https://image.com/tenant-shuttle.jpg',
           location: {
             label: 'Terminal norte',
             address: 'Terminal del Norte',
@@ -229,7 +227,6 @@ export class ExperienceController {
       dto.priceCop,
       dto.durationHours,
       dto.capacity,
-      dto.coverImageUrl,
       dto.location,
       dto.availabilityType,
       dto.startAt,
@@ -238,6 +235,7 @@ export class ExperienceController {
       dto.blackoutRanges,
       dto.allowStandalonePurchase,
       dto.allowReservationPurchase,
+      dto.mediaKeys,
       user.userId,
       user.email,
     );
@@ -281,7 +279,6 @@ export class ExperienceController {
         priceCop: dto.priceCop,
         durationHours: dto.durationHours,
         capacity: dto.capacity,
-        coverImageUrl: dto.coverImageUrl,
         location: dto.location,
         availabilityType: dto.availabilityType,
         recurrence: dto.recurrence,

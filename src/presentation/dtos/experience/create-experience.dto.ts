@@ -9,7 +9,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -163,10 +162,6 @@ export class CreateExperienceDto {
   @Min(1)
   capacity!: number;
 
-  @ApiProperty({ example: 'https://image.com/experience-cover.jpg' })
-  @IsUrl()
-  coverImageUrl!: string;
-
   @ApiProperty({ type: () => ExperienceLocationDto })
   @ValidateNested()
   @Type(() => ExperienceLocationDto)
@@ -223,4 +218,14 @@ export class CreateExperienceDto {
   @ApiProperty({ example: true })
   @IsBoolean()
   allowReservationPurchase!: boolean;
+
+  @ApiPropertyOptional({
+    example: ['tenantId/experiences/1234-photo.jpg'],
+    description: 'R2 object keys for uploaded media files',
+    type: [String],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  mediaKeys?: string[];
 }

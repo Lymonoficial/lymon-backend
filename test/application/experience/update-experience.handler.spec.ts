@@ -52,7 +52,6 @@ function makeExperience(overrides?: {
     priceCop: 120000,
     durationHours: 2,
     capacity: 8,
-    coverImageUrl: 'https://image.example.com/cover.jpg',
     location: {
       label: 'Main lobby',
       lat: 4.6097,
