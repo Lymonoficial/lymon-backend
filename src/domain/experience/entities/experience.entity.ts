@@ -8,6 +8,7 @@ import {
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperienceStatus } from '@/domain/experience/value-objects/experience-status.vo';
+import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 
 export interface ExperienceLocation {
   label: string;
@@ -36,6 +37,7 @@ export interface ExperienceProps {
   category: ExperienceCategory;
   priceCop: number;
   durationHours: number;
+  minimumParticipants?: number;
   capacity: number;
   coverImageUrl: string;
   location: ExperienceLocation;
@@ -59,6 +61,7 @@ export interface ExperienceReconstituteData {
   category: ExperienceCategory;
   priceCop: number;
   durationHours: number;
+  minimumParticipants?: number;
   capacity: number;
   coverImageUrl: string;
   location: ExperienceLocation;
@@ -82,6 +85,7 @@ export interface ExperienceChanges {
   description?: string;
   priceCop?: number;
   durationHours?: number;
+  minimumParticipants?: number;
   capacity?: number;
   coverImageUrl?: string;
   location?: ExperienceLocation;
@@ -106,6 +110,7 @@ export class Experience {
     private readonly category: ExperienceCategory,
     private priceCop: number,
     private durationHours: number,
+    private minimumParticipants: number,
     private capacity: number,
     private coverImageUrl: string,
     private location: ExperienceLocation,
@@ -150,9 +155,8 @@ export class Experience {
       throw new Error('Experience duration must be greater than zero');
     }
 
-    if (!Number.isInteger(props.capacity) || props.capacity <= 0) {
-      throw new Error('Experience capacity must be a positive integer');
-    }
+    const minimumParticipants = props.minimumParticipants ?? 1;
+    Experience.validateParticipantLimits(minimumParticipants, props.capacity);
 
     if (!props.allowStandalonePurchase && !props.allowReservationPurchase) {
       throw new Error('Experience must be purchasable in at least one mode');
@@ -182,6 +186,7 @@ export class Experience {
       props.category,
       props.priceCop,
       props.durationHours,
+      minimumParticipants,
       props.capacity,
       props.coverImageUrl,
       {
@@ -218,6 +223,7 @@ export class Experience {
       data.category,
       data.priceCop,
       data.durationHours,
+      data.minimumParticipants ?? 1,
       data.capacity,
       data.coverImageUrl,
       data.location,
@@ -272,6 +278,10 @@ export class Experience {
 
   getDurationHours(): number {
     return this.durationHours;
+  }
+
+  getMinimumParticipants(): number {
+    return this.minimumParticipants;
   }
 
   getCapacity(): number {
@@ -367,10 +377,10 @@ export class Experience {
       throw new Error('Experience duration must be greater than zero');
     }
 
+    const minimumParticipants =
+      changes.minimumParticipants ?? this.minimumParticipants;
     const capacity = changes.capacity ?? this.capacity;
-    if (!Number.isInteger(capacity) || capacity <= 0) {
-      throw new Error('Experience capacity must be a positive integer');
-    }
+    Experience.validateParticipantLimits(minimumParticipants, capacity);
 
     const allowStandalonePurchase =
       changes.allowStandalonePurchase ?? this.allowStandalonePurchase;
@@ -404,6 +414,7 @@ export class Experience {
     this.description = description;
     this.priceCop = priceCop;
     this.durationHours = durationHours;
+    this.minimumParticipants = minimumParticipants;
     this.capacity = capacity;
     this.coverImageUrl = changes.coverImageUrl ?? this.coverImageUrl;
     this.location = {
@@ -428,6 +439,45 @@ export class Experience {
   softDelete(): void {
     this.deletedAt = new Date();
     this.updatedAt = new Date();
+  }
+
+  validateParticipantQuantity(quantity: number): void {
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new DomainException('Participants must be a positive integer');
+    }
+
+    if (quantity < this.minimumParticipants) {
+      throw new DomainException(
+        `This experience requires at least ${this.minimumParticipants} participant${this.minimumParticipants === 1 ? '' : 's'}`,
+      );
+    }
+
+    if (quantity > this.capacity) {
+      throw new DomainException(
+        `This experience allows up to ${this.capacity} participant${this.capacity === 1 ? '' : 's'}`,
+      );
+    }
+  }
+
+  private static validateParticipantLimits(
+    minimumParticipants: number,
+    capacity: number,
+  ): void {
+    if (!Number.isInteger(minimumParticipants) || minimumParticipants <= 0) {
+      throw new Error(
+        'Experience minimum participants must be a positive integer',
+      );
+    }
+
+    if (!Number.isInteger(capacity) || capacity <= 0) {
+      throw new Error('Experience capacity must be a positive integer');
+    }
+
+    if (minimumParticipants > capacity) {
+      throw new Error(
+        'Experience minimum participants cannot exceed capacity',
+      );
+    }
   }
 
   private static validateLocation(location: ExperienceLocation): void {

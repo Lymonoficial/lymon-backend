@@ -93,6 +93,7 @@ export class GuestExperienceController {
       category: experience.category,
       priceCop: experience.priceCop,
       durationHours: experience.durationHours,
+      minimumParticipants: experience.minimumParticipants,
       capacity: experience.capacity,
       coverImageUrl: experience.coverImageUrl,
       location: new PublicExperienceLocationDto(
@@ -132,6 +133,7 @@ interface PublicExperienceCatalogDto {
   category: string;
   priceCop: number;
   durationHours: number;
+  minimumParticipants: number;
   capacity: number;
   coverImageUrl: string;
   location: PublicExperienceLocationDto;
