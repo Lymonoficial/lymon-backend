@@ -1,7 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsOptional,
+  IsArray,
+  IsInt,
   IsString,
+  Min,
+  Max,
   Matches,
   MaxLength,
   ValidateIf,
@@ -63,6 +67,20 @@ export class UpdateShiftDto {
   @IsString()
   @Matches(/^([01]\d|2[0-3]):[0-5]\d$/)
   endHour?: string;
+
+  @ApiPropertyOptional({
+    example: [1, 3],
+    description:
+      'Optional weekdays the shift repeats on (0=Sunday, 1=Monday, ..., 6=Saturday). Send null or empty array to clear (apply every day).',
+    nullable: true,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsArray()
+  @IsInt({ each: true })
+  @Min(0, { each: true })
+  @Max(6, { each: true })
+  weekdays?: number[] | null;
 
   @ApiPropertyOptional({
     example: 'Updated due to emergency coverage changes.',

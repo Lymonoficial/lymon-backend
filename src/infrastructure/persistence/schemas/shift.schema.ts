@@ -65,6 +65,9 @@ export class ShiftDocument extends Document {
   @Prop({ type: Number, required: true })
   endMinutes!: number;
 
+  @Prop({ type: [Number], default: undefined })
+  weekdays?: number[];
+
   @Prop({ type: String, default: null })
   notes!: string | null;
 

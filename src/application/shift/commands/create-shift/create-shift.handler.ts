@@ -23,6 +23,7 @@ import {
   type ShiftRepository,
 } from '@/domain/shift/repositories/shift.repository';
 import { Shift } from '@/domain/shift/entities/shift.entity';
+import { ShiftId } from '@/domain/shift/value-objects/shift-id.vo';
 import {
   EMAIL_SERVICE,
   type IEmailService,
@@ -80,6 +81,8 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
         endDate: Date | null,
         startMinutes: number,
         endMinutes: number,
+        excludeShiftId?: ShiftId,
+        weekdays?: number[] | null,
       ) => Promise<Shift | null>;
     };
 
@@ -92,6 +95,8 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
           endDate,
           start,
           end,
+          undefined,
+          command.weekdays,
         );
 
       if (overlappingShift) {
@@ -112,6 +117,7 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
       endHour: command.endHour,
       startMinutes: start,
       endMinutes: end,
+      weekdays: command.weekdays,
       notes: command.notes,
       createdBy: command.actorId,
       createdByEmail: command.actorEmail,
