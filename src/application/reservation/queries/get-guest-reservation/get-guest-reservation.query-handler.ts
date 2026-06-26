@@ -110,6 +110,7 @@ export class GetGuestReservationHandler implements IQueryHandler<
       cancelledAt: reservation.getCancelledAt(),
       checkInActualAt: reservation.getCheckInActualAt(),
       checkOutActualAt: reservation.getCheckOutActualAt(),
+      checkInInfo: reservation.getCheckInInfo(),
       priceBreakdown: {
         pricePerNight: reservation.getPricePerNight(),
         nights,
