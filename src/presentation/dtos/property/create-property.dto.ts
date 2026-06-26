@@ -6,6 +6,7 @@ import {
   Min,
   Max,
   IsEmail,
+  IsOptional,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -85,4 +86,13 @@ export class CreatePropertyDto {
   @IsEmail()
   @IsNotEmpty()
   hostEmail: string;
+
+  @ApiProperty({
+    required: false,
+    example: 'tenantId/properties/1234-photo.jpg',
+    description: 'R2 object key for the property image',
+  })
+  @IsString()
+  @IsOptional()
+  imageKey?: string;
 }

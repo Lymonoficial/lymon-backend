@@ -59,6 +59,9 @@ export class GetPropertyByIdResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
+
+  @ApiProperty({ nullable: true })
+  imageUrl: string | null;
 }
 
 export class GetPropertyByIdSuccessResponseDto {

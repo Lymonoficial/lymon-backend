@@ -17,5 +17,6 @@ export class UpdatePropertyCommand {
     public readonly hostEmail: string | undefined,
     public readonly actorId: string,
     public readonly actorEmail: string,
+    public readonly imageKey?: string,
   ) {}
 }
