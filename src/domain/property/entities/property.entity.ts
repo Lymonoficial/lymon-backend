@@ -20,6 +20,7 @@ export interface PropertyProps {
   cancellationPolicy: CancellationPolicy;
   hostPhone: string;
   hostEmail: string;
+  imageKey?: string;
 }
 
 export interface PropertyUpdateData {
@@ -50,6 +51,7 @@ export interface PropertyReconstituteData {
   cancellationPolicy: CancellationPolicy;
   hostPhone: string;
   hostEmail: string;
+  imageKey?: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
@@ -73,6 +75,7 @@ export class Property {
     private cancellationPolicy: CancellationPolicy,
     private hostPhone: string,
     private hostEmail: string,
+    private imageKey: string | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
     private deletedAt: Date | null,
@@ -104,6 +107,7 @@ export class Property {
       props.cancellationPolicy,
       props.hostPhone,
       props.hostEmail,
+      props.imageKey ?? null,
       new Date(),
       new Date(),
       null,
@@ -128,6 +132,7 @@ export class Property {
       data.cancellationPolicy,
       data.hostPhone,
       data.hostEmail,
+      data.imageKey ?? null,
       data.createdAt,
       data.updatedAt,
       data.deletedAt ?? null,
@@ -196,6 +201,15 @@ export class Property {
 
   getHostEmail(): string {
     return this.hostEmail;
+  }
+
+  getImageKey(): string | null {
+    return this.imageKey;
+  }
+
+  updateImageKey(imageKey: string | null): void {
+    this.imageKey = imageKey;
+    this.updatedAt = new Date();
   }
 
   getCreatedAt(): Date {

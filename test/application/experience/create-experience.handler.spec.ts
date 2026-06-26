@@ -36,7 +36,6 @@ function makeCommand(
     overrides?.durationHours ?? 2,
     overrides?.minimumParticipants,
     overrides?.capacity ?? 8,
-    overrides?.coverImageUrl ?? 'https://cdn.example.com/transport.jpg',
     overrides?.location ?? {
       label: 'Main lobby',
       lat: 4.6097,
@@ -49,6 +48,7 @@ function makeCommand(
     overrides?.blackoutRanges,
     overrides?.allowStandalonePurchase ?? true,
     overrides?.allowReservationPurchase ?? true,
+    overrides?.mediaKeys,
     overrides?.actorId ?? 'user-123',
     overrides?.actorEmail ?? 'host@example.com',
   );

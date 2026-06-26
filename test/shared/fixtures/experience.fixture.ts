@@ -27,7 +27,6 @@ export const EXPERIENCE_FIXTURE_DEFAULTS = {
   durationHours: 2,
   minimumParticipants: 1,
   capacity: 8,
-  coverImageUrl: 'https://cdn.example.com/experience-cover.jpg',
   location: { label: 'Main lobby', lat: 4.6097, lng: -74.0817 },
 };
 
@@ -47,7 +46,6 @@ export function makeExperience(
     durationHours: merged.durationHours,
     minimumParticipants: merged.minimumParticipants,
     capacity: merged.capacity,
-    coverImageUrl: merged.coverImageUrl,
     location: merged.location,
     availabilityType: ExperienceAvailabilityType.create(
       ExperienceAvailabilityTypeEnum.DATE_RANGE,

@@ -77,6 +77,7 @@ export class CreatePropertyHandler implements ICommandHandler<CreatePropertyComm
       cancellationPolicy: CancellationPolicy.create(command.cancellationPolicy),
       hostPhone: command.hostPhone,
       hostEmail: command.hostEmail,
+      imageKey: command.imageKey,
     });
 
     const shouldAutoCreate =

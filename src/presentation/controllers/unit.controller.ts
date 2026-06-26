@@ -122,6 +122,7 @@ export class UnitController {
       dto.externalIds,
       user.userId,
       user.email,
+      dto.mediaKeys,
     );
 
     const result = await this.commandBus.execute<

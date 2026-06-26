@@ -9,7 +9,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -118,11 +117,6 @@ export class UpdateExperienceDto {
   @Min(1)
   @IsOptional()
   capacity?: number;
-
-  @ApiPropertyOptional({ example: 'https://image.com/experience-cover.jpg' })
-  @IsUrl()
-  @IsOptional()
-  coverImageUrl?: string;
 
   @ApiPropertyOptional({ type: () => UpdateExperienceLocationDto })
   @ValidateNested()

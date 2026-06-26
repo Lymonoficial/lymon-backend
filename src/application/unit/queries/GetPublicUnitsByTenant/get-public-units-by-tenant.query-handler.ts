@@ -14,6 +14,10 @@ import {
 } from '@/domain/reservation/repositories/reservation.repository';
 import { AvailabilityChecker } from '@/domain/reservation/services/availability-checker.domain-service';
 import { DateRange } from '@/domain/reservation/value-objects/date-range.vo';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @QueryHandler(GetPublicUnitsByTenantQuery)
 export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
@@ -27,6 +31,8 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
     private readonly tenantRepository: TenantRepository,
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly storage: R2StorageService,
   ) {}
 
   async execute(
@@ -70,7 +76,7 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
       const total = availableUnits.length;
       const skip = (query.page - 1) * query.limit;
       const paginatedUnits = availableUnits.slice(skip, skip + query.limit);
-      const dtos = paginatedUnits.map(mapUnitToPublicDto);
+      const dtos = paginatedUnits.map((u) => mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)));
 
       return new GetPublicUnitsByTenantResult(
         dtos,
@@ -86,7 +92,7 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
       query.limit,
       query.minGuests,
     );
-    const dtos = units.map(mapUnitToPublicDto);
+    const dtos = units.map((u) => mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)));
 
     return new GetPublicUnitsByTenantResult(
       dtos,

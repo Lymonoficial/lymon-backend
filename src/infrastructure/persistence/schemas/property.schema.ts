@@ -65,6 +65,9 @@ export class PropertyDocument extends Document {
   hostEmail: string;
 
   @Prop()
+  imageKey?: string;
+
+  @Prop()
   createdAt: Date;
 
   @Prop()

@@ -19,6 +19,10 @@ import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { mapExperienceToPublicDto } from '@/application/experience/queries/shared/experience.mapper';
 import { ExperienceUnitSummaryDto } from '@/application/experience/queries/shared/experience-read.dto';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @QueryHandler(GetExperienceByIdQuery)
 export class GetExperienceByIdQueryHandler implements IQueryHandler<
@@ -32,6 +36,8 @@ export class GetExperienceByIdQueryHandler implements IQueryHandler<
     private readonly propertyRepository: PropertyRepository,
     @Inject(UNIT_REPOSITORY)
     private readonly unitRepository: UnitRepository,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly storage: R2StorageService,
   ) {}
 
   async execute(
@@ -72,7 +78,7 @@ export class GetExperienceByIdQueryHandler implements IQueryHandler<
     );
 
     return new GetExperienceByIdResult(
-      mapExperienceToPublicDto(experience),
+      mapExperienceToPublicDto(experience, (k) => this.storage.getPublicUrl(k)),
       property?.getName() ?? null,
       unitSummaries,
     );
