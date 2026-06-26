@@ -72,26 +72,17 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
     const start = this.toMinutes(command.startHour);
     const end = this.toMinutes(command.endHour);
 
-    const overlapRepository = this.shiftRepository as {
-      findOverlappingByStaffInRange: (
-        tenantId: TenantId,
-        staffMemberId: UserId,
-        startDate: Date,
-        endDate: Date | null,
-        startMinutes: number,
-        endMinutes: number,
-      ) => Promise<Shift | null>;
-    };
-
     for (const staffMemberId of staffMemberIds) {
       const overlappingShift =
-        await overlapRepository.findOverlappingByStaffInRange(
+        await this.shiftRepository.findOverlappingByStaffInRange(
           tenantId,
           staffMemberId,
           startDate,
           endDate,
           start,
           end,
+          undefined,
+          command.weekdays,
         );
 
       if (overlappingShift) {
@@ -112,6 +103,7 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
       endHour: command.endHour,
       startMinutes: start,
       endMinutes: end,
+      weekdays: command.weekdays,
       notes: command.notes,
       createdBy: command.actorId,
       createdByEmail: command.actorEmail,

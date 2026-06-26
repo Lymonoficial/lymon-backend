@@ -17,6 +17,7 @@ export interface CreateShiftParams {
   endHour: string;
   startMinutes: number;
   endMinutes: number;
+  weekdays?: number[];
   notes?: string;
   createdBy?: string;
   createdByEmail?: string;
@@ -30,6 +31,7 @@ export interface UpdateShiftParams {
   endDate?: string | Date | null;
   startHour?: string;
   endHour?: string;
+  weekdays?: number[] | null;
   notes?: string;
 }
 
@@ -46,6 +48,7 @@ export class Shift {
     private endHour: string,
     private startMinutes: number,
     private endMinutes: number,
+    private weekdays: number[] | null,
     private notes: string | null,
     private readonly createdBy: string | null,
     private readonly createdByEmail: string | null,
@@ -77,6 +80,7 @@ export class Shift {
       params.endHour,
       params.startMinutes,
       params.endMinutes,
+      params.weekdays && params.weekdays.length > 0 ? [...params.weekdays] : null,
       params.notes?.trim() ?? null,
       params.createdBy ?? null,
       params.createdByEmail ?? null,
@@ -98,6 +102,7 @@ export class Shift {
       data.endHour,
       data.startMinutes,
       data.endMinutes,
+      data.weekdays,
       data.notes,
       data.createdBy,
       data.createdByEmail,
@@ -166,6 +171,10 @@ export class Shift {
     return this.endMinutes;
   }
 
+  getWeekdays(): number[] | null {
+    return this.weekdays;
+  }
+
   getNotes(): string | null {
     return this.notes;
   }
@@ -220,6 +229,7 @@ export class Shift {
       endHour: nextEndHour,
       startMinutes: nextStartMinutes,
       endMinutes: nextEndMinutes,
+      weekdays: params.weekdays,
       notes: params.notes,
     });
 
@@ -326,6 +336,7 @@ export class Shift {
     endHour: string;
     startMinutes: number;
     endMinutes: number;
+    weekdays?: number[] | null;
     notes: string | null | undefined;
   }): void {
     const shiftStartAt = new Date(
@@ -346,6 +357,11 @@ export class Shift {
     this.endHour = updates.endHour;
     this.startMinutes = updates.startMinutes;
     this.endMinutes = updates.endMinutes;
+    if (updates.weekdays !== undefined) {
+      this.weekdays = updates.weekdays && updates.weekdays.length > 0
+        ? [...updates.weekdays]
+        : null;
+    }
 
     const trimmedNotes = updates.notes?.trim() ?? null;
     this.notes = trimmedNotes;
