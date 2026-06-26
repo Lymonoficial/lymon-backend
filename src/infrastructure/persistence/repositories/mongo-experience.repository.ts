@@ -44,7 +44,6 @@ export class MongoExperienceRepository implements ExperienceRepository {
       durationHours: experience.getDurationHours(),
       minimumParticipants: experience.getMinimumParticipants(),
       capacity: experience.getCapacity(),
-      coverImageUrl: experience.getCoverImageUrl(),
       location: experience.getLocation(),
       availabilityType: experience.getAvailabilityType().toString(),
       startAt: experience.getStartAt(),
@@ -209,7 +208,6 @@ export class MongoExperienceRepository implements ExperienceRepository {
       durationHours: document.durationHours,
       minimumParticipants: document.minimumParticipants ?? 1,
       capacity: document.capacity,
-      coverImageUrl: document.coverImageUrl,
       location: document.location
         ? {
             label: document.location.label,

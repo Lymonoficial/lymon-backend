@@ -9,7 +9,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -105,7 +104,8 @@ export class CreateExperienceDto {
   propertyId?: string;
 
   @ApiPropertyOptional({
-    description: 'Optional list of unit IDs. Requires propertyId when provided.',
+    description:
+      'Optional list of unit IDs. Requires propertyId when provided.',
     type: [String],
     example: ['6650d0ef3f3d2d2d2d2d2d33'],
   })
@@ -150,7 +150,8 @@ export class CreateExperienceDto {
     example: 2,
     minimum: 1,
     default: 1,
-    description: 'Minimum participants required for the experience to take place',
+    description:
+      'Minimum participants required for the experience to take place',
   })
   @IsInt()
   @Min(1)
@@ -161,10 +162,6 @@ export class CreateExperienceDto {
   @IsInt()
   @Min(1)
   capacity!: number;
-
-  @ApiProperty({ example: 'https://image.com/experience-cover.jpg' })
-  @IsUrl()
-  coverImageUrl!: string;
 
   @ApiPropertyOptional({ type: () => ExperienceLocationDto })
   @ValidateNested()
@@ -223,4 +220,14 @@ export class CreateExperienceDto {
   @ApiProperty({ example: true })
   @IsBoolean()
   allowReservationPurchase!: boolean;
+
+  @ApiPropertyOptional({
+    example: ['tenantId/experiences/1234-photo.jpg'],
+    description: 'R2 object keys for uploaded media files',
+    type: [String],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  mediaKeys?: string[];
 }

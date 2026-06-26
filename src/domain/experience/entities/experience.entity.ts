@@ -39,7 +39,6 @@ export interface ExperienceProps {
   durationHours?: number | null;
   minimumParticipants?: number;
   capacity: number;
-  coverImageUrl: string;
   location?: ExperienceLocation | null;
   availabilityType: ExperienceAvailabilityType;
   startAt?: Date;
@@ -48,6 +47,7 @@ export interface ExperienceProps {
   blackoutRanges?: ExperienceBlackoutRange[];
   allowStandalonePurchase: boolean;
   allowReservationPurchase: boolean;
+  mediaKeys?: string[];
 }
 
 export interface ExperienceReconstituteData {
@@ -63,7 +63,6 @@ export interface ExperienceReconstituteData {
   durationHours?: number | null;
   minimumParticipants?: number;
   capacity: number;
-  coverImageUrl: string;
   location?: ExperienceLocation | null;
   availabilityType: ExperienceAvailabilityType;
   startAt?: Date;
@@ -87,7 +86,6 @@ export interface ExperienceChanges {
   durationHours?: number | null;
   minimumParticipants?: number;
   capacity?: number;
-  coverImageUrl?: string;
   location?: ExperienceLocation | null;
   availabilityType?: ExperienceAvailabilityTypeEnum;
   startAt?: Date;
@@ -112,7 +110,6 @@ export class Experience {
     private durationHours: number | null,
     private minimumParticipants: number,
     private capacity: number,
-    private coverImageUrl: string,
     private location: ExperienceLocation | null,
     private availabilityType: ExperienceAvailabilityType,
     private startAt: Date | null,
@@ -186,7 +183,6 @@ export class Experience {
       props.durationHours ?? null,
       minimumParticipants,
       props.capacity,
-      props.coverImageUrl,
       location,
       props.availabilityType,
       props.startAt ?? null,
@@ -201,7 +197,7 @@ export class Experience {
       now,
       now,
       null,
-      [],
+      props.mediaKeys ?? [],
     );
   }
 
@@ -218,7 +214,6 @@ export class Experience {
       data.durationHours ?? null,
       data.minimumParticipants ?? 1,
       data.capacity,
-      data.coverImageUrl,
       data.location ?? null,
       data.availabilityType,
       data.startAt ?? null,
@@ -280,11 +275,6 @@ export class Experience {
   getCapacity(): number {
     return this.capacity;
   }
-
-  getCoverImageUrl(): string {
-    return this.coverImageUrl;
-  }
-
   getLocation(): ExperienceLocation | null {
     return this.location;
   }
@@ -412,7 +402,6 @@ export class Experience {
     this.durationHours = durationHours;
     this.minimumParticipants = minimumParticipants;
     this.capacity = capacity;
-    this.coverImageUrl = changes.coverImageUrl ?? this.coverImageUrl;
     this.location = location;
     this.availabilityType = availabilityType;
     this.startAt = startAt ?? null;

@@ -10,6 +10,10 @@ import { ExperienceCategory } from '@/domain/experience/value-objects/experience
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { mapExperienceToPublicDto } from '@/application/experience/queries/shared/experience.mapper';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 function tryCreate<T>(
   value: string | undefined,
@@ -31,6 +35,8 @@ export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
   constructor(
     @Inject(EXPERIENCE_REPOSITORY)
     private readonly experienceRepository: ExperienceRepository,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly storage: R2StorageService,
   ) {}
 
   async execute(
@@ -52,7 +58,9 @@ export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
       );
 
     return new GetAvailableExperiencesResult(
-      experiences.map(mapExperienceToPublicDto),
+      experiences.map((exp) =>
+        mapExperienceToPublicDto(exp, (k) => this.storage.getPublicUrl(k)),
+      ),
       total,
       query.page,
       query.limit,

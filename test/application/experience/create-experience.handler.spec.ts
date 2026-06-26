@@ -40,7 +40,6 @@ function makeCommand(
     hasDurationHoursOverride ? overrides?.durationHours : 2,
     overrides?.minimumParticipants,
     overrides?.capacity ?? 8,
-    overrides?.coverImageUrl ?? 'https://cdn.example.com/transport.jpg',
     hasLocationOverride
       ? overrides?.location
       : {
@@ -55,6 +54,7 @@ function makeCommand(
     overrides?.blackoutRanges,
     overrides?.allowStandalonePurchase ?? true,
     overrides?.allowReservationPurchase ?? true,
+    overrides?.mediaKeys,
     overrides?.actorId ?? 'user-123',
     overrides?.actorEmail ?? 'host@example.com',
   );

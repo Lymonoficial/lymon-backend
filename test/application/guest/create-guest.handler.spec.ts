@@ -108,8 +108,7 @@ describe('CreateGuestHandler', () => {
         },
         'Jane',
         'Smith',
-        ['jane.alt@example.com'],
-        [{ number: '+12025550123', type: 'mobile', isPrimary: true }],
+        '+12025550123',
         ['vip'],
       );
 
@@ -137,9 +136,6 @@ describe('CreateGuestHandler', () => {
       );
       expect(savedGuest.getFullName()).toBe('Jane Smith');
       expect(savedGuest.getPrimaryEmail()).toBe('jane@example.com');
-      expect(savedGuest.getEmails()).toEqual(
-        expect.arrayContaining(['jane@example.com', 'jane.alt@example.com']),
-      );
       expect(savedGuest.getIdentity()).toEqual({
         documentType: 'passport',
         documentNumber: 'AB123456',
@@ -147,9 +143,7 @@ describe('CreateGuestHandler', () => {
       });
       expect(savedGuest.getFirstName()).toBe('Jane');
       expect(savedGuest.getLastName()).toBe('Smith');
-      expect(savedGuest.getPhones()).toEqual([
-        { number: '+12025550123', type: 'mobile', isPrimary: true },
-      ]);
+      expect(savedGuest.getPhone()).toBe('+12025550123');
       expect(savedGuest.getTags()).toEqual([]);
       expect(savedGuest.getPreferences()).toEqual([]);
     });

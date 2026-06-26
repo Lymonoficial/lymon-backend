@@ -79,6 +79,28 @@ export class ReservationDocument extends Document {
 
   @Prop({ type: Number, default: null })
   reservationNumber: number | null;
+
+  @Prop({
+    type: [
+      {
+        fullName: { type: String, required: true },
+        documentType: { type: String, required: true },
+        documentNumber: { type: String, required: true },
+        nationality: { type: String, required: true },
+        dateOfBirth: { type: Date, default: null },
+        phone: { type: String, default: null },
+      },
+    ],
+    default: [],
+  })
+  checkInInfo: Array<{
+    fullName: string;
+    documentType: string;
+    documentNumber: string;
+    nationality: string;
+    dateOfBirth: Date | null;
+    phone: string | null;
+  }>;
 }
 
 export const ReservationSchema =

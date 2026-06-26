@@ -9,6 +9,10 @@ import { PROPERTY_REPOSITORY } from '@/domain/property/repositories/property.rep
 import type { PropertyRepository } from '@/domain/property/repositories/property.repository';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @QueryHandler(GetPropertyByIdQuery)
 export class GetPropertyByIdQueryHandler implements IQueryHandler<
@@ -18,6 +22,8 @@ export class GetPropertyByIdQueryHandler implements IQueryHandler<
   constructor(
     @Inject(PROPERTY_REPOSITORY)
     private readonly propertyRepository: PropertyRepository,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly storage: R2StorageService,
   ) {}
 
   async execute(query: GetPropertyByIdQuery): Promise<GetPropertyByIdResult> {
@@ -48,6 +54,9 @@ export class GetPropertyByIdQueryHandler implements IQueryHandler<
       property.getHostEmail(),
       property.getCreatedAt(),
       property.getUpdatedAt(),
+      property.getImageKey()
+        ? this.storage.getPublicUrl(property.getImageKey()!)
+        : null,
     );
 
     return new GetPropertyByIdResult(dto);

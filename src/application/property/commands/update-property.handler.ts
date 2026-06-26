@@ -20,6 +20,10 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { PropertyUpdateData } from '@/domain/property/entities/property.entity';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @CommandHandler(UpdatePropertyCommand)
 export class UpdatePropertyHandler implements ICommandHandler<
@@ -30,6 +34,8 @@ export class UpdatePropertyHandler implements ICommandHandler<
     @Inject(PROPERTY_REPOSITORY)
     private readonly propertyRepository: PropertyRepository,
     private readonly eventEmitter: EventEmitter2,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly storage: R2StorageService,
   ) {}
 
   async execute(command: UpdatePropertyCommand): Promise<UpdatePropertyResult> {
@@ -85,7 +91,20 @@ export class UpdatePropertyHandler implements ICommandHandler<
       );
     }
 
+    let orphanedImageKey: string | null = null;
+    if (command.imageKey !== undefined) {
+      const oldKey = property.getImageKey();
+      if (oldKey && oldKey !== command.imageKey) {
+        orphanedImageKey = oldKey;
+      }
+      property.updateImageKey(command.imageKey);
+    }
+
     const updatedPropertyId = await this.propertyRepository.save(property);
+
+    if (orphanedImageKey) {
+      await this.storage.deleteObjects([orphanedImageKey]);
+    }
 
     this.eventEmitter.emit(
       AUDIT_LOG_EVENT,
@@ -117,6 +136,7 @@ export class UpdatePropertyHandler implements ICommandHandler<
       command.cancellationPolicy,
       command.hostPhone,
       command.hostEmail,
+      command.imageKey,
     ].some((field) => field !== undefined);
   }
 

@@ -44,7 +44,6 @@ export class PublicExperienceDto {
     public readonly durationHours: number | null,
     public readonly minimumParticipants: number,
     public readonly capacity: number,
-    public readonly coverImageUrl: string,
     public readonly location: PublicExperienceLocationDto | null,
     public readonly availabilityType: string,
     public readonly startAt: Date | null,
@@ -56,5 +55,6 @@ export class PublicExperienceDto {
     public readonly minNoticeHours: number,
     public readonly purchaseCutoffHours: number,
     public readonly status: string,
+    public readonly mediaUrls: string[],
   ) {}
 }

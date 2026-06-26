@@ -82,9 +82,6 @@ export class ExperienceDocument extends Document {
   @Prop({ required: true })
   capacity: number;
 
-  @Prop({ required: true })
-  coverImageUrl: string;
-
   @Prop({ type: ExperienceLocationSchema, default: null })
   location: ExperienceLocationSchema | null;
 

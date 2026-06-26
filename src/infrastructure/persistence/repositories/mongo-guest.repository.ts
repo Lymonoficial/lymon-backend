@@ -45,8 +45,7 @@ export class MongoGuestRepository implements GuestRepository {
       lastName: guest.getLastName(),
       fullName: guest.getFullName(),
       primaryEmail: guest.getPrimaryEmail(),
-      emails: guest.getEmails(),
-      phones: guest.getPhones(),
+      phone: guest.getPhone(),
       status: guest.getStatus(),
       tags: guest
         .getTags()
@@ -210,9 +209,8 @@ export class MongoGuestRepository implements GuestRepository {
         { firstName: pattern },
         { lastName: pattern },
         { primaryEmail: pattern },
-        { emails: pattern },
         { 'identity.documentNumber': pattern },
-        { 'phones.number': pattern },
+        { phone: pattern },
       ],
     };
     const [total, documents] = await Promise.all([
@@ -284,8 +282,7 @@ export class MongoGuestRepository implements GuestRepository {
       lastName: document.lastName,
       fullName: document.fullName,
       primaryEmail: document.primaryEmail,
-      emails: document.emails ?? [],
-      phones: document.phones ?? [],
+      phone: document.phone ?? null,
       status: document.status,
       tags,
       preferences: (document.preferences ?? []).map(

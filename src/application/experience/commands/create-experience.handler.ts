@@ -161,7 +161,6 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
         durationHours: command.durationHours,
         minimumParticipants: command.minimumParticipants,
         capacity: command.capacity,
-        coverImageUrl: command.coverImageUrl,
         location: command.location,
         availabilityType: ExperienceAvailabilityType.create(
           command.availabilityType,
@@ -175,6 +174,7 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
         })),
         allowStandalonePurchase: command.allowStandalonePurchase,
         allowReservationPurchase: command.allowReservationPurchase,
+        mediaKeys: command.mediaKeys,
       });
 
       return {
