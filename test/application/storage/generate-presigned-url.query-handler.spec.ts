@@ -5,6 +5,7 @@ import { createR2StorageServiceMock } from '@test/shared/mocks/services/r2-stora
 import { MediaCategory } from '@/application/storage/media-category.enum';
 
 const TENANT_ID = '65f1a1a2b3c4d5e6f7a8b9c0';
+const FILE_SIZE = 102400;
 const PRESIGNED_URL =
   'https://bucket.account.r2.cloudflarestorage.com/key?X-Amz-Signature=abc';
 const PUBLIC_URL = 'https://pub-xxx.r2.dev';
@@ -29,6 +30,7 @@ describe('GeneratePresignedUrlQueryHandler', () => {
         new GeneratePresignedUrlQuery(
           'photo.jpg',
           'image/jpeg',
+          FILE_SIZE,
           TENANT_ID,
           MediaCategory.Experiences,
         ),
@@ -49,6 +51,7 @@ describe('GeneratePresignedUrlQueryHandler', () => {
         new GeneratePresignedUrlQuery(
           'photo.jpg',
           'image/jpeg',
+          FILE_SIZE,
           TENANT_ID,
           MediaCategory.Experiences,
         ),
@@ -65,6 +68,7 @@ describe('GeneratePresignedUrlQueryHandler', () => {
         new GeneratePresignedUrlQuery(
           'photo.jpg',
           'image/jpeg',
+          FILE_SIZE,
           TENANT_ID,
           MediaCategory.Properties,
         ),
@@ -83,6 +87,7 @@ describe('GeneratePresignedUrlQueryHandler', () => {
         new GeneratePresignedUrlQuery(
           'my photo (1).jpg',
           'image/jpeg',
+          FILE_SIZE,
           TENANT_ID,
           MediaCategory.Units,
         ),
@@ -101,6 +106,7 @@ describe('GeneratePresignedUrlQueryHandler', () => {
         new GeneratePresignedUrlQuery(
           'photo.jpg',
           'image/png',
+          FILE_SIZE,
           TENANT_ID,
           MediaCategory.Experiences,
         ),
@@ -109,6 +115,7 @@ describe('GeneratePresignedUrlQueryHandler', () => {
       expect(storageService.generatePresignedPutUrl).toHaveBeenCalledWith(
         expect.stringContaining(TENANT_ID),
         'image/png',
+        FILE_SIZE,
       );
     });
 
@@ -120,6 +127,7 @@ describe('GeneratePresignedUrlQueryHandler', () => {
         new GeneratePresignedUrlQuery(
           'photo.jpg',
           'image/jpeg',
+          FILE_SIZE,
           TENANT_ID,
           MediaCategory.Experiences,
         ),

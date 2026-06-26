@@ -180,6 +180,7 @@ export class GuestController {
       new GenerateGuestProfilePhotoUrlQuery(
         guest.guestAccountId,
         dto.contentType,
+        dto.fileSize,
       ),
     );
 

@@ -37,6 +37,7 @@ export class GenerateGuestProfilePhotoUrlQueryHandler
     const presignedUrl = await this.storageService.generatePresignedPutUrl(
       key,
       query.contentType,
+      query.fileSize,
     );
     const fileUrl = this.storageService.getPublicUrl(key);
 

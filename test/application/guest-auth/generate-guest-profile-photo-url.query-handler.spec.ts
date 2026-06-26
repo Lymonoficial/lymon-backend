@@ -26,7 +26,7 @@ describe('GenerateGuestProfilePhotoUrlQueryHandler', () => {
 
   it('builds a key under the guest profile prefix with the right extension', async () => {
     const result = await handler.execute(
-      new GenerateGuestProfilePhotoUrlQuery(ACCOUNT_ID, 'image/webp'),
+      new GenerateGuestProfilePhotoUrlQuery(ACCOUNT_ID, 'image/webp', 102400),
     );
 
     expect(result).toBeInstanceOf(GenerateGuestProfilePhotoUrlResult);
@@ -36,6 +36,7 @@ describe('GenerateGuestProfilePhotoUrlQueryHandler', () => {
     expect(storageService.generatePresignedPutUrl).toHaveBeenCalledWith(
       result.key,
       'image/webp',
+      102400,
     );
     expect(result.fileUrl).toBe(`${PUBLIC_BASE}/${result.key}`);
     expect(result.presignedUrl).toBe('https://r2/put');
@@ -44,7 +45,11 @@ describe('GenerateGuestProfilePhotoUrlQueryHandler', () => {
   it('rejects an unsupported content type', async () => {
     await expect(
       handler.execute(
-        new GenerateGuestProfilePhotoUrlQuery(ACCOUNT_ID, 'application/pdf'),
+        new GenerateGuestProfilePhotoUrlQuery(
+          ACCOUNT_ID,
+          'application/pdf',
+          102400,
+        ),
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(storageService.generatePresignedPutUrl).not.toHaveBeenCalled();

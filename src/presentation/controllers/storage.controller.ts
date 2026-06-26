@@ -37,6 +37,7 @@ export class StorageController {
       new GeneratePresignedUrlQuery(
         dto.fileName,
         dto.contentType,
+        dto.fileSize,
         user.tenantId,
         dto.category,
       ),
