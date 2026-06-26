@@ -131,7 +131,7 @@ export class CrmController {
             guestId: currentId,
             fullName: guest.getFullName(),
             primaryEmail: guest.getPrimaryEmail(),
-            phones: guest.getPhones(),
+            phone: guest.getPhone(),
             status: guest.getStatus(),
             tags: guest.getTags().map((t) => t.getName()),
             lifecycleStatus: lifecycleStatuses.get(currentId) || GuestLifecycleStatus.NO_RESERVATION,

@@ -56,8 +56,7 @@ export class CreateGuestHandler implements ICommandHandler<CreateGuestCommand> {
       primaryEmail: command.primaryEmail,
       firstName: command.firstName,
       lastName: command.lastName,
-      emails: command.emails,
-      phones: command.phones,
+      phone: command.phone,
       preferences,
     });
 
