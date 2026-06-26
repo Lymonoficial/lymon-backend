@@ -23,7 +23,6 @@ import {
   type ShiftRepository,
 } from '@/domain/shift/repositories/shift.repository';
 import { Shift } from '@/domain/shift/entities/shift.entity';
-import { ShiftId } from '@/domain/shift/value-objects/shift-id.vo';
 import {
   EMAIL_SERVICE,
   type IEmailService,
@@ -73,22 +72,9 @@ export class CreateShiftCommandHandler implements ICommandHandler<CreateShiftCom
     const start = this.toMinutes(command.startHour);
     const end = this.toMinutes(command.endHour);
 
-    const overlapRepository = this.shiftRepository as {
-      findOverlappingByStaffInRange: (
-        tenantId: TenantId,
-        staffMemberId: UserId,
-        startDate: Date,
-        endDate: Date | null,
-        startMinutes: number,
-        endMinutes: number,
-        excludeShiftId?: ShiftId,
-        weekdays?: number[] | null,
-      ) => Promise<Shift | null>;
-    };
-
     for (const staffMemberId of staffMemberIds) {
       const overlappingShift =
-        await overlapRepository.findOverlappingByStaffInRange(
+        await this.shiftRepository.findOverlappingByStaffInRange(
           tenantId,
           staffMemberId,
           startDate,

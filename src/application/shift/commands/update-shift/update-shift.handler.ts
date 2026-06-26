@@ -162,9 +162,8 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     const nextStartTime = startHourInput ?? shift.getStartHour();
     const nextEndTime = endHourInput ?? shift.getEndHour();
 
-    const weekdays = command.weekdays !== undefined
-      ? command.weekdays
-      : shift.getWeekdays();
+    const weekdays =
+      command.weekdays === undefined ? shift.getWeekdays() : command.weekdays;
 
     return {
       nextStaffMemberIds,
