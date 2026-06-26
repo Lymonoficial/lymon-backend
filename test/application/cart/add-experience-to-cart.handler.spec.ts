@@ -11,10 +11,6 @@ import {
   ExperienceStatusEnum,
 } from '@/domain/experience/value-objects/experience-status.vo';
 import {
-  ExperienceScope,
-  ExperienceScopeEnum,
-} from '@/domain/experience/value-objects/experience-scope.vo';
-import {
   ExperienceCategory,
   ExperienceCategoryEnum,
 } from '@/domain/experience/value-objects/experience-category.vo';
@@ -34,7 +30,6 @@ function makeArchivedExperience(): Experience {
   return Experience.reconstitute({
     id: ExperienceId.create(EXPERIENCE_ID),
     tenantId: TenantId.createFromString(TENANT_ID),
-    scope: ExperienceScope.create(ExperienceScopeEnum.PROPERTY),
     propertyId: null,
     unitIds: [],
     name: 'Test',

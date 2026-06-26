@@ -1,6 +1,5 @@
 import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 
 export interface CreateExperienceLocationInput {
   label: string;
@@ -23,7 +22,6 @@ export interface CreateExperienceRecurrenceInput {
 export class CreateExperienceCommand {
   constructor(
     public readonly tenantId: string,
-    public readonly scope: ExperienceScopeEnum,
     public readonly propertyId: string | undefined,
     public readonly unitIds: string[] | undefined,
     public readonly name: string,

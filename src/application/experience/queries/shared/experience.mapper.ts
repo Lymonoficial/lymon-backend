@@ -14,7 +14,6 @@ export function mapExperienceToPublicDto(
   return new PublicExperienceDto(
     experience.getId()!.toString(),
     experience.getTenantId().toString(),
-    experience.getScope().toString(),
     experience.getPropertyId()?.toString() ?? null,
     experience.getUnitIds().map((unitId) => unitId.toString()),
     experience.getName(),

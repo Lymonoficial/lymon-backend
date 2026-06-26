@@ -17,7 +17,6 @@ import {
 } from 'class-validator';
 import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class ExperienceLocationDto {
@@ -98,27 +97,13 @@ class ExperienceBlackoutRangeDto {
 }
 
 export class CreateExperienceDto {
-  @ApiProperty({
-    enum: ExperienceScopeEnum,
-    example: ExperienceScopeEnum.PROPERTY,
-    description:
-      'Scope behavior: PROPERTY allows optional propertyId and optional unitIds filtering. TENANT is tenant-wide and must not include unitIds.',
-  })
-  @IsEnum(ExperienceScopeEnum)
-  scope!: ExperienceScopeEnum;
-
   @ApiPropertyOptional({ example: '6650d0ef3f3d2d2d2d2d2d2d' })
   @IsString()
   @IsOptional()
   propertyId?: string;
 
   @ApiPropertyOptional({
-    description: [
-      '**Rules for Scope:**',
-      '* **PROPERTY scope + empty unitIds:** All units in property.',
-      '* **PROPERTY scope + unitIds list:** Only listed units.',
-      '* **TENANT scope + unitIds:** Forbidden.',
-    ].join('\n'),
+    description: 'Optional list of unit IDs. Requires propertyId when provided.',
     type: [String],
     example: ['6650d0ef3f3d2d2d2d2d2d33'],
   })
