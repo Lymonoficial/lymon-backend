@@ -6,6 +6,8 @@ export function createExperiencePurchaseRepositoryMock(): jest.Mocked<Experience
     findById: jest.fn(),
     findByGuestAccountId: jest.fn(),
     countByGuestAccountId: jest.fn(),
+    findByTenantIdPaginated: jest.fn(),
+    countByTenantId: jest.fn(),
     countConfirmedByExperienceAndDate: jest.fn(),
   };
 }

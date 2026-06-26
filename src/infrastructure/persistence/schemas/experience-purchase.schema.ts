@@ -61,4 +61,6 @@ ExperiencePurchaseSchema.index({
   tenantId: 1,
   createdAt: -1,
 });
+ExperiencePurchaseSchema.index({ tenantId: 1, createdAt: -1 });
+ExperiencePurchaseSchema.index({ tenantId: 1, selectedDate: 1, status: 1 });
 ExperiencePurchaseSchema.index({ experienceId: 1, selectedDate: 1, status: 1 });

@@ -3,8 +3,29 @@ import { ExperiencePurchaseId } from '@/domain/experience-purchase/value-objects
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
+import { ExperiencePurchaseStatusEnum } from '@/domain/experience-purchase/value-objects/experience-purchase-status.vo';
 
 export const EXPERIENCE_PURCHASE_REPOSITORY = 'EXPERIENCE_PURCHASE_REPOSITORY';
+
+export interface TenantExperiencePurchaseFilters {
+  experienceId?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  status?: ExperiencePurchaseStatusEnum;
+}
+
+export interface TenantExperiencePurchaseReadModel {
+  id: string;
+  experienceId: string;
+  experienceName: string;
+  guestAccountId: string;
+  guestName: string;
+  purchasedAt: Date;
+  scheduledDate: Date | null;
+  quantity: number;
+  totalPriceCop: number;
+  status: string;
+}
 
 export interface ExperiencePurchaseRepository {
   save(
@@ -21,6 +42,16 @@ export interface ExperiencePurchaseRepository {
   countByGuestAccountId(
     guestAccountId: GuestAccountId,
     tenantId: TenantId,
+  ): Promise<number>;
+  findByTenantIdPaginated(
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+    filters?: TenantExperiencePurchaseFilters,
+  ): Promise<TenantExperiencePurchaseReadModel[]>;
+  countByTenantId(
+    tenantId: TenantId,
+    filters?: TenantExperiencePurchaseFilters,
   ): Promise<number>;
   countConfirmedByExperienceAndDate(
     experienceId: string,
