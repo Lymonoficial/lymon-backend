@@ -159,6 +159,7 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
         category: ExperienceCategory.create(command.category),
         priceCop: command.priceCop,
         durationHours: command.durationHours,
+        minimumParticipants: command.minimumParticipants,
         capacity: command.capacity,
         coverImageUrl: command.coverImageUrl,
         location: {

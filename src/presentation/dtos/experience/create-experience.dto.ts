@@ -143,6 +143,17 @@ export class CreateExperienceDto {
   @Min(0.1)
   durationHours!: number;
 
+  @ApiPropertyOptional({
+    example: 2,
+    minimum: 1,
+    default: 1,
+    description: 'Minimum participants required for the experience to take place',
+  })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  minimumParticipants?: number;
+
   @ApiProperty({ example: 8, minimum: 1 })
   @IsInt()
   @Min(1)

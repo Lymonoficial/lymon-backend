@@ -42,6 +42,7 @@ export class PublicExperienceDto {
     public readonly category: string,
     public readonly priceCop: number,
     public readonly durationHours: number,
+    public readonly minimumParticipants: number,
     public readonly capacity: number,
     public readonly coverImageUrl: string,
     public readonly location: PublicExperienceLocationDto,

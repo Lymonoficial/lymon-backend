@@ -25,17 +25,14 @@ export const EXPERIENCE_FIXTURE_DEFAULTS = {
   description: 'Private transfer from the airport to the property',
   priceCop: 120000,
   durationHours: 2,
+  minimumParticipants: 1,
   capacity: 8,
   coverImageUrl: 'https://cdn.example.com/experience-cover.jpg',
   location: { label: 'Main lobby', lat: 4.6097, lng: -74.0817 },
 };
 
 export function makeExperience(
-  overrides?: Partial<{
-    id: string;
-    tenantId: string;
-    propertyId: string;
-  }>,
+  overrides?: Partial<typeof EXPERIENCE_FIXTURE_DEFAULTS>,
 ): Experience {
   const merged = { ...EXPERIENCE_FIXTURE_DEFAULTS, ...overrides };
   return Experience.reconstitute({
@@ -48,6 +45,7 @@ export function makeExperience(
     category: ExperienceCategory.create(ExperienceCategoryEnum.TRANSPORTATION),
     priceCop: merged.priceCop,
     durationHours: merged.durationHours,
+    minimumParticipants: merged.minimumParticipants,
     capacity: merged.capacity,
     coverImageUrl: merged.coverImageUrl,
     location: merged.location,

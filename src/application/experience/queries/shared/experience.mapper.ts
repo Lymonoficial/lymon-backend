@@ -21,6 +21,7 @@ export function mapExperienceToPublicDto(
     experience.getCategory().toString(),
     experience.getPriceCop(),
     experience.getDurationHours(),
+    experience.getMinimumParticipants(),
     experience.getCapacity(),
     experience.getCoverImageUrl(),
     new PublicExperienceLocationDto(

@@ -19,6 +19,7 @@ describe('GuestExperienceController', () => {
     category: 'ADVENTURE',
     priceCop: 100000,
     durationHours: 3,
+    minimumParticipants: 2,
     capacity: 10,
     coverImageUrl: 'https://img',
     location: { label: 'Dock', address: 'Address', lat: 1, lng: 2 },
@@ -52,6 +53,7 @@ describe('GuestExperienceController', () => {
     expect(result.experiences[0]).not.toHaveProperty('tenantId');
     expect(result.experiences[0]).not.toHaveProperty('unitIds');
     expect(result.experiences[0]).not.toHaveProperty('status');
+    expect(result.experiences[0].minimumParticipants).toBe(2);
   });
 
   it('by id endpoint dispatches query and returns propertyName and units', async () => {

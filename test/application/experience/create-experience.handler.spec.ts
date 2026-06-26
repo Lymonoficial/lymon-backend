@@ -34,6 +34,7 @@ function makeCommand(
     overrides?.category ?? ExperienceCategoryEnum.TRANSPORTATION,
     overrides?.priceCop ?? 100000,
     overrides?.durationHours ?? 2,
+    overrides?.minimumParticipants,
     overrides?.capacity ?? 8,
     overrides?.coverImageUrl ?? 'https://cdn.example.com/transport.jpg',
     overrides?.location ?? {

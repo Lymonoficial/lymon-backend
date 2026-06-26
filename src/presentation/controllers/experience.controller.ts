@@ -147,6 +147,7 @@ export class ExperienceController {
           category: 'TRANSPORTATION',
           priceCop: 120000,
           durationHours: 2,
+          minimumParticipants: 2,
           capacity: 8,
           coverImageUrl: 'https://image.com/experience-cover.jpg',
           location: {
@@ -176,6 +177,7 @@ export class ExperienceController {
           category: 'TRANSPORTATION',
           priceCop: 80000,
           durationHours: 1,
+          minimumParticipants: 3,
           capacity: 12,
           coverImageUrl: 'https://image.com/tenant-shuttle.jpg',
           location: {
@@ -224,6 +226,7 @@ export class ExperienceController {
       dto.category,
       dto.priceCop,
       dto.durationHours,
+      dto.minimumParticipants,
       dto.capacity,
       dto.coverImageUrl,
       dto.location,
@@ -276,6 +279,7 @@ export class ExperienceController {
         description: dto.description,
         priceCop: dto.priceCop,
         durationHours: dto.durationHours,
+        minimumParticipants: dto.minimumParticipants,
         capacity: dto.capacity,
         coverImageUrl: dto.coverImageUrl,
         location: dto.location,

@@ -76,6 +76,9 @@ export class ExperienceDocument extends Document {
   @Prop({ required: true })
   durationHours: number;
 
+  @Prop({ required: true, default: 1 })
+  minimumParticipants: number;
+
   @Prop({ required: true })
   capacity: number;
 

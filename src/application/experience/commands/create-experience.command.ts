@@ -29,6 +29,7 @@ export class CreateExperienceCommand {
     public readonly category: ExperienceCategoryEnum,
     public readonly priceCop: number,
     public readonly durationHours: number,
+    public readonly minimumParticipants: number | undefined,
     public readonly capacity: number,
     public readonly coverImageUrl: string,
     public readonly location: CreateExperienceLocationInput,
