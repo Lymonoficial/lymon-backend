@@ -24,6 +24,10 @@ function makeCommand(
 ): CreateExperienceCommand {
   const hasPropertyIdOverride =
     overrides !== undefined && Object.hasOwn(overrides, 'propertyId');
+  const hasDurationHoursOverride =
+    overrides !== undefined && Object.hasOwn(overrides, 'durationHours');
+  const hasLocationOverride =
+    overrides !== undefined && Object.hasOwn(overrides, 'location');
 
   return new CreateExperienceCommand(
     overrides?.tenantId ?? '65f1a1a2b3c4d5e6f7a8b9c0',
@@ -33,14 +37,16 @@ function makeCommand(
     overrides?.description ?? 'Roundtrip transportation service',
     overrides?.category ?? ExperienceCategoryEnum.TRANSPORTATION,
     overrides?.priceCop ?? 100000,
-    overrides?.durationHours ?? 2,
+    hasDurationHoursOverride ? overrides?.durationHours : 2,
     overrides?.minimumParticipants,
     overrides?.capacity ?? 8,
-    overrides?.location ?? {
-      label: 'Main lobby',
-      lat: 4.6097,
-      lng: -74.0817,
-    },
+    hasLocationOverride
+      ? overrides?.location
+      : {
+          label: 'Main lobby',
+          lat: 4.6097,
+          lng: -74.0817,
+        },
     overrides?.availabilityType ?? ExperienceAvailabilityTypeEnum.DATE_RANGE,
     overrides?.startAt ?? '2099-01-10T10:00:00.000Z',
     overrides?.endAt ?? '2099-01-20T10:00:00.000Z',
@@ -119,5 +125,17 @@ describe('CreateExperienceHandler', () => {
     expect(result).toBeInstanceOf(CreateExperienceResult);
     expect(result.experienceId).toBe(EXPERIENCE_ID);
     expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates experience without durationHours or location', async () => {
+    propertyRepository.findById.mockResolvedValue(makeProperty());
+    experienceRepository.existsByPropertyIdAndName.mockResolvedValue(false);
+    experienceRepository.save.mockResolvedValue(EXPERIENCE_ID);
+
+    await expect(
+      handler.execute(
+        makeCommand({ durationHours: undefined, location: undefined }),
+      ),
+    ).resolves.toBeInstanceOf(CreateExperienceResult);
   });
 });

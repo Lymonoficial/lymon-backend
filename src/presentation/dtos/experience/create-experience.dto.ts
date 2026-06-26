@@ -19,13 +19,13 @@ import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experi
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class ExperienceLocationDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'Main lobby pickup point',
     description: 'Short place label shown to guests',
   })
   @IsString()
-  @IsNotEmpty()
-  label!: string;
+  @IsOptional()
+  label?: string;
 
   @ApiPropertyOptional({
     example: 'Cra 10 #20-30, Bogota',
@@ -35,17 +35,19 @@ class ExperienceLocationDto {
   @IsOptional()
   address?: string;
 
-  @ApiProperty({ example: 4.6097, minimum: -90, maximum: 90 })
+  @ApiPropertyOptional({ example: 4.6097, minimum: -90, maximum: 90 })
   @IsNumber()
   @Min(-90)
   @Max(90)
-  lat!: number;
+  @IsOptional()
+  lat?: number;
 
-  @ApiProperty({ example: -74.0817, minimum: -180, maximum: 180 })
+  @ApiPropertyOptional({ example: -74.0817, minimum: -180, maximum: 180 })
   @IsNumber()
   @Min(-180)
   @Max(180)
-  lng!: number;
+  @IsOptional()
+  lng?: number;
 }
 
 class ExperienceRecurrenceDto {
@@ -102,7 +104,8 @@ export class CreateExperienceDto {
   propertyId?: string;
 
   @ApiPropertyOptional({
-    description: 'Optional list of unit IDs. Requires propertyId when provided.',
+    description:
+      'Optional list of unit IDs. Requires propertyId when provided.',
     type: [String],
     example: ['6650d0ef3f3d2d2d2d2d2d33'],
   })
@@ -137,16 +140,18 @@ export class CreateExperienceDto {
   @Min(0.01)
   priceCop!: number;
 
-  @ApiProperty({ example: 2, minimum: 0.1 })
+  @ApiPropertyOptional({ example: 2, minimum: 0.1 })
   @IsNumber()
   @Min(0.1)
-  durationHours!: number;
+  @IsOptional()
+  durationHours?: number;
 
   @ApiPropertyOptional({
     example: 2,
     minimum: 1,
     default: 1,
-    description: 'Minimum participants required for the experience to take place',
+    description:
+      'Minimum participants required for the experience to take place',
   })
   @IsInt()
   @Min(1)
@@ -158,10 +163,11 @@ export class CreateExperienceDto {
   @Min(1)
   capacity!: number;
 
-  @ApiProperty({ type: () => ExperienceLocationDto })
+  @ApiPropertyOptional({ type: () => ExperienceLocationDto })
   @ValidateNested()
   @Type(() => ExperienceLocationDto)
-  location!: ExperienceLocationDto;
+  @IsOptional()
+  location?: ExperienceLocationDto;
 
   @ApiProperty({
     enum: ExperienceAvailabilityTypeEnum,

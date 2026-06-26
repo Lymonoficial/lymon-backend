@@ -11,6 +11,7 @@ export function mapExperienceToPublicDto(
   getPublicUrl: (key: string) => string,
 ): PublicExperienceDto {
   const recurrence = experience.getRecurrence();
+  const location = experience.getLocation();
 
   return new PublicExperienceDto(
     experience.getId()!.toString(),
@@ -24,12 +25,14 @@ export function mapExperienceToPublicDto(
     experience.getDurationHours(),
     experience.getMinimumParticipants(),
     experience.getCapacity(),
-    new PublicExperienceLocationDto(
-      experience.getLocation().label,
-      experience.getLocation().address,
-      experience.getLocation().lat,
-      experience.getLocation().lng,
-    ),
+    location
+      ? new PublicExperienceLocationDto(
+          location.label,
+          location.address,
+          location.lat,
+          location.lng,
+        )
+      : null,
     experience.getAvailabilityType().toString(),
     experience.getStartAt(),
     experience.getEndAt(),

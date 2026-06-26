@@ -161,12 +161,7 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
         durationHours: command.durationHours,
         minimumParticipants: command.minimumParticipants,
         capacity: command.capacity,
-        location: {
-          label: command.location.label,
-          address: command.location.address,
-          lat: command.location.lat,
-          lng: command.location.lng,
-        },
+        location: command.location,
         availabilityType: ExperienceAvailabilityType.create(
           command.availabilityType,
         ),
