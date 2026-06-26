@@ -12,7 +12,6 @@ describe('GuestExperienceController', () => {
   const experience = {
     id: 'exp-1',
     tenantId: 'tenant-1',
-    scope: 'PROPERTY',
     propertyId: 'prop-1',
     unitIds: ['unit-1'],
     name: 'Kayak tour',

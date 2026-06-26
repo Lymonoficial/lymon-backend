@@ -44,6 +44,7 @@ import { CartApplicationModule } from '@/application/cart/cart-application.modul
 import { RefundApplicationModule } from '@/application/refund/refund-application.module';
 import { ProcessWompiWebhookHandler } from '@/application/payment/commands/process-wompi-webhook/process-wompi-webhook.handler';
 import { GetPaymentSessionStatusHandler } from '@/application/payment/queries/get-payment-session-status/get-payment-session-status.handler';
+import { CompleteTutorialHandler } from '@/application/user/commands/complete-tutorial/complete-tutorial.handler';
 import { RoleAssignmentValidator } from '@/application/user/services/role-assignment-validator.service';
 
 const CommandHandlers = [
@@ -60,6 +61,7 @@ const CommandHandlers = [
   AddRolesHandler,
   RemoveAllRolesHandler,
   RemoveRoleHandler,
+  CompleteTutorialHandler,
   DeleteShiftCommandHandler,
   ProcessWompiWebhookHandler,
   GetPaymentSessionStatusHandler,

@@ -76,6 +76,9 @@ export class ReservationDocument extends Document {
 
   @Prop({ type: Date, default: null })
   checkOutActualAt: Date | null;
+
+  @Prop({ type: Number, default: null })
+  reservationNumber: number | null;
 }
 
 export const ReservationSchema =
@@ -85,6 +88,15 @@ ReservationSchema.index({ unitId: 1, checkIn: 1, checkOut: 1, status: 1 });
 ReservationSchema.index({ tenantId: 1, createdAt: -1 });
 ReservationSchema.index({ tenantId: 1, status: 1, source: 1, checkIn: 1 });
 ReservationSchema.index({ guestId: 1, checkIn: -1, createdAt: -1, status: 1 });
+ReservationSchema.index(
+  { tenantId: 1, reservationNumber: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      reservationNumber: { $exists: true, $ne: null },
+    },
+  },
+);
 ReservationSchema.index(
   { externalReservationId: 1, source: 1 },
   {

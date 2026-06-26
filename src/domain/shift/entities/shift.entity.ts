@@ -207,13 +207,7 @@ export class Shift {
     this.validateDateInvariants(nextStartDate, nextEndDate);
 
     // Check for changes that cannot happen after shift starts
-    this.validateImmutableChanges(
-      nextStaffMemberIds,
-      nextPropertyId,
-      nextName,
-      nextStartDate,
-      now,
-    );
+    this.validateImmutableChanges(nextPropertyId, nextName, nextStartDate, now);
 
     // Apply updates
     this.applyUpdates({
@@ -296,14 +290,12 @@ export class Shift {
   }
 
   private validateImmutableChanges(
-    nextStaffMemberIds: UserId[],
     nextPropertyId: PropertyId,
     nextName: string,
     nextStartDate: Date,
     now: Date,
   ): void {
     const hasImmutableChangesAfterStart =
-      !this.haveSameStaffMembers(nextStaffMemberIds) ||
       !this.propertyId.equals(nextPropertyId) ||
       this.name !== nextName ||
       this.startDate.getTime() !== nextStartDate.getTime();
@@ -319,7 +311,7 @@ export class Shift {
 
     if (hasImmutableChangesAfterStart) {
       throw new Error(
-        'This shift already started or is in the past. Only endDate, startHour, endHour, and notes can be edited.',
+        'This shift already started or is in the past. Only staffMembers, endDate, startHour, endHour, and notes can be edited.',
       );
     }
   }
@@ -342,8 +334,8 @@ export class Shift {
     const now = new Date();
     const canUpdateAllFields = now.getTime() < shiftStartAt.getTime();
 
+    this.staffMemberIds = updates.staffMemberIds;
     if (canUpdateAllFields) {
-      this.staffMemberIds = updates.staffMemberIds;
       this.propertyId = updates.propertyId;
       this.name = updates.name;
       this.startDate = updates.startDate;

@@ -6,7 +6,6 @@ import type { ExperienceRepository } from '@/domain/experience/repositories/expe
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
-import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
 import { ExperienceStatus } from '@/domain/experience/value-objects/experience-status.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -31,7 +30,6 @@ function makeExperience(overrides?: Partial<{ id: string; tenantId: string }>) {
   return Experience.reconstitute({
     id: ExperienceId.create(overrides?.id ?? EXPERIENCE_ID),
     tenantId: TenantId.createFromString(overrides?.tenantId ?? TENANT_ID),
-    scope: ExperienceScope.create('PROPERTY'),
     propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c1'),
     unitIds: [UnitId.create('65f1a1a2b3c4d5e6f7a8b9c8')],
     name: 'Airport transfer',

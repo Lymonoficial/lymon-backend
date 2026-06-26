@@ -35,7 +35,6 @@ export class PublicExperienceDto {
   constructor(
     public readonly id: string,
     public readonly tenantId: string,
-    public readonly scope: string,
     public readonly propertyId: string | null,
     public readonly unitIds: string[],
     public readonly name: string,

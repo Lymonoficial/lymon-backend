@@ -118,7 +118,7 @@ export class GetGuestReservationsHandler implements IQueryHandler<
 
         return {
           id,
-          bookingReference: id,
+          bookingReference: String(reservation.getReservationNumber() ?? id),
           propertyId,
           propertyName,
           unitId,

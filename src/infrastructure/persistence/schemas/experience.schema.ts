@@ -1,6 +1,5 @@
 import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 import { ExperienceStatusEnum } from '@/domain/experience/value-objects/experience-status.vo';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
@@ -61,9 +60,6 @@ export class ExperienceDocument extends Document {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'UnitDocument' }], default: [] })
   unitIds: Types.ObjectId[];
-
-  @Prop({ required: true, enum: ExperienceScopeEnum })
-  scope: string;
 
   @Prop({ required: true })
   name: string;

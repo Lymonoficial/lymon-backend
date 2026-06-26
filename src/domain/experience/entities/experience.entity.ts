@@ -7,7 +7,6 @@ import {
 } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
-import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
 import { ExperienceStatus } from '@/domain/experience/value-objects/experience-status.vo';
 
 export interface ExperienceLocation {
@@ -30,7 +29,6 @@ export interface ExperienceRecurrence {
 
 export interface ExperienceProps {
   tenantId: TenantId;
-  scope: ExperienceScope;
   propertyId?: PropertyId;
   unitIds?: UnitId[];
   name: string;
@@ -54,7 +52,6 @@ export interface ExperienceReconstituteData {
   id: ExperienceId;
   tenantId: TenantId;
   mediaKeys?: string[];
-  scope: ExperienceScope;
   propertyId?: PropertyId;
   unitIds: UnitId[];
   name: string;
@@ -102,7 +99,6 @@ export class Experience {
   private constructor(
     private readonly id: ExperienceId | null,
     private readonly tenantId: TenantId,
-    private readonly scope: ExperienceScope,
     private readonly propertyId: PropertyId | null,
     private readonly unitIds: UnitId[],
     private name: string,
@@ -162,10 +158,6 @@ export class Experience {
       throw new Error('Experience must be purchasable in at least one mode');
     }
 
-    if (props.scope.isPropertyScope() && !props.propertyId) {
-      throw new Error('Property scoped experiences require propertyId');
-    }
-
     if (props.unitIds && props.unitIds.length > 0 && !props.propertyId) {
       throw new Error('unitIds require propertyId');
     }
@@ -183,7 +175,6 @@ export class Experience {
     return new Experience(
       null,
       props.tenantId,
-      props.scope,
       props.propertyId ?? null,
       props.unitIds ?? [],
       name,
@@ -220,7 +211,6 @@ export class Experience {
     return new Experience(
       data.id,
       data.tenantId,
-      data.scope,
       data.propertyId ?? null,
       data.unitIds,
       data.name,
@@ -254,10 +244,6 @@ export class Experience {
 
   getTenantId(): TenantId {
     return this.tenantId;
-  }
-
-  getScope(): ExperienceScope {
-    return this.scope;
   }
 
   getPropertyId(): PropertyId | null {

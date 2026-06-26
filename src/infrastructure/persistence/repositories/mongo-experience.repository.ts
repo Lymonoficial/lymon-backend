@@ -6,7 +6,6 @@ import {
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
-import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
 import { ExperienceStatus } from '@/domain/experience/value-objects/experience-status.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
@@ -38,7 +37,6 @@ export class MongoExperienceRepository implements ExperienceRepository {
       unitIds: experience
         .getUnitIds()
         .map((unitId) => new Types.ObjectId(unitId.toString())),
-      scope: experience.getScope().toString(),
       name: experience.getName(),
       description: experience.getDescription(),
       category: experience.getCategory().toString(),
@@ -197,7 +195,6 @@ export class MongoExperienceRepository implements ExperienceRepository {
     return Experience.reconstitute({
       id: ExperienceId.create(document._id.toString()),
       tenantId: TenantId.createFromString(document.tenantId.toString()),
-      scope: ExperienceScope.create(document.scope),
       propertyId: document.propertyId
         ? PropertyId.create(document.propertyId.toString())
         : undefined,

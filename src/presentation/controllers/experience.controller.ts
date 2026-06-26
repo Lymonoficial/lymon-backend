@@ -140,7 +140,6 @@ export class ExperienceController {
       propertyScopedDateRange: {
         summary: 'Property-scoped transportation experience',
         value: {
-          scope: 'PROPERTY',
           propertyId: '6650d0ef3f3d2d2d2d2d2d2d',
           unitIds: ['6650d0ef3f3d2d2d2d2d2d33'],
           name: 'Airport transfer',
@@ -170,9 +169,8 @@ export class ExperienceController {
         },
       },
       tenantRecurring: {
-        summary: 'Tenant-level recurring transportation service',
+        summary: 'Recurring transportation service',
         value: {
-          scope: 'TENANT',
           name: 'Daily shuttle service',
           description: 'Recurring daily transportation service',
           category: 'TRANSPORTATION',
@@ -201,8 +199,7 @@ export class ExperienceController {
   @ApiResponse({ status: 201, description: 'Experience created successfully' })
   @ApiResponse({
     status: 400,
-    description:
-      'Validation error. Example rule violation: TENANT scope cannot include unitIds.',
+    description: 'Validation error.',
     schema: {
       example: {
         statusCode: 400,
@@ -220,7 +217,6 @@ export class ExperienceController {
   ) {
     const command = new CreateExperienceCommand(
       user.tenantId,
-      dto.scope,
       dto.propertyId,
       dto.unitIds,
       dto.name,

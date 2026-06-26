@@ -11,7 +11,6 @@ import { PropertyRepository } from '@/domain/property/repositories/property.repo
 import { UnitRepository } from '@/domain/unit/repositories/unit.repository';
 import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 import { createExperienceRepositoryMock } from '@test/shared/mocks/repositories/experience-repository.mock';
 import { createPropertyRepositoryMock } from '@test/shared/mocks/repositories/property-repository.mock';
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
@@ -28,7 +27,6 @@ function makeCommand(
 
   return new CreateExperienceCommand(
     overrides?.tenantId ?? '65f1a1a2b3c4d5e6f7a8b9c0',
-    overrides?.scope ?? ExperienceScopeEnum.PROPERTY,
     hasPropertyIdOverride ? overrides?.propertyId : '65f1a1a2b3c4d5e6f7a8b9c1',
     overrides?.unitIds,
     overrides?.name ?? 'Airport transfer',
@@ -95,7 +93,6 @@ describe('CreateExperienceHandler', () => {
 
   it('throws BadRequestException when unitIds are provided without propertyId', async () => {
     const command = makeCommand({
-      scope: ExperienceScopeEnum.TENANT,
       propertyId: undefined,
       unitIds: ['65f1a1a2b3c4d5e6f7a8b9c8'],
     });

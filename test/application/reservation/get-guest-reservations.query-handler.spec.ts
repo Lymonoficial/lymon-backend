@@ -142,13 +142,13 @@ describe('GetGuestReservationsHandler', () => {
     expect(result.items).toHaveLength(2);
     expect(result.items[0]).toMatchObject({
       id: '65f1a1a2b3c4d5e6f7a8b9c3',
-      bookingReference: '65f1a1a2b3c4d5e6f7a8b9c3',
+      bookingReference: '1',
       propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
       status: 'confirmed',
     });
     expect(result.items[1]).toMatchObject({
       id: 'res-2',
-      bookingReference: 'res-2',
+      bookingReference: '1',
       propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
       status: 'completed',
     });

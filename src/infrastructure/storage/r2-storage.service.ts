@@ -36,12 +36,15 @@ export class R2StorageService {
   async generatePresignedPutUrl(
     key: string,
     contentType: string,
+    contentLength?: number,
     expiresInSeconds = 300,
   ): Promise<string> {
     const command = new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       ContentType: contentType,
+      // Signed Content-Length: R2 rejects any PUT whose body size differs, at the edge.
+      ...(contentLength != null ? { ContentLength: contentLength } : {}),
     });
 
     return getSignedUrl(this.client, command, { expiresIn: expiresInSeconds });
@@ -64,5 +67,11 @@ export class R2StorageService {
 
   getPublicUrl(key: string): string {
     return `${this.publicUrl}/${key}`;
+  }
+
+  /** Inverse of getPublicUrl; null if the URL isn't one of ours. */
+  keyFromPublicUrl(url: string): string | null {
+    const prefix = `${this.publicUrl}/`;
+    return url.startsWith(prefix) ? url.slice(prefix.length) : null;
   }
 }
