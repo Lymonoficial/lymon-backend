@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-class TravelerInfoDto {
+export class TravelerInfoDto {
   @ApiProperty({ example: 'John Doe' })
   @IsString()
   @IsNotEmpty()
