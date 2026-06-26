@@ -46,11 +46,16 @@ describe('GetGuestReservationHandler', () => {
     propertyRepository = createPropertyRepositoryMock();
     unitRepository = createUnitRepositoryMock();
 
+    const refundRequestRepository = {
+      findByReservationId: jest.fn().mockResolvedValue(null),
+    };
+
     handler = new GetGuestReservationHandler(
       reservationRepository as any,
       guestRepository as any,
       propertyRepository as any,
       unitRepository as any,
+      refundRequestRepository as any,
     );
   });
 

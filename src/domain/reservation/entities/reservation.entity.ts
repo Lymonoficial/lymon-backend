@@ -12,6 +12,15 @@ import { GuestId } from '@/domain/guest/value-objects/guest-id.vo';
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
 import { IReservationData } from '../interfaces/reservation.interface';
 
+export interface TravelerInfo {
+  fullName: string;
+  documentType: string;
+  documentNumber: string;
+  nationality: string;
+  dateOfBirth: Date | null;
+  phone: string | null;
+}
+
 interface CreateReservationParams {
   tenantId: TenantId;
   propertyId: PropertyId;
@@ -45,6 +54,7 @@ export class Reservation {
     private checkInActualAt: Date | null,
     private checkOutActualAt: Date | null,
     private reservationNumber: number | null,
+    private checkInInfo: TravelerInfo[],
     private readonly createdAt: Date,
     private updatedAt: Date,
   ) {}
@@ -72,6 +82,7 @@ export class Reservation {
       null,
       null,
       null,
+      [],
       new Date(),
       new Date(),
     );
@@ -103,6 +114,7 @@ export class Reservation {
       data.checkInActualAt,
       data.checkOutActualAt,
       data.reservationNumber,
+      data.checkInInfo,
       data.createdAt,
       data.updatedAt,
     );
@@ -164,6 +176,26 @@ export class Reservation {
   updateGuestsCount(count: number): void {
     this.guestsCount = count;
     this.touch();
+  }
+
+  setCheckInInfo(info: TravelerInfo[]): void {
+    const status = this.status.toString();
+    if (status !== 'CONFIRMED' && status !== 'CHECKED_IN') {
+      throw new DomainException(
+        'Check-in info can only be submitted for confirmed or checked-in reservations',
+      );
+    }
+    if (info.length < 1 || info.length > this.guestsCount) {
+      throw new DomainException(
+        `Travelers count must be between 1 and ${this.guestsCount}`,
+      );
+    }
+    this.checkInInfo = info;
+    this.touch();
+  }
+
+  getCheckInInfo(): TravelerInfo[] {
+    return this.checkInInfo;
   }
 
   getId(): ReservationId | null {
