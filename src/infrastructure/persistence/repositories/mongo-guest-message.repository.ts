@@ -40,6 +40,7 @@ export class MongoGuestMessageRepository implements GuestMessageRepository {
       body: message.getBody(),
       bodyHtml: message.getBodyHtml(),
       failureReason: message.getFailureReason(),
+      conversationId: message.getConversationId(),
       deletedAt: message.getDeletedAt(),
       createdAt: message.getCreatedAt(),
     };
@@ -114,6 +115,17 @@ export class MongoGuestMessageRepository implements GuestMessageRepository {
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
       deletedAt: doc.deletedAt ?? null,
+      conversationId: doc.conversationId ?? null,
     });
+  }
+
+  async findByConversationId(tenantId: string, conversationId: string): Promise<GuestMessage[]> {
+    const docs = await this.messageModel
+      .find({
+        tenantId: new Types.ObjectId(tenantId),
+        conversationId,
+      })
+      .sort({ createdAt: 1 });
+    return docs.map((doc) => this.toDomainEntity(doc));
   }
 }

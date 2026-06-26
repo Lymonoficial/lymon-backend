@@ -98,6 +98,9 @@ export class GuestMessageDocument {
   @Prop({ type: String, required: false, default: null })
   failureReason: string | null;
 
+  @Prop({ type: String, required: false, default: null })
+  conversationId: string | null;
+
   @Prop({ type: Boolean, default: false })
   migratedFromGuestEmail: boolean;
 
@@ -115,3 +118,4 @@ export const GuestMessageSchema = SchemaFactory.createForClass(GuestMessageDocum
 
 GuestMessageSchema.index({ tenantId: 1, guestId: 1, createdAt: -1 });
 GuestMessageSchema.index({ status: 1, channel: 1 });
+GuestMessageSchema.index({ tenantId: 1, conversationId: 1 });

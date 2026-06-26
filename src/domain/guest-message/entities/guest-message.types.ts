@@ -33,4 +33,5 @@ export interface CreateGuestMessageParams {
   body?: string | null;
   bodyHtml?: string | null;
   failureReason?: string;
+  conversationId?: string | null;
 }
