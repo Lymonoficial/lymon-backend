@@ -86,7 +86,6 @@ export class GuestExperienceController {
   ): PublicExperienceCatalogDto {
     return {
       id: experience.id,
-      tenantId: experience.tenantId,
       propertyId: experience.propertyId,
       name: experience.name,
       description: experience.description,
@@ -95,6 +94,7 @@ export class GuestExperienceController {
       durationHours: experience.durationHours,
       minimumParticipants: experience.minimumParticipants,
       capacity: experience.capacity,
+      coverImageUrl: experience.mediaUrls[0] ?? null,
       mediaUrls: experience.mediaUrls,
       location: experience.location
         ? new PublicExperienceLocationDto(
@@ -128,7 +128,6 @@ export class GuestExperienceController {
 
 interface PublicExperienceCatalogDto {
   id: string;
-  tenantId: string;
   propertyId: string | null;
   name: string;
   description: string;
@@ -137,6 +136,7 @@ interface PublicExperienceCatalogDto {
   durationHours: number | null;
   minimumParticipants: number;
   capacity: number;
+  coverImageUrl: string | null;
   mediaUrls: string[];
   location: PublicExperienceLocationDto | null;
   availabilityType: string;

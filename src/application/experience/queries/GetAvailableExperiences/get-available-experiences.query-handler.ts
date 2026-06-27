@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetAvailableExperiencesQuery } from './get-available-experiences.query';
 import { GetAvailableExperiencesResult } from './get-available-experiences.result';
@@ -15,15 +15,17 @@ import {
   R2_STORAGE_SERVICE,
 } from '@/infrastructure/storage/r2-storage.service';
 
-function tryCreate<T>(
+function createOptionalFilter<T>(
   value: string | undefined,
+  fieldName: string,
   factory: (v: string) => T,
 ): T | undefined {
-  if (!value) return undefined;
+  if (!value?.trim()) return undefined;
+
   try {
     return factory(value);
   } catch {
-    return undefined;
+    throw new BadRequestException(`Invalid ${fieldName}`);
   }
 }
 
@@ -42,11 +44,13 @@ export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
   async execute(
     query: GetAvailableExperiencesQuery,
   ): Promise<GetAvailableExperiencesResult> {
-    const tenantId = tryCreate(query.tenantId, (v) =>
+    const tenantId = createOptionalFilter(query.tenantId, 'tenantId', (v) =>
       TenantId.createFromString(v),
     );
-    const propertyId = tryCreate(query.propertyId, (v) => PropertyId.create(v));
-    const category = tryCreate(query.category, (v) =>
+    const propertyId = createOptionalFilter(query.propertyId, 'propertyId', (v) =>
+      PropertyId.create(v),
+    );
+    const category = createOptionalFilter(query.category, 'category', (v) =>
       ExperienceCategory.create(v),
     );
 
