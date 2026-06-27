@@ -208,30 +208,25 @@ export class UnitController {
   async getAllPublic(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('minGuests') minGuests?: string,
-    @Query('propertyId') propertyId?: string,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-    @Query('sortByPrice') sortByPrice?: string,
-    @Query('name') name?: string,
+    @Query() filters: { minGuests?: string; propertyId?: string; startDate?: string; endDate?: string; sortByPrice?: string; name?: string },
   ) {
     const { minGuestsNum, start, end } = this.parsePublicUnitFilters(
-      minGuests,
-      startDate,
-      endDate,
+      filters.minGuests,
+      filters.startDate,
+      filters.endDate,
     );
     const priceSortDir =
-      sortByPrice === 'asc' || sortByPrice === 'desc' ? sortByPrice : undefined;
+      filters.sortByPrice === 'asc' || filters.sortByPrice === 'desc' ? filters.sortByPrice : undefined;
 
     const query = new GetAllPublicUnitsQuery(
       page,
       limit,
       minGuestsNum,
-      propertyId,
+      filters.propertyId,
       start,
       end,
       priceSortDir,
-      name,
+      filters.name,
     );
 
     const result = await this.queryBus.execute<
