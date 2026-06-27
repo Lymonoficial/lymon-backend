@@ -9,5 +9,6 @@ export class GetAllPublicUnitsQuery implements IQuery {
     public readonly startDate?: Date,
     public readonly endDate?: Date,
     public readonly sortByPrice?: 'asc' | 'desc',
+    public readonly name?: string,
   ) {}
 }

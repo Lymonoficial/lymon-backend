@@ -198,6 +198,12 @@ export class UnitController {
     enum: ['asc', 'desc'],
     description: 'Sort units by price per night',
   })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Filter units by name (case-insensitive substring match)',
+  })
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getAllPublic(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -207,6 +213,7 @@ export class UnitController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('sortByPrice') sortByPrice?: string,
+    @Query('name') name?: string,
   ) {
     const { minGuestsNum, start, end } = this.parsePublicUnitFilters(
       minGuests,
@@ -224,6 +231,7 @@ export class UnitController {
       start,
       end,
       priceSortDir,
+      name,
     );
 
     const result = await this.queryBus.execute<

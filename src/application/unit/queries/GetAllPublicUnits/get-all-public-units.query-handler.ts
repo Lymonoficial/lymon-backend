@@ -44,6 +44,8 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
         1000, // Un límite razonable para filtrado en memoria
         query.minGuests,
         query.propertyId,
+        undefined,
+        query.name,
       );
 
       const availableUnits: Unit[] = [];
@@ -88,6 +90,7 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
       query.minGuests,
       query.propertyId,
       query.sortByPrice,
+      query.name,
     );
     const dtos = units.map((u) => mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)));
 
