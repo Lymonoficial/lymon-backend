@@ -51,7 +51,7 @@ export class GuestReservationController {
     name: 'status',
     required: false,
     description:
-      'Filter by status: active, pending, confirmed, finished, cancelled',
+      'Filter by status: active, pending, confirmed, checked_in, finished, cancelled',
   })
   @ApiQuery({
     name: 'page',
@@ -260,6 +260,7 @@ export class GuestReservationController {
     const statusMap: Record<string, ReservationStatusEnum> = {
       pending: ReservationStatusEnum.PENDING,
       confirmed: ReservationStatusEnum.CONFIRMED,
+      checked_in: ReservationStatusEnum.CHECKED_IN,
       cancelled: ReservationStatusEnum.CANCELLED,
       finished: ReservationStatusEnum.CHECKED_OUT,
     };

@@ -1,3 +1,10 @@
+export type GuestReservationStatus =
+  | 'confirmed'
+  | 'pending'
+  | 'checked_in'
+  | 'cancelled'
+  | 'completed';
+
 export interface GuestReservationListItemDto {
   id: string;
   bookingReference: string;
@@ -8,7 +15,7 @@ export interface GuestReservationListItemDto {
   serviceName: string;
   checkIn: Date;
   checkOut: Date;
-  status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
+  status: GuestReservationStatus;
 }
 
 export class GetGuestReservationsResult {

@@ -92,14 +92,23 @@ describe('GetGuestReservationsHandler', () => {
       guestId: GUEST_2_ID,
       propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
       unitId: '65f1a1a2b3c4d5e6f7a8b9cf',
+      status: ReservationStatusEnum.CHECKED_IN,
+    });
+    const booking3 = makeReservation({
+      id: 'res-3',
+      tenantId: '65f1a1a2b3c4d5e6f7a8b9c9',
+      guestId: GUEST_2_ID,
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
+      unitId: '65f1a1a2b3c4d5e6f7a8b9cf',
       status: ReservationStatusEnum.CHECKED_OUT,
     });
 
     guestReservationsReadRepository.findByGuestIds.mockResolvedValue([
       booking1,
       booking2,
+      booking3,
     ] as any);
-    guestReservationsReadRepository.countByGuestIds.mockResolvedValue(2 as any);
+    guestReservationsReadRepository.countByGuestIds.mockResolvedValue(3 as any);
     propertyRepository.findByTenantId.mockImplementation((tenantId) => {
       if (tenantId.toString() === '65f1a1a2b3c4d5e6f7a8b9c0') {
         return Promise.resolve([
@@ -138,8 +147,8 @@ describe('GetGuestReservationsHandler', () => {
       [GUEST_1_ID, GUEST_2_ID],
       expect.objectContaining({ page: 1, limit: 10, sortBy: 'createdAt' }),
     );
-    expect(result.total).toBe(2);
-    expect(result.items).toHaveLength(2);
+    expect(result.total).toBe(3);
+    expect(result.items).toHaveLength(3);
     expect(result.items[0]).toMatchObject({
       id: '65f1a1a2b3c4d5e6f7a8b9c3',
       bookingReference: '1',
@@ -148,6 +157,12 @@ describe('GetGuestReservationsHandler', () => {
     });
     expect(result.items[1]).toMatchObject({
       id: 'res-2',
+      bookingReference: '1',
+      propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
+      status: 'checked_in',
+    });
+    expect(result.items[2]).toMatchObject({
+      id: 'res-3',
       bookingReference: '1',
       propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
       status: 'completed',
