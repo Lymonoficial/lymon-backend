@@ -130,6 +130,7 @@ export class MongoUnitRepository implements UnitRepository {
     minGuests?: number,
     propertyId?: string,
     sortByPrice?: 'asc' | 'desc',
+    name?: string,
   ): Promise<{ units: Unit[]; total: number }> {
     const filter: any = { deletedAt: null };
     if (minGuests !== undefined) {
@@ -137,6 +138,9 @@ export class MongoUnitRepository implements UnitRepository {
     }
     if (propertyId) {
       filter.propertyId = new Types.ObjectId(propertyId);
+    }
+    if (name) {
+      filter.name = { $regex: name.trim(), $options: 'i' };
     }
     const total = await this.unitModel.countDocuments(filter);
     const sortOrder: Record<string, 1 | -1> = sortByPrice

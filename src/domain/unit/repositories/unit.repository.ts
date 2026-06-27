@@ -29,6 +29,7 @@ export interface UnitRepository {
     minGuests?: number,
     propertyId?: string,
     sortByPrice?: 'asc' | 'desc',
+    name?: string,
   ): Promise<{ units: Unit[]; total: number }>;
   findByIds(ids: UnitId[]): Promise<Unit[]>;
 }
