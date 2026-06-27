@@ -157,12 +157,12 @@ export class MongoExperienceRepository implements ExperienceRepository {
       query.tenantId = new Types.ObjectId(filters.tenantId.toString());
     }
 
-    if (filters.propertyId) {
-      query.propertyId = new Types.ObjectId(filters.propertyId.toString());
-    }
-
     if (filters.category) {
       query.category = filters.category.toString();
+    }
+
+    if (filters.propertyId) {
+      query.propertyId = new Types.ObjectId(filters.propertyId.toString());
     }
 
     const sort: Record<string, 1 | -1> = filters.sortByPrice
