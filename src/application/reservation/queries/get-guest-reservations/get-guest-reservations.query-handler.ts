@@ -4,6 +4,7 @@ import { GetGuestReservationsQuery } from './get-guest-reservations.query';
 import {
   GetGuestReservationsResult,
   GuestReservationListItemDto,
+  GuestReservationStatus,
 } from './get-guest-reservations.result';
 import {
   GUEST_RESERVATIONS_READ_REPOSITORY,
@@ -139,12 +140,12 @@ export class GetGuestReservationsHandler implements IQueryHandler<
     );
   }
 
-  private toGuestStatus(
-    status: ReservationStatusEnum,
-  ): 'confirmed' | 'pending' | 'cancelled' | 'completed' {
+  private toGuestStatus(status: ReservationStatusEnum): GuestReservationStatus {
     switch (status) {
       case ReservationStatusEnum.PENDING:
         return 'pending';
+      case ReservationStatusEnum.CHECKED_IN:
+        return 'checked_in';
       case ReservationStatusEnum.CANCELLED:
       case ReservationStatusEnum.NO_SHOW:
         return 'cancelled';
