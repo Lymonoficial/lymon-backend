@@ -43,6 +43,11 @@ import { GetGuestMonthlySpendingQuery } from '@/application/guest/queries/get-gu
 import { GetGuestMonthlySpendingResult } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.result';
 import { GetGuestBookingOriginsQuery } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.query';
 import { GetGuestBookingOriginsResult } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.result';
+import {
+  GetGuestStatsQuery,
+  GUEST_STAT_KEYS,
+  type GuestStatKey,
+} from '@/application/guest/queries/get-guest-stats/get-guest-stats.query';
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
@@ -383,6 +388,42 @@ export class CrmController {
         total: result.total,
         sources: result.sources,
       },
+    };
+  }
+
+  @Get('guests/:guestId/stats')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({
+    summary:
+      'Get guest stats. Pass ?include=monthlySpending,bookingOrigins to select a subset; omit to return all.',
+  })
+  @ApiQuery({
+    name: 'include',
+    required: false,
+    description: 'Comma-separated stat keys. Unknown keys are ignored.',
+  })
+  @ApiResponse({ status: 200, description: 'Guest stats retrieved successfully' })
+  async getGuestStats(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+    @Query('include') include?: string,
+  ) {
+    // ponytail: unknown keys silently dropped; empty include => all. Add 400 if FE needs strictness.
+    const requested = include
+      ? (include.split(',').map((s) => s.trim()) as string[]).filter(
+          (s): s is GuestStatKey => (GUEST_STAT_KEYS as string[]).includes(s),
+        )
+      : GUEST_STAT_KEYS;
+
+    const data = await this.queryBus.execute<
+      GetGuestStatsQuery,
+      Record<string, unknown>
+    >(new GetGuestStatsQuery(user.tenantId, guestId, requested));
+
+    return {
+      message: 'Guest stats retrieved successfully',
+      data,
     };
   }
 

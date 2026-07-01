@@ -8,6 +8,7 @@ import { GetGuestByIdHandler } from './queries/get-guest-by-id/get-guest-by-id.h
 import { GetGuestBookingsHandler } from './queries/get-guest-bookings/get-guest-bookings.handler';
 import { GetGuestMonthlySpendingHandler } from './queries/get-guest-monthly-spending/get-guest-monthly-spending.handler';
 import { GetGuestBookingOriginsHandler } from './queries/get-guest-booking-origins/get-guest-booking-origins.handler';
+import { GetGuestStatsHandler } from './queries/get-guest-stats/get-guest-stats.handler';
 import { CreateGuestHandler } from '@/application/guest/commands/create-guest.handler';
 import { AssignGuestTagsHandler } from './commands/assign-guest-tags.handler';
 import { SaveGuestPreferencesHandler } from './commands/preferences/save-guest-preferences.handler';
@@ -30,6 +31,7 @@ const QueryHandlers = [
   GetGuestMonthlySpendingHandler,
   GetGuestBookingOriginsHandler,
   GetGuestLifecycleStatusHandler,
+  GetGuestStatsHandler,
 ];
 
 @Module({
