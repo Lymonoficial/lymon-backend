@@ -90,6 +90,7 @@ export const STAFF_PERMISSIONS: Permission[] = [
   Permission.PROPERTY_VIEW,
   Permission.UNIT_VIEW,
   Permission.RESERVATION_VIEW,
+  Permission.CRM_VIEW,
   Permission.RESERVATION_CREATE,
   Permission.RESERVATION_EDIT,
   Permission.RESERVATION_DELETE,
