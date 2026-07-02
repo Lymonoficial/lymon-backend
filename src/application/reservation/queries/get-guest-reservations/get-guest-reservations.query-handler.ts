@@ -4,7 +4,6 @@ import { GetGuestReservationsQuery } from './get-guest-reservations.query';
 import {
   GetGuestReservationsResult,
   GuestReservationListItemDto,
-  GuestReservationStatus,
 } from './get-guest-reservations.result';
 import {
   GUEST_RESERVATIONS_READ_REPOSITORY,
@@ -25,7 +24,6 @@ import {
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { Guest } from '@/domain/guest/entities/guest.entity';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 @QueryHandler(GetGuestReservationsQuery)
 export class GetGuestReservationsHandler implements IQueryHandler<
@@ -127,7 +125,7 @@ export class GetGuestReservationsHandler implements IQueryHandler<
           serviceName: unitName ?? propertyName ?? 'Reservation',
           checkIn: reservation.getDateRange().getCheckIn(),
           checkOut: reservation.getDateRange().getCheckOut(),
-          status: this.toGuestStatus(reservation.getStatus().getValue()),
+          status: reservation.getStatus().getValue(),
         };
       },
     );
@@ -138,21 +136,5 @@ export class GetGuestReservationsHandler implements IQueryHandler<
       query.page,
       query.limit,
     );
-  }
-
-  private toGuestStatus(status: ReservationStatusEnum): GuestReservationStatus {
-    switch (status) {
-      case ReservationStatusEnum.PENDING:
-        return 'pending';
-      case ReservationStatusEnum.CHECKED_IN:
-        return 'checked_in';
-      case ReservationStatusEnum.CANCELLED:
-      case ReservationStatusEnum.NO_SHOW:
-        return 'cancelled';
-      case ReservationStatusEnum.CHECKED_OUT:
-        return 'completed';
-      default:
-        return 'confirmed';
-    }
   }
 }

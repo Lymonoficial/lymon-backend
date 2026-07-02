@@ -1,9 +1,6 @@
-export type GuestReservationStatus =
-  | 'confirmed'
-  | 'pending'
-  | 'checked_in'
-  | 'cancelled'
-  | 'completed';
+import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
+
+export type GuestReservationStatus = ReservationStatusEnum;
 
 export interface GuestReservationListItemDto {
   id: string;
