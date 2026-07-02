@@ -44,14 +44,13 @@ export class UpdateGuestProfilePhotoHandler
       throw new UnauthorizedException('Account not found');
     }
 
-    const previousUrl = account.getProfilePhotoUrl();
-    const oldKey = previousUrl
-      ? this.storageService.keyFromPublicUrl(previousUrl)
-      : null;
+    const oldKey = account.getProfilePhotoKey();
 
-    const profilePhotoUrl = this.storageService.getPublicUrl(command.key);
-    account.setProfilePhotoUrl(profilePhotoUrl);
+    account.setProfilePhotoKey(command.key);
     await this.guestAccountRepository.save(account);
+
+    // URL is never persisted; it's rebuilt from R2_PUBLIC_URL on every read.
+    const profilePhotoUrl = this.storageService.getPublicUrl(command.key);
 
     // Best-effort: remove the old photo once the new one is committed.
     if (oldKey && oldKey !== command.key) {
