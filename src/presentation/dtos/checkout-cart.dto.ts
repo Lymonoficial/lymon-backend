@@ -13,6 +13,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsCalendarDate } from '@/presentation/common/decorators/is-calendar-date.decorator';
 
 class CheckoutCartReservationItemDto {
   @ApiProperty()
@@ -30,12 +31,12 @@ class CheckoutCartReservationItemDto {
   @IsNotEmpty()
   unitId: string;
 
-  @ApiProperty({ example: '2026-06-01' })
-  @IsDateString()
+  @ApiProperty({ example: '2026-06-01', description: 'YYYY-MM-DD, no time' })
+  @IsCalendarDate()
   checkIn: string;
 
-  @ApiProperty({ example: '2026-06-05' })
-  @IsDateString()
+  @ApiProperty({ example: '2026-06-05', description: 'YYYY-MM-DD, no time' })
+  @IsCalendarDate()
   checkOut: string;
 
   @ApiProperty({ example: 2 })

@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsInt,
   IsMongoId,
   IsNotEmpty,
@@ -10,6 +9,7 @@ import {
   IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsCalendarDate } from '@/presentation/common/decorators/is-calendar-date.decorator';
 
 export class SetCartReservationDto {
   @ApiProperty({
@@ -30,12 +30,12 @@ export class SetCartReservationDto {
   @IsNotEmpty()
   unitId: string;
 
-  @ApiProperty({ example: '2026-06-01' })
-  @IsDateString()
+  @ApiProperty({ example: '2026-06-01', description: 'YYYY-MM-DD, no time' })
+  @IsCalendarDate()
   checkIn: string;
 
-  @ApiProperty({ example: '2026-06-05' })
-  @IsDateString()
+  @ApiProperty({ example: '2026-06-05', description: 'YYYY-MM-DD, no time' })
+  @IsCalendarDate()
   checkOut: string;
 
   @ApiProperty({ example: 2 })
