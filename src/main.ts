@@ -20,7 +20,7 @@ function flattenValidationErrors(errors: ValidationError[]): string[] {
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Habilitar CORS
   app.enableCors({

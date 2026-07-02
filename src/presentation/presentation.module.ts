@@ -1,6 +1,8 @@
 import { ApplicationModule } from '@/application/application.module';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { CommunicationWebhookModule } from '@/infrastructure/email/communication-webhook.module';
+import { CommunicationWebhookController } from './controllers/communication-webhook.controller';
 import { AuthController } from '@/presentation/controllers/auth.controller';
 import { UserController } from '@/presentation/controllers/user.controller';
 import { PropertyController } from '@/presentation/controllers/property.controller';
@@ -28,8 +30,9 @@ import { GuestCartController } from '@/presentation/controllers/guest-cart.contr
 import { RefundController } from '@/presentation/controllers/refund.controller';
 
 @Module({
-  imports: [CqrsModule, ApplicationModule],
+  imports: [CqrsModule, ApplicationModule, CommunicationWebhookModule],
   controllers: [
+    CommunicationWebhookController,
     AuthController,
     UserController,
     PropertyController,
