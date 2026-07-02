@@ -26,6 +26,7 @@ export class CreateExperienceCommand {
     public readonly unitIds: string[] | undefined,
     public readonly name: string,
     public readonly description: string,
+    public readonly city: string,
     public readonly category: ExperienceCategoryEnum,
     public readonly priceCop: number,
     public readonly durationHours: number | undefined,

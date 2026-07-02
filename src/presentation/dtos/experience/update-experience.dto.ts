@@ -92,6 +92,12 @@ export class UpdateExperienceDto {
   @IsOptional()
   description?: string;
 
+  @ApiPropertyOptional({ example: 'Medellín' })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  city?: string;
+
   @ApiPropertyOptional({ example: 120000, minimum: 0.01 })
   @IsNumber()
   @Min(0.01)
@@ -107,7 +113,8 @@ export class UpdateExperienceDto {
   @ApiPropertyOptional({
     example: 2,
     minimum: 1,
-    description: 'Minimum participants required for the experience to take place',
+    description:
+      'Minimum participants required for the experience to take place',
   })
   @IsInt()
   @Min(1)

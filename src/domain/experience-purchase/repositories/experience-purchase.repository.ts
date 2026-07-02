@@ -1,4 +1,5 @@
 import { ExperiencePurchase } from '@/domain/experience-purchase/entities/experience-purchase.entity';
+import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperiencePurchaseId } from '@/domain/experience-purchase/value-objects/experience-purchase-id.vo';
 import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-account-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
@@ -57,4 +58,9 @@ export interface ExperiencePurchaseRepository {
     experienceId: string,
     selectedDate: Date | null,
   ): Promise<number>;
+  findReservedDatesByExperienceId(
+    experienceId: ExperienceId,
+    dateFrom?: Date,
+    dateTo?: Date,
+  ): Promise<Date[]>;
 }

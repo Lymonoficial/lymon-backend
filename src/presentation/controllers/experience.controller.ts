@@ -84,12 +84,25 @@ export class ExperienceController {
     @Query('propertyId') propertyId: string | undefined,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('minCapacity', new DefaultValuePipe(undefined), new ParseIntPipe({ optional: true })) minCapacity: number | undefined,
+    @Query(
+      'minCapacity',
+      new DefaultValuePipe(undefined),
+      new ParseIntPipe({ optional: true }),
+    )
+    minCapacity: number | undefined,
   ) {
     const result = await this.queryBus.execute<
       GetExperiencesByTenantQuery,
       GetExperiencesByTenantResult
-    >(new GetExperiencesByTenantQuery(user.tenantId, page, limit, propertyId, minCapacity));
+    >(
+      new GetExperiencesByTenantQuery(
+        user.tenantId,
+        page,
+        limit,
+        propertyId,
+        minCapacity,
+      ),
+    );
 
     return {
       message: 'Experiences retrieved successfully',
@@ -221,6 +234,7 @@ export class ExperienceController {
       dto.unitIds,
       dto.name,
       dto.description,
+      dto.city,
       dto.category,
       dto.priceCop,
       dto.durationHours,
@@ -275,6 +289,7 @@ export class ExperienceController {
       ...pickDefined({
         name: dto.name,
         description: dto.description,
+        city: dto.city,
         priceCop: dto.priceCop,
         durationHours: dto.durationHours,
         minimumParticipants: dto.minimumParticipants,

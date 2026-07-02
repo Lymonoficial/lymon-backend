@@ -34,6 +34,7 @@ export interface ExperienceProps {
   unitIds?: UnitId[];
   name: string;
   description: string;
+  city: string;
   category: ExperienceCategory;
   priceCop: number;
   durationHours?: number | null;
@@ -58,6 +59,7 @@ export interface ExperienceReconstituteData {
   unitIds: UnitId[];
   name: string;
   description: string;
+  city: string;
   category: ExperienceCategory;
   priceCop: number;
   durationHours?: number | null;
@@ -82,6 +84,7 @@ export interface ExperienceReconstituteData {
 export interface ExperienceChanges {
   name?: string;
   description?: string;
+  city?: string;
   priceCop?: number;
   durationHours?: number | null;
   minimumParticipants?: number;
@@ -105,6 +108,7 @@ export class Experience {
     private readonly unitIds: UnitId[],
     private name: string,
     private description: string,
+    private city: string,
     private readonly category: ExperienceCategory,
     private priceCop: number,
     private durationHours: number | null,
@@ -144,6 +148,11 @@ export class Experience {
       throw new Error('Experience description cannot exceed 5000 characters');
     }
 
+    const city = props.city?.trim();
+    if (!city) {
+      throw new Error('Experience city cannot be empty');
+    }
+
     if (!Number.isFinite(props.priceCop) || props.priceCop <= 0) {
       throw new Error('Experience price must be greater than zero');
     }
@@ -178,6 +187,7 @@ export class Experience {
       props.unitIds ?? [],
       name,
       description,
+      city,
       props.category,
       props.priceCop,
       props.durationHours ?? null,
@@ -209,6 +219,7 @@ export class Experience {
       data.unitIds,
       data.name,
       data.description,
+      data.city,
       data.category,
       data.priceCop,
       data.durationHours ?? null,
@@ -254,6 +265,10 @@ export class Experience {
 
   getDescription(): string {
     return this.description;
+  }
+
+  getCity(): string {
+    return this.city;
   }
 
   getCategory(): ExperienceCategory {
@@ -350,6 +365,11 @@ export class Experience {
       throw new Error('Experience description cannot exceed 5000 characters');
     }
 
+    const city = (changes.city ?? this.city)?.trim();
+    if (!city) {
+      throw new Error('Experience city cannot be empty');
+    }
+
     const priceCop = changes.priceCop ?? this.priceCop;
     if (!Number.isFinite(priceCop) || priceCop <= 0) {
       throw new Error('Experience price must be greater than zero');
@@ -398,6 +418,7 @@ export class Experience {
 
     this.name = name;
     this.description = description;
+    this.city = city;
     this.priceCop = priceCop;
     this.durationHours = durationHours;
     this.minimumParticipants = minimumParticipants;

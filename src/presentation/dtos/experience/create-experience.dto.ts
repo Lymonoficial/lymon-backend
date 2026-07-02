@@ -128,6 +128,11 @@ export class CreateExperienceDto {
   @MaxLength(5000)
   description!: string;
 
+  @ApiProperty({ example: 'Medellín' })
+  @IsString()
+  @IsNotEmpty()
+  city!: string;
+
   @ApiProperty({
     enum: ExperienceCategoryEnum,
     example: ExperienceCategoryEnum.TRANSPORTATION,
