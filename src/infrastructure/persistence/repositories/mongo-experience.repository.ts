@@ -6,12 +6,14 @@ import {
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
-import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
+import {
+  ExperienceScope,
+  ExperienceScopeEnum,
+} from '@/domain/experience/value-objects/experience-scope.vo';
 import { ExperienceStatus } from '@/domain/experience/value-objects/experience-status.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model, Types } from 'mongoose';
@@ -35,23 +37,16 @@ export class MongoExperienceRepository implements ExperienceRepository {
     const document = {
       tenantId: new Types.ObjectId(experience.getTenantId().toString()),
       propertyId: propertyId ? new Types.ObjectId(propertyId.toString()) : null,
-      unitIds: experience
-        .getUnitIds()
-        .map((unitId) => new Types.ObjectId(unitId.toString())),
+      scope: experience.getScope().toString(),
       name: experience.getName(),
       description: experience.getDescription(),
       city: experience.getCity(),
       category: experience.getCategory().toString(),
       priceCop: experience.getPriceCop(),
-      durationHours: experience.getDurationHours(),
       minimumParticipants: experience.getMinimumParticipants(),
       capacity: experience.getCapacity(),
-      location: experience.getLocation(),
       availabilityType: experience.getAvailabilityType().toString(),
-      startAt: experience.getStartAt(),
-      endAt: experience.getEndAt(),
       recurrence: experience.getRecurrence(),
-      blackoutRanges: experience.getBlackoutRanges(),
       allowStandalonePurchase: experience.getAllowStandalonePurchase(),
       allowReservationPurchase: experience.getAllowReservationPurchase(),
       mediaKeys: experience.getMediaKeys(),
@@ -167,7 +162,7 @@ export class MongoExperienceRepository implements ExperienceRepository {
       query.propertyId = new Types.ObjectId(filters.propertyId.toString());
     }
 
-    if (filters.scope === ExperienceScopeEnum.TENANT) {
+    if (filters.scope === ExperienceScopeEnum.GLOBAL) {
       query.propertyId = null;
     } else if (filters.scope === ExperienceScopeEnum.PROPERTY) {
       query.propertyId = { $ne: null };
@@ -211,30 +206,19 @@ export class MongoExperienceRepository implements ExperienceRepository {
       propertyId: document.propertyId
         ? PropertyId.create(document.propertyId.toString())
         : undefined,
-      unitIds: (document.unitIds ?? []).map((unitId) =>
-        UnitId.create(unitId.toString()),
+      scope: ExperienceScope.create(
+        document.scope ?? (document.propertyId ? 'property' : 'global'),
       ),
       name: document.name,
       description: document.description,
       city: document.city,
       category: ExperienceCategory.create(document.category),
       priceCop: document.priceCop,
-      durationHours: document.durationHours,
       minimumParticipants: document.minimumParticipants ?? 1,
       capacity: document.capacity,
-      location: document.location
-        ? {
-            label: document.location.label,
-            address: document.location.address,
-            lat: document.location.lat,
-            lng: document.location.lng,
-          }
-        : null,
       availabilityType: ExperienceAvailabilityType.create(
         document.availabilityType,
       ),
-      startAt: document.startAt ?? undefined,
-      endAt: document.endAt ?? undefined,
       recurrence: document.recurrence
         ? {
             daysOfWeek: document.recurrence.daysOfWeek,
@@ -242,10 +226,6 @@ export class MongoExperienceRepository implements ExperienceRepository {
             endTime: document.recurrence.endTime,
           }
         : undefined,
-      blackoutRanges: (document.blackoutRanges ?? []).map((range) => ({
-        startAt: range.startAt,
-        endAt: range.endAt,
-      })),
       allowStandalonePurchase: document.allowStandalonePurchase,
       allowReservationPurchase: document.allowReservationPurchase,
       mediaKeys: document.mediaKeys ?? [],
