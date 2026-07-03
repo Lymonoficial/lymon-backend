@@ -40,6 +40,7 @@ export class RefreshTokenHandler implements ICommandHandler<RefreshTokenCommand>
       isOwner: payload.isOwner,
       emailVerified: payload.emailVerified,
       roleAssignments: payload.roleAssignments,
+      trialEndsAt: payload.trialEndsAt,
     };
 
     const accessToken = this.tokenService.generateAccesToken(cleanPayload);
