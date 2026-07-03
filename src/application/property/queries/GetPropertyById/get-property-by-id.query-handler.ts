@@ -38,6 +38,7 @@ export class GetPropertyByIdQueryHandler implements IQueryHandler<
 
     const dto = new PropertyFullDto(
       property.getId()?.toString() ?? '',
+      property.getSlug(),
       property.getName(),
       property.getDescription(),
       property.getPropertyType().toString(),
