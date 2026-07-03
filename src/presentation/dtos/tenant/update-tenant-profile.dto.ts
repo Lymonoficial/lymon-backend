@@ -1,11 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { TenantThemeDto } from '@/presentation/dtos/tenant/tenant-theme.dto';
 
 export class UpdateTenantProfileDto {
   @ApiPropertyOptional({
@@ -38,18 +40,20 @@ export class UpdateTenantProfileDto {
   address?: string | null;
 
   @ApiPropertyOptional({
-    example: 'https://www.myhotel.com',
-    description: 'Business website URL',
+    example: 'Boutique beachfront hotel with 24 rooms.',
+    description: 'Free-text description of the business',
   })
   @IsOptional()
-  @IsUrl()
-  website?: string | null;
+  @IsString()
+  @MaxLength(500)
+  description?: string | null;
 
   @ApiPropertyOptional({
-    example: 'https://storage.example.com/logo.png',
-    description: 'URL of the business logo (upload handled separately)',
+    type: TenantThemeDto,
+    description: 'Branding color theme variables',
   })
   @IsOptional()
-  @IsUrl()
-  logoUrl?: string | null;
+  @ValidateNested()
+  @Type(() => TenantThemeDto)
+  theme?: TenantThemeDto | null;
 }

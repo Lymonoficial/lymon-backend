@@ -1,3 +1,4 @@
+import { TenantTheme } from '@/domain/tenant/value-objects/tenant-theme';
 import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
@@ -23,10 +24,13 @@ export class TenantDocument extends Document {
   address: string | null;
 
   @Prop({ type: String, default: null })
-  website: string | null;
+  description: string | null;
 
   @Prop({ type: String, default: null })
-  logoUrl: string | null;
+  logoKey: string | null;
+
+  @Prop({ type: Object, default: null })
+  theme: TenantTheme | null;
 
   @Prop()
   createdAt: Date;

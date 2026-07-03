@@ -50,14 +50,53 @@ describe('TenantController', () => {
       name: 'Tenant Renamed',
       contactPhone: '12345',
       address: 'Address',
-      website: 'https://test.com',
-      logoUrl: 'https://test.com/logo.png',
+      description: 'A description',
+      theme: { primary: '#1A73E8' },
     });
 
     expect(commandBus.execute).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       message: 'Tenant profile updated successfully',
       data: { tenantId: user.tenantId },
+    });
+  });
+
+  it('returns a presigned URL for the logo upload', async () => {
+    queryBus.execute.mockResolvedValue({
+      presignedUrl: 'https://r2.put/signed',
+      fileUrl: 'https://cdn.test/tenants/x/logo/1.png',
+      key: 'tenants/x/logo/1.png',
+    });
+
+    const result = await controller.getLogoUploadUrl(user, {
+      contentType: 'image/png',
+      fileSize: 1024,
+    });
+
+    expect(queryBus.execute).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      message: 'Presigned URL generated',
+      data: {
+        presignedUrl: 'https://r2.put/signed',
+        fileUrl: 'https://cdn.test/tenants/x/logo/1.png',
+        key: 'tenants/x/logo/1.png',
+      },
+    });
+  });
+
+  it('saves the uploaded logo and returns its url', async () => {
+    commandBus.execute.mockResolvedValue({
+      logoUrl: 'https://cdn.test/tenants/x/logo/1.png',
+    });
+
+    const result = await controller.saveLogo(user, {
+      key: 'tenants/x/logo/1.png',
+    });
+
+    expect(commandBus.execute).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      message: 'Logo updated successfully',
+      data: { logoUrl: 'https://cdn.test/tenants/x/logo/1.png' },
     });
   });
 });

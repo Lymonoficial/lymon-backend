@@ -15,13 +15,15 @@ Se implementó la capacidad de leer y actualizar el perfil del tenant (`GET /ten
 
 ### Campos incluidos
 
-| Campo          | Tipo           | Razón                                                        |
-|----------------|----------------|--------------------------------------------------------------|
-| `name`         | `string`       | Nombre del negocio — puede cambiar por rebranding            |
-| `contactPhone` | `string\|null` | Teléfono de contacto operativo                               |
-| `address`      | `string\|null` | Dirección física del negocio                                 |
-| `website`      | `string\|null` | Sitio web público                                            |
-| `logoUrl`      | `string\|null` | URL del logo (upload manejado por separado, ver ADR-008)     |
+| Campo          | Tipo            | Razón                                                            |
+|----------------|-----------------|------------------------------------------------------------------|
+| `name`         | `string`        | Nombre del negocio — puede cambiar por rebranding                |
+| `contactPhone` | `string\|null`  | Teléfono de contacto operativo                                   |
+| `address`      | `string\|null`  | Dirección física del negocio                                     |
+| `description`  | `string\|null`  | Descripción libre del negocio                                    |
+| `theme`        | `object\|null`  | Variables de color de branding (primary, secondary, accent, ...) |
+
+> **Actualización (LYMON-1096):** se eliminó `website`. El logo ya no se edita vía `PATCH`; se sube con el flujo dedicado `POST /tenant/logo/presigned-url` + `POST /tenant/logo` (patrón de subida a R2, ver el flujo de foto de perfil de guest). Se persiste **solo la key** de R2 (`logoKey`) en la colección `tenants`; el `logoUrl` de la respuesta se construye en el backend con `getPublicUrl(logoKey)` al leer, para mantener el dominio/CDN fuera de la base de datos.
 
 ### Campos excluidos
 

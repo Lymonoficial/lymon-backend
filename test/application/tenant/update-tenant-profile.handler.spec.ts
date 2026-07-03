@@ -40,7 +40,7 @@ describe('UpdateTenantProfileHandler', () => {
             null,
             '65f1a1a2b3c4d5e6f7a8b9c2',
             'owner@example.com',
-          ),
+          ), // (id, name, contactPhone, address, description, theme, actorId, actorEmail)
         ),
       ).rejects.toThrow(NotFoundException);
     });
@@ -56,8 +56,8 @@ describe('UpdateTenantProfileHandler', () => {
           'Updated Corp',
           '+573009999999',
           'New Address 456',
-          'https://updated.com',
-          'https://logo.updated.com/img.png',
+          'An updated description',
+          { primary: '#1A73E8' },
           '65f1a1a2b3c4d5e6f7a8b9c2',
           'owner@example.com',
         ),

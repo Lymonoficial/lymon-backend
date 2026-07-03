@@ -1,6 +1,7 @@
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { PlanType } from '@/domain/tenant/value-objects/plan-type.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { TenantTheme } from '@/domain/tenant/value-objects/tenant-theme';
 
 export interface TenantReconstitutionProps {
   id: TenantId;
@@ -10,8 +11,9 @@ export interface TenantReconstitutionProps {
   emailVerified: boolean;
   contactPhone: string | null;
   address: string | null;
-  website: string | null;
-  logoUrl: string | null;
+  description: string | null;
+  logoKey: string | null;
+  theme: TenantTheme | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
@@ -26,8 +28,9 @@ export class Tenant {
     private emailVerified: boolean,
     private contactPhone: string | null,
     private address: string | null,
-    private website: string | null,
-    private logoUrl: string | null,
+    private description: string | null,
+    private logoKey: string | null,
+    private theme: TenantTheme | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
     private deletedAt: Date | null = null,
@@ -48,6 +51,7 @@ export class Tenant {
       null,
       null,
       null,
+      null,
       new Date(),
       new Date(),
     );
@@ -62,8 +66,9 @@ export class Tenant {
       props.emailVerified,
       props.contactPhone,
       props.address,
-      props.website,
-      props.logoUrl,
+      props.description,
+      props.logoKey,
+      props.theme,
       props.createdAt,
       props.updatedAt,
       props.deletedAt,
@@ -101,8 +106,8 @@ export class Tenant {
     name?: string,
     contactPhone?: string | null,
     address?: string | null,
-    website?: string | null,
-    logoUrl?: string | null,
+    description?: string | null,
+    theme?: TenantTheme | null,
   ): void {
     if (name !== undefined) {
       if (!name || name.trim() === '') {
@@ -112,8 +117,14 @@ export class Tenant {
     }
     if (contactPhone !== undefined) this.contactPhone = contactPhone;
     if (address !== undefined) this.address = address;
-    if (website !== undefined) this.website = website;
-    if (logoUrl !== undefined) this.logoUrl = logoUrl;
+    if (description !== undefined) this.description = description;
+    if (theme !== undefined) this.theme = theme;
+    this.updatedAt = new Date();
+  }
+
+  /** Sets the R2 object key for the logo (set via the dedicated upload flow). */
+  setLogoKey(logoKey: string | null): void {
+    this.logoKey = logoKey;
     this.updatedAt = new Date();
   }
 
@@ -133,12 +144,16 @@ export class Tenant {
     return this.address;
   }
 
-  getWebsite(): string | null {
-    return this.website;
+  getDescription(): string | null {
+    return this.description;
   }
 
-  getLogoUrl(): string | null {
-    return this.logoUrl;
+  getLogoKey(): string | null {
+    return this.logoKey;
+  }
+
+  getTheme(): TenantTheme | null {
+    return this.theme;
   }
 
   getOwnerEmail(): Email {

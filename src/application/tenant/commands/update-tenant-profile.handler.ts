@@ -40,8 +40,8 @@ export class UpdateTenantProfileHandler implements ICommandHandler<UpdateTenantP
       command.name,
       command.contactPhone,
       command.address,
-      command.website,
-      command.logoUrl,
+      command.description,
+      command.theme,
     );
 
     await this.tenantRepository.save(tenant);
@@ -59,8 +59,8 @@ export class UpdateTenantProfileHandler implements ICommandHandler<UpdateTenantP
           name: command.name,
           contactPhone: command.contactPhone,
           address: command.address,
-          website: command.website,
-          logoUrl: command.logoUrl,
+          description: command.description,
+          theme: command.theme,
         },
       ),
     );
