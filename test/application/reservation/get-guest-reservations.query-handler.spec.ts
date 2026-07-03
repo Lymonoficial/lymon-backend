@@ -153,19 +153,19 @@ describe('GetGuestReservationsHandler', () => {
       id: '65f1a1a2b3c4d5e6f7a8b9c3',
       bookingReference: '1',
       propertyId: '65f1a1a2b3c4d5e6f7a8b9c1',
-      status: 'confirmed',
+      status: ReservationStatusEnum.CONFIRMED,
     });
     expect(result.items[1]).toMatchObject({
       id: 'res-2',
       bookingReference: '1',
       propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
-      status: 'checked_in',
+      status: ReservationStatusEnum.CHECKED_IN,
     });
     expect(result.items[2]).toMatchObject({
       id: 'res-3',
       bookingReference: '1',
       propertyId: '65f1a1a2b3c4d5e6f7a8b9cd',
-      status: 'completed',
+      status: ReservationStatusEnum.CHECKED_OUT,
     });
   });
 
