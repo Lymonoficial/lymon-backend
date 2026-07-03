@@ -14,6 +14,7 @@ export interface GuestMessageRepository {
     limit: number,
   ): Promise<{ messages: GuestMessage[]; total: number }>;
   findByProviderMessageId(providerMessageId: string): Promise<GuestMessage | null>;
+  findByConversationId(tenantId: string, conversationId: string): Promise<GuestMessage[]>;
 }
 
 export const GUEST_MESSAGE_REPOSITORY = Symbol('GuestMessageRepository');

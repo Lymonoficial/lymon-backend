@@ -29,6 +29,8 @@ import { GetGuestReservationsResult } from '@/application/reservation/queries/ge
 import { GetUnitOccupancyQuery } from '@/application/reservation/queries/get-unit-occupancy/get-unit-occupancy.query';
 import { CancelGuestReservationCommand } from '@/application/reservation/commands/cancel-guest-reservation/cancel-guest-reservation.command';
 import type { CancelGuestReservationResult } from '@/application/reservation/commands/cancel-guest-reservation/cancel-guest-reservation.handler';
+import { SubmitCheckInInfoCommand } from '@/application/reservation/commands/submit-check-in-info/submit-check-in-info.command';
+import { SubmitCheckInInfoDto } from '@/presentation/dtos/reservation/submit-check-in-info.dto';
 import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 @ApiTags('guest-reservations')
@@ -49,7 +51,7 @@ export class GuestReservationController {
     name: 'status',
     required: false,
     description:
-      'Filter by status: active, pending, confirmed, finished, cancelled',
+      'Filter by status: active, pending, confirmed, checked_in, finished, cancelled',
   })
   @ApiQuery({
     name: 'page',
@@ -159,6 +161,42 @@ export class GuestReservationController {
     };
   }
 
+  @Post(':id/check-in-info')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Submit traveler information for virtual check-in' })
+  @ApiResponse({
+    status: 200,
+    description: 'Check-in info submitted successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid status or traveler count exceeds guests count',
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Reservation not found' })
+  async submitCheckInInfo(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Param('id') id: string,
+    @Body() dto: SubmitCheckInInfoDto,
+  ): Promise<{ message: string }> {
+    await this.commandBus.execute(
+      new SubmitCheckInInfoCommand(
+        id,
+        guest.guestAccountId,
+        dto.travelers.map((t) => ({
+          fullName: t.fullName,
+          documentType: t.documentType,
+          documentNumber: t.documentNumber,
+          nationality: t.nationality,
+          dateOfBirth: t.dateOfBirth ? new Date(t.dateOfBirth) : null,
+          phone: t.phone ?? null,
+        })),
+      ),
+    );
+
+    return { message: 'Check-in info submitted successfully' };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a guest reservation by ID' })
   @ApiResponse({ status: 200, description: 'Reservation detail for guest' })
@@ -186,7 +224,13 @@ export class GuestReservationController {
     const result = await this.commandBus.execute<
       CancelGuestReservationCommand,
       CancelGuestReservationResult
-    >(new CancelGuestReservationCommand(id, guest.guestAccountId, reason ?? null));
+    >(
+      new CancelGuestReservationCommand(
+        id,
+        guest.guestAccountId,
+        reason ?? null,
+      ),
+    );
 
     return {
       message: 'Reservation cancelled successfully',
@@ -216,6 +260,7 @@ export class GuestReservationController {
     const statusMap: Record<string, ReservationStatusEnum> = {
       pending: ReservationStatusEnum.PENDING,
       confirmed: ReservationStatusEnum.CONFIRMED,
+      checked_in: ReservationStatusEnum.CHECKED_IN,
       cancelled: ReservationStatusEnum.CANCELLED,
       finished: ReservationStatusEnum.CHECKED_OUT,
     };

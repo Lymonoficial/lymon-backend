@@ -7,5 +7,6 @@ export function createGuestMessageRepositoryMock(): jest.Mocked<GuestMessageRepo
     findByGuestId: jest.fn(),
     findByGuestIdPaginated: jest.fn(),
     findByProviderMessageId: jest.fn(),
+    findByConversationId: jest.fn(),
   };
 }

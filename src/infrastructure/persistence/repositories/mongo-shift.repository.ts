@@ -41,6 +41,7 @@ export class MongoShiftRepository implements ShiftRepository {
       endTime: shift.getEndHour(),
       startMinutes: shift.getStartMinutes(),
       endMinutes: shift.getEndMinutes(),
+      weekdays: shift.getWeekdays() ?? undefined,
       notes: shift.getNotes(),
       createdBy: shift.getCreatedBy(),
       createdByEmail: shift.getCreatedByEmail(),
@@ -147,6 +148,7 @@ export class MongoShiftRepository implements ShiftRepository {
     startMinutes: number,
     endMinutes: number,
     excludeShiftId?: ShiftId,
+    weekdays?: number[] | null,
   ): Promise<Shift | null> {
     const effectiveEndDate = endDate ?? this.getOpenEndedUpperBound();
     const query: Record<string, unknown> = {
@@ -184,6 +186,17 @@ export class MongoShiftRepository implements ShiftRepository {
       query._id = { $ne: new Types.ObjectId(excludeShiftId.toString()) };
     }
 
+    if (weekdays && weekdays.length > 0) {
+      (query.$and as Record<string, unknown>[]).push({
+        $or: [
+          { weekdays: { $exists: false } },
+          { weekdays: null },
+          { weekdays: { $size: 0 } },
+          { weekdays: { $elemMatch: { $in: weekdays } } },
+        ],
+      });
+    }
+
     const doc = await this.shiftModel.findOne(query);
 
     return doc ? this.toDomain(doc) : null;
@@ -216,6 +229,7 @@ export class MongoShiftRepository implements ShiftRepository {
       endHour: doc.endHour ?? doc.endTime,
       startMinutes: doc.startMinutes,
       endMinutes: doc.endMinutes,
+      weekdays: doc.weekdays && doc.weekdays.length > 0 ? doc.weekdays : null,
       notes: doc.notes ?? null,
       createdBy: doc.createdBy ?? null,
       createdByEmail: doc.createdByEmail ?? null,

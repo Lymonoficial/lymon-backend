@@ -15,6 +15,7 @@ export interface IShiftReconstituteData {
   endHour: string;
   startMinutes: number;
   endMinutes: number;
+  weekdays: number[] | null;
   notes: string | null;
   createdBy: string | null;
   createdByEmail: string | null;

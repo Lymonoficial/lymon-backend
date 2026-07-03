@@ -86,21 +86,24 @@ export class GuestExperienceController {
   ): PublicExperienceCatalogDto {
     return {
       id: experience.id,
-      tenantId: experience.tenantId,
       propertyId: experience.propertyId,
       name: experience.name,
       description: experience.description,
       category: experience.category,
       priceCop: experience.priceCop,
       durationHours: experience.durationHours,
+      minimumParticipants: experience.minimumParticipants,
       capacity: experience.capacity,
-      coverImageUrl: experience.coverImageUrl,
-      location: new PublicExperienceLocationDto(
-        experience.location.label,
-        experience.location.address,
-        experience.location.lat,
-        experience.location.lng,
-      ),
+      coverImageUrl: experience.mediaUrls[0] ?? null,
+      mediaUrls: experience.mediaUrls,
+      location: experience.location
+        ? new PublicExperienceLocationDto(
+            experience.location.label,
+            experience.location.address,
+            experience.location.lat,
+            experience.location.lng,
+          )
+        : null,
       availabilityType: experience.availabilityType,
       startAt: experience.startAt,
       endAt: experience.endAt,
@@ -125,16 +128,17 @@ export class GuestExperienceController {
 
 interface PublicExperienceCatalogDto {
   id: string;
-  tenantId: string;
   propertyId: string | null;
   name: string;
   description: string;
   category: string;
   priceCop: number;
-  durationHours: number;
+  durationHours: number | null;
+  minimumParticipants: number;
   capacity: number;
-  coverImageUrl: string;
-  location: PublicExperienceLocationDto;
+  coverImageUrl: string | null;
+  mediaUrls: string[];
+  location: PublicExperienceLocationDto | null;
   availabilityType: string;
   startAt: Date | null;
   endAt: Date | null;

@@ -6,6 +6,8 @@ export interface RefundPolicyInfo {
   refundRequestId: string | null;
 }
 
+import { TravelerInfo } from '@/domain/reservation/entities/reservation.entity';
+
 export interface GuestReservationDetailResult {
   id: string;
   bookingReference: string;
@@ -25,6 +27,7 @@ export interface GuestReservationDetailResult {
   cancelledAt: Date | null;
   checkInActualAt: Date | null;
   checkOutActualAt: Date | null;
+  checkInInfo: TravelerInfo[];
   priceBreakdown: {
     pricePerNight: number;
     nights: number;

@@ -9,7 +9,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -21,8 +20,8 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 class UpdateExperienceLocationDto {
   @ApiPropertyOptional({ example: 'Main lobby pickup point' })
   @IsString()
-  @IsNotEmpty()
-  label!: string;
+  @IsOptional()
+  label?: string;
 
   @ApiPropertyOptional({ example: 'Cra 10 #20-30, Bogota' })
   @IsString()
@@ -33,13 +32,15 @@ class UpdateExperienceLocationDto {
   @IsNumber()
   @Min(-90)
   @Max(90)
-  lat!: number;
+  @IsOptional()
+  lat?: number;
 
   @ApiPropertyOptional({ example: -74.0817, minimum: -180, maximum: 180 })
   @IsNumber()
   @Min(-180)
   @Max(180)
-  lng!: number;
+  @IsOptional()
+  lng?: number;
 }
 
 class UpdateExperienceRecurrenceDto {
@@ -103,16 +104,21 @@ export class UpdateExperienceDto {
   @IsOptional()
   durationHours?: number;
 
+  @ApiPropertyOptional({
+    example: 2,
+    minimum: 1,
+    description: 'Minimum participants required for the experience to take place',
+  })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  minimumParticipants?: number;
+
   @ApiPropertyOptional({ example: 8, minimum: 1 })
   @IsInt()
   @Min(1)
   @IsOptional()
   capacity?: number;
-
-  @ApiPropertyOptional({ example: 'https://image.com/experience-cover.jpg' })
-  @IsUrl()
-  @IsOptional()
-  coverImageUrl?: string;
 
   @ApiPropertyOptional({ type: () => UpdateExperienceLocationDto })
   @ValidateNested()

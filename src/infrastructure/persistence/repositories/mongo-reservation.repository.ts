@@ -74,6 +74,7 @@ export class MongoReservationRepository
       cancellationReason: reservation.getCancellationReason(),
       checkInActualAt: reservation.getCheckInActualAt(),
       checkOutActualAt: reservation.getCheckOutActualAt(),
+      checkInInfo: reservation.getCheckInInfo(),
       updatedAt: reservation.getUpdatedAt(),
     };
 
@@ -282,7 +283,11 @@ export class MongoReservationRepository
     const docs = await this.reservationModel.find({
       unitId: new Types.ObjectId(unitId.toString()),
       status: {
-        $nin: [ReservationStatusEnum.CANCELLED, ReservationStatusEnum.NO_SHOW],
+        $nin: [
+          ReservationStatusEnum.CANCELLED,
+          ReservationStatusEnum.NO_SHOW,
+          ReservationStatusEnum.CHECKED_OUT,
+        ],
       },
       checkOut: { $gt: fromDate },
     });
@@ -481,6 +486,14 @@ export class MongoReservationRepository
       checkInActualAt: doc.checkInActualAt,
       checkOutActualAt: doc.checkOutActualAt,
       reservationNumber: doc.reservationNumber ?? 0,
+      checkInInfo: (doc.checkInInfo ?? []).map((t) => ({
+        fullName: t.fullName,
+        documentType: t.documentType,
+        documentNumber: t.documentNumber,
+        nationality: t.nationality,
+        dateOfBirth: t.dateOfBirth ?? null,
+        phone: t.phone ?? null,
+      })),
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });

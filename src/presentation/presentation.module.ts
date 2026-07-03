@@ -28,6 +28,8 @@ import { StorageController } from '@/presentation/controllers/storage.controller
 import { UnitRatingController } from '@/presentation/controllers/unit-rating.controller';
 import { GuestCartController } from '@/presentation/controllers/guest-cart.controller';
 import { RefundController } from '@/presentation/controllers/refund.controller';
+import { GuestExperiencePurchasesController } from '@/presentation/controllers/guest-experience-purchases.controller';
+import { ExperiencePurchasesController } from '@/presentation/controllers/experience-purchases.controller';
 
 @Module({
   imports: [CqrsModule, ApplicationModule, CommunicationWebhookModule],
@@ -58,6 +60,8 @@ import { RefundController } from '@/presentation/controllers/refund.controller';
     UnitRatingController,
     GuestCartController,
     RefundController,
+    GuestExperiencePurchasesController,
+    ExperiencePurchasesController,
   ],
 })
 export class PresentationModule {}

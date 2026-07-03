@@ -1,9 +1,9 @@
 export class PublicExperienceLocationDto {
   constructor(
-    public readonly label: string,
+    public readonly label: string | undefined,
     public readonly address: string | undefined,
-    public readonly lat: number,
-    public readonly lng: number,
+    public readonly lat: number | undefined,
+    public readonly lng: number | undefined,
   ) {}
 }
 
@@ -41,10 +41,10 @@ export class PublicExperienceDto {
     public readonly description: string,
     public readonly category: string,
     public readonly priceCop: number,
-    public readonly durationHours: number,
+    public readonly durationHours: number | null,
+    public readonly minimumParticipants: number,
     public readonly capacity: number,
-    public readonly coverImageUrl: string,
-    public readonly location: PublicExperienceLocationDto,
+    public readonly location: PublicExperienceLocationDto | null,
     public readonly availabilityType: string,
     public readonly startAt: Date | null,
     public readonly endAt: Date | null,
@@ -55,5 +55,6 @@ export class PublicExperienceDto {
     public readonly minNoticeHours: number,
     public readonly purchaseCutoffHours: number,
     public readonly status: string,
+    public readonly mediaUrls: string[],
   ) {}
 }

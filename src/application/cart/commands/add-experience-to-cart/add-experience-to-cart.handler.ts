@@ -50,6 +50,7 @@ export class AddExperienceToCartHandler implements ICommandHandler<AddExperience
         'This experience cannot be purchased standalone',
       );
     }
+    experience.validateParticipantQuantity(command.quantity);
 
     let cart = await this.cartRepository.findOpenByGuest(guestAccountId);
     cart ??= Cart.create({ guestAccountId });

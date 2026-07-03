@@ -14,6 +14,7 @@ export interface ShiftForAudit {
   getEndDate(): Date | null;
   getStartHour(): string;
   getEndHour(): string;
+  getWeekdays(): number[] | null;
   getNotes(): string | null;
 }
 
@@ -29,6 +30,7 @@ export class ShiftAuditDiffService {
       endDate: endDate ? this.formatDate(endDate) : null,
       startHour: shift.getStartHour(),
       endHour: shift.getEndHour(),
+      weekdays: shift.getWeekdays(),
       notes: shift.getNotes(),
     };
   }

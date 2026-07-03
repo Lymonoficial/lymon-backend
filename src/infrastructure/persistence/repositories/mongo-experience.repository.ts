@@ -42,8 +42,8 @@ export class MongoExperienceRepository implements ExperienceRepository {
       category: experience.getCategory().toString(),
       priceCop: experience.getPriceCop(),
       durationHours: experience.getDurationHours(),
+      minimumParticipants: experience.getMinimumParticipants(),
       capacity: experience.getCapacity(),
-      coverImageUrl: experience.getCoverImageUrl(),
       location: experience.getLocation(),
       availabilityType: experience.getAvailabilityType().toString(),
       startAt: experience.getStartAt(),
@@ -157,12 +157,12 @@ export class MongoExperienceRepository implements ExperienceRepository {
       query.tenantId = new Types.ObjectId(filters.tenantId.toString());
     }
 
-    if (filters.propertyId) {
-      query.propertyId = new Types.ObjectId(filters.propertyId.toString());
-    }
-
     if (filters.category) {
       query.category = filters.category.toString();
+    }
+
+    if (filters.propertyId) {
+      query.propertyId = new Types.ObjectId(filters.propertyId.toString());
     }
 
     const sort: Record<string, 1 | -1> = filters.sortByPrice
@@ -206,14 +206,16 @@ export class MongoExperienceRepository implements ExperienceRepository {
       category: ExperienceCategory.create(document.category),
       priceCop: document.priceCop,
       durationHours: document.durationHours,
+      minimumParticipants: document.minimumParticipants ?? 1,
       capacity: document.capacity,
-      coverImageUrl: document.coverImageUrl,
-      location: {
-        label: document.location.label,
-        address: document.location.address,
-        lat: document.location.lat,
-        lng: document.location.lng,
-      },
+      location: document.location
+        ? {
+            label: document.location.label,
+            address: document.location.address,
+            lat: document.location.lat,
+            lng: document.location.lng,
+          }
+        : null,
       availabilityType: ExperienceAvailabilityType.create(
         document.availabilityType,
       ),

@@ -29,6 +29,7 @@ export interface ShiftRepository {
     startMinutes: number,
     endMinutes: number,
     excludeShiftId?: ShiftId,
+    weekdays?: number[] | null,
   ): Promise<Shift | null>;
   findOverlappingByStaff(
     tenantId: TenantId,

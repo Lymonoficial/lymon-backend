@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ClientSession, Model, Types } from 'mongoose';
-import type { ExperiencePurchaseRepository } from '@/domain/experience-purchase/repositories/experience-purchase.repository';
+import { ClientSession, Model, PipelineStage, Types } from 'mongoose';
+import type {
+  ExperiencePurchaseRepository,
+  TenantExperiencePurchaseFilters,
+  TenantExperiencePurchaseReadModel,
+} from '@/domain/experience-purchase/repositories/experience-purchase.repository';
 import { ExperiencePurchase } from '@/domain/experience-purchase/entities/experience-purchase.entity';
 import { ExperiencePurchaseId } from '@/domain/experience-purchase/value-objects/experience-purchase-id.vo';
 import {
@@ -96,6 +100,45 @@ export class MongoExperiencePurchaseRepository implements ExperiencePurchaseRepo
     });
   }
 
+  async findByTenantIdPaginated(
+    tenantId: TenantId,
+    page: number,
+    limit: number,
+    filters?: TenantExperiencePurchaseFilters,
+  ): Promise<TenantExperiencePurchaseReadModel[]> {
+    const match = this.buildTenantFilter(tenantId, filters);
+    const docs =
+      await this.purchaseModel.aggregate<TenantPurchaseAggregationResult>([
+        { $match: match },
+        { $sort: { createdAt: -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit },
+        ...this.tenantPurchaseLookupStages(),
+      ]);
+
+    return docs.map((doc) => ({
+      id: doc._id.toString(),
+      experienceId: doc.experienceId.toString(),
+      experienceName: doc.experience?.name ?? 'Unknown experience',
+      guestAccountId: doc.guestAccountId.toString(),
+      guestName: doc.guestAccount?.fullName ?? 'Unknown guest',
+      purchasedAt: doc.createdAt,
+      scheduledDate: doc.selectedDate ?? null,
+      quantity: doc.quantity,
+      totalPriceCop: doc.totalPriceCop,
+      status: doc.status,
+    }));
+  }
+
+  async countByTenantId(
+    tenantId: TenantId,
+    filters?: TenantExperiencePurchaseFilters,
+  ): Promise<number> {
+    return this.purchaseModel.countDocuments(
+      this.buildTenantFilter(tenantId, filters),
+    );
+  }
+
   async countConfirmedByExperienceAndDate(
     experienceId: string,
     selectedDate: Date | null,
@@ -114,6 +157,69 @@ export class MongoExperiencePurchaseRepository implements ExperiencePurchaseRepo
       filter.selectedDate = null;
     }
     return this.purchaseModel.countDocuments(filter);
+  }
+
+  private buildTenantFilter(
+    tenantId: TenantId,
+    filters?: TenantExperiencePurchaseFilters,
+  ): TenantPurchaseFilter {
+    const match: TenantPurchaseFilter = {
+      tenantId: new Types.ObjectId(tenantId.toString()),
+    };
+
+    if (filters?.experienceId) {
+      match.experienceId = new Types.ObjectId(filters.experienceId);
+    }
+
+    if (filters?.status) {
+      match.status = filters.status;
+    }
+
+    if (filters?.dateFrom || filters?.dateTo) {
+      const selectedDate: Record<string, Date> = {};
+      if (filters.dateFrom) {
+        selectedDate.$gte = filters.dateFrom;
+      }
+      if (filters.dateTo) {
+        selectedDate.$lte = filters.dateTo;
+      }
+      match.selectedDate = selectedDate;
+    }
+
+    return match;
+  }
+
+  private tenantPurchaseLookupStages(): PipelineStage[] {
+    return [
+      {
+        $lookup: {
+          from: 'experiences',
+          localField: 'experienceId',
+          foreignField: '_id',
+          as: 'experience',
+        },
+      },
+      {
+        $unwind: {
+          path: '$experience',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'guest_accounts',
+          localField: 'guestAccountId',
+          foreignField: '_id',
+          as: 'guestAccount',
+        },
+      },
+      {
+        $unwind: {
+          path: '$guestAccount',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ];
   }
 
   private toDomainEntity(doc: ExperiencePurchaseDocument): ExperiencePurchase {
@@ -138,3 +244,30 @@ export class MongoExperiencePurchaseRepository implements ExperiencePurchaseRepo
     });
   }
 }
+
+interface TenantPurchaseAggregationResult {
+  _id: Types.ObjectId;
+  experienceId: Types.ObjectId;
+  experience?: {
+    name?: string;
+  };
+  guestAccountId: Types.ObjectId;
+  guestAccount?: {
+    fullName?: string;
+  };
+  createdAt: Date;
+  selectedDate: Date | null;
+  quantity: number;
+  totalPriceCop: number;
+  status: string;
+}
+
+type TenantPurchaseFilter = {
+  tenantId: Types.ObjectId;
+  experienceId?: Types.ObjectId;
+  status?: ExperiencePurchaseStatusEnum;
+  selectedDate?: {
+    $gte?: Date;
+    $lte?: Date;
+  };
+};

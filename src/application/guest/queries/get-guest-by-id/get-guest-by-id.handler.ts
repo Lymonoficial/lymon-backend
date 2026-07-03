@@ -50,12 +50,7 @@ export class GetGuestByIdHandler implements IQueryHandler<
         firstName: guest.getFirstName(),
         lastName: guest.getLastName(),
         primaryEmail: guest.getPrimaryEmail(),
-        emails: guest.getEmails(),
-        phones: guest.getPhones().map((p) => ({
-          number: p.number,
-          type: p.type,
-          isPrimary: p.isPrimary,
-        })),
+        phone: guest.getPhone(),
         status: guest.getStatus(),
         tags: guest.getTags().map((t) => t.getName()),
         preferences: guest.getPreferences(),

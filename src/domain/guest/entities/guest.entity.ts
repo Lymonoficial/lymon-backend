@@ -4,7 +4,6 @@ import { GuestAccountId } from '@/domain/guest-account/value-objects/guest-accou
 import {
   CreateGuestParams,
   GuestIdentity,
-  GuestPhone,
   GuestStatusEnum,
   GuestSummary,
 } from '@/domain/guest/entities/guest.types';
@@ -22,8 +21,7 @@ export class Guest {
     private lastName: string | null,
     private fullName: string,
     private primaryEmail: string,
-    private emails: string[],
-    private phones: GuestPhone[],
+    private phone: string | null,
     private status: GuestStatusEnum,
     private tags: GuestTag[],
     private preferences: GuestPreferenceItem[],
@@ -42,8 +40,6 @@ export class Guest {
     }
 
     const primaryEmail = Guest.normalizeEmail(params.primaryEmail);
-    const emails = Guest.buildEmails(primaryEmail, params.emails);
-    const phones = params.phones ?? [];
 
     return new Guest(
       null,
@@ -54,8 +50,7 @@ export class Guest {
       Guest.normalizeOptionalString(params.lastName),
       fullName,
       primaryEmail,
-      emails,
-      phones,
+      params.phone ?? null,
       params.status ?? GuestStatusEnum.ACTIVE,
       [],
       params.preferences ?? [],
@@ -85,8 +80,7 @@ export class Guest {
       data.lastName,
       data.fullName,
       Guest.normalizeEmail(data.primaryEmail),
-      Guest.buildEmails(data.primaryEmail, data.emails),
-      data.phones,
+      data.phone,
       data.status,
       Guest.uniqueTags(data.tags),
       data.preferences,
@@ -117,17 +111,11 @@ export class Guest {
 
   setPrimaryEmail(primaryEmail: string): void {
     this.primaryEmail = Guest.normalizeEmail(primaryEmail);
-    this.emails = Guest.buildEmails(this.primaryEmail, this.emails);
     this.touch();
   }
 
-  setEmails(emails: string[]): void {
-    this.emails = Guest.buildEmails(this.primaryEmail, emails);
-    this.touch();
-  }
-
-  setPhones(phones: GuestPhone[]): void {
-    this.phones = phones;
+  setPhone(phone: string | null): void {
+    this.phone = phone;
     this.touch();
   }
 
@@ -243,12 +231,8 @@ export class Guest {
     return this.primaryEmail;
   }
 
-  getEmails(): string[] {
-    return [...this.emails];
-  }
-
-  getPhones(): GuestPhone[] {
-    return [...this.phones];
+  getPhone(): string | null {
+    return this.phone;
   }
 
   getStatus(): GuestStatusEnum {
@@ -286,17 +270,6 @@ export class Guest {
     }
 
     return normalized;
-  }
-
-  private static buildEmails(
-    primaryEmail: string,
-    emails?: string[],
-  ): string[] {
-    const normalized = (emails ?? []).map((email) =>
-      Guest.normalizeEmail(email),
-    );
-    const all = [primaryEmail, ...normalized];
-    return [...new Set(all)];
   }
 
   private static uniqueTags(tags: GuestTag[]): GuestTag[] {

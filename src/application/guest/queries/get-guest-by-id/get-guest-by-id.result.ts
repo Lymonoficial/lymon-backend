@@ -8,12 +8,7 @@ export interface GuestDto {
   firstName: string | null;
   lastName: string | null;
   primaryEmail: string;
-  emails: string[];
-  phones: Array<{
-    number: string;
-    type?: string;
-    isPrimary?: boolean;
-  }>;
+  phone: string | null;
   status: GuestStatusEnum;
   tags: string[];
   preferences: GuestPreferenceItem[];

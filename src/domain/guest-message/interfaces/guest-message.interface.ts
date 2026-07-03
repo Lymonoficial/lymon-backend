@@ -28,4 +28,5 @@ export interface IGuestMessageData {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
+  conversationId: string | null;
 }

@@ -18,6 +18,10 @@ import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo
 import { ExperienceStatus } from '@/domain/experience/value-objects/experience-status.vo';
 import { mapExperienceToPublicDto } from '@/application/experience/queries/shared/experience.mapper';
 import { ExperienceUnitSummaryDto } from '@/application/experience/queries/shared/experience-read.dto';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @QueryHandler(GetAvailableExperienceByIdQuery)
 export class GetAvailableExperienceByIdQueryHandler implements IQueryHandler<
@@ -31,6 +35,8 @@ export class GetAvailableExperienceByIdQueryHandler implements IQueryHandler<
     private readonly propertyRepository: PropertyRepository,
     @Inject(UNIT_REPOSITORY)
     private readonly unitRepository: UnitRepository,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly storage: R2StorageService,
   ) {}
 
   async execute(
@@ -49,7 +55,9 @@ export class GetAvailableExperienceByIdQueryHandler implements IQueryHandler<
       );
     }
 
-    const dto = mapExperienceToPublicDto(experience);
+    const dto = mapExperienceToPublicDto(experience, (k) =>
+      this.storage.getPublicUrl(k),
+    );
 
     const propertyId = experience.getPropertyId();
     let propertyName: string | null = null;

@@ -37,8 +37,8 @@ function makeArchivedExperience(): Experience {
     category: ExperienceCategory.create(ExperienceCategoryEnum.TRANSPORTATION),
     priceCop: 50000,
     durationHours: 2,
+    minimumParticipants: 1,
     capacity: 5,
-    coverImageUrl: 'https://example.com/img.jpg',
     location: { label: 'Lobby', lat: 4.6097, lng: -74.0817 },
     availabilityType: ExperienceAvailabilityType.create(
       ExperienceAvailabilityTypeEnum.DATE_RANGE,
@@ -128,6 +128,24 @@ describe('AddExperienceToCartHandler', () => {
 
     await expect(handler.execute(makeCommand())).rejects.toThrow(
       DomainException,
+    );
+  });
+
+  it('throws DomainException when quantity is below the minimum participants', async () => {
+    const experience = makeExperience({ minimumParticipants: 3 });
+    experienceRepository.findById.mockResolvedValue(experience);
+
+    await expect(handler.execute(makeCommand({ quantity: 2 }))).rejects.toThrow(
+      'This experience requires at least 3 participants',
+    );
+  });
+
+  it('throws DomainException when quantity exceeds capacity', async () => {
+    const experience = makeExperience({ capacity: 2 });
+    experienceRepository.findById.mockResolvedValue(experience);
+
+    await expect(handler.execute(makeCommand({ quantity: 3 }))).rejects.toThrow(
+      'This experience allows up to 2 participants',
     );
   });
 });

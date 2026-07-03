@@ -1,14 +1,21 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
+import { IsCalendarDate } from '@/presentation/common/decorators/is-calendar-date.decorator';
 
 export class UpdateReservationDto {
-  @ApiPropertyOptional({ example: '2024-06-02' })
-  @IsDateString()
+  @ApiPropertyOptional({
+    example: '2024-06-02',
+    description: 'YYYY-MM-DD, no time',
+  })
+  @IsCalendarDate()
   @IsOptional()
   checkIn?: string;
 
-  @ApiPropertyOptional({ example: '2024-06-06' })
-  @IsDateString()
+  @ApiPropertyOptional({
+    example: '2024-06-06',
+    description: 'YYYY-MM-DD, no time',
+  })
+  @IsCalendarDate()
   @IsOptional()
   checkOut?: string;
 

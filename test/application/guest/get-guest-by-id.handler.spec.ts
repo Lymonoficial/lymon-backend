@@ -16,7 +16,7 @@ describe('GetGuestByIdHandler', () => {
 
   beforeEach(() => {
     guestRepository = createGuestRepositoryMock();
-    queryBus = { execute: jest.fn() } as any;
+    queryBus = { execute: jest.fn().mockResolvedValue(new Map()) } as any;
     handler = new GetGuestByIdHandler(guestRepository, queryBus);
   });
 
@@ -86,8 +86,8 @@ describe('GetGuestByIdHandler', () => {
       });
 
       jest
-        .spyOn(guest, 'getPhones')
-        .mockReturnValue([{ number: phone, type: 'mobile', isPrimary: true }]);
+        .spyOn(guest, 'getPhone')
+        .mockReturnValue(phone);
 
       guestRepository.findById.mockResolvedValue(guest);
 
@@ -97,7 +97,7 @@ describe('GetGuestByIdHandler', () => {
       );
       const result = await handler.execute(query);
 
-      expect(result.item?.phones[0].number).toBe(phone);
+      expect(result.item?.phone).toBe(phone);
     });
 
     it('should handle Blocked status (TC-05)', async () => {
