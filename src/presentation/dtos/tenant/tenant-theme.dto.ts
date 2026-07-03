@@ -16,14 +16,4 @@ export class TenantThemeDto {
   @IsOptional()
   @IsHexColor()
   accent?: string;
-
-  @ApiPropertyOptional({ example: '#FFFFFF' })
-  @IsOptional()
-  @IsHexColor()
-  background?: string;
-
-  @ApiPropertyOptional({ example: '#202124' })
-  @IsOptional()
-  @IsHexColor()
-  text?: string;
 }

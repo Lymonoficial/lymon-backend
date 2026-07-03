@@ -6,6 +6,4 @@ export interface TenantTheme {
   primary?: string | null;
   secondary?: string | null;
   accent?: string | null;
-  background?: string | null;
-  text?: string | null;
 }
