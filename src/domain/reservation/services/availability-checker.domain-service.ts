@@ -5,6 +5,7 @@ import { Reservation } from '../entities/reservation.entity';
 const INACTIVE_STATUSES = new Set<ReservationStatusEnum>([
   ReservationStatusEnum.CANCELLED,
   ReservationStatusEnum.NO_SHOW,
+  ReservationStatusEnum.CHECKED_OUT,
 ]);
 
 export class AvailabilityChecker {
