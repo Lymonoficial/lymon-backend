@@ -116,4 +116,12 @@ export class UpdatePropertyDto {
   @IsEmail()
   @IsNotEmpty()
   hostEmail?: string;
+
+  @ApiPropertyOptional({
+    example: 'tenantId/properties/1234-photo.jpg',
+    description: 'R2 object key for the property image',
+  })
+  @IsString()
+  @IsOptional()
+  imageKey?: string;
 }

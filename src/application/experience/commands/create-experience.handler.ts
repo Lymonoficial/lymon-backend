@@ -7,7 +7,6 @@ import {
 } from '@/domain/experience/repositories/experience.repository';
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
 import {
   AuditAction,
   AuditEntityType,
@@ -52,14 +51,8 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
   async execute(
     command: CreateExperienceCommand,
   ): Promise<CreateExperienceResult> {
-    const { tenantId, scope, propertyId, unitIds, experience } =
+    const { tenantId, propertyId, unitIds, experience } =
       this.buildDomainObjects(command);
-
-    if (scope.isPropertyScope() && !propertyId) {
-      throw new BadRequestException(
-        'propertyId is required for PROPERTY scope',
-      );
-    }
 
     const property = propertyId
       ? await this.propertyRepository.findById(propertyId)
@@ -144,14 +137,12 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
 
   private buildDomainObjects(command: CreateExperienceCommand): {
     tenantId: TenantId;
-    scope: ExperienceScope;
     propertyId?: PropertyId;
     unitIds: UnitId[];
     experience: Experience;
   } {
     try {
       const tenantId = TenantId.createFromString(command.tenantId);
-      const scope = ExperienceScope.create(command.scope);
       const propertyId = command.propertyId
         ? PropertyId.create(command.propertyId)
         : undefined;
@@ -161,22 +152,17 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
 
       const experience = Experience.create({
         tenantId,
-        scope,
         propertyId,
         unitIds,
         name: command.name,
         description: command.description,
+        city: command.city,
         category: ExperienceCategory.create(command.category),
         priceCop: command.priceCop,
         durationHours: command.durationHours,
+        minimumParticipants: command.minimumParticipants,
         capacity: command.capacity,
-        coverImageUrl: command.coverImageUrl,
-        location: {
-          label: command.location.label,
-          address: command.location.address,
-          lat: command.location.lat,
-          lng: command.location.lng,
-        },
+        location: command.location,
         availabilityType: ExperienceAvailabilityType.create(
           command.availabilityType,
         ),
@@ -189,11 +175,11 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
         })),
         allowStandalonePurchase: command.allowStandalonePurchase,
         allowReservationPurchase: command.allowReservationPurchase,
+        mediaKeys: command.mediaKeys,
       });
 
       return {
         tenantId,
-        scope,
         propertyId,
         unitIds,
         experience,

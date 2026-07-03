@@ -1,10 +1,6 @@
 import { Experience } from '@/domain/experience/entities/experience.entity';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import {
-  ExperienceScope,
-  ExperienceScopeEnum,
-} from '@/domain/experience/value-objects/experience-scope.vo';
-import {
   ExperienceCategory,
   ExperienceCategoryEnum,
 } from '@/domain/experience/value-objects/experience-category.vo';
@@ -27,34 +23,31 @@ export const EXPERIENCE_FIXTURE_DEFAULTS = {
   propertyId: PROPERTY_FIXTURE_DEFAULTS.id,
   name: 'Airport transfer',
   description: 'Private transfer from the airport to the property',
+  city: 'Medellín',
   priceCop: 120000,
   durationHours: 2,
+  minimumParticipants: 1,
   capacity: 8,
-  coverImageUrl: 'https://cdn.example.com/experience-cover.jpg',
   location: { label: 'Main lobby', lat: 4.6097, lng: -74.0817 },
 };
 
 export function makeExperience(
-  overrides?: Partial<{
-    id: string;
-    tenantId: string;
-    propertyId: string;
-  }>,
+  overrides?: Partial<typeof EXPERIENCE_FIXTURE_DEFAULTS>,
 ): Experience {
   const merged = { ...EXPERIENCE_FIXTURE_DEFAULTS, ...overrides };
   return Experience.reconstitute({
     id: ExperienceId.create(merged.id),
     tenantId: TenantId.createFromString(merged.tenantId),
-    scope: ExperienceScope.create(ExperienceScopeEnum.PROPERTY),
     propertyId: PropertyId.create(merged.propertyId),
     unitIds: [],
     name: merged.name,
     description: merged.description,
+    city: merged.city,
     category: ExperienceCategory.create(ExperienceCategoryEnum.TRANSPORTATION),
     priceCop: merged.priceCop,
     durationHours: merged.durationHours,
+    minimumParticipants: merged.minimumParticipants,
     capacity: merged.capacity,
-    coverImageUrl: merged.coverImageUrl,
     location: merged.location,
     availabilityType: ExperienceAvailabilityType.create(
       ExperienceAvailabilityTypeEnum.DATE_RANGE,

@@ -5,7 +5,10 @@ import {
 } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.result';
 import { Unit } from '@/domain/unit/entities/unit.entity';
 
-export function mapUnitToPublicDto(unit: Unit): PublicUnitDto {
+export function mapUnitToPublicDto(
+  unit: Unit,
+  getPublicUrl: (key: string) => string,
+): PublicUnitDto {
   const unitId = unit.getId();
   const bedrooms = unit.getBedrooms().map(
     (bedroom) =>
@@ -28,5 +31,6 @@ export function mapUnitToPublicDto(unit: Unit): PublicUnitDto {
     unit.getTenantId().toString(),
     unit.getPropertyId().toString(),
     unit.getRating(),
+    unit.getMediaKeys().map(getPublicUrl),
   );
 }

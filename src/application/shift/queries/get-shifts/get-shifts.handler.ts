@@ -51,6 +51,7 @@ export class GetShiftsHandler implements IQueryHandler<
         endHour: shift.getEndHour(),
         startMinutes: shift.getStartMinutes(),
         endMinutes: shift.getEndMinutes(),
+        weekdays: shift.getWeekdays(),
         notes: shift.getNotes(),
         createdBy: shift.getCreatedBy(),
         createdByEmail: shift.getCreatedByEmail(),

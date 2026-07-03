@@ -46,24 +46,8 @@ export class GuestDocument extends Document {
   @Prop({ required: true })
   primaryEmail: string;
 
-  @Prop({ type: [String], default: [] })
-  emails: string[];
-
-  @Prop({
-    type: [
-      {
-        number: { type: String, required: true },
-        type: { type: String },
-        isPrimary: { type: Boolean, default: false },
-      },
-    ],
-    default: [],
-  })
-  phones: Array<{
-    number: string;
-    type?: string;
-    isPrimary?: boolean;
-  }>;
+  @Prop({ type: String, default: null })
+  phone: string | null;
 
   @Prop({
     type: String,

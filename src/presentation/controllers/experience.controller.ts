@@ -84,12 +84,25 @@ export class ExperienceController {
     @Query('propertyId') propertyId: string | undefined,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('minCapacity', new DefaultValuePipe(undefined), new ParseIntPipe({ optional: true })) minCapacity: number | undefined,
+    @Query(
+      'minCapacity',
+      new DefaultValuePipe(undefined),
+      new ParseIntPipe({ optional: true }),
+    )
+    minCapacity: number | undefined,
   ) {
     const result = await this.queryBus.execute<
       GetExperiencesByTenantQuery,
       GetExperiencesByTenantResult
-    >(new GetExperiencesByTenantQuery(user.tenantId, page, limit, propertyId, minCapacity));
+    >(
+      new GetExperiencesByTenantQuery(
+        user.tenantId,
+        page,
+        limit,
+        propertyId,
+        minCapacity,
+      ),
+    );
 
     return {
       message: 'Experiences retrieved successfully',
@@ -140,7 +153,6 @@ export class ExperienceController {
       propertyScopedDateRange: {
         summary: 'Property-scoped transportation experience',
         value: {
-          scope: 'PROPERTY',
           propertyId: '6650d0ef3f3d2d2d2d2d2d2d',
           unitIds: ['6650d0ef3f3d2d2d2d2d2d33'],
           name: 'Airport transfer',
@@ -148,8 +160,8 @@ export class ExperienceController {
           category: 'TRANSPORTATION',
           priceCop: 120000,
           durationHours: 2,
+          minimumParticipants: 2,
           capacity: 8,
-          coverImageUrl: 'https://image.com/experience-cover.jpg',
           location: {
             label: 'Main lobby pickup point',
             address: 'Cra 10 #20-30, Bogota',
@@ -170,16 +182,15 @@ export class ExperienceController {
         },
       },
       tenantRecurring: {
-        summary: 'Tenant-level recurring transportation service',
+        summary: 'Recurring transportation service',
         value: {
-          scope: 'TENANT',
           name: 'Daily shuttle service',
           description: 'Recurring daily transportation service',
           category: 'TRANSPORTATION',
           priceCop: 80000,
           durationHours: 1,
+          minimumParticipants: 3,
           capacity: 12,
-          coverImageUrl: 'https://image.com/tenant-shuttle.jpg',
           location: {
             label: 'Terminal norte',
             address: 'Terminal del Norte',
@@ -201,8 +212,7 @@ export class ExperienceController {
   @ApiResponse({ status: 201, description: 'Experience created successfully' })
   @ApiResponse({
     status: 400,
-    description:
-      'Validation error. Example rule violation: TENANT scope cannot include unitIds.',
+    description: 'Validation error.',
     schema: {
       example: {
         statusCode: 400,
@@ -220,16 +230,16 @@ export class ExperienceController {
   ) {
     const command = new CreateExperienceCommand(
       user.tenantId,
-      dto.scope,
       dto.propertyId,
       dto.unitIds,
       dto.name,
       dto.description,
+      dto.city,
       dto.category,
       dto.priceCop,
       dto.durationHours,
+      dto.minimumParticipants,
       dto.capacity,
-      dto.coverImageUrl,
       dto.location,
       dto.availabilityType,
       dto.startAt,
@@ -238,6 +248,7 @@ export class ExperienceController {
       dto.blackoutRanges,
       dto.allowStandalonePurchase,
       dto.allowReservationPurchase,
+      dto.mediaKeys,
       user.userId,
       user.email,
     );
@@ -278,10 +289,11 @@ export class ExperienceController {
       ...pickDefined({
         name: dto.name,
         description: dto.description,
+        city: dto.city,
         priceCop: dto.priceCop,
         durationHours: dto.durationHours,
+        minimumParticipants: dto.minimumParticipants,
         capacity: dto.capacity,
-        coverImageUrl: dto.coverImageUrl,
         location: dto.location,
         availabilityType: dto.availabilityType,
         recurrence: dto.recurrence,

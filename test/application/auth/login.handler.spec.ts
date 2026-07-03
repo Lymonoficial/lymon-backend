@@ -69,6 +69,7 @@ describe('LoginHandler', () => {
       expect(result.emailVerified).toBe(true);
       expect(result.accessToken).toBe('access-token');
       expect(result.refreshToken).toBe('refresh-token');
+      expect(result.tutorialCompleted).toBe(false);
     });
   });
 

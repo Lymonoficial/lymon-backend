@@ -2,6 +2,7 @@ import { GetAvailableExperiencesQueryHandler } from '@/application/experience/qu
 import { GetAvailableExperiencesQuery } from '@/application/experience/queries/GetAvailableExperiences/get-available-experiences.query';
 import { GetAvailableExperiencesResult } from '@/application/experience/queries/GetAvailableExperiences/get-available-experiences.result';
 import { ExperienceRepository } from '@/domain/experience/repositories/experience.repository';
+import { BadRequestException } from '@nestjs/common';
 import { createExperienceRepositoryMock } from '@test/shared/mocks/repositories/experience-repository.mock';
 import {
   makeExperience,
@@ -14,7 +15,12 @@ describe('GetAvailableExperiencesQueryHandler', () => {
 
   beforeEach(() => {
     experienceRepository = createExperienceRepositoryMock();
-    handler = new GetAvailableExperiencesQueryHandler(experienceRepository);
+    handler = new GetAvailableExperiencesQueryHandler(
+      experienceRepository,
+      {
+        getPublicUrl: (k: string) => k,
+      } as any,
+    );
   });
 
   describe('with no filters', () => {
@@ -38,7 +44,12 @@ describe('GetAvailableExperiencesQueryHandler', () => {
       expect(
         experienceRepository.findAvailableForGuestPaginated,
       ).toHaveBeenCalledWith(
-        { tenantId: undefined, propertyId: undefined, category: undefined },
+        {
+          tenantId: undefined,
+          propertyId: undefined,
+          category: undefined,
+          sortByPrice: undefined,
+        },
         1,
         10,
       );
@@ -91,6 +102,37 @@ describe('GetAvailableExperiencesQueryHandler', () => {
         EXPERIENCE_FIXTURE_DEFAULTS.tenantId,
       );
       expect(call[0].propertyId?.toString()).toBe(propertyId);
+    });
+  });
+
+  describe('with propertyId filter only', () => {
+    it('passes only the propertyId filter to repository', async () => {
+      const propertyId = '65f1a1a2b3c4d5e6f7a8b902';
+      experienceRepository.findAvailableForGuestPaginated.mockResolvedValue({
+        experiences: [],
+        total: 0,
+      });
+
+      await handler.execute(
+        new GetAvailableExperiencesQuery(1, 10, undefined, propertyId),
+      );
+
+      const call =
+        experienceRepository.findAvailableForGuestPaginated.mock.calls[0];
+      expect(call[0].propertyId?.toString()).toBe(propertyId);
+      expect(call[0].tenantId).toBeUndefined();
+    });
+
+    it('throws BadRequestException when propertyId is invalid instead of dropping the filter', async () => {
+      await expect(
+        handler.execute(
+          new GetAvailableExperiencesQuery(1, 10, undefined, 'not-a-property'),
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(
+        experienceRepository.findAvailableForGuestPaginated,
+      ).not.toHaveBeenCalled();
     });
   });
 

@@ -29,6 +29,7 @@ import { InventoryApplicationModule } from '@/application/inventory/inventory-ap
 import { GuestNoteApplicationModule } from '@/application/guest-note/guest-note-application.module';
 import { GuestEmailApplicationModule } from '@/application/guest-email/guest-email-application.module';
 import { GuestMessageApplicationModule } from '@/application/guest-message/guest-message-application.module';
+import { ConversationApplicationModule } from '@/application/conversation/conversation-application.module';
 import { UserApplicationModule } from '@/application/user/user-application.module';
 import { GuestPreferenceApplicationModule } from '@/application/guest-preference/guest-preference-application.module';
 import { ShiftApplicationModule } from '@/application/shift/shift-application.module';
@@ -41,8 +42,10 @@ import { StorageApplicationModule } from '@/application/storage/storage-applicat
 import { UnitRatingApplicationModule } from '@/application/unit-rating/unit-rating-application.module';
 import { CartApplicationModule } from '@/application/cart/cart-application.module';
 import { RefundApplicationModule } from '@/application/refund/refund-application.module';
+import { ExperiencePurchaseApplicationModule } from '@/application/experience-purchase/experience-purchase-application.module';
 import { ProcessWompiWebhookHandler } from '@/application/payment/commands/process-wompi-webhook/process-wompi-webhook.handler';
 import { GetPaymentSessionStatusHandler } from '@/application/payment/queries/get-payment-session-status/get-payment-session-status.handler';
+import { CompleteTutorialHandler } from '@/application/user/commands/complete-tutorial/complete-tutorial.handler';
 import { RoleAssignmentValidator } from '@/application/user/services/role-assignment-validator.service';
 
 const CommandHandlers = [
@@ -59,6 +62,7 @@ const CommandHandlers = [
   AddRolesHandler,
   RemoveAllRolesHandler,
   RemoveRoleHandler,
+  CompleteTutorialHandler,
   DeleteShiftCommandHandler,
   ProcessWompiWebhookHandler,
   GetPaymentSessionStatusHandler,
@@ -84,6 +88,7 @@ const QueryHandlers = [GetShiftsHandler];
     GuestNoteApplicationModule,
     GuestEmailApplicationModule,
     GuestMessageApplicationModule,
+    ConversationApplicationModule,
     UserApplicationModule,
     GuestPreferenceApplicationModule,
     ShiftApplicationModule,
@@ -94,6 +99,7 @@ const QueryHandlers = [GetShiftsHandler];
     UnitRatingApplicationModule,
     CartApplicationModule,
     RefundApplicationModule,
+    ExperiencePurchaseApplicationModule,
   ],
   providers: [...CommandHandlers, ...QueryHandlers, RoleAssignmentValidator],
   exports: [

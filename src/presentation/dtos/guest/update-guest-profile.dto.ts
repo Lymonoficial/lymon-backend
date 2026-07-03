@@ -1,11 +1,10 @@
 import { Type } from 'class-transformer';
 import {
-  IsArray,
-  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
@@ -25,23 +24,6 @@ class UpdateGuestIdentityDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
-}
-
-class UpdateGuestPhoneDto {
-  @ApiPropertyOptional({ example: '+12025550123' })
-  @IsString()
-  @IsNotEmpty()
-  number: string;
-
-  @ApiPropertyOptional({ example: 'mobile' })
-  @IsOptional()
-  @IsString()
-  type?: string;
-
-  @ApiPropertyOptional({ example: true })
-  @IsOptional()
-  @IsBoolean()
-  isPrimary?: boolean;
 }
 
 export class UpdateGuestProfileDto {
@@ -66,18 +48,15 @@ export class UpdateGuestProfileDto {
   @IsEmail()
   primaryEmail?: string;
 
-  @ApiPropertyOptional({ type: [String], example: ['john.alt@example.com'] })
+  @ApiPropertyOptional({
+    example: '+12025550123',
+    nullable: true,
+    description: 'Send null to clear the phone number.',
+  })
   @IsOptional()
-  @IsArray()
-  @IsEmail({}, { each: true })
-  emails?: string[];
-
-  @ApiPropertyOptional({ type: [UpdateGuestPhoneDto] })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => UpdateGuestPhoneDto)
-  phones?: UpdateGuestPhoneDto[];
+  @ValidateIf((_, value) => value !== null)
+  @IsString()
+  phone?: string | null;
 
   @ApiPropertyOptional({ type: UpdateGuestIdentityDto })
   @IsOptional()

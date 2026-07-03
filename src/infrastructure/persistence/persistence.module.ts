@@ -1,30 +1,106 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TenantDocument, TenantSchema } from '@/infrastructure/persistence/schemas/tenant.schema';
-import { UserDocument, UserSchema } from '@/infrastructure/persistence/schemas/user.schema';
-import { PropertyDocument, PropertySchema } from '@/infrastructure/persistence/schemas/property.schema';
-import { UnitDocument, UnitSchema } from '@/infrastructure/persistence/schemas/unit.schema';
-import { GuestDocument, GuestSchema } from '@/infrastructure/persistence/schemas/guest.schema';
-import { GuestAccountDocument, GuestAccountSchema } from '@/infrastructure/persistence/schemas/guest-account.schema';
-import { RoleDocument, RoleSchema } from '@/infrastructure/persistence/schemas/role.schema';
-import { AuditLogDocument, AuditLogSchema } from '@/infrastructure/persistence/schemas/audit-log.schema';
-import { IncidentReportDocument, IncidentReportSchema } from '@/infrastructure/persistence/schemas/incident-report.schema';
-import { GuestNoteDocument, GuestNoteSchema } from '@/infrastructure/persistence/schemas/guest-note.schema';
-import { ReservationDocument, ReservationSchema } from '@/infrastructure/persistence/schemas/reservation.schema';
-import { CartDocument, CartSchema } from '@/infrastructure/persistence/schemas/cart.schema';
-import { ExperiencePurchaseDocument, ExperiencePurchaseSchema } from '@/infrastructure/persistence/schemas/experience-purchase.schema';
-import { InventoryItemDocument, InventoryItemSchema } from '@/infrastructure/persistence/schemas/inventory-item.schema';
-import { InventoryMovementDocument, InventoryMovementSchema } from '@/infrastructure/persistence/schemas/inventory-movement.schema';
+import {
+  TenantDocument,
+  TenantSchema,
+} from '@/infrastructure/persistence/schemas/tenant.schema';
+import {
+  UserDocument,
+  UserSchema,
+} from '@/infrastructure/persistence/schemas/user.schema';
+import {
+  PropertyDocument,
+  PropertySchema,
+} from '@/infrastructure/persistence/schemas/property.schema';
+import {
+  UnitDocument,
+  UnitSchema,
+} from '@/infrastructure/persistence/schemas/unit.schema';
+import {
+  GuestDocument,
+  GuestSchema,
+} from '@/infrastructure/persistence/schemas/guest.schema';
+import {
+  GuestAccountDocument,
+  GuestAccountSchema,
+} from '@/infrastructure/persistence/schemas/guest-account.schema';
+import {
+  RoleDocument,
+  RoleSchema,
+} from '@/infrastructure/persistence/schemas/role.schema';
+import {
+  AuditLogDocument,
+  AuditLogSchema,
+} from '@/infrastructure/persistence/schemas/audit-log.schema';
+import {
+  IncidentReportDocument,
+  IncidentReportSchema,
+} from '@/infrastructure/persistence/schemas/incident-report.schema';
+import {
+  GuestNoteDocument,
+  GuestNoteSchema,
+} from '@/infrastructure/persistence/schemas/guest-note.schema';
+import {
+  ReservationDocument,
+  ReservationSchema,
+} from '@/infrastructure/persistence/schemas/reservation.schema';
+import {
+  CartDocument,
+  CartSchema,
+} from '@/infrastructure/persistence/schemas/cart.schema';
+import {
+  ExperiencePurchaseDocument,
+  ExperiencePurchaseSchema,
+} from '@/infrastructure/persistence/schemas/experience-purchase.schema';
+import {
+  InventoryItemDocument,
+  InventoryItemSchema,
+} from '@/infrastructure/persistence/schemas/inventory-item.schema';
+import {
+  InventoryMovementDocument,
+  InventoryMovementSchema,
+} from '@/infrastructure/persistence/schemas/inventory-movement.schema';
 import { SupplierDocument, SupplierSchema } from './schemas/supplier.schema';
-import { InventoryItemCategoryDocument, InventoryItemCategorySchema } from '@/infrastructure/persistence/schemas/inventory-item-category.schema';
-import { GuestEmailDocument, GuestEmailSchema } from '@/infrastructure/persistence/schemas/guest-email.schema';
-import { ShiftDocument, ShiftSchema } from '@/infrastructure/persistence/schemas/shift.schema';
-import { GuestPreferenceCatalogItemDocument, GuestPreferenceCatalogItemSchema } from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
-import { ExperienceDocument, ExperienceSchema } from '@/infrastructure/persistence/schemas/experience.schema';
-import { GuestTagDocument, GuestTagSchema } from '@/infrastructure/persistence/schemas/guest-tag.schema';
-import { UnitRatingDocument, UnitRatingSchema } from '@/infrastructure/persistence/schemas/unit-rating.schema';
-import { RefundRequestDocument, RefundRequestSchema } from '@/infrastructure/persistence/schemas/refund-request.schema';
-import { PaymentSessionDocument, PaymentSessionSchema } from '@/infrastructure/persistence/schemas/payment-session.schema';
+import {
+  InventoryItemCategoryDocument,
+  InventoryItemCategorySchema,
+} from '@/infrastructure/persistence/schemas/inventory-item-category.schema';
+import {
+  GuestEmailDocument,
+  GuestEmailSchema,
+} from '@/infrastructure/persistence/schemas/guest-email.schema';
+import {
+  ShiftDocument,
+  ShiftSchema,
+} from '@/infrastructure/persistence/schemas/shift.schema';
+import {
+  GuestPreferenceCatalogItemDocument,
+  GuestPreferenceCatalogItemSchema,
+} from '@/infrastructure/persistence/schemas/guest-preference-catalog-item.schema';
+import {
+  ExperienceDocument,
+  ExperienceSchema,
+} from '@/infrastructure/persistence/schemas/experience.schema';
+import {
+  GuestTagDocument,
+  GuestTagSchema,
+} from '@/infrastructure/persistence/schemas/guest-tag.schema';
+import {
+  UnitRatingDocument,
+  UnitRatingSchema,
+} from '@/infrastructure/persistence/schemas/unit-rating.schema';
+import {
+  RefundRequestDocument,
+  RefundRequestSchema,
+} from '@/infrastructure/persistence/schemas/refund-request.schema';
+import {
+  PaymentSessionDocument,
+  PaymentSessionSchema,
+} from '@/infrastructure/persistence/schemas/payment-session.schema';
+import {
+  CounterDocument,
+  CounterSchema,
+} from '@/infrastructure/persistence/schemas/counter.schema';
 
 import { TENANT_REPOSITORY } from '@/domain/tenant/repositories/tenant.repository';
 import { MongoTenantRepository } from '@/infrastructure/persistence/repositories/mongo-tenant.repository';
@@ -90,6 +166,14 @@ import {
 import { GUEST_MESSAGE_REPOSITORY } from '@/domain/guest-message/repositories/guest-message.repository';
 import { MongoGuestMessageRepository } from '@/infrastructure/persistence/repositories/mongo-guest-message.repository';
 import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-email-backfill.migration';
+import {
+  ConversationDocument,
+  ConversationSchema,
+} from '@/infrastructure/persistence/schemas/conversation.schema';
+import { CONVERSATION_REPOSITORY } from '@/domain/conversation/repositories/conversation.repository';
+import { MongoConversationRepository } from '@/infrastructure/persistence/repositories/mongo-conversation.repository';
+import { ConversationBackfillMigration } from '@/infrastructure/migrations/conversation-backfill.migration';
+
 
 @Module({
   imports: [
@@ -105,21 +189,32 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
       { name: IncidentReportDocument.name, schema: IncidentReportSchema },
       { name: ReservationDocument.name, schema: ReservationSchema },
       { name: CartDocument.name, schema: CartSchema },
-      { name: ExperiencePurchaseDocument.name, schema: ExperiencePurchaseSchema },
+      {
+        name: ExperiencePurchaseDocument.name,
+        schema: ExperiencePurchaseSchema,
+      },
       { name: InventoryItemDocument.name, schema: InventoryItemSchema },
       { name: InventoryMovementDocument.name, schema: InventoryMovementSchema },
       { name: SupplierDocument.name, schema: SupplierSchema },
-      { name: InventoryItemCategoryDocument.name, schema: InventoryItemCategorySchema },
+      {
+        name: InventoryItemCategoryDocument.name,
+        schema: InventoryItemCategorySchema,
+      },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
-      { name: GuestPreferenceCatalogItemDocument.name, schema: GuestPreferenceCatalogItemSchema },
+      {
+        name: GuestPreferenceCatalogItemDocument.name,
+        schema: GuestPreferenceCatalogItemSchema,
+      },
       { name: ExperienceDocument.name, schema: ExperienceSchema },
       { name: GuestTagDocument.name, schema: GuestTagSchema },
       { name: UnitRatingDocument.name, schema: UnitRatingSchema },
       { name: RefundRequestDocument.name, schema: RefundRequestSchema },
       { name: PaymentSessionDocument.name, schema: PaymentSessionSchema },
       { name: GuestMessageDocument.name, schema: GuestMessageSchema },
+      { name: ConversationDocument.name, schema: ConversationSchema },
+      { name: CounterDocument.name, schema: CounterSchema },
     ]),
   ],
   providers: [
@@ -128,29 +223,59 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
     { provide: PROPERTY_REPOSITORY, useClass: MongoPropertyRepository },
     { provide: UNIT_REPOSITORY, useClass: MongoUnitRepository },
     { provide: GUEST_REPOSITORY, useClass: MongoGuestRepository },
-    { provide: GUEST_ACCOUNT_REPOSITORY, useClass: MongoGuestAccountRepository },
+    {
+      provide: GUEST_ACCOUNT_REPOSITORY,
+      useClass: MongoGuestAccountRepository,
+    },
     { provide: ROLE_REPOSITORY, useClass: MongoRoleRepository },
     { provide: AUDIT_LOG_REPOSITORY, useClass: MongoAuditLogRepository },
     { provide: TRANSACTION_MANAGER, useClass: MongoTransactionManager },
-    { provide: INCIDENT_REPORT_REPOSITORY, useClass: MongoIncidentReportRepository },
+    {
+      provide: INCIDENT_REPORT_REPOSITORY,
+      useClass: MongoIncidentReportRepository,
+    },
     { provide: RESERVATION_REPOSITORY, useClass: MongoReservationRepository },
-    { provide: GUEST_RESERVATIONS_READ_REPOSITORY, useExisting: RESERVATION_REPOSITORY },
+    {
+      provide: GUEST_RESERVATIONS_READ_REPOSITORY,
+      useExisting: RESERVATION_REPOSITORY,
+    },
     { provide: CART_REPOSITORY, useClass: MongoCartRepository },
-    { provide: EXPERIENCE_PURCHASE_REPOSITORY, useClass: MongoExperiencePurchaseRepository },
-    { provide: INVENTORY_ITEM_REPOSITORY, useClass: MongoInventoryItemRepository },
-    { provide: INVENTORY_MOVEMENT_REPOSITORY, useClass: MongoInventoryMovementRepository },
+    {
+      provide: EXPERIENCE_PURCHASE_REPOSITORY,
+      useClass: MongoExperiencePurchaseRepository,
+    },
+    {
+      provide: INVENTORY_ITEM_REPOSITORY,
+      useClass: MongoInventoryItemRepository,
+    },
+    {
+      provide: INVENTORY_MOVEMENT_REPOSITORY,
+      useClass: MongoInventoryMovementRepository,
+    },
     { provide: SUPPLIER_REPOSITORY, useClass: MongoSupplierRepository },
-    { provide: INVENTORY_ITEM_CATEGORY_REPOSITORY, useClass: MongoInventoryItemCategoryRepository },
+    {
+      provide: INVENTORY_ITEM_CATEGORY_REPOSITORY,
+      useClass: MongoInventoryItemCategoryRepository,
+    },
     { provide: GUEST_NOTE_REPOSITORY, useClass: MongoGuestNoteRepository },
     { provide: GUEST_EMAIL_REPOSITORY, useClass: MongoGuestEmailRepository },
     { provide: SHIFT_REPOSITORY, useClass: MongoShiftRepository },
-    { provide: GUEST_PREFERENCE_CATALOG_REPOSITORY, useClass: MongoGuestPreferenceCatalogRepository },
+    {
+      provide: GUEST_PREFERENCE_CATALOG_REPOSITORY,
+      useClass: MongoGuestPreferenceCatalogRepository,
+    },
     { provide: EXPERIENCE_REPOSITORY, useClass: MongoExperienceRepository },
     { provide: METRICS_READ_REPOSITORY, useClass: MongoMetricsReadRepository },
     { provide: GUEST_TAG_REPOSITORY, useClass: MongoGuestTagRepository },
     { provide: UNIT_RATING_REPOSITORY, useClass: MongoUnitRatingRepository },
-    { provide: REFUND_REQUEST_REPOSITORY, useClass: MongoRefundRequestRepository },
-    { provide: PAYMENT_SESSION_REPOSITORY, useClass: MongoPaymentSessionRepository },
+    {
+      provide: REFUND_REQUEST_REPOSITORY,
+      useClass: MongoRefundRequestRepository,
+    },
+    {
+      provide: PAYMENT_SESSION_REPOSITORY,
+      useClass: MongoPaymentSessionRepository,
+    },
     RoleSeedService,
     GuestTagSeedService,
     {
@@ -166,6 +291,11 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
       useClass: MongoGuestMessageRepository,
     },
     GuestEmailBackfillMigration,
+    {
+      provide: CONVERSATION_REPOSITORY,
+      useClass: MongoConversationRepository,
+    },
+    ConversationBackfillMigration,
   ],
   exports: [
     TENANT_REPOSITORY,
@@ -197,6 +327,7 @@ import { GuestEmailBackfillMigration } from '@/infrastructure/migrations/guest-e
     REFUND_REQUEST_REPOSITORY,
     PAYMENT_SESSION_REPOSITORY,
     GUEST_MESSAGE_REPOSITORY,
+    CONVERSATION_REPOSITORY,
   ],
 })
 export class PersistenceModule {}

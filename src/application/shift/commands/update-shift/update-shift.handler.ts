@@ -135,6 +135,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     nextEndTime: string;
     nextStartMinutes: number;
     nextEndMinutes: number;
+    weekdays: number[] | null | undefined;
     notes: string | undefined;
   } {
     const propertyIdInput = this.getOptionalString(command.propertyId);
@@ -161,6 +162,9 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
     const nextStartTime = startHourInput ?? shift.getStartHour();
     const nextEndTime = endHourInput ?? shift.getEndHour();
 
+    const weekdays =
+      command.weekdays === undefined ? shift.getWeekdays() : command.weekdays;
+
     return {
       nextStaffMemberIds,
       nextPropertyId,
@@ -171,6 +175,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
       nextEndTime,
       nextStartMinutes: this.toMinutes(nextStartTime),
       nextEndMinutes: this.toMinutes(nextEndTime),
+      weekdays,
       notes: notesInput ?? shift.getNotes() ?? undefined,
     };
   }
@@ -202,6 +207,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
       nextEndDate: Date | null;
       nextStartMinutes: number;
       nextEndMinutes: number;
+      weekdays: number[] | null | undefined;
     },
     tenantId: TenantId,
     shiftId: ShiftId,
@@ -216,6 +222,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
           shiftData.nextStartMinutes,
           shiftData.nextEndMinutes,
           shiftId,
+          shiftData.weekdays,
         );
 
       if (overlappingShift) {
@@ -238,6 +245,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
       nextEndTime: string;
       nextStartMinutes: number;
       nextEndMinutes: number;
+      weekdays: number[] | null | undefined;
       notes: string | undefined;
     },
   ): void {
@@ -251,6 +259,7 @@ export class UpdateShiftCommandHandler implements ICommandHandler<UpdateShiftCom
           endDate: shiftData.nextEndDate,
           startHour: shiftData.nextStartTime,
           endHour: shiftData.nextEndTime,
+          weekdays: shiftData.weekdays,
           notes: shiftData.notes,
         },
         new Date(),

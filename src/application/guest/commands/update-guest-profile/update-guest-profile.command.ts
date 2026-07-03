@@ -6,12 +6,7 @@ export class UpdateGuestProfileCommand {
     public readonly firstName?: string | null,
     public readonly lastName?: string | null,
     public readonly primaryEmail?: string,
-    public readonly emails?: string[],
-    public readonly phones?: Array<{
-      number: string;
-      type?: string;
-      isPrimary?: boolean;
-    }>,
+    public readonly phone?: string | null,
     public readonly identity?: {
       documentType?: string;
       documentNumber?: string;

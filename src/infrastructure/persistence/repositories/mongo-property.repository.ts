@@ -41,6 +41,7 @@ export class MongoPropertyRepository implements PropertyRepository {
       cancellationPolicy: property.getCancellationPolicy().toString(),
       hostPhone: property.getHostPhone(),
       hostEmail: property.getHostEmail(),
+      imageKey: property.getImageKey() ?? undefined,
       updatedAt: property.getUpdatedAt(),
     };
 
@@ -119,6 +120,7 @@ export class MongoPropertyRepository implements PropertyRepository {
       ),
       hostPhone: document.hostPhone,
       hostEmail: document.hostEmail,
+      imageKey: document.imageKey ?? null,
       createdAt: document.createdAt,
       updatedAt: document.updatedAt,
       deletedAt: document.deletedAt ?? null,

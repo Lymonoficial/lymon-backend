@@ -13,6 +13,10 @@ import {
   PublicBedDto,
   PublicBedroomDto,
 } from '@/application/unit/queries/GetPublicUnitsByTenant/get-public-units-by-tenant.result';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @QueryHandler(GetUnitWithExternalIdsByIdQuery)
 export class GetUnitWithExternalIdsByIdQueryHandler implements IQueryHandler<
@@ -22,6 +26,8 @@ export class GetUnitWithExternalIdsByIdQueryHandler implements IQueryHandler<
   constructor(
     @Inject(UNIT_REPOSITORY)
     private readonly unitRepository: UnitRepository,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly storage: R2StorageService,
   ) {}
 
   async execute(
@@ -63,6 +69,7 @@ export class GetUnitWithExternalIdsByIdQueryHandler implements IQueryHandler<
       unit.getTenantId().toString(),
       unit.getPropertyId().toString(),
       unit.getRating(),
+      unit.getMediaKeys().map((k) => this.storage.getPublicUrl(k)),
       externalIdsDto,
     );
 
