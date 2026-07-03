@@ -35,6 +35,7 @@ function makeCommand(
     overrides?.unitIds,
     overrides?.name ?? 'Airport transfer',
     overrides?.description ?? 'Roundtrip transportation service',
+    overrides?.city ?? 'Medellín',
     overrides?.category ?? ExperienceCategoryEnum.TRANSPORTATION,
     overrides?.priceCop ?? 100000,
     hasDurationHoursOverride ? overrides?.durationHours : 2,

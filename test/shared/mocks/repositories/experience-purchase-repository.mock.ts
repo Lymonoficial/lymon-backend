@@ -9,5 +9,6 @@ export function createExperiencePurchaseRepositoryMock(): jest.Mocked<Experience
     findByTenantIdPaginated: jest.fn(),
     countByTenantId: jest.fn(),
     countConfirmedByExperienceAndDate: jest.fn(),
+    findReservedDatesByExperienceId: jest.fn(),
   };
 }

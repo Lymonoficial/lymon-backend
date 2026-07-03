@@ -6,6 +6,7 @@ import {
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
+import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 import { ExperienceStatus } from '@/domain/experience/value-objects/experience-status.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
@@ -39,6 +40,7 @@ export class MongoExperienceRepository implements ExperienceRepository {
         .map((unitId) => new Types.ObjectId(unitId.toString())),
       name: experience.getName(),
       description: experience.getDescription(),
+      city: experience.getCity(),
       category: experience.getCategory().toString(),
       priceCop: experience.getPriceCop(),
       durationHours: experience.getDurationHours(),
@@ -165,6 +167,17 @@ export class MongoExperienceRepository implements ExperienceRepository {
       query.propertyId = new Types.ObjectId(filters.propertyId.toString());
     }
 
+    if (filters.scope === ExperienceScopeEnum.TENANT) {
+      query.propertyId = null;
+    } else if (filters.scope === ExperienceScopeEnum.PROPERTY) {
+      query.propertyId = { $ne: null };
+    }
+
+    if (filters.city) {
+      const escaped = filters.city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.city = new RegExp(`^${escaped}$`, 'i');
+    }
+
     const sort: Record<string, 1 | -1> = filters.sortByPrice
       ? { priceCop: filters.sortByPrice === 'asc' ? 1 : -1 }
       : { createdAt: -1 };
@@ -203,6 +216,7 @@ export class MongoExperienceRepository implements ExperienceRepository {
       ),
       name: document.name,
       description: document.description,
+      city: document.city,
       category: ExperienceCategory.create(document.category),
       priceCop: document.priceCop,
       durationHours: document.durationHours,

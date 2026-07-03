@@ -67,6 +67,9 @@ export class ExperienceDocument extends Document {
   @Prop({ required: true, maxlength: 5000 })
   description: string;
 
+  @Prop({ required: true, index: true })
+  city: string;
+
   @Prop({ required: true, enum: ExperienceCategoryEnum })
   category: string;
 

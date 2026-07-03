@@ -15,6 +15,7 @@ import {
   PublicExperienceLocationDto,
   PublicExperienceRecurrenceDto,
 } from '@/application/experience/queries/shared/experience-read.dto';
+import { GetExperienceReservedDatesQuery } from '@/application/experience-purchase/queries/get-experience-reserved-dates/get-experience-reserved-dates.query';
 
 @ApiTags('guest-experiences')
 @Public()
@@ -44,6 +45,8 @@ export class GuestExperienceController {
         query.propertyId,
         query.category,
         query.sortByPrice,
+        query.scope,
+        query.city,
       ),
     );
 
@@ -56,6 +59,22 @@ export class GuestExperienceController {
       limit: result.limit,
       totalPages: result.totalPages,
     };
+  }
+
+  @GuestPublic()
+  @Get(':experienceId/reserved-dates')
+  @ApiOperation({ summary: 'Get already-reserved dates for an experience' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of already-reserved dates',
+  })
+  async reservedDates(@Param('experienceId') experienceId: string) {
+    const result = await this.queryBus.execute<
+      GetExperienceReservedDatesQuery,
+      { reservedDates: Date[] }
+    >(new GetExperienceReservedDatesQuery(experienceId));
+
+    return { data: result };
   }
 
   @GuestPublic()
@@ -87,8 +106,10 @@ export class GuestExperienceController {
     return {
       id: experience.id,
       propertyId: experience.propertyId,
+      scope: experience.scope,
       name: experience.name,
       description: experience.description,
+      city: experience.city,
       category: experience.category,
       priceCop: experience.priceCop,
       durationHours: experience.durationHours,
@@ -129,8 +150,10 @@ export class GuestExperienceController {
 interface PublicExperienceCatalogDto {
   id: string;
   propertyId: string | null;
+  scope: string;
   name: string;
   description: string;
+  city: string;
   category: string;
   priceCop: number;
   durationHours: number | null;

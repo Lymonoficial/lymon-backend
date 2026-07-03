@@ -5,6 +5,7 @@ import {
   PublicExperienceLocationDto,
   PublicExperienceRecurrenceDto,
 } from '@/application/experience/queries/shared/experience-read.dto';
+import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 
 export function mapExperienceToPublicDto(
   experience: Experience,
@@ -12,14 +13,17 @@ export function mapExperienceToPublicDto(
 ): PublicExperienceDto {
   const recurrence = experience.getRecurrence();
   const location = experience.getLocation();
+  const propertyId = experience.getPropertyId();
 
   return new PublicExperienceDto(
     experience.getId()!.toString(),
     experience.getTenantId().toString(),
-    experience.getPropertyId()?.toString() ?? null,
+    propertyId?.toString() ?? null,
+    propertyId ? ExperienceScopeEnum.PROPERTY : ExperienceScopeEnum.TENANT,
     experience.getUnitIds().map((unitId) => unitId.toString()),
     experience.getName(),
     experience.getDescription(),
+    experience.getCity(),
     experience.getCategory().toString(),
     experience.getPriceCop(),
     experience.getDurationHours(),
