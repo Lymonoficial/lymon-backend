@@ -56,4 +56,14 @@ export class UpdateTenantProfileDto {
   @ValidateNested()
   @Type(() => TenantThemeDto)
   theme?: TenantThemeDto | null;
+
+  @ApiPropertyOptional({
+    example: '65f1a1a2b3c4d5e6f7a8b9c2/logos/1700000000000-logo.png',
+    description:
+      'R2 object key of an uploaded logo (from POST /storage/presigned-url ' +
+      'with category "logos"). Send null to remove the current logo.',
+  })
+  @IsOptional()
+  @IsString()
+  logoKey?: string | null;
 }

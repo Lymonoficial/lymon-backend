@@ -108,6 +108,7 @@ export class Tenant {
     address?: string | null,
     description?: string | null,
     theme?: TenantTheme | null,
+    logoKey?: string | null,
   ): void {
     if (name !== undefined) {
       if (!name || name.trim() === '') {
@@ -119,12 +120,7 @@ export class Tenant {
     if (address !== undefined) this.address = address;
     if (description !== undefined) this.description = description;
     if (theme !== undefined) this.theme = theme;
-    this.updatedAt = new Date();
-  }
-
-  /** Sets the R2 object key for the logo (set via the dedicated upload flow). */
-  setLogoKey(logoKey: string | null): void {
-    this.logoKey = logoKey;
+    if (logoKey !== undefined) this.logoKey = logoKey;
     this.updatedAt = new Date();
   }
 

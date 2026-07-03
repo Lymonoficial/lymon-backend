@@ -8,6 +8,7 @@ export class UpdateTenantProfileCommand {
     public readonly address: string | null | undefined,
     public readonly description: string | null | undefined,
     public readonly theme: TenantTheme | null | undefined,
+    public readonly logoKey: string | null | undefined,
     public readonly actorId: string,
     public readonly actorEmail: string,
   ) {}

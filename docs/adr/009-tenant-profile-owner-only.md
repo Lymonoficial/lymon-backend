@@ -22,8 +22,9 @@ Se implementó la capacidad de leer y actualizar el perfil del tenant (`GET /ten
 | `address`      | `string\|null`  | Dirección física del negocio                                     |
 | `description`  | `string\|null`  | Descripción libre del negocio                                    |
 | `theme`        | `object\|null`  | Variables de color de branding (primary, secondary, accent) |
+| `logoKey`      | `string\|null`  | Key R2 del logo subido (ver nota); `null` para quitarlo          |
 
-> **Actualización (LYMON-1096):** se eliminó `website`. El logo ya no se edita vía `PATCH`; se sube con el flujo dedicado `POST /tenant/logo/presigned-url` + `POST /tenant/logo` (patrón de subida a R2, ver el flujo de foto de perfil de guest). Se persiste **solo la key** de R2 (`logoKey`) en la colección `tenants`; el `logoUrl` de la respuesta se construye en el backend con `getPublicUrl(logoKey)` al leer, para mantener el dominio/CDN fuera de la base de datos.
+> **Actualización (LYMON-1096):** se eliminó `website`. El logo se sube reutilizando el endpoint genérico `POST /storage/presigned-url` (con `category: "logos"`) y su key se envía en el `PATCH /tenant/profile` como `logoKey` (mismo patrón que `mediaKeys` de units/experiences: el handler valida el prefijo del tenant y borra el objeto reemplazado en R2). Se persiste **solo la key** de R2 (`logoKey`) en la colección `tenants`; el `logoUrl` de la respuesta se construye en el backend con `getPublicUrl(logoKey)` al leer, para mantener el dominio/CDN fuera de la base de datos.
 
 ### Campos excluidos
 

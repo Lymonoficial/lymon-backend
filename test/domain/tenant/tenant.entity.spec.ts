@@ -743,7 +743,7 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
     });
   });
 
-  describe('setLogoKey', () => {
+  describe('updateProfile - logo key', () => {
     let tenant: Tenant;
 
     beforeEach(() => {
@@ -753,29 +753,51 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('TT-063: should set the logo key', () => {
-      tenant.setLogoKey('tenants/abc/logo/1.png');
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'abc/logos/1.png',
+      );
 
-      expect(tenant.getLogoKey()).toBe('tenants/abc/logo/1.png');
+      expect(tenant.getLogoKey()).toBe('abc/logos/1.png');
     });
 
     it('TT-063b: should allow clearing the logo key', () => {
-      tenant.setLogoKey('tenants/abc/logo/1.png');
-      tenant.setLogoKey(null);
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'abc/logos/1.png',
+      );
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        null,
+      );
 
       expect(tenant.getLogoKey()).toBeNull();
     });
 
-    it('TT-063c: should bump updatedAt', () => {
-      const before = new Date();
-      tenant.setLogoKey('tenants/abc/logo/1.png');
-      const after = new Date();
+    it('TT-063c: should leave the logo key untouched when omitted', () => {
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'abc/logos/1.png',
+      );
+      tenant.updateProfile('Renamed Only');
 
-      expect(tenant.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(
-        before.getTime(),
-      );
-      expect(tenant.getUpdatedAt().getTime()).toBeLessThanOrEqual(
-        after.getTime(),
-      );
+      expect(tenant.getLogoKey()).toBe('abc/logos/1.png');
     });
   });
 
