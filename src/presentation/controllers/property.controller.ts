@@ -84,6 +84,7 @@ export class PropertyController {
       autoCreateUnit,
       user.userId,
       user.email,
+      dto.imageKey,
     );
 
     const result = await this.commandBus.execute<
@@ -208,6 +209,7 @@ export class PropertyController {
       dto.hostEmail,
       user.userId,
       user.email,
+      dto.imageKey,
     );
 
     const result = await this.commandBus.execute<

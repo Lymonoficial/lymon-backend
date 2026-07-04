@@ -91,7 +91,9 @@ export class GetGuestReservationHandler implements IQueryHandler<
 
     return {
       id: reservation.getId()!.toString(),
-      bookingReference: reservation.getId()!.toString(),
+      bookingReference: String(
+        reservation.getReservationNumber() ?? reservation.getId()!.toString(),
+      ),
       propertyId: reservation.getPropertyId().toString(),
       propertyName: property?.getName() ?? null,
       unitId: reservation.getUnitId().toString(),
@@ -108,6 +110,7 @@ export class GetGuestReservationHandler implements IQueryHandler<
       cancelledAt: reservation.getCancelledAt(),
       checkInActualAt: reservation.getCheckInActualAt(),
       checkOutActualAt: reservation.getCheckOutActualAt(),
+      checkInInfo: reservation.getCheckInInfo(),
       priceBreakdown: {
         pricePerNight: reservation.getPricePerNight(),
         nights,
@@ -123,9 +126,12 @@ export class GetGuestReservationHandler implements IQueryHandler<
     };
   }
 
-  private async buildRefundPolicy(
-    reservation: { getStatus: () => { toString: () => string }; getDateRange: () => { getCheckIn: () => Date }; getTotalPrice: () => number; getId: () => { toString: () => string } | null },
-  ): Promise<RefundPolicyInfo> {
+  private async buildRefundPolicy(reservation: {
+    getStatus: () => { toString: () => string };
+    getDateRange: () => { getCheckIn: () => Date };
+    getTotalPrice: () => number;
+    getId: () => { toString: () => string } | null;
+  }): Promise<RefundPolicyInfo> {
     const status = reservation.getStatus().toString();
     const checkIn = reservation.getDateRange().getCheckIn();
     const now = new Date();
@@ -147,7 +153,11 @@ export class GetGuestReservationHandler implements IQueryHandler<
 
     const eligible = status === 'CONFIRMED';
     const refundAmount = eligible
-      ? CancellationRefundService.calculate(checkIn, now, reservation.getTotalPrice())
+      ? CancellationRefundService.calculate(
+          checkIn,
+          now,
+          reservation.getTotalPrice(),
+        )
       : 0;
 
     let refundRequestId: string | null = null;

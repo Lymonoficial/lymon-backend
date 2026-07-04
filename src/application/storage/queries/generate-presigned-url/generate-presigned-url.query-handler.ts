@@ -21,11 +21,12 @@ export class GeneratePresignedUrlQueryHandler implements IQueryHandler<
     query: GeneratePresignedUrlQuery,
   ): Promise<GeneratePresignedUrlResult> {
     const sanitizedName = query.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const key = `${query.tenantId}/${Date.now()}-${sanitizedName}`;
+    const key = `${query.tenantId}/${query.category}/${Date.now()}-${sanitizedName}`;
 
     const presignedUrl = await this.storageService.generatePresignedPutUrl(
       key,
       query.contentType,
+      query.fileSize,
     );
     const fileUrl = this.storageService.getPublicUrl(key);
 

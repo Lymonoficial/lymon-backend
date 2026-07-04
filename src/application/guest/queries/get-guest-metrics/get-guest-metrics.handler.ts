@@ -18,7 +18,7 @@ export class GetGuestMetricsHandler implements IQueryHandler<GetGuestMetricsQuer
   ) {}
 
   async execute(query: GetGuestMetricsQuery): Promise<GetGuestMetricsResult> {
-    const { tenantId, guestId } = query;
+    const { tenantId, guestId, type } = query;
     
     const guest = await this.guestRepository.findById(GuestId.createFromString(guestId));
     
@@ -28,18 +28,25 @@ export class GetGuestMetricsHandler implements IQueryHandler<GetGuestMetricsQuer
 
     const stats = await this.reservationRepository.getBookingValueStats(tenantId, guestId);
 
+    let totalBookings = 0;
+    let totalNights = 0;
+    let avgNightsPerStay = 0;
     let averageBookingValue = 0;
 
-    if (stats.bookingCount > 0) {
-      averageBookingValue = Math.round(stats.totalRevenue / stats.bookingCount);
+    if (!type || type === 'averageBookingValue') {
+      const stats = await this.reservationRepository.getBookingValueStats(tenantId, guestId);
+      if (stats.bookingCount > 0) {
+        averageBookingValue = Math.round(stats.totalRevenue / stats.bookingCount);
+      }
     }
-
-    const totalBookings = guest.getSummary().totalBookings ?? 0;
-    const totalNights = guest.getSummary().totalNights ?? 0;
-
-    const avgNightsPerStay = totalBookings > 0 
-      ? Number.parseFloat((totalNights / totalBookings).toFixed(1)) 
-      : 0;
+    
+    if (!type) {
+      totalBookings = guest.getSummary().totalBookings ?? 0;
+      totalNights = guest.getSummary().totalNights ?? 0;
+      avgNightsPerStay = totalBookings > 0 
+        ? Number.parseFloat((totalNights / totalBookings).toFixed(1)) 
+        : 0;
+    }
 
     return new GetGuestMetricsResult(
       totalBookings,

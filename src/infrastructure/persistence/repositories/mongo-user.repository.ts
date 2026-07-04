@@ -61,6 +61,7 @@ export class MongoUserRepository implements UserRepository, OnModuleInit {
       { key: 'passwordChangedAt', value: user.getPasswordChangedAt() },
       { key: 'fullName', value: user.getFullName() },
       { key: 'document', value: user.getDocument() },
+      { key: 'tutorialCompleted', value: user.getTutorialCompleted() },
     ] as const;
 
     for (const field of optionalFields) {
@@ -166,6 +167,7 @@ export class MongoUserRepository implements UserRepository, OnModuleInit {
       deletedAt: doc.deletedAt,
       fullName: doc.fullName,
       document: doc.document,
+      tutorialCompleted: doc.tutorialCompleted ?? false,
     });
   }
 }

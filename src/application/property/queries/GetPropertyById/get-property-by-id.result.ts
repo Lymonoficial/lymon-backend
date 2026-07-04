@@ -17,6 +17,7 @@ export class PropertyFullDto {
     public readonly hostEmail: string,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
+    public readonly imageUrl: string | null,
   ) {}
 }
 

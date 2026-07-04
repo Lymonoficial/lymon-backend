@@ -5,56 +5,12 @@ import {
   IsInt,
   IsMongoId,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsPositive,
-  IsString,
-  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
-class CheckoutCartReservationItemDto {
-  @ApiProperty()
-  @IsMongoId()
-  @IsNotEmpty()
-  tenantId: string;
-
-  @ApiProperty()
-  @IsMongoId()
-  @IsNotEmpty()
-  propertyId: string;
-
-  @ApiProperty()
-  @IsMongoId()
-  @IsNotEmpty()
-  unitId: string;
-
-  @ApiProperty({ example: '2026-06-01' })
-  @IsDateString()
-  checkIn: string;
-
-  @ApiProperty({ example: '2026-06-05' })
-  @IsDateString()
-  checkOut: string;
-
-  @ApiProperty({ example: 2 })
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  guestsCount: number;
-
-  @ApiProperty({ example: 200000 })
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  pricePerNight: number;
-
-  @ApiPropertyOptional({ example: 'Late check-in requested' })
-  @IsOptional()
-  @IsString()
-  notes?: string;
-}
+import { SetCartReservationDto } from './set-cart-reservation.dto';
 
 class CheckoutCartExperienceItemDto {
   @ApiProperty()
@@ -80,11 +36,11 @@ class CheckoutCartExperienceItemDto {
 }
 
 export class CheckoutCartDto {
-  @ApiPropertyOptional({ type: CheckoutCartReservationItemDto })
+  @ApiPropertyOptional({ type: SetCartReservationDto })
   @IsOptional()
   @ValidateNested()
-  @Type(() => CheckoutCartReservationItemDto)
-  reservationItem?: CheckoutCartReservationItemDto;
+  @Type(() => SetCartReservationDto)
+  reservationItem?: SetCartReservationDto;
 
   @ApiPropertyOptional({ type: [CheckoutCartExperienceItemDto] })
   @IsOptional()

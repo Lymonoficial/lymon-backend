@@ -31,6 +31,7 @@ export interface UserReconstitutionData {
   deletedAt?: Date | null;
   readonly fullName?: string;
   readonly document?: string;
+  readonly tutorialCompleted?: boolean;
 }
 
 /** Kept for OWNER identity checks only. Staff roles are managed via RoleAssignment. */
@@ -79,6 +80,7 @@ export class User {
     private deletedAt: Date | null = null,
     private fullName?: string,
     private document?: string,
+    private tutorialCompleted: boolean = false,
   ) {}
 
   static createOwner(
@@ -147,6 +149,7 @@ export class User {
       data.deletedAt,
       data.fullName,
       data.document,
+      data.tutorialCompleted ?? false,
     );
   }
 
@@ -200,6 +203,15 @@ export class User {
 
   updateDocument(document?: string): void {
     this.document = document;
+    this.updatedAt = new Date();
+  }
+
+  getTutorialCompleted(): boolean {
+    return this.tutorialCompleted;
+  }
+
+  completeTutorial(): void {
+    this.tutorialCompleted = true;
     this.updatedAt = new Date();
   }
 

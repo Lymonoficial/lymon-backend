@@ -12,6 +12,10 @@ import {
 } from '@/domain/reservation/repositories/reservation.repository';
 import { AvailabilityChecker } from '@/domain/reservation/services/availability-checker.domain-service';
 import { DateRange } from '@/domain/reservation/value-objects/date-range.vo';
+import {
+  R2StorageService,
+  R2_STORAGE_SERVICE,
+} from '@/infrastructure/storage/r2-storage.service';
 
 @QueryHandler(GetAllPublicUnitsQuery)
 export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
@@ -23,6 +27,8 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
     private readonly unitRepository: UnitRepository,
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: ReservationRepository,
+    @Inject(R2_STORAGE_SERVICE)
+    private readonly storage: R2StorageService,
   ) {}
 
   async execute(
@@ -38,6 +44,8 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
         1000, // Un límite razonable para filtrado en memoria
         query.minGuests,
         query.propertyId,
+        undefined,
+        query.name,
       );
 
       const availableUnits: Unit[] = [];
@@ -70,7 +78,7 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
       const total = availableUnits.length;
       const skip = (query.page - 1) * query.limit;
       const paginatedUnits = availableUnits.slice(skip, skip + query.limit);
-      const dtos = paginatedUnits.map(mapUnitToPublicDto);
+      const dtos = paginatedUnits.map((u) => mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)));
 
       return new GetAllPublicUnitsResult(dtos, total, query.page, query.limit);
     }
@@ -82,8 +90,9 @@ export class GetAllPublicUnitsQueryHandler implements IQueryHandler<
       query.minGuests,
       query.propertyId,
       query.sortByPrice,
+      query.name,
     );
-    const dtos = units.map(mapUnitToPublicDto);
+    const dtos = units.map((u) => mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)));
 
     return new GetAllPublicUnitsResult(dtos, total, query.page, query.limit);
   }

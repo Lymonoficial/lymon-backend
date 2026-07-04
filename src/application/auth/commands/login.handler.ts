@@ -44,6 +44,7 @@ export class LoginResult {
     public readonly emailVerified: boolean,
     public readonly accessToken: string,
     public readonly refreshToken: string,
+    public readonly tutorialCompleted: boolean,
   ) {}
 }
 
@@ -134,6 +135,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       user.isEmailVerified(),
       accessToken,
       refreshToken,
+      user.getTutorialCompleted(),
     );
   }
 }

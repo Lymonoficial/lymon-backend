@@ -5,31 +5,38 @@ import {
   PublicExperienceLocationDto,
   PublicExperienceRecurrenceDto,
 } from '@/application/experience/queries/shared/experience-read.dto';
+import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 
 export function mapExperienceToPublicDto(
   experience: Experience,
+  getPublicUrl: (key: string) => string,
 ): PublicExperienceDto {
   const recurrence = experience.getRecurrence();
+  const location = experience.getLocation();
+  const propertyId = experience.getPropertyId();
 
   return new PublicExperienceDto(
     experience.getId()!.toString(),
     experience.getTenantId().toString(),
-    experience.getScope().toString(),
-    experience.getPropertyId()?.toString() ?? null,
+    propertyId?.toString() ?? null,
+    propertyId ? ExperienceScopeEnum.PROPERTY : ExperienceScopeEnum.TENANT,
     experience.getUnitIds().map((unitId) => unitId.toString()),
     experience.getName(),
     experience.getDescription(),
+    experience.getCity(),
     experience.getCategory().toString(),
     experience.getPriceCop(),
     experience.getDurationHours(),
+    experience.getMinimumParticipants(),
     experience.getCapacity(),
-    experience.getCoverImageUrl(),
-    new PublicExperienceLocationDto(
-      experience.getLocation().label,
-      experience.getLocation().address,
-      experience.getLocation().lat,
-      experience.getLocation().lng,
-    ),
+    location
+      ? new PublicExperienceLocationDto(
+          location.label,
+          location.address,
+          location.lat,
+          location.lng,
+        )
+      : null,
     experience.getAvailabilityType().toString(),
     experience.getStartAt(),
     experience.getEndAt(),
@@ -51,5 +58,6 @@ export function mapExperienceToPublicDto(
     experience.getMinNoticeHours(),
     experience.getPurchaseCutoffHours(),
     experience.getStatus().toString(),
+    experience.getMediaKeys().map(getPublicUrl),
   );
 }

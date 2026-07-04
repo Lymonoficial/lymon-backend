@@ -1,12 +1,11 @@
 import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 
 export interface CreateExperienceLocationInput {
-  label: string;
+  label?: string;
   address?: string;
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
 }
 
 export interface CreateExperienceBlackoutRangeInput {
@@ -23,17 +22,17 @@ export interface CreateExperienceRecurrenceInput {
 export class CreateExperienceCommand {
   constructor(
     public readonly tenantId: string,
-    public readonly scope: ExperienceScopeEnum,
     public readonly propertyId: string | undefined,
     public readonly unitIds: string[] | undefined,
     public readonly name: string,
     public readonly description: string,
+    public readonly city: string,
     public readonly category: ExperienceCategoryEnum,
     public readonly priceCop: number,
-    public readonly durationHours: number,
+    public readonly durationHours: number | undefined,
+    public readonly minimumParticipants: number | undefined,
     public readonly capacity: number,
-    public readonly coverImageUrl: string,
-    public readonly location: CreateExperienceLocationInput,
+    public readonly location: CreateExperienceLocationInput | undefined,
     public readonly availabilityType: ExperienceAvailabilityTypeEnum,
     public readonly startAt: string | undefined,
     public readonly endAt: string | undefined,
@@ -43,6 +42,7 @@ export class CreateExperienceCommand {
       | undefined,
     public readonly allowStandalonePurchase: boolean,
     public readonly allowReservationPurchase: boolean,
+    public readonly mediaKeys: string[] | undefined,
     public readonly actorId: string,
     public readonly actorEmail: string,
   ) {}

@@ -1,6 +1,5 @@
 import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 import { ExperienceStatusEnum } from '@/domain/experience/value-objects/experience-status.vo';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
@@ -28,17 +27,17 @@ class ExperienceBlackoutRangeSchema {
 
 @Schema({ _id: false })
 class ExperienceLocationSchema {
-  @Prop({ required: true })
-  label: string;
+  @Prop()
+  label?: string;
 
   @Prop()
   address?: string;
 
-  @Prop({ type: Number, required: true })
-  lat: number;
+  @Prop({ type: Number })
+  lat?: number;
 
-  @Prop({ type: Number, required: true })
-  lng: number;
+  @Prop({ type: Number })
+  lng?: number;
 }
 
 @Schema({ collection: 'experiences', timestamps: true })
@@ -62,14 +61,14 @@ export class ExperienceDocument extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'UnitDocument' }], default: [] })
   unitIds: Types.ObjectId[];
 
-  @Prop({ required: true, enum: ExperienceScopeEnum })
-  scope: string;
-
   @Prop({ required: true })
   name: string;
 
   @Prop({ required: true, maxlength: 5000 })
   description: string;
+
+  @Prop({ required: true, index: true })
+  city: string;
 
   @Prop({ required: true, enum: ExperienceCategoryEnum })
   category: string;
@@ -77,17 +76,17 @@ export class ExperienceDocument extends Document {
   @Prop({ required: true })
   priceCop: number;
 
-  @Prop({ required: true })
-  durationHours: number;
+  @Prop({ type: Number, default: null })
+  durationHours: number | null;
+
+  @Prop({ required: true, default: 1 })
+  minimumParticipants: number;
 
   @Prop({ required: true })
   capacity: number;
 
-  @Prop({ required: true })
-  coverImageUrl: string;
-
-  @Prop({ type: ExperienceLocationSchema, required: true })
-  location: ExperienceLocationSchema;
+  @Prop({ type: ExperienceLocationSchema, default: null })
+  location: ExperienceLocationSchema | null;
 
   @Prop({ required: true, enum: ExperienceAvailabilityTypeEnum })
   availabilityType: string;

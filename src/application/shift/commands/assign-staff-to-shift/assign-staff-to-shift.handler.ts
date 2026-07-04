@@ -90,13 +90,20 @@ export class AssignStaffToShiftCommandHandler implements ICommandHandler<AssignS
     const previousSnapshot = this.auditDiffService.snapshot(shift);
 
     // Update shift with merged staff list
-    shift.update(
-      {
-        staffMemberIds: allStaffMemberIds,
-        name: shift.getName(),
-      },
-      new Date(),
-    );
+    try {
+      shift.update(
+        {
+          staffMemberIds: allStaffMemberIds,
+          name: shift.getName(),
+        },
+        new Date(),
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
 
     // Snapshot after update
     const nextSnapshot = this.auditDiffService.snapshot(shift);

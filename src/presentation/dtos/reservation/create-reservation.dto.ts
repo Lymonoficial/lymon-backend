@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsEnum,
   IsInt,
   IsMongoId,
@@ -10,6 +9,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsCalendarDate } from '@/presentation/common/decorators/is-calendar-date.decorator';
 
 export enum ManualReservationSourceEnum {
   MANUAL = 'MANUAL',
@@ -32,12 +32,12 @@ export class CreateReservationDto {
   @IsNotEmpty()
   guestId: string;
 
-  @ApiProperty({ example: '2024-06-01' })
-  @IsDateString()
+  @ApiProperty({ example: '2024-06-01', description: 'YYYY-MM-DD, no time' })
+  @IsCalendarDate()
   checkIn: string;
 
-  @ApiProperty({ example: '2024-06-05' })
-  @IsDateString()
+  @ApiProperty({ example: '2024-06-05', description: 'YYYY-MM-DD, no time' })
+  @IsCalendarDate()
   checkOut: string;
 
   @ApiProperty({ example: 2 })

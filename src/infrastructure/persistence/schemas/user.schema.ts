@@ -49,6 +49,9 @@ export class UserDocument extends Document {
 
   @Prop()
   document?: string;
+
+  @Prop({ default: false })
+  tutorialCompleted: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);

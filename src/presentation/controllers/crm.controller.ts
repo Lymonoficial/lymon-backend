@@ -43,6 +43,11 @@ import { GetGuestMonthlySpendingQuery } from '@/application/guest/queries/get-gu
 import { GetGuestMonthlySpendingResult } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.result';
 import { GetGuestBookingOriginsQuery } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.query';
 import { GetGuestBookingOriginsResult } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.result';
+import {
+  GetGuestStatsQuery,
+  GUEST_STAT_KEYS,
+  type GuestStatKey,
+} from '@/application/guest/queries/get-guest-stats/get-guest-stats.query';
 import { SaveGuestPreferencesCommand } from '@/application/guest/commands/preferences/save-guest-preferences.command';
 import { SaveGuestPreferencesResult } from '@/application/guest/commands/preferences/save-guest-preferences.result';
 import { GetGuestEmailsByGuestIdQuery } from '@/application/guest-email/queries/get-guest-emails-by-guest-id/get-guest-emails-by-guest-id.query';
@@ -64,6 +69,10 @@ import { SendGuestMessageDto } from '@/presentation/dtos/guest/send-guest-messag
 import { CreateCatalogItemDto } from '@/presentation/dtos/catalog/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from '@/presentation/dtos/catalog/update-catalog-item.dto';
 import { ToggleCatalogItemDto } from '@/presentation/dtos/catalog/toggle-catalog-item.dto';
+import { GetConversationsByTenantQuery } from '@/application/conversation/queries/get-conversations-by-tenant/get-conversations-by-tenant.query';
+import { GetConversationThreadQuery } from '@/application/conversation/queries/get-conversation-thread/get-conversation-thread.query';
+import { MarkConversationReadCommand } from '@/application/conversation/commands/mark-conversation-read/mark-conversation-read.command';
+import { ArchiveConversationCommand } from '@/application/conversation/commands/archive-conversation/archive-conversation.command';
 import { GetGuestRatingsQuery } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.query';
 import { GetGuestRatingsResult } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.result';
 import { GetGuestMetricsQuery } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.query';
@@ -133,7 +142,7 @@ export class CrmController {
             guestId: currentId,
             fullName: guest.getFullName(),
             primaryEmail: guest.getPrimaryEmail(),
-            phones: guest.getPhones(),
+            phone: guest.getPhone(),
             status: guest.getStatus(),
             tags: guest.getTags().map((t) => t.getName()),
             lifecycleStatus: lifecycleStatuses.get(currentId) || GuestLifecycleStatus.NO_RESERVATION,
@@ -382,6 +391,42 @@ export class CrmController {
         total: result.total,
         sources: result.sources,
       },
+    };
+  }
+
+  @Get('guests/:guestId/stats')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({
+    summary:
+      'Get guest stats. Pass ?include=monthlySpending,bookingOrigins to select a subset; omit to return all.',
+  })
+  @ApiQuery({
+    name: 'include',
+    required: false,
+    description: 'Comma-separated stat keys. Unknown keys are ignored.',
+  })
+  @ApiResponse({ status: 200, description: 'Guest stats retrieved successfully' })
+  async getGuestStats(
+    @Param('guestId') guestId: string,
+    @CurrentUser() user: JwtPayload,
+    @Query('include') include?: string,
+  ) {
+    // ponytail: unknown keys silently dropped; empty include => all. Add 400 if FE needs strictness.
+    const requested = include
+      ? (include.split(',').map((s) => s.trim()) as string[]).filter(
+          (s): s is GuestStatKey => (GUEST_STAT_KEYS as string[]).includes(s),
+        )
+      : GUEST_STAT_KEYS;
+
+    const data = await this.queryBus.execute<
+      GetGuestStatsQuery,
+      Record<string, unknown>
+    >(new GetGuestStatsQuery(user.tenantId, guestId, requested));
+
+    return {
+      message: 'Guest stats retrieved successfully',
+      data,
     };
   }
 
@@ -774,18 +819,20 @@ export class CrmController {
   @UseGuards(PermissionGuard)
   @RequirePermission(Permission.CRM_VIEW)
   @ApiOperation({ summary: 'Get CRM metrics for a specific guest' })
+  @ApiQuery({ name: 'type', required: false, type: String, description: 'Specific stat type to retrieve (e.g., averageBookingValue). Returns all by default.' })
   @ApiResponse({
     status: 200,
     description: 'Guest metrics retrieved successfully',
   })
   async getGuestMetrics(
     @Param('guestId') guestId: string,
+    @Query('type') type: string, 
     @CurrentUser() user: JwtPayload,
   ) {
     const result = await this.queryBus.execute<
       GetGuestMetricsQuery,
       GetGuestMetricsResult
-    >(new GetGuestMetricsQuery(user.tenantId, guestId));
+    >(new GetGuestMetricsQuery(user.tenantId, guestId, type)); 
 
     return {
       message: 'Guest metrics retrieved successfully',
@@ -793,4 +840,73 @@ export class CrmController {
     };
   }
 
+  @Get('conversations')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get staff inbox — paginated conversation list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'channel', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, type: String })
+  @ApiQuery({ name: 'unreadOnly', required: false, type: Boolean })
+  async getConversations(
+    @CurrentUser() user: JwtPayload,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('channel') channel?: string,
+    @Query('status') status?: string,
+    @Query('unreadOnly', new DefaultValuePipe(false), ParseBoolPipe) unreadOnly?: boolean,
+  ) {
+    const result = await this.queryBus.execute(
+      new GetConversationsByTenantQuery(user.tenantId, page, limit, channel, status, unreadOnly),
+    );
+    return {
+      message: 'Conversations retrieved successfully',
+      data: { items: result.items, pagination: { total: result.total, page: result.page, limit: result.limit, totalPages: result.totalPages } },
+    };
+  }
+
+  @Get('conversations/:conversationId')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_VIEW)
+  @ApiOperation({ summary: 'Get conversation thread with resolved message bodies' })
+  async getConversationThread(
+    @Param('conversationId') conversationId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.queryBus.execute(
+      new GetConversationThreadQuery(user.tenantId, conversationId),
+    );
+    return { message: 'Conversation thread retrieved successfully', data: result };
+  }
+
+  @Patch('conversations/:conversationId/read')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mark conversation as read by staff' })
+  async markConversationRead(
+    @Param('conversationId') conversationId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new MarkConversationReadCommand(user.tenantId, conversationId),
+    );
+    return { message: 'Conversation marked as read' };
+  }
+
+  @Patch('conversations/:conversationId/archive')
+  @UseGuards(PermissionGuard)
+  @RequirePermission(Permission.CRM_MANAGE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Archive a conversation' })
+  async archiveConversation(
+    @Param('conversationId') conversationId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.commandBus.execute(
+      new ArchiveConversationCommand(user.tenantId, conversationId),
+    );
+    return { message: 'Conversation archived successfully' };
+  }
 }

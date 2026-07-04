@@ -16,12 +16,6 @@ export interface GuestIdentity {
   countryCode?: string;
 }
 
-export interface GuestPhone {
-  number: string;
-  type?: string;
-  isPrimary?: boolean;
-}
-
 export interface GuestSummary {
   totalBookings: number;
   totalNights: number;
@@ -39,8 +33,7 @@ export interface CreateGuestParams {
   primaryEmail: string;
   firstName?: string;
   lastName?: string;
-  emails?: string[];
-  phones?: GuestPhone[];
+  phone?: string;
   status?: GuestStatusEnum;
   preferences?: GuestPreferenceItem[];
 }

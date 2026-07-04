@@ -51,12 +51,8 @@ export class UpdateGuestProfileHandler implements ICommandHandler<UpdateGuestPro
       );
     }
 
-    if (command.emails !== undefined) {
-      guest.setEmails(command.emails);
-    }
-
-    if (command.phones !== undefined) {
-      guest.setPhones(command.phones);
+    if (command.phone !== undefined) {
+      guest.setPhone(command.phone);
     }
 
     if (command.identity !== undefined) {

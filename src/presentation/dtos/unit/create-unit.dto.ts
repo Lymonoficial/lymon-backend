@@ -174,4 +174,15 @@ export class CreateUnitDto {
   @Type(() => ExternalIdsDto)
   @IsOptional()
   externalIds?: ExternalIdsDto;
+
+  @ApiProperty({
+    example: ['tenantId/units/1234-photo.jpg'],
+    description: 'R2 object keys for uploaded media files',
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  mediaKeys?: string[];
 }

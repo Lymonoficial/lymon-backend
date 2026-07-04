@@ -11,7 +11,6 @@ import { PropertyRepository } from '@/domain/property/repositories/property.repo
 import { UnitRepository } from '@/domain/unit/repositories/unit.repository';
 import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
-import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 import { createExperienceRepositoryMock } from '@test/shared/mocks/repositories/experience-repository.mock';
 import { createPropertyRepositoryMock } from '@test/shared/mocks/repositories/property-repository.mock';
 import { createUnitRepositoryMock } from '@test/shared/mocks/repositories/unit-repository.mock';
@@ -25,24 +24,30 @@ function makeCommand(
 ): CreateExperienceCommand {
   const hasPropertyIdOverride =
     overrides !== undefined && Object.hasOwn(overrides, 'propertyId');
+  const hasDurationHoursOverride =
+    overrides !== undefined && Object.hasOwn(overrides, 'durationHours');
+  const hasLocationOverride =
+    overrides !== undefined && Object.hasOwn(overrides, 'location');
 
   return new CreateExperienceCommand(
     overrides?.tenantId ?? '65f1a1a2b3c4d5e6f7a8b9c0',
-    overrides?.scope ?? ExperienceScopeEnum.PROPERTY,
     hasPropertyIdOverride ? overrides?.propertyId : '65f1a1a2b3c4d5e6f7a8b9c1',
     overrides?.unitIds,
     overrides?.name ?? 'Airport transfer',
     overrides?.description ?? 'Roundtrip transportation service',
+    overrides?.city ?? 'Medellín',
     overrides?.category ?? ExperienceCategoryEnum.TRANSPORTATION,
     overrides?.priceCop ?? 100000,
-    overrides?.durationHours ?? 2,
+    hasDurationHoursOverride ? overrides?.durationHours : 2,
+    overrides?.minimumParticipants,
     overrides?.capacity ?? 8,
-    overrides?.coverImageUrl ?? 'https://cdn.example.com/transport.jpg',
-    overrides?.location ?? {
-      label: 'Main lobby',
-      lat: 4.6097,
-      lng: -74.0817,
-    },
+    hasLocationOverride
+      ? overrides?.location
+      : {
+          label: 'Main lobby',
+          lat: 4.6097,
+          lng: -74.0817,
+        },
     overrides?.availabilityType ?? ExperienceAvailabilityTypeEnum.DATE_RANGE,
     overrides?.startAt ?? '2099-01-10T10:00:00.000Z',
     overrides?.endAt ?? '2099-01-20T10:00:00.000Z',
@@ -50,6 +55,7 @@ function makeCommand(
     overrides?.blackoutRanges,
     overrides?.allowStandalonePurchase ?? true,
     overrides?.allowReservationPurchase ?? true,
+    overrides?.mediaKeys,
     overrides?.actorId ?? 'user-123',
     overrides?.actorEmail ?? 'host@example.com',
   );
@@ -95,7 +101,6 @@ describe('CreateExperienceHandler', () => {
 
   it('throws BadRequestException when unitIds are provided without propertyId', async () => {
     const command = makeCommand({
-      scope: ExperienceScopeEnum.TENANT,
       propertyId: undefined,
       unitIds: ['65f1a1a2b3c4d5e6f7a8b9c8'],
     });
@@ -121,5 +126,17 @@ describe('CreateExperienceHandler', () => {
     expect(result).toBeInstanceOf(CreateExperienceResult);
     expect(result.experienceId).toBe(EXPERIENCE_ID);
     expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates experience without durationHours or location', async () => {
+    propertyRepository.findById.mockResolvedValue(makeProperty());
+    experienceRepository.existsByPropertyIdAndName.mockResolvedValue(false);
+    experienceRepository.save.mockResolvedValue(EXPERIENCE_ID);
+
+    await expect(
+      handler.execute(
+        makeCommand({ durationHours: undefined, location: undefined }),
+      ),
+    ).resolves.toBeInstanceOf(CreateExperienceResult);
   });
 });
