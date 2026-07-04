@@ -26,8 +26,6 @@ export class GetGuestMetricsHandler implements IQueryHandler<GetGuestMetricsQuer
       throw new NotFoundException(`Guest with ID ${guestId} not found`);
     }
 
-    const stats = await this.reservationRepository.getBookingValueStats(tenantId, guestId);
-
     let totalBookings = 0;
     let totalNights = 0;
     let avgNightsPerStay = 0;
