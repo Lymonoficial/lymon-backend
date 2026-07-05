@@ -39,6 +39,9 @@ export class TenantDocument extends Document {
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
+
+  @Prop({ type: Date, default: null })
+  trialEndsAt: Date | null;
 }
 
 export const TenantSchema = SchemaFactory.createForClass(TenantDocument);
