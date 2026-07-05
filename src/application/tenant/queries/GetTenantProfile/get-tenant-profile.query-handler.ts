@@ -33,6 +33,7 @@ export class GetTenantProfileQueryHandler implements IQueryHandler<
     return new GetTenantProfileResult(
       new TenantProfileDto(
         tenant.getId()!.toString(),
+        tenant.getSlug(),
         tenant.getName(),
         tenant.getOwnerEmail().toString(),
         tenant.getPlan().toString(),

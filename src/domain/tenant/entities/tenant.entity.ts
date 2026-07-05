@@ -1,10 +1,12 @@
 import { Email } from '@/domain/shared/value-objects/email.vo';
+import { createSlug } from '@/domain/shared/utils/slug.util';
 import { PlanType } from '@/domain/tenant/value-objects/plan-type.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 export interface TenantReconstitutionProps {
   id: TenantId;
   name: string;
+  slug?: string;
   ownerEmail: Email;
   plan: PlanType;
   emailVerified: boolean;
@@ -21,6 +23,7 @@ export class Tenant {
   private constructor(
     private readonly id: TenantId | null,
     private name: string,
+    private slug: string,
     private readonly ownerEmail: Email,
     private plan: PlanType,
     private emailVerified: boolean,
@@ -41,6 +44,7 @@ export class Tenant {
     return new Tenant(
       null,
       name.trim(),
+      createSlug(name),
       ownerEmail,
       plan,
       false,
@@ -57,6 +61,7 @@ export class Tenant {
     return new Tenant(
       props.id,
       props.name,
+      props.slug ?? createSlug(props.name),
       props.ownerEmail,
       props.plan,
       props.emailVerified,
@@ -109,6 +114,7 @@ export class Tenant {
         throw new Error('Tenant name cannot be empty');
       }
       this.name = name.trim();
+      this.slug = createSlug(this.name);
     }
     if (contactPhone !== undefined) this.contactPhone = contactPhone;
     if (address !== undefined) this.address = address;
@@ -123,6 +129,10 @@ export class Tenant {
 
   getName(): string {
     return this.name;
+  }
+
+  getSlug(): string {
+    return this.slug;
   }
 
   getContactPhone(): string | null {
