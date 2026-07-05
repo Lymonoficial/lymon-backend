@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
+import { EmailModule } from '@/infrastructure/email/email.module';
 import { SendGuestMessageHandler } from './commands/send-guest-message/send-guest-message.handler';
 import { RecordInboundMessageHandler } from './commands/record-inbound-message/record-inbound-message.handler';
 import { UpdateMessageDeliveryStatusHandler } from './commands/update-message-delivery-status/update-message-delivery-status.handler';
@@ -15,7 +16,7 @@ const CommandHandlers = [
 const QueryHandlers = [GetGuestMessagesByGuestIdHandler, GetGuestMessageByIdHandler];
 
 @Module({
-  imports: [CqrsModule, PersistenceModule],
+  imports: [CqrsModule, PersistenceModule, EmailModule],
   providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers],
 })
