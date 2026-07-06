@@ -3,7 +3,10 @@ import {
   AvailableExperienceFilters,
   ExperienceRepository,
 } from '@/domain/experience/repositories/experience.repository';
-import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
+import {
+  ExperienceAvailabilityType,
+  ExperienceAvailabilityTypeEnum,
+} from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import {
@@ -199,6 +202,29 @@ export class MongoExperienceRepository implements ExperienceRepository {
     });
   }
 
+  private normalizeScope(document: ExperienceDocument): ExperienceScopeEnum {
+    if (!document.scope) {
+      return document.propertyId
+        ? ExperienceScopeEnum.PROPERTY
+        : ExperienceScopeEnum.GLOBAL;
+    }
+
+    const upper = document.scope.toUpperCase();
+    return upper === 'TENANT'
+      ? ExperienceScopeEnum.GLOBAL
+      : (upper as ExperienceScopeEnum);
+  }
+
+  private normalizeAvailabilityType(
+    document: ExperienceDocument,
+  ): ExperienceAvailabilityTypeEnum {
+    return Object.values(ExperienceAvailabilityTypeEnum).includes(
+      document.availabilityType as ExperienceAvailabilityTypeEnum,
+    )
+      ? (document.availabilityType as ExperienceAvailabilityTypeEnum)
+      : ExperienceAvailabilityTypeEnum.RECURRING;
+  }
+
   private toDomain(document: ExperienceDocument): Experience {
     return Experience.reconstitute({
       id: ExperienceId.create(document._id.toString()),
@@ -206,9 +232,7 @@ export class MongoExperienceRepository implements ExperienceRepository {
       propertyId: document.propertyId
         ? PropertyId.create(document.propertyId.toString())
         : undefined,
-      scope: ExperienceScope.create(
-        document.scope ?? (document.propertyId ? 'property' : 'global'),
-      ),
+      scope: ExperienceScope.create(this.normalizeScope(document)),
       name: document.name,
       description: document.description,
       city: document.city,
@@ -217,7 +241,7 @@ export class MongoExperienceRepository implements ExperienceRepository {
       minimumParticipants: document.minimumParticipants ?? 1,
       capacity: document.capacity,
       availabilityType: ExperienceAvailabilityType.create(
-        document.availabilityType,
+        this.normalizeAvailabilityType(document),
       ),
       recurrence: document.recurrence
         ? {

@@ -153,7 +153,7 @@ export class ExperienceController {
       propertyScopedDateRange: {
         summary: 'Property-scoped recurring experience',
         value: {
-          scope: 'property',
+          scope: 'PROPERTY',
           propertyId: '6650d0ef3f3d2d2d2d2d2d2d',
           name: 'Airport transfer',
           description: 'Private transfer from airport to property',
@@ -175,7 +175,7 @@ export class ExperienceController {
       tenantRecurring: {
         summary: 'Global recurring transportation service',
         value: {
-          scope: 'global',
+          scope: 'GLOBAL',
           name: 'Daily shuttle service',
           description: 'Recurring daily transportation service',
           city: 'Medellin',
