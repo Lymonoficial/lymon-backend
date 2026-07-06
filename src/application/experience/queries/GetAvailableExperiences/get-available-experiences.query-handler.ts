@@ -47,8 +47,10 @@ export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
     const tenantId = createOptionalFilter(query.tenantId, 'tenantId', (v) =>
       TenantId.createFromString(v),
     );
-    const propertyId = createOptionalFilter(query.propertyId, 'propertyId', (v) =>
-      PropertyId.create(v),
+    const propertyId = createOptionalFilter(
+      query.propertyId,
+      'propertyId',
+      (v) => PropertyId.create(v),
     );
     const category = createOptionalFilter(query.category, 'category', (v) =>
       ExperienceCategory.create(v),
@@ -56,7 +58,14 @@ export class GetAvailableExperiencesQueryHandler implements IQueryHandler<
 
     const { experiences, total } =
       await this.experienceRepository.findAvailableForGuestPaginated(
-        { tenantId, propertyId, category, sortByPrice: query.sortByPrice },
+        {
+          tenantId,
+          propertyId,
+          category,
+          sortByPrice: query.sortByPrice,
+          scope: query.scope,
+          city: query.city,
+        },
         query.page,
         query.limit,
       );

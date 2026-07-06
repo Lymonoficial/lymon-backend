@@ -1,6 +1,7 @@
 export class PropertyFullDto {
   constructor(
     public readonly id: string,
+    public readonly slug: string,
     public readonly name: string,
     public readonly description: string,
     public readonly propertyType: string,

@@ -208,7 +208,15 @@ export class UnitController {
   async getAllPublic(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query() filters: { minGuests?: string; propertyId?: string; startDate?: string; endDate?: string; sortByPrice?: string; name?: string },
+    @Query()
+    filters: {
+      minGuests?: string;
+      propertyId?: string;
+      startDate?: string;
+      endDate?: string;
+      sortByPrice?: string;
+      name?: string;
+    },
   ) {
     const { minGuestsNum, start, end } = this.parsePublicUnitFilters(
       filters.minGuests,
@@ -216,7 +224,9 @@ export class UnitController {
       filters.endDate,
     );
     const priceSortDir =
-      filters.sortByPrice === 'asc' || filters.sortByPrice === 'desc' ? filters.sortByPrice : undefined;
+      filters.sortByPrice === 'asc' || filters.sortByPrice === 'desc'
+        ? filters.sortByPrice
+        : undefined;
 
     const query = new GetAllPublicUnitsQuery(
       page,
@@ -238,14 +248,14 @@ export class UnitController {
   }
 
   @Public()
-  @Get('public/:tenantId')
+  @Get('public/:tenantSlug')
   @ApiOperation({
     summary: 'Get all units for a tenant (public, no authentication required)',
   })
   @PublicUnitQueryParams()
   @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
   async getPublicByTenant(
-    @Param('tenantId') tenantId: string,
+    @Param('tenantSlug') tenantSlug: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('minGuests') minGuests?: string,
@@ -259,7 +269,7 @@ export class UnitController {
     );
 
     const query = new GetPublicUnitsByTenantQuery(
-      tenantId,
+      tenantSlug,
       page,
       limit,
       minGuestsNum,

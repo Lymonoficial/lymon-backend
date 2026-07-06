@@ -5,6 +5,7 @@ import {
 import { TenantRepository } from '@/domain/tenant/repositories/tenant.repository';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { createSlug } from '@/domain/shared/utils/slug.util';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { TenantDocument } from '../schemas/tenant.schema';
@@ -23,6 +24,7 @@ export class MongoTenantRepository implements TenantRepository {
 
     const document = {
       name: tenant.getName(),
+      slug: tenant.getSlug(),
       ownerEmail: tenant.getOwnerEmail().toString(),
       plan: tenant.getPlan().toString(),
       emailVerified: tenant.isEmailVerified(),
@@ -32,6 +34,7 @@ export class MongoTenantRepository implements TenantRepository {
       logoUrl: tenant.getLogoUrl(),
       updatedAt: tenant.getUpdatedAt(),
       deletedAt: tenant.getDeletedAt(),
+      trialEndsAt: tenant.getTrialEndsAt(),
     };
 
     if (id) {
@@ -60,6 +63,18 @@ export class MongoTenantRepository implements TenantRepository {
     });
     return doc ? this.toDomainEntity(doc) : null;
   }
+
+  async findBySlug(slug: string): Promise<Tenant | null> {
+    const docs = await this.tenantModel.find({
+      deletedAt: null,
+    });
+
+    const doc = docs.find(
+      (item) => item.slug === slug || createSlug(item.name) === slug,
+    );
+
+    return doc ? this.toDomainEntity(doc) : null;
+  }
   async exists(email: Email): Promise<boolean> {
     const count = await this.tenantModel.countDocuments({
       ownerEmail: email.toString(),
@@ -72,6 +87,7 @@ export class MongoTenantRepository implements TenantRepository {
     const props: TenantReconstitutionProps = {
       id: TenantId.createFromString(doc._id.toString()),
       name: doc.name,
+      slug: doc.slug,
       ownerEmail: Email.create(doc.ownerEmail),
       plan: PlanType.create(doc.plan),
       emailVerified: doc.emailVerified,
@@ -82,6 +98,7 @@ export class MongoTenantRepository implements TenantRepository {
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
       deletedAt: doc.deletedAt,
+      trialEndsAt: doc.trialEndsAt ?? null,
     };
     return Tenant.reconstitute(props);
   }

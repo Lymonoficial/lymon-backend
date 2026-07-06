@@ -84,12 +84,25 @@ export class ExperienceController {
     @Query('propertyId') propertyId: string | undefined,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('minCapacity', new DefaultValuePipe(undefined), new ParseIntPipe({ optional: true })) minCapacity: number | undefined,
+    @Query(
+      'minCapacity',
+      new DefaultValuePipe(undefined),
+      new ParseIntPipe({ optional: true }),
+    )
+    minCapacity: number | undefined,
   ) {
     const result = await this.queryBus.execute<
       GetExperiencesByTenantQuery,
       GetExperiencesByTenantResult
-    >(new GetExperiencesByTenantQuery(user.tenantId, page, limit, propertyId, minCapacity));
+    >(
+      new GetExperiencesByTenantQuery(
+        user.tenantId,
+        page,
+        limit,
+        propertyId,
+        minCapacity,
+      ),
+    );
 
     return {
       message: 'Experiences retrieved successfully',
@@ -138,52 +151,38 @@ export class ExperienceController {
     type: CreateExperienceDto,
     examples: {
       propertyScopedDateRange: {
-        summary: 'Property-scoped transportation experience',
+        summary: 'Property-scoped recurring experience',
         value: {
+          scope: 'property',
           propertyId: '6650d0ef3f3d2d2d2d2d2d2d',
-          unitIds: ['6650d0ef3f3d2d2d2d2d2d33'],
           name: 'Airport transfer',
           description: 'Private transfer from airport to property',
+          city: 'Bogota',
           category: 'TRANSPORTATION',
           priceCop: 120000,
-          durationHours: 2,
           minimumParticipants: 2,
           capacity: 8,
-          location: {
-            label: 'Main lobby pickup point',
-            address: 'Cra 10 #20-30, Bogota',
-            lat: 4.6097,
-            lng: -74.0817,
+          availabilityType: 'RECURRING',
+          recurrence: {
+            daysOfWeek: [1, 2, 3, 4, 5],
+            startTime: '08:00',
+            endTime: '18:00',
           },
-          availabilityType: 'DATE_RANGE',
-          startAt: '2026-05-10T10:00:00.000Z',
-          endAt: '2026-05-20T10:00:00.000Z',
-          blackoutRanges: [
-            {
-              startAt: '2026-05-15T00:00:00.000Z',
-              endAt: '2026-05-16T23:59:59.000Z',
-            },
-          ],
           allowStandalonePurchase: true,
           allowReservationPurchase: true,
         },
       },
       tenantRecurring: {
-        summary: 'Recurring transportation service',
+        summary: 'Global recurring transportation service',
         value: {
+          scope: 'global',
           name: 'Daily shuttle service',
           description: 'Recurring daily transportation service',
+          city: 'Medellin',
           category: 'TRANSPORTATION',
           priceCop: 80000,
-          durationHours: 1,
           minimumParticipants: 3,
           capacity: 12,
-          location: {
-            label: 'Terminal norte',
-            address: 'Terminal del Norte',
-            lat: 4.7044,
-            lng: -74.0848,
-          },
           availabilityType: 'RECURRING',
           recurrence: {
             daysOfWeek: [1, 2, 3, 4, 5],
@@ -203,7 +202,7 @@ export class ExperienceController {
     schema: {
       example: {
         statusCode: 400,
-        message: 'unitIds require propertyId',
+        message: 'Property-scoped experiences require propertyId',
         error: 'Bad Request',
       },
     },
@@ -217,21 +216,17 @@ export class ExperienceController {
   ) {
     const command = new CreateExperienceCommand(
       user.tenantId,
+      dto.scope,
       dto.propertyId,
-      dto.unitIds,
       dto.name,
       dto.description,
+      dto.city,
       dto.category,
       dto.priceCop,
-      dto.durationHours,
       dto.minimumParticipants,
       dto.capacity,
-      dto.location,
       dto.availabilityType,
-      dto.startAt,
-      dto.endAt,
       dto.recurrence,
-      dto.blackoutRanges,
       dto.allowStandalonePurchase,
       dto.allowReservationPurchase,
       dto.mediaKeys,
@@ -273,26 +268,19 @@ export class ExperienceController {
   ) {
     const changes: ExperienceChanges = {
       ...pickDefined({
+        scope: dto.scope,
         name: dto.name,
         description: dto.description,
+        city: dto.city,
         priceCop: dto.priceCop,
-        durationHours: dto.durationHours,
         minimumParticipants: dto.minimumParticipants,
         capacity: dto.capacity,
-        location: dto.location,
         availabilityType: dto.availabilityType,
         recurrence: dto.recurrence,
         allowStandalonePurchase: dto.allowStandalonePurchase,
         allowReservationPurchase: dto.allowReservationPurchase,
       }),
-      ...(dto.startAt !== undefined && { startAt: new Date(dto.startAt) }),
-      ...(dto.endAt !== undefined && { endAt: new Date(dto.endAt) }),
-      ...(dto.blackoutRanges !== undefined && {
-        blackoutRanges: dto.blackoutRanges.map((r) => ({
-          startAt: new Date(r.startAt),
-          endAt: new Date(r.endAt),
-        })),
-      }),
+      ...(dto.propertyId !== undefined && { propertyId: dto.propertyId }),
       ...(dto.mediaKeys !== undefined && { mediaKeys: dto.mediaKeys }),
     };
 

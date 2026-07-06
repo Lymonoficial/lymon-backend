@@ -34,6 +34,7 @@ function makeExperience(overrides?: Partial<{ id: string; tenantId: string }>) {
     unitIds: [UnitId.create('65f1a1a2b3c4d5e6f7a8b9c8')],
     name: 'Airport transfer',
     description: 'Private transfer service',
+    city: 'Medellín',
     category: ExperienceCategory.create('TRANSPORTATION'),
     priceCop: 120000,
     durationHours: 2,

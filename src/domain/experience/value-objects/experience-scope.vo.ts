@@ -1,6 +1,6 @@
 export enum ExperienceScopeEnum {
-  TENANT = 'TENANT',
-  PROPERTY = 'PROPERTY',
+  GLOBAL = 'global',
+  PROPERTY = 'property',
 }
 
 export class ExperienceScope {
@@ -18,6 +18,10 @@ export class ExperienceScope {
 
   isPropertyScope(): boolean {
     return this.value === ExperienceScopeEnum.PROPERTY;
+  }
+
+  isGlobalScope(): boolean {
+    return this.value === ExperienceScopeEnum.GLOBAL;
   }
 
   toString(): string {

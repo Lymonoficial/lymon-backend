@@ -1,4 +1,5 @@
 import { ApplicationModule } from '@/application/application.module';
+import { PersistenceModule } from '@/infrastructure/persistence/persistence.module';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CommunicationWebhookModule } from '@/infrastructure/email/communication-webhook.module';
@@ -32,7 +33,7 @@ import { GuestExperiencePurchasesController } from '@/presentation/controllers/g
 import { ExperiencePurchasesController } from '@/presentation/controllers/experience-purchases.controller';
 
 @Module({
-  imports: [CqrsModule, ApplicationModule, CommunicationWebhookModule],
+imports: [CqrsModule, ApplicationModule, CommunicationWebhookModule, PersistenceModule],
   controllers: [
     CommunicationWebhookController,
     AuthController,

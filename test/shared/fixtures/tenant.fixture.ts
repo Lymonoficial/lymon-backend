@@ -19,6 +19,7 @@ export const TENANT_FIXTURE_DEFAULTS = {
   address: null as string | null,
   website: null as string | null,
   logoUrl: null as string | null,
+  trialEndsAt: null as Date | null,
 };
 
 export function makeTenant(
@@ -32,6 +33,7 @@ export function makeTenant(
     address: string | null;
     website: string | null;
     logoUrl: string | null;
+    trialEndsAt: Date | null;
   }>,
 ): Tenant {
   const merged = { ...TENANT_FIXTURE_DEFAULTS, ...overrides };
@@ -47,6 +49,7 @@ export function makeTenant(
     logoUrl: merged.logoUrl,
     createdAt: new Date(),
     updatedAt: new Date(),
+    trialEndsAt: merged.trialEndsAt,
   };
   return Tenant.reconstitute(props);
 }

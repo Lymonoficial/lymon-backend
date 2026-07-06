@@ -1,6 +1,4 @@
 export enum ExperienceAvailabilityTypeEnum {
-  ONE_TIME = 'ONE_TIME',
-  DATE_RANGE = 'DATE_RANGE',
   RECURRING = 'RECURRING',
 }
 
@@ -26,11 +24,11 @@ export class ExperienceAvailabilityType {
   }
 
   isOneTime(): boolean {
-    return this.value === ExperienceAvailabilityTypeEnum.ONE_TIME;
+    return false;
   }
 
   isDateRange(): boolean {
-    return this.value === ExperienceAvailabilityTypeEnum.DATE_RANGE;
+    return false;
   }
 
   toString(): string {
