@@ -14,8 +14,9 @@ describe('MongoTenantRepository', () => {
       emailVerified: true,
       contactPhone: '12345',
       address: 'Address',
-      website: 'https://site.test',
-      logoUrl: 'https://site.test/logo.png',
+      description: 'A description',
+      logoKey: 'tenants/abc/logo/1.png',
+      theme: { primary: '#1A73E8' },
       createdAt: new Date('2030-01-01T00:00:00Z'),
       updatedAt: new Date('2030-01-02T00:00:00Z'),
     });
@@ -59,8 +60,9 @@ describe('MongoTenantRepository', () => {
       emailVerified: true,
       contactPhone: '12345',
       address: 'Address',
-      website: 'https://site.test',
-      logoUrl: 'https://site.test/logo.png',
+      description: 'A description',
+      logoKey: 'tenants/abc/logo/1.png',
+      theme: { primary: '#1A73E8' },
       createdAt: new Date('2030-01-01T00:00:00Z'),
       updatedAt: new Date('2030-01-02T00:00:00Z'),
     };

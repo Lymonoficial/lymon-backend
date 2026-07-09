@@ -60,8 +60,9 @@ describe('Tenant Entity', () => {
         emailVerified: true,
         contactPhone: '+1234567890',
         address: '123 Main St',
-        website: 'https://acme.com',
-        logoUrl: 'https://acme.com/logo.png',
+        description: 'A description',
+        logoKey: 'tenants/abc/logo/1.png',
+        theme: { primary: '#1A73E8' },
         createdAt,
         updatedAt,
       };
@@ -76,8 +77,9 @@ describe('Tenant Entity', () => {
       expect(tenant.isEmailVerified()).toBe(true);
       expect(tenant.getContactPhone()).toBe('+1234567890');
       expect(tenant.getAddress()).toBe('123 Main St');
-      expect(tenant.getWebsite()).toBe('https://acme.com');
-      expect(tenant.getLogoUrl()).toBe('https://acme.com/logo.png');
+      expect(tenant.getDescription()).toBe('A description');
+      expect(tenant.getLogoKey()).toBe('tenants/abc/logo/1.png');
+      expect(tenant.getTheme()).toEqual({ primary: '#1A73E8' });
       expect(tenant.getCreatedAt()).toEqual(createdAt);
       expect(tenant.getUpdatedAt()).toEqual(updatedAt);
     });
@@ -92,8 +94,9 @@ describe('Tenant Entity', () => {
         emailVerified: false,
         contactPhone: null,
         address: null,
-        website: null,
-        logoUrl: null,
+        description: null,
+        logoKey: null,
+        theme: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -102,8 +105,9 @@ describe('Tenant Entity', () => {
 
       expect(tenant.getContactPhone()).toBeNull();
       expect(tenant.getAddress()).toBeNull();
-      expect(tenant.getWebsite()).toBeNull();
-      expect(tenant.getLogoUrl()).toBeNull();
+      expect(tenant.getDescription()).toBeNull();
+      expect(tenant.getLogoKey()).toBeNull();
+      expect(tenant.getTheme()).toBeNull();
     });
   });
 
@@ -157,19 +161,15 @@ describe('Tenant Entity', () => {
     it('should update all profile fields', () => {
       const tenant = Tenant.create(validName, validEmail, validPlan);
 
-      tenant.updateProfile(
-        'New Name',
-        '+9876543210',
-        '456 Oak Ave',
-        'https://newsite.com',
-        'https://newsite.com/logo.png',
-      );
+      tenant.updateProfile('New Name', '+9876543210', '456 Oak Ave', 'A description', {
+        primary: '#1A73E8',
+      });
 
       expect(tenant.getName()).toBe('New Name');
       expect(tenant.getContactPhone()).toBe('+9876543210');
       expect(tenant.getAddress()).toBe('456 Oak Ave');
-      expect(tenant.getWebsite()).toBe('https://newsite.com');
-      expect(tenant.getLogoUrl()).toBe('https://newsite.com/logo.png');
+      expect(tenant.getDescription()).toBe('A description');
+      expect(tenant.getTheme()).toEqual({ primary: '#1A73E8' });
     });
 
     it('should update only specific fields', () => {
@@ -192,8 +192,9 @@ describe('Tenant Entity', () => {
         emailVerified: false,
         contactPhone: '+1234567890',
         address: '123 Main St',
-        website: 'https://acme.com',
-        logoUrl: 'https://acme.com/logo.png',
+        description: 'A description',
+        logoKey: 'tenants/abc/logo/1.png',
+        theme: { primary: '#1A73E8' },
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -203,8 +204,8 @@ describe('Tenant Entity', () => {
 
       expect(tenant.getContactPhone()).toBeNull();
       expect(tenant.getAddress()).toBeNull();
-      expect(tenant.getWebsite()).toBeNull();
-      expect(tenant.getLogoUrl()).toBeNull();
+      expect(tenant.getDescription()).toBeNull();
+      expect(tenant.getTheme()).toBeNull();
     });
 
     it('should throw error when updating with empty name', () => {
@@ -257,8 +258,9 @@ describe('Tenant Entity', () => {
         emailVerified: true,
         contactPhone: '+1111111111',
         address: 'Test Address',
-        website: 'https://test.com',
-        logoUrl: 'https://test.com/logo.png',
+        description: 'Test description',
+        logoKey: 'tenants/abc/logo/1.png',
+        theme: { primary: '#000000' },
         createdAt,
         updatedAt,
       };
@@ -272,8 +274,9 @@ describe('Tenant Entity', () => {
       expect(tenant.isEmailVerified()).toBe(true);
       expect(tenant.getContactPhone()).toBe('+1111111111');
       expect(tenant.getAddress()).toBe('Test Address');
-      expect(tenant.getWebsite()).toBe('https://test.com');
-      expect(tenant.getLogoUrl()).toBe('https://test.com/logo.png');
+      expect(tenant.getDescription()).toBe('Test description');
+      expect(tenant.getLogoKey()).toBe('tenants/abc/logo/1.png');
+      expect(tenant.getTheme()).toEqual({ primary: '#000000' });
       expect(tenant.getCreatedAt()).toEqual(createdAt);
       expect(tenant.getUpdatedAt()).toEqual(updatedAt);
     });
