@@ -14,6 +14,7 @@ import { RefreshGuestTokenHandler } from '@/application/guest-auth/commands/refr
 import { LogoutGuestHandler } from '@/application/guest-auth/commands/logout-guest/logout-guest.handler';
 import { UpdateGuestProfilePhotoHandler } from '@/application/guest-auth/commands/update-guest-profile-photo/update-guest-profile-photo.handler';
 import { GenerateGuestProfilePhotoUrlQueryHandler } from '@/application/guest-auth/queries/generate-guest-profile-photo-url/generate-guest-profile-photo-url.query-handler';
+import { GetGuestAccountProfileQueryHandler } from '@/application/guest-auth/queries/get-guest-account-profile/get-guest-account-profile.query-handler';
 
 const CommandHandlers = [
   RegisterGuestAccountHandler,
@@ -27,7 +28,10 @@ const CommandHandlers = [
   UpdateGuestProfilePhotoHandler,
 ];
 
-const QueryHandlers = [GenerateGuestProfilePhotoUrlQueryHandler];
+const QueryHandlers = [
+  GenerateGuestProfilePhotoUrlQueryHandler,
+  GetGuestAccountProfileQueryHandler,
+];
 
 @Module({
   imports: [
