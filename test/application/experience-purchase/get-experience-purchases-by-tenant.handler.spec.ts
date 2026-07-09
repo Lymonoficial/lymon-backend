@@ -1,4 +1,4 @@
-import { QueryBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ExperiencePurchasesController } from '@/presentation/controllers/experience-purchases.controller';
 import { GetExperiencePurchasesByTenantHandler } from '@/application/experience-purchase/queries/get-experience-purchases-by-tenant/get-experience-purchases-by-tenant.handler';
 import { GetExperiencePurchasesByTenantQuery } from '@/application/experience-purchase/queries/get-experience-purchases-by-tenant/get-experience-purchases-by-tenant.query';
@@ -23,6 +23,7 @@ describe('GetExperiencePurchasesByTenant', () => {
     queryBus = { execute: jest.fn() };
     controller = new ExperiencePurchasesController(
       queryBus as unknown as QueryBus,
+      { execute: jest.fn() } as unknown as CommandBus,
     );
   });
 

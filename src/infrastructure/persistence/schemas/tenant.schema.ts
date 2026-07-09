@@ -9,6 +9,9 @@ export class TenantDocument extends Document {
   name: string;
 
   @Prop({ required: true, unique: true, lowercase: true })
+  slug: string;
+
+  @Prop({ required: true, unique: true, lowercase: true })
   ownerEmail: string;
 
   @Prop({ required: true, enum: PlanTypeEnum })
@@ -40,8 +43,12 @@ export class TenantDocument extends Document {
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
+
+  @Prop({ type: Date, default: null })
+  trialEndsAt: Date | null;
 }
 
 export const TenantSchema = SchemaFactory.createForClass(TenantDocument);
 
 TenantSchema.index({ ownerEmail: 1, deletedAt: 1 }, { unique: true });
+TenantSchema.index({ slug: 1, deletedAt: 1 }, { unique: true });

@@ -3,10 +3,12 @@ import { CancellationPolicy } from '@/domain/property/value-objects/cancellation
 import { Location } from '@/domain/property/value-objects/location.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { PropertyType } from '@/domain/property/value-objects/property-type.vo';
+import { createSlug } from '@/domain/shared/utils/slug.util';
 
 export interface PropertyProps {
   tenantId: TenantId;
   name: string;
+  slug?: string;
   description: string;
   propertyType: PropertyType;
   address: string;
@@ -38,6 +40,7 @@ export interface PropertyReconstituteData {
   id: PropertyId;
   tenantId: TenantId;
   name: string;
+  slug?: string;
   description: string;
   propertyType: PropertyType;
   address: string;
@@ -62,6 +65,7 @@ export class Property {
     private readonly id: PropertyId | null,
     private readonly tenantId: TenantId,
     private name: string,
+    private slug: string,
     private description: string,
     private readonly propertyType: PropertyType,
     private address: string,
@@ -94,6 +98,7 @@ export class Property {
       null,
       props.tenantId,
       props.name.trim(),
+      props.slug ?? createSlug(props.name),
       props.description.trim(),
       props.propertyType,
       props.address.trim(),
@@ -119,6 +124,7 @@ export class Property {
       data.id,
       data.tenantId,
       data.name,
+      data.slug ?? createSlug(data.name),
       data.description,
       data.propertyType,
       data.address,
@@ -149,6 +155,10 @@ export class Property {
 
   getName(): string {
     return this.name;
+  }
+
+  getSlug(): string {
+    return this.slug;
   }
 
   getDescription(): string {
@@ -227,6 +237,7 @@ export class Property {
   updateDetails(data: PropertyUpdateData): void {
     if (data.name && data.name.trim() !== '') {
       this.name = data.name.trim();
+      this.slug = createSlug(this.name);
     }
     if (data.description !== undefined) {
       this.description = data.description.trim();

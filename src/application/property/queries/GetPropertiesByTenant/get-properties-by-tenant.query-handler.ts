@@ -40,6 +40,7 @@ export class GetPropertiesByTenantQueryHandler implements IQueryHandler<
       (property) =>
         new PropertyDto(
           property.getId()?.toString() ?? '',
+          property.getSlug(),
           property.getName(),
           property.getDescription(),
           property.getPropertyType().toString(),

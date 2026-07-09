@@ -1,4 +1,5 @@
 import { Email } from '@/domain/shared/value-objects/email.vo';
+import { createSlug } from '@/domain/shared/utils/slug.util';
 import { PlanType } from '@/domain/tenant/value-objects/plan-type.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { TenantTheme } from '@/domain/tenant/value-objects/tenant-theme';
@@ -6,6 +7,7 @@ import { TenantTheme } from '@/domain/tenant/value-objects/tenant-theme';
 export interface TenantReconstitutionProps {
   id: TenantId;
   name: string;
+  slug?: string;
   ownerEmail: Email;
   plan: PlanType;
   emailVerified: boolean;
@@ -17,12 +19,14 @@ export interface TenantReconstitutionProps {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
+  trialEndsAt?: Date | null;
 }
 
 export class Tenant {
   private constructor(
     private readonly id: TenantId | null,
     private name: string,
+    private slug: string,
     private readonly ownerEmail: Email,
     private plan: PlanType,
     private emailVerified: boolean,
@@ -34,6 +38,7 @@ export class Tenant {
     private readonly createdAt: Date,
     private updatedAt: Date,
     private deletedAt: Date | null = null,
+    private trialEndsAt: Date | null = null,
   ) {}
 
   static create(name: string, ownerEmail: Email, plan: PlanType): Tenant {
@@ -41,9 +46,14 @@ export class Tenant {
       throw new Error('Tenant name cannot be empty');
     }
 
+    const trialEndsAt = plan.isTrial()
+      ? new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+      : null;
+
     return new Tenant(
       null,
       name.trim(),
+      createSlug(name),
       ownerEmail,
       plan,
       false,
@@ -54,6 +64,8 @@ export class Tenant {
       null,
       new Date(),
       new Date(),
+      null,
+      trialEndsAt,
     );
   }
 
@@ -61,6 +73,7 @@ export class Tenant {
     return new Tenant(
       props.id,
       props.name,
+      props.slug ?? createSlug(props.name),
       props.ownerEmail,
       props.plan,
       props.emailVerified,
@@ -72,6 +85,7 @@ export class Tenant {
       props.createdAt,
       props.updatedAt,
       props.deletedAt,
+      props.trialEndsAt,
     );
   }
 
@@ -115,6 +129,7 @@ export class Tenant {
         throw new Error('Tenant name cannot be empty');
       }
       this.name = name.trim();
+      this.slug = createSlug(this.name);
     }
     if (contactPhone !== undefined) this.contactPhone = contactPhone;
     if (address !== undefined) this.address = address;
@@ -130,6 +145,10 @@ export class Tenant {
 
   getName(): string {
     return this.name;
+  }
+
+  getSlug(): string {
+    return this.slug;
   }
 
   getContactPhone(): string | null {
@@ -166,5 +185,21 @@ export class Tenant {
 
   getUpdatedAt(): Date {
     return this.updatedAt;
+  }
+
+  getTrialEndsAt(): Date | null {
+    return this.trialEndsAt;
+  }
+
+  isTrialExpired(): boolean {
+    return this.trialEndsAt !== null && this.trialEndsAt.getTime() < Date.now();
+  }
+
+  getTrialDaysRemaining(): number | null {
+    if (this.trialEndsAt === null) {
+      return null;
+    }
+    const msRemaining = this.trialEndsAt.getTime() - Date.now();
+    return Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
   }
 }

@@ -8,6 +8,11 @@ import {
   type ExperienceRepository,
 } from '@/domain/experience/repositories/experience.repository';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
+import {
+  PROPERTY_REPOSITORY,
+  type PropertyRepository,
+} from '@/domain/property/repositories/property.repository';
+import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import {
   AUDIT_LOG_EVENT,
@@ -35,6 +40,8 @@ export class UpdateExperienceHandler implements ICommandHandler<
   constructor(
     @Inject(EXPERIENCE_REPOSITORY)
     private readonly experienceRepository: ExperienceRepository,
+    @Inject(PROPERTY_REPOSITORY)
+    private readonly propertyRepository: PropertyRepository,
     private readonly eventEmitter: EventEmitter2,
     @Inject(R2_STORAGE_SERVICE)
     private readonly r2StorageService: R2StorageService,
@@ -53,6 +60,15 @@ export class UpdateExperienceHandler implements ICommandHandler<
       throw new ForbiddenException(
         'You do not have permission to edit this experience',
       );
+    }
+
+    if (command.changes.propertyId) {
+      const propertyId = PropertyId.create(command.changes.propertyId);
+      const property = await this.propertyRepository.findById(propertyId);
+
+      if (!property || !property.getTenantId().equals(tenantId)) {
+        throw new NotFoundException('Property not found for current tenant');
+      }
     }
 
     const oldMediaKeys =

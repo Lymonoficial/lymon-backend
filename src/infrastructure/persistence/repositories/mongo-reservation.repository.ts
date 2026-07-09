@@ -283,7 +283,11 @@ export class MongoReservationRepository
     const docs = await this.reservationModel.find({
       unitId: new Types.ObjectId(unitId.toString()),
       status: {
-        $nin: [ReservationStatusEnum.CANCELLED, ReservationStatusEnum.NO_SHOW],
+        $nin: [
+          ReservationStatusEnum.CANCELLED,
+          ReservationStatusEnum.NO_SHOW,
+          ReservationStatusEnum.CHECKED_OUT,
+        ],
       },
       checkOut: { $gt: fromDate },
     });

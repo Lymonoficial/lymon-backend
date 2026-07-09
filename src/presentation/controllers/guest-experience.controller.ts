@@ -10,11 +10,10 @@ import { GetAvailableExperiencesQueryDto } from '@/presentation/dtos/experience/
 import { GetAvailableExperienceByIdQuery } from '@/application/experience/queries/GetAvailableExperienceById/get-available-experience-by-id.query';
 import { GetAvailableExperienceByIdResult } from '@/application/experience/queries/GetAvailableExperienceById/get-available-experience-by-id.result';
 import {
-  PublicExperienceBlackoutRangeDto,
   PublicExperienceDto,
-  PublicExperienceLocationDto,
   PublicExperienceRecurrenceDto,
 } from '@/application/experience/queries/shared/experience-read.dto';
+import { GetExperienceReservedDatesQuery } from '@/application/experience-purchase/queries/get-experience-reserved-dates/get-experience-reserved-dates.query';
 
 @ApiTags('guest-experiences')
 @Public()
@@ -44,6 +43,8 @@ export class GuestExperienceController {
         query.propertyId,
         query.category,
         query.sortByPrice,
+        query.scope,
+        query.city,
       ),
     );
 
@@ -56,6 +57,22 @@ export class GuestExperienceController {
       limit: result.limit,
       totalPages: result.totalPages,
     };
+  }
+
+  @GuestPublic()
+  @Get(':experienceId/reserved-dates')
+  @ApiOperation({ summary: 'Get already-reserved dates for an experience' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of already-reserved dates',
+  })
+  async reservedDates(@Param('experienceId') experienceId: string) {
+    const result = await this.queryBus.execute<
+      GetExperienceReservedDatesQuery,
+      { reservedDates: Date[] }
+    >(new GetExperienceReservedDatesQuery(experienceId));
+
+    return { data: result };
   }
 
   @GuestPublic()
@@ -86,27 +103,19 @@ export class GuestExperienceController {
   ): PublicExperienceCatalogDto {
     return {
       id: experience.id,
-      propertyId: experience.propertyId,
+      tenantId: experience.tenantId,
+      propertyId: experience.propertyId ?? null,
+      scope: String(experience.scope),
       name: experience.name,
       description: experience.description,
+      city: String(experience.city),
       category: experience.category,
       priceCop: experience.priceCop,
-      durationHours: experience.durationHours,
       minimumParticipants: experience.minimumParticipants,
       capacity: experience.capacity,
       coverImageUrl: experience.mediaUrls[0] ?? null,
       mediaUrls: experience.mediaUrls,
-      location: experience.location
-        ? new PublicExperienceLocationDto(
-            experience.location.label,
-            experience.location.address,
-            experience.location.lat,
-            experience.location.lng,
-          )
-        : null,
       availabilityType: experience.availabilityType,
-      startAt: experience.startAt,
-      endAt: experience.endAt,
       recurrence: experience.recurrence
         ? new PublicExperienceRecurrenceDto(
             experience.recurrence.daysOfWeek,
@@ -114,10 +123,6 @@ export class GuestExperienceController {
             experience.recurrence.endTime,
           )
         : null,
-      blackoutRanges: experience.blackoutRanges.map(
-        (range) =>
-          new PublicExperienceBlackoutRangeDto(range.startAt, range.endAt),
-      ),
       allowStandalonePurchase: experience.allowStandalonePurchase,
       allowReservationPurchase: experience.allowReservationPurchase,
       minNoticeHours: experience.minNoticeHours,
@@ -128,22 +133,20 @@ export class GuestExperienceController {
 
 interface PublicExperienceCatalogDto {
   id: string;
+  tenantId: string;
   propertyId: string | null;
+  scope: string;
   name: string;
   description: string;
+  city: string;
   category: string;
   priceCop: number;
-  durationHours: number | null;
   minimumParticipants: number;
   capacity: number;
   coverImageUrl: string | null;
   mediaUrls: string[];
-  location: PublicExperienceLocationDto | null;
   availabilityType: string;
-  startAt: Date | null;
-  endAt: Date | null;
   recurrence: PublicExperienceRecurrenceDto | null;
-  blackoutRanges: PublicExperienceBlackoutRangeDto[];
   allowStandalonePurchase: boolean;
   allowReservationPurchase: boolean;
   minNoticeHours: number;

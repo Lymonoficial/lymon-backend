@@ -1,6 +1,5 @@
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import {
   ExperienceAvailabilityType,
   ExperienceAvailabilityTypeEnum,
@@ -8,19 +7,11 @@ import {
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceId } from '@/domain/experience/value-objects/experience-id.vo';
 import { ExperienceStatus } from '@/domain/experience/value-objects/experience-status.vo';
+import {
+  ExperienceScope,
+  ExperienceScopeEnum,
+} from '@/domain/experience/value-objects/experience-scope.vo';
 import { DomainException } from '@/domain/shared/exceptions/domain.exception';
-
-export interface ExperienceLocation {
-  label?: string;
-  address?: string;
-  lat?: number;
-  lng?: number;
-}
-
-export interface ExperienceBlackoutRange {
-  startAt: Date;
-  endAt: Date;
-}
 
 export interface ExperienceRecurrence {
   daysOfWeek: number[];
@@ -30,21 +21,17 @@ export interface ExperienceRecurrence {
 
 export interface ExperienceProps {
   tenantId: TenantId;
+  scope: ExperienceScope;
   propertyId?: PropertyId;
-  unitIds?: UnitId[];
   name: string;
   description: string;
+  city: string;
   category: ExperienceCategory;
   priceCop: number;
-  durationHours?: number | null;
   minimumParticipants?: number;
   capacity: number;
-  location?: ExperienceLocation | null;
   availabilityType: ExperienceAvailabilityType;
-  startAt?: Date;
-  endAt?: Date;
   recurrence?: ExperienceRecurrence;
-  blackoutRanges?: ExperienceBlackoutRange[];
   allowStandalonePurchase: boolean;
   allowReservationPurchase: boolean;
   mediaKeys?: string[];
@@ -53,22 +40,18 @@ export interface ExperienceProps {
 export interface ExperienceReconstituteData {
   id: ExperienceId;
   tenantId: TenantId;
+  scope: ExperienceScope;
   mediaKeys?: string[];
   propertyId?: PropertyId;
-  unitIds: UnitId[];
   name: string;
   description: string;
+  city: string;
   category: ExperienceCategory;
   priceCop: number;
-  durationHours?: number | null;
   minimumParticipants?: number;
   capacity: number;
-  location?: ExperienceLocation | null;
   availabilityType: ExperienceAvailabilityType;
-  startAt?: Date;
-  endAt?: Date;
   recurrence?: ExperienceRecurrence;
-  blackoutRanges: ExperienceBlackoutRange[];
   allowStandalonePurchase: boolean;
   allowReservationPurchase: boolean;
   minNoticeHours: number;
@@ -80,18 +63,16 @@ export interface ExperienceReconstituteData {
 }
 
 export interface ExperienceChanges {
+  scope?: ExperienceScopeEnum;
+  propertyId?: string | null;
   name?: string;
   description?: string;
+  city?: string;
   priceCop?: number;
-  durationHours?: number | null;
   minimumParticipants?: number;
   capacity?: number;
-  location?: ExperienceLocation | null;
   availabilityType?: ExperienceAvailabilityTypeEnum;
-  startAt?: Date;
-  endAt?: Date;
   recurrence?: ExperienceRecurrence;
-  blackoutRanges?: ExperienceBlackoutRange[];
   allowStandalonePurchase?: boolean;
   allowReservationPurchase?: boolean;
   mediaKeys?: string[];
@@ -101,21 +82,17 @@ export class Experience {
   private constructor(
     private readonly id: ExperienceId | null,
     private readonly tenantId: TenantId,
-    private readonly propertyId: PropertyId | null,
-    private readonly unitIds: UnitId[],
+    private scope: ExperienceScope,
+    private propertyId: PropertyId | null,
     private name: string,
     private description: string,
+    private city: string,
     private readonly category: ExperienceCategory,
     private priceCop: number,
-    private durationHours: number | null,
     private minimumParticipants: number,
     private capacity: number,
-    private location: ExperienceLocation | null,
     private availabilityType: ExperienceAvailabilityType,
-    private startAt: Date | null,
-    private endAt: Date | null,
     private recurrence: ExperienceRecurrence | null,
-    private blackoutRanges: ExperienceBlackoutRange[],
     private allowStandalonePurchase: boolean,
     private allowReservationPurchase: boolean,
     private readonly minNoticeHours: number,
@@ -144,11 +121,14 @@ export class Experience {
       throw new Error('Experience description cannot exceed 5000 characters');
     }
 
+    const city = props.city?.trim();
+    if (!city) {
+      throw new Error('Experience city cannot be empty');
+    }
+
     if (!Number.isFinite(props.priceCop) || props.priceCop <= 0) {
       throw new Error('Experience price must be greater than zero');
     }
-
-    Experience.validateDurationHours(props.durationHours);
 
     const minimumParticipants = props.minimumParticipants ?? 1;
     Experience.validateParticipantLimits(minimumParticipants, props.capacity);
@@ -157,38 +137,23 @@ export class Experience {
       throw new Error('Experience must be purchasable in at least one mode');
     }
 
-    if (props.unitIds && props.unitIds.length > 0 && !props.propertyId) {
-      throw new Error('unitIds require propertyId');
-    }
-
-    const location = Experience.normalizeLocation(props.location);
-    Experience.validateAvailability(
-      props.availabilityType,
-      props.startAt,
-      props.endAt,
-      props.recurrence,
-      props.blackoutRanges,
-      now,
-    );
+    Experience.validateScope(props.scope, props.propertyId ?? null);
+    Experience.validateAvailability(props.availabilityType, props.recurrence);
 
     return new Experience(
       null,
       props.tenantId,
+      props.scope,
       props.propertyId ?? null,
-      props.unitIds ?? [],
       name,
       description,
+      city,
       props.category,
       props.priceCop,
-      props.durationHours ?? null,
       minimumParticipants,
       props.capacity,
-      location,
       props.availabilityType,
-      props.startAt ?? null,
-      props.endAt ?? null,
       props.recurrence ?? null,
-      props.blackoutRanges ?? [],
       props.allowStandalonePurchase,
       props.allowReservationPurchase,
       2,
@@ -205,21 +170,17 @@ export class Experience {
     return new Experience(
       data.id,
       data.tenantId,
+      data.scope,
       data.propertyId ?? null,
-      data.unitIds,
       data.name,
       data.description,
+      data.city,
       data.category,
       data.priceCop,
-      data.durationHours ?? null,
       data.minimumParticipants ?? 1,
       data.capacity,
-      data.location ?? null,
       data.availabilityType,
-      data.startAt ?? null,
-      data.endAt ?? null,
       data.recurrence ?? null,
-      data.blackoutRanges,
       data.allowStandalonePurchase,
       data.allowReservationPurchase,
       data.minNoticeHours,
@@ -244,8 +205,8 @@ export class Experience {
     return this.propertyId;
   }
 
-  getUnitIds(): UnitId[] {
-    return this.unitIds;
+  getScope(): ExperienceScope {
+    return this.scope;
   }
 
   getName(): string {
@@ -256,16 +217,16 @@ export class Experience {
     return this.description;
   }
 
+  getCity(): string {
+    return this.city;
+  }
+
   getCategory(): ExperienceCategory {
     return this.category;
   }
 
   getPriceCop(): number {
     return this.priceCop;
-  }
-
-  getDurationHours(): number | null {
-    return this.durationHours;
   }
 
   getMinimumParticipants(): number {
@@ -275,28 +236,13 @@ export class Experience {
   getCapacity(): number {
     return this.capacity;
   }
-  getLocation(): ExperienceLocation | null {
-    return this.location;
-  }
 
   getAvailabilityType(): ExperienceAvailabilityType {
     return this.availabilityType;
   }
 
-  getStartAt(): Date | null {
-    return this.startAt;
-  }
-
-  getEndAt(): Date | null {
-    return this.endAt;
-  }
-
   getRecurrence(): ExperienceRecurrence | null {
     return this.recurrence;
-  }
-
-  getBlackoutRanges(): ExperienceBlackoutRange[] {
-    return this.blackoutRanges;
   }
 
   getAllowStandalonePurchase(): boolean {
@@ -350,16 +296,15 @@ export class Experience {
       throw new Error('Experience description cannot exceed 5000 characters');
     }
 
+    const city = (changes.city ?? this.city)?.trim();
+    if (!city) {
+      throw new Error('Experience city cannot be empty');
+    }
+
     const priceCop = changes.priceCop ?? this.priceCop;
     if (!Number.isFinite(priceCop) || priceCop <= 0) {
       throw new Error('Experience price must be greater than zero');
     }
-
-    const durationHours =
-      changes.durationHours === undefined
-        ? this.durationHours
-        : changes.durationHours;
-    Experience.validateDurationHours(durationHours);
 
     const minimumParticipants =
       changes.minimumParticipants ?? this.minimumParticipants;
@@ -374,40 +319,33 @@ export class Experience {
       throw new Error('Experience must be purchasable in at least one mode');
     }
 
-    const location =
-      changes.location === undefined
-        ? this.location
-        : Experience.mergeLocation(this.location, changes.location);
+    const scope = changes.scope
+      ? ExperienceScope.create(changes.scope)
+      : this.scope;
+    const propertyId =
+      changes.propertyId === undefined
+        ? this.propertyId
+        : changes.propertyId
+          ? PropertyId.create(changes.propertyId)
+          : null;
+    Experience.validateScope(scope, propertyId);
 
     const availabilityType = changes.availabilityType
       ? ExperienceAvailabilityType.create(changes.availabilityType)
       : this.availabilityType;
-    const startAt = changes.startAt ?? this.startAt ?? undefined;
-    const endAt = changes.endAt ?? this.endAt ?? undefined;
     const recurrence = changes.recurrence ?? this.recurrence ?? undefined;
-    const blackoutRanges = changes.blackoutRanges ?? this.blackoutRanges;
-
-    Experience.validateAvailability(
-      availabilityType,
-      startAt,
-      endAt,
-      recurrence,
-      blackoutRanges,
-      new Date(),
-    );
+    Experience.validateAvailability(availabilityType, recurrence);
 
     this.name = name;
     this.description = description;
+    this.city = city;
+    this.scope = scope;
+    this.propertyId = propertyId;
     this.priceCop = priceCop;
-    this.durationHours = durationHours;
     this.minimumParticipants = minimumParticipants;
     this.capacity = capacity;
-    this.location = location;
     this.availabilityType = availabilityType;
-    this.startAt = startAt ?? null;
-    this.endAt = endAt ?? null;
     this.recurrence = recurrence ?? null;
-    this.blackoutRanges = blackoutRanges;
     this.allowStandalonePurchase = allowStandalonePurchase;
     this.allowReservationPurchase = allowReservationPurchase;
     if (changes.mediaKeys !== undefined) {
@@ -458,99 +396,28 @@ export class Experience {
     }
   }
 
-  private static validateDurationHours(
-    durationHours: number | null | undefined,
+  private static validateScope(
+    scope: ExperienceScope,
+    propertyId: PropertyId | null,
   ): void {
-    if (durationHours === null || durationHours === undefined) {
-      return;
+    if (scope.isPropertyScope() && !propertyId) {
+      throw new Error('Property-scoped experiences require propertyId');
     }
 
-    if (!Number.isFinite(durationHours) || durationHours <= 0) {
-      throw new Error('Experience duration must be greater than zero');
-    }
-  }
-
-  private static normalizeLocation(
-    location: ExperienceLocation | null | undefined,
-  ): ExperienceLocation | null {
-    if (!location) {
-      return null;
-    }
-
-    Experience.validateLocation(location);
-
-    return {
-      label: location.label?.trim() || undefined,
-      address: location.address?.trim() || undefined,
-      lat: location.lat,
-      lng: location.lng,
-    };
-  }
-
-  private static mergeLocation(
-    current: ExperienceLocation | null,
-    changes: ExperienceLocation | null,
-  ): ExperienceLocation | null {
-    if (changes === null) {
-      return null;
-    }
-
-    return Experience.normalizeLocation({
-      ...(current ?? {}),
-      ...changes,
-    });
-  }
-
-  private static validateLocation(location: ExperienceLocation): void {
-    if (
-      location.lat !== undefined &&
-      (!Number.isFinite(location.lat) ||
-        location.lat < -90 ||
-        location.lat > 90)
-    ) {
-      throw new Error('Experience location latitude is invalid');
-    }
-
-    if (
-      location.lng !== undefined &&
-      (!Number.isFinite(location.lng) ||
-        location.lng < -180 ||
-        location.lng > 180)
-    ) {
-      throw new Error('Experience location longitude is invalid');
+    if (scope.toString() === ExperienceScopeEnum.GLOBAL && propertyId) {
+      throw new Error('Global experiences must not include propertyId');
     }
   }
 
   private static validateAvailability(
     type: ExperienceAvailabilityType,
-    startAt: Date | undefined,
-    endAt: Date | undefined,
     recurrence: ExperienceRecurrence | undefined,
-    blackoutRanges: ExperienceBlackoutRange[] | undefined,
-    now: Date,
   ): void {
-    Experience.validateBlackoutRanges(blackoutRanges);
-
-    if (type.isRecurring()) {
-      Experience.validateRecurringAvailability(recurrence);
-      return;
+    if (!type.isRecurring()) {
+      throw new Error('Experience availabilityType must be RECURRING');
     }
 
-    Experience.validateNonRecurringAvailability(startAt, endAt, now);
-  }
-
-  private static validateBlackoutRanges(
-    blackoutRanges: ExperienceBlackoutRange[] | undefined,
-  ): void {
-    if (!blackoutRanges?.length) {
-      return;
-    }
-
-    for (const blackout of blackoutRanges) {
-      if (blackout.startAt >= blackout.endAt) {
-        throw new Error('Blackout range endAt must be after startAt');
-      }
-    }
+    Experience.validateRecurringAvailability(recurrence);
   }
 
   private static validateRecurringAvailability(
@@ -574,35 +441,6 @@ export class Experience {
 
     if (!recurrence.startTime || !recurrence.endTime) {
       throw new Error('Recurring availability requires startTime and endTime');
-    }
-  }
-
-  private static validateNonRecurringAvailability(
-    startAt: Date | undefined,
-    endAt: Date | undefined,
-    now: Date,
-  ): void {
-    if (!startAt || !endAt) {
-      throw new Error('Non-recurring availability requires startAt and endAt');
-    }
-
-    if (!(startAt instanceof Date) || Number.isNaN(startAt.getTime())) {
-      throw new TypeError('Invalid startAt date');
-    }
-
-    if (!(endAt instanceof Date) || Number.isNaN(endAt.getTime())) {
-      throw new TypeError('Invalid endAt date');
-    }
-
-    if (startAt >= endAt) {
-      throw new Error('Availability endAt must be after startAt');
-    }
-
-    const cutoffMs = 24 * 60 * 60 * 1000;
-    if (startAt.getTime() - now.getTime() < cutoffMs) {
-      throw new Error(
-        'Experience start must be at least 24 hours in the future',
-      );
     }
   }
 }

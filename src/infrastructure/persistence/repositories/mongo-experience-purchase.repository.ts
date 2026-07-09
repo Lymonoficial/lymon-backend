@@ -159,6 +159,31 @@ export class MongoExperiencePurchaseRepository implements ExperiencePurchaseRepo
     return this.purchaseModel.countDocuments(filter);
   }
 
+  async findReservedDatesByExperienceId(
+    experienceId: ExperienceId,
+    dateFrom?: Date,
+    dateTo?: Date,
+  ): Promise<Date[]> {
+    const filter: Record<string, unknown> = {
+      experienceId: new Types.ObjectId(experienceId.toString()),
+      status: ExperiencePurchaseStatusEnum.CONFIRMED,
+      selectedDate: { $ne: null },
+    };
+
+    if (dateFrom || dateTo) {
+      const selectedDate: Record<string, Date> = {};
+      if (dateFrom) {
+        selectedDate.$gte = dateFrom;
+      }
+      if (dateTo) {
+        selectedDate.$lte = dateTo;
+      }
+      filter.selectedDate = { ...selectedDate, $ne: null };
+    }
+
+    return this.purchaseModel.distinct('selectedDate', filter);
+  }
+
   private buildTenantFilter(
     tenantId: TenantId,
     filters?: TenantExperiencePurchaseFilters,
