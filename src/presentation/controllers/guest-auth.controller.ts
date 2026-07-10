@@ -1,4 +1,13 @@
-import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterGuestAccountCommand } from '@/application/guest-auth/commands/register-guest-account/register-guest-account.command';
@@ -6,6 +15,8 @@ import { RegisterGuestAccountResult } from '@/application/guest-auth/commands/re
 import { VerifyGuestEmailCommand } from '@/application/guest-auth/commands/verify-guest-email/verify-guest-email.command';
 import { VerifyGuestEmailResult } from '@/application/guest-auth/commands/verify-guest-email/verify-guest-email.handler';
 import { ConfirmGuestEmailChangeCommand } from '@/application/guest/commands/confirm-email-change/confirm-guest-email-change.command';
+import { ConfirmGuestAccountEmailChangeCommand } from '@/application/guest-auth/commands/confirm-guest-account-email-change/confirm-guest-account-email-change.command';
+import { ConfirmGuestAccountEmailChangeResult } from '@/application/guest-auth/commands/confirm-guest-account-email-change/confirm-guest-account-email-change.handler';
 import { GuestLoginCommand } from '@/application/guest-auth/commands/login-guest/login-guest.command';
 import { GuestLoginResult } from '@/application/guest-auth/commands/login-guest/login-guest.result';
 import { RecoverGuestPasswordCommand } from '@/application/guest-auth/commands/recover-guest-password/recover-guest-password.command';
@@ -72,12 +83,26 @@ export class GuestAuthController {
       >(new VerifyGuestEmailCommand(token));
       return { message: result.message };
     } catch (e) {
-      if (e instanceof BadRequestException) {
-        await this.commandBus.execute(new ConfirmGuestEmailChangeCommand(token));
-        return { message: 'Email updated successfully' };
+      if (!(e instanceof BadRequestException || e instanceof UnauthorizedException)) {
+        throw e;
       }
-      throw e;
     }
+
+    try {
+      await this.commandBus.execute(new ConfirmGuestEmailChangeCommand(token));
+      return { message: 'Email updated successfully' };
+    } catch (e) {
+      if (!(e instanceof BadRequestException || e instanceof UnauthorizedException)) {
+        throw e;
+      }
+    }
+
+    const result = await this.commandBus.execute<
+      ConfirmGuestAccountEmailChangeCommand,
+      ConfirmGuestAccountEmailChangeResult
+    >(new ConfirmGuestAccountEmailChangeCommand(token));
+
+    return { message: result.message };
   }
 
   @GuestPublic()

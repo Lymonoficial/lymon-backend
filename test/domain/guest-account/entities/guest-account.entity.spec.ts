@@ -39,6 +39,7 @@ describe('GuestAccount entity', () => {
       fullName: 'John Doe',
       firstName: 'John',
       lastName: 'Doe',
+      phone: null,
       status: GuestAccountStatusEnum.PENDING_VERIFICATION,
       emailVerified: false,
       emailVerificationToken: 'token',
@@ -48,6 +49,10 @@ describe('GuestAccount entity', () => {
       passwordChangedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
+      profilePhotoUrl: null,
+      pendingEmail: null,
+      emailChangeToken: null,
+      emailChangeExpiry: null,
     });
 
     account.verifyEmail();

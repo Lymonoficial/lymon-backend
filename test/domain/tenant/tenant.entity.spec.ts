@@ -96,6 +96,64 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // ●  TENANT.CREATE - TRIAL EXPIRY
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  describe('Tenant.create - TRIAL EXPIRY', () => {
+    it('sets trialEndsAt ~5 days out for TRIAL plan', () => {
+      const email = createValidEmail();
+      const plan = PlanType.create('TRIAL');
+      const before = Date.now();
+
+      const tenant = Tenant.create(TENANT_NAME, email, plan);
+
+      const expectedMs = before + 5 * 24 * 60 * 60 * 1000;
+      expect(tenant.getTrialEndsAt()).not.toBeNull();
+      expect(tenant.getTrialEndsAt()!.getTime()).toBeGreaterThanOrEqual(
+        expectedMs - 1000,
+      );
+      expect(tenant.getTrialEndsAt()!.getTime()).toBeLessThanOrEqual(
+        expectedMs + 5000,
+      );
+      expect(tenant.isTrialExpired()).toBe(false);
+      expect(tenant.getTrialDaysRemaining()).toBe(5);
+    });
+
+    it('leaves trialEndsAt null for non-TRIAL plans', () => {
+      const email = createValidEmail();
+      const plan = createValidPlan();
+
+      const tenant = Tenant.create(TENANT_NAME, email, plan);
+
+      expect(tenant.getTrialEndsAt()).toBeNull();
+      expect(tenant.isTrialExpired()).toBe(false);
+      expect(tenant.getTrialDaysRemaining()).toBeNull();
+    });
+
+    it('isTrialExpired is true once trialEndsAt is in the past', () => {
+      const email = createValidEmail();
+      const plan = createValidPlan();
+      const tenant = Tenant.reconstitute({
+        id: TenantId.createFromString(TENANT_ID),
+        name: TENANT_NAME,
+        ownerEmail: email,
+        plan,
+        emailVerified: false,
+        contactPhone: null,
+        address: null,
+        website: null,
+        logoUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        trialEndsAt: new Date(Date.now() - 1000),
+      });
+
+      expect(tenant.isTrialExpired()).toBe(true);
+      expect(tenant.getTrialDaysRemaining()).toBe(0);
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // ●  TENANT.CREATE - VALIDATION: NAME
   // ═══════════════════════════════════════════════════════════════════════════
 

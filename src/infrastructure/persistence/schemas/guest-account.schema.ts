@@ -19,6 +19,9 @@ export class GuestAccountDocument extends Document {
   @Prop({ type: String, default: null })
   lastName: string | null;
 
+  @Prop({ type: String, default: null })
+  phone: string | null;
+
   @Prop({
     required: true,
     enum: Object.values(GuestAccountStatusEnum),
@@ -47,6 +50,15 @@ export class GuestAccountDocument extends Document {
   @Prop({ type: String, default: null })
   profilePhotoUrl: string | null;
 
+  @Prop({ type: String, default: null })
+  pendingEmail: string | null;
+
+  @Prop({ type: String, default: null })
+  emailChangeToken: string | null;
+
+  @Prop({ type: Date, default: null })
+  emailChangeExpiry: Date | null;
+
   @Prop()
   createdAt: Date;
 
@@ -60,3 +72,4 @@ export const GuestAccountSchema =
 GuestAccountSchema.index({ email: 1 }, { unique: true });
 GuestAccountSchema.index({ emailVerificationToken: 1 }, { sparse: true });
 GuestAccountSchema.index({ passwordResetToken: 1 }, { sparse: true });
+GuestAccountSchema.index({ emailChangeToken: 1 }, { sparse: true });

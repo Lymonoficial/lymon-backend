@@ -23,6 +23,7 @@ export class MongoGuestAccountRepository implements GuestAccountRepository {
       fullName: account.getFullName(),
       firstName: account.getFirstName(),
       lastName: account.getLastName(),
+      phone: account.getPhone(),
       status: account.getStatus(),
       emailVerified: account.isEmailVerified(),
       emailVerificationToken: account.getEmailVerificationToken(),
@@ -31,6 +32,9 @@ export class MongoGuestAccountRepository implements GuestAccountRepository {
       passwordResetExpiry: account.getPasswordResetExpiry(),
       passwordChangedAt: account.getPasswordChangedAt(),
       profilePhotoUrl: account.getProfilePhotoUrl(),
+      pendingEmail: account.getPendingEmail()?.toString() ?? null,
+      emailChangeToken: account.getEmailChangeToken(),
+      emailChangeExpiry: account.getEmailChangeExpiry(),
       updatedAt: account.getUpdatedAt(),
     };
 
@@ -72,6 +76,13 @@ export class MongoGuestAccountRepository implements GuestAccountRepository {
     return doc ? this.toDomain(doc) : null;
   }
 
+  async findByEmailChangeToken(
+    hashedToken: string,
+  ): Promise<GuestAccount | null> {
+    const doc = await this.model.findOne({ emailChangeToken: hashedToken });
+    return doc ? this.toDomain(doc) : null;
+  }
+
   private toDomain(doc: GuestAccountDocument): GuestAccount {
     return GuestAccount.reconstitute({
       id: GuestAccountId.createFromString(doc._id.toString()),
@@ -80,6 +91,7 @@ export class MongoGuestAccountRepository implements GuestAccountRepository {
       fullName: doc.fullName,
       firstName: doc.firstName,
       lastName: doc.lastName,
+      phone: doc.phone ?? null,
       status: doc.status,
       emailVerified: doc.emailVerified,
       emailVerificationToken: doc.emailVerificationToken,
@@ -90,6 +102,9 @@ export class MongoGuestAccountRepository implements GuestAccountRepository {
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
       profilePhotoUrl: doc.profilePhotoUrl ?? null,
+      pendingEmail: doc.pendingEmail ? Email.create(doc.pendingEmail) : null,
+      emailChangeToken: doc.emailChangeToken ?? null,
+      emailChangeExpiry: doc.emailChangeExpiry ?? null,
     });
   }
 }

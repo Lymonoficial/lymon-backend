@@ -17,6 +17,7 @@ export interface TenantReconstitutionProps {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
+  trialEndsAt?: Date | null;
 }
 
 export class Tenant {
@@ -34,12 +35,17 @@ export class Tenant {
     private readonly createdAt: Date,
     private updatedAt: Date,
     private deletedAt: Date | null = null,
+    private trialEndsAt: Date | null = null,
   ) {}
 
   static create(name: string, ownerEmail: Email, plan: PlanType): Tenant {
     if (!name || name.trim() === '') {
       throw new Error('Tenant name cannot be empty');
     }
+
+    const trialEndsAt = plan.isTrial()
+      ? new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+      : null;
 
     return new Tenant(
       null,
@@ -54,6 +60,8 @@ export class Tenant {
       null,
       new Date(),
       new Date(),
+      null,
+      trialEndsAt,
     );
   }
 
@@ -72,6 +80,7 @@ export class Tenant {
       props.createdAt,
       props.updatedAt,
       props.deletedAt,
+      props.trialEndsAt,
     );
   }
 
@@ -165,5 +174,21 @@ export class Tenant {
 
   getUpdatedAt(): Date {
     return this.updatedAt;
+  }
+
+  getTrialEndsAt(): Date | null {
+    return this.trialEndsAt;
+  }
+
+  isTrialExpired(): boolean {
+    return this.trialEndsAt !== null && this.trialEndsAt.getTime() < Date.now();
+  }
+
+  getTrialDaysRemaining(): number | null {
+    if (this.trialEndsAt === null) {
+      return null;
+    }
+    const msRemaining = this.trialEndsAt.getTime() - Date.now();
+    return Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
   }
 }

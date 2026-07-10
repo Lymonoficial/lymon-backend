@@ -34,6 +34,7 @@ export class MongoTenantRepository implements TenantRepository {
       logoUrl: tenant.getLogoUrl(),
       updatedAt: tenant.getUpdatedAt(),
       deletedAt: tenant.getDeletedAt(),
+      trialEndsAt: tenant.getTrialEndsAt(),
     };
 
     if (id) {
@@ -97,6 +98,7 @@ export class MongoTenantRepository implements TenantRepository {
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
       deletedAt: doc.deletedAt,
+      trialEndsAt: doc.trialEndsAt ?? null,
     };
     return Tenant.reconstitute(props);
   }

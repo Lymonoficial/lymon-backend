@@ -12,6 +12,8 @@ import { SearchGuestsQuery } from '@/application/guest/queries/search-guests.que
 import { GetGuestByIdQuery } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.query';
 import type { GetGuestByIdResult } from '@/application/guest/queries/get-guest-by-id/get-guest-by-id.result';
 import { UpdateGuestProfileCommand } from '@/application/guest/commands/update-guest-profile/update-guest-profile.command';
+import { UpdateGuestAccountProfileCommand } from '@/application/guest-auth/commands/update-guest-account-profile/update-guest-account-profile.command';
+import { UpdateGuestAccountProfileResult } from '@/application/guest-auth/commands/update-guest-account-profile/update-guest-account-profile.handler';
 import { Permission } from '@/domain/role/value-objects/permission.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decorator';
@@ -45,6 +47,7 @@ import {
 } from '@nestjs/swagger';
 import { GuestProfilePhotoUrlDto } from '@/presentation/dtos/guest/guest-profile-photo-url.dto';
 import { SaveGuestProfilePhotoDto } from '@/presentation/dtos/guest/save-guest-profile-photo.dto';
+import { UpdateGuestAccountProfileDto } from '@/presentation/dtos/guest/update-guest-account-profile.dto';
 
 @ApiTags('guests')
 @ApiBearerAuth('JWT-auth')
@@ -199,7 +202,10 @@ export class GuestController {
   @ApiOperation({
     summary: 'Save the uploaded profile photo and remove the previous one',
   })
-  @ApiResponse({ status: 201, description: 'Profile photo updated successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Profile photo updated successfully',
+  })
   @ApiResponse({ status: 400, description: 'Invalid profile photo key' })
   async saveProfilePhoto(
     @CurrentGuest() guest: GuestJwtPayload,
@@ -214,6 +220,36 @@ export class GuestController {
       message: 'Profile photo updated successfully',
       data: { profilePhotoUrl: result.profilePhotoUrl },
     };
+  }
+
+  @Public()
+  @UseGuards(GuestJwtAuthGuard)
+  @Patch('profile')
+  @ApiBearerAuth('GuestJWT-auth')
+  @ApiOperation({ summary: "Update the authenticated guest's own profile" })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  @ApiResponse({
+    status: 409,
+    description: 'An account with this email already exists',
+  })
+  async updateOwnProfile(
+    @CurrentGuest() guest: GuestJwtPayload,
+    @Body() dto: UpdateGuestAccountProfileDto,
+  ) {
+    const result = await this.commandBus.execute<
+      UpdateGuestAccountProfileCommand,
+      UpdateGuestAccountProfileResult
+    >(
+      new UpdateGuestAccountProfileCommand(
+        guest.guestAccountId,
+        dto.firstName,
+        dto.lastName,
+        dto.phone,
+        dto.email,
+      ),
+    );
+
+    return { message: result.message };
   }
 
   @Get(':guestId')
@@ -248,9 +284,15 @@ export class GuestController {
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission(Permission.CRM_MANAGE)
   @ApiOperation({ summary: 'Update profile fields of a specific guest' })
-  @ApiResponse({ status: 200, description: 'Guest profile updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Guest profile updated successfully',
+  })
   @ApiResponse({ status: 404, description: 'Guest not found' })
-  @ApiResponse({ status: 409, description: 'A guest with this primary email already exists' })
+  @ApiResponse({
+    status: 409,
+    description: 'A guest with this primary email already exists',
+  })
   async updateProfile(
     @CurrentUser() user: JwtPayload,
     @Param('guestId') guestId: string,
@@ -271,5 +313,4 @@ export class GuestController {
 
     return { message: 'Guest profile updated successfully' };
   }
-
 }

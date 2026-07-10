@@ -10,11 +10,15 @@ export const GUEST_ACCOUNT_FIXTURE_DEFAULTS = {
   fullName: 'John Doe',
   firstName: 'John',
   lastName: 'Doe',
+  phone: null as string | null,
   status: GuestAccountStatusEnum.PENDING_VERIFICATION,
   emailVerified: false,
   emailVerificationToken: null as string | null,
   emailVerificationExpiry: null as Date | null,
   profilePhotoUrl: null as string | null,
+  pendingEmail: null as string | null,
+  emailChangeToken: null as string | null,
+  emailChangeExpiry: null as Date | null,
 };
 
 export function makeGuestAccount(
@@ -25,11 +29,15 @@ export function makeGuestAccount(
     fullName: string;
     firstName: string | null;
     lastName: string | null;
+    phone: string | null;
     status: GuestAccountStatusEnum;
     emailVerified: boolean;
     emailVerificationToken: string | null;
     emailVerificationExpiry: Date | null;
     profilePhotoUrl: string | null;
+    pendingEmail: string | null;
+    emailChangeToken: string | null;
+    emailChangeExpiry: Date | null;
   }>,
 ): GuestAccount {
   const merged = { ...GUEST_ACCOUNT_FIXTURE_DEFAULTS, ...overrides };
@@ -40,6 +48,7 @@ export function makeGuestAccount(
     fullName: merged.fullName,
     firstName: merged.firstName,
     lastName: merged.lastName,
+    phone: merged.phone,
     status: merged.status,
     emailVerified: merged.emailVerified,
     emailVerificationToken: merged.emailVerificationToken,
@@ -50,5 +59,10 @@ export function makeGuestAccount(
     createdAt: new Date(),
     updatedAt: new Date(),
     profilePhotoUrl: merged.profilePhotoUrl,
+    pendingEmail: merged.pendingEmail
+      ? Email.create(merged.pendingEmail)
+      : null,
+    emailChangeToken: merged.emailChangeToken,
+    emailChangeExpiry: merged.emailChangeExpiry,
   });
 }
