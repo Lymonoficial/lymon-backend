@@ -49,7 +49,7 @@ describe('GuestAccount entity', () => {
       passwordChangedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-      profilePhotoUrl: null,
+      profilePhotoKey: null,
       pendingEmail: null,
       emailChangeToken: null,
       emailChangeExpiry: null,

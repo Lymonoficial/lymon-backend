@@ -54,8 +54,9 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
       expect(tenant.isEmailVerified()).toBe(false);
       expect(tenant.getContactPhone()).toBeNull();
       expect(tenant.getAddress()).toBeNull();
-      expect(tenant.getWebsite()).toBeNull();
-      expect(tenant.getLogoUrl()).toBeNull();
+      expect(tenant.getDescription()).toBeNull();
+      expect(tenant.getLogoKey()).toBeNull();
+      expect(tenant.getTheme()).toBeNull();
     });
 
     it('TT-004: should set timestamps on creation', () => {
@@ -238,12 +239,16 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
       expect(tenant.getAddress()).toBeNull();
     });
 
-    it('TT-018: getWebsite returns null initially', () => {
-      expect(tenant.getWebsite()).toBeNull();
+    it('TT-018: getDescription returns null initially', () => {
+      expect(tenant.getDescription()).toBeNull();
     });
 
-    it('TT-019: getLogoUrl returns null initially', () => {
-      expect(tenant.getLogoUrl()).toBeNull();
+    it('TT-019: getLogoKey returns null initially', () => {
+      expect(tenant.getLogoKey()).toBeNull();
+    });
+
+    it('TT-019b: getTheme returns null initially', () => {
+      expect(tenant.getTheme()).toBeNull();
     });
 
     it('TT-020: getCreatedAt returns valid date', () => {
@@ -282,8 +287,9 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
         emailVerified: true,
         contactPhone: '+1234567890',
         address: '123 Main St',
-        website: 'https://example.com',
-        logoUrl: 'https://example.com/logo.png',
+        description: 'A lovely place',
+        logoKey: 'tenants/65f1a1a2b3c4d5e6f7a8b9c0/logo/123.png',
+        theme: { primary: '#1A73E8' },
         createdAt,
         updatedAt,
       });
@@ -293,8 +299,11 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
       expect(tenant.isEmailVerified()).toBe(true);
       expect(tenant.getContactPhone()).toBe('+1234567890');
       expect(tenant.getAddress()).toBe('123 Main St');
-      expect(tenant.getWebsite()).toBe('https://example.com');
-      expect(tenant.getLogoUrl()).toBe('https://example.com/logo.png');
+      expect(tenant.getDescription()).toBe('A lovely place');
+      expect(tenant.getLogoKey()).toBe(
+        'tenants/65f1a1a2b3c4d5e6f7a8b9c0/logo/123.png',
+      );
+      expect(tenant.getTheme()).toEqual({ primary: '#1A73E8' });
       expect(tenant.getCreatedAt()).toEqual(createdAt);
       expect(tenant.getUpdatedAt()).toEqual(updatedAt);
     });
@@ -311,8 +320,9 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
         emailVerified: false,
         contactPhone: null,
         address: null,
-        website: null,
-        logoUrl: null,
+        description: null,
+        logoKey: null,
+        theme: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -333,8 +343,9 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
         emailVerified: false,
         contactPhone: null,
         address: null,
-        website: null,
-        logoUrl: null,
+        description: null,
+        logoKey: null,
+        theme: null,
         createdAt: pastDate,
         updatedAt: pastDate,
       });
@@ -355,8 +366,9 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
         emailVerified: false,
         contactPhone: null,
         address: null,
-        website: null,
-        logoUrl: null,
+        description: null,
+        logoKey: null,
+        theme: null,
         createdAt: futureDate,
         updatedAt: futureDate,
       });
@@ -376,16 +388,18 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
         emailVerified: true,
         contactPhone: '555-1234',
         address: '456 Oak Ave',
-        website: 'https://test.com',
-        logoUrl: 'https://test.com/logo.png',
+        description: 'Test description',
+        logoKey: 'tenants/abc/logo/1.png',
+        theme: { primary: '#000000' },
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
       expect(tenant.getContactPhone()).toBe('555-1234');
       expect(tenant.getAddress()).toBe('456 Oak Ave');
-      expect(tenant.getWebsite()).toBe('https://test.com');
-      expect(tenant.getLogoUrl()).toBe('https://test.com/logo.png');
+      expect(tenant.getDescription()).toBe('Test description');
+      expect(tenant.getLogoKey()).toBe('tenants/abc/logo/1.png');
+      expect(tenant.getTheme()).toEqual({ primary: '#000000' });
     });
   });
 
@@ -679,7 +693,7 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
   // ●  UPDATE PROFILE - WEBSITE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  describe('updateProfile - WEBSITE', () => {
+  describe('updateProfile - DESCRIPTION', () => {
     let tenant: Tenant;
 
     beforeEach(() => {
@@ -688,62 +702,42 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
       tenant = Tenant.create(TENANT_NAME, email, plan);
     });
 
-    it('TT-054: should update website', () => {
-      tenant.updateProfile(
-        undefined,
-        undefined,
-        undefined,
-        'https://example.com',
-      );
+    it('TT-054: should update description', () => {
+      tenant.updateProfile(undefined, undefined, undefined, 'A cozy hotel');
 
-      expect(tenant.getWebsite()).toBe('https://example.com');
+      expect(tenant.getDescription()).toBe('A cozy hotel');
     });
 
-    it('TT-055: should allow setting website to null', () => {
-      tenant.updateProfile(
-        undefined,
-        undefined,
-        undefined,
-        'https://example.com',
-      );
-      expect(tenant.getWebsite()).toBe('https://example.com');
+    it('TT-055: should allow setting description to null', () => {
+      tenant.updateProfile(undefined, undefined, undefined, 'A cozy hotel');
+      expect(tenant.getDescription()).toBe('A cozy hotel');
 
       tenant.updateProfile(undefined, undefined, undefined, null);
 
-      expect(tenant.getWebsite()).toBeNull();
+      expect(tenant.getDescription()).toBeNull();
     });
 
-    it('TT-056: should allow empty string for website', () => {
+    it('TT-056: should allow empty string for description', () => {
       tenant.updateProfile(undefined, undefined, undefined, '');
 
-      expect(tenant.getWebsite()).toBe('');
+      expect(tenant.getDescription()).toBe('');
     });
 
-    it('TT-057: should not update website if undefined', () => {
-      tenant.updateProfile(
-        undefined,
-        undefined,
-        undefined,
-        'https://example.com',
-      );
-      const originalWebsite = tenant.getWebsite();
+    it('TT-057: should not update description if undefined', () => {
+      tenant.updateProfile(undefined, undefined, undefined, 'A cozy hotel');
+      const originalDescription = tenant.getDescription();
 
       tenant.updateProfile(undefined, undefined, undefined, undefined);
 
-      expect(tenant.getWebsite()).toBe(originalWebsite);
+      expect(tenant.getDescription()).toBe(originalDescription);
     });
 
-    it('TT-058: should accept various URL formats', () => {
-      tenant.updateProfile(
-        undefined,
-        undefined,
-        undefined,
-        'http://localhost:3000',
-      );
-      expect(tenant.getWebsite()).toBe('http://localhost:3000');
+    it('TT-058: should accept very long description', () => {
+      const longDescription = 'A'.repeat(500);
 
-      tenant.updateProfile(undefined, undefined, undefined, 'example.com');
-      expect(tenant.getWebsite()).toBe('example.com');
+      tenant.updateProfile(undefined, undefined, undefined, longDescription);
+
+      expect(tenant.getDescription()).toBe(longDescription);
     });
   });
 
@@ -751,7 +745,7 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
   // ●  UPDATE PROFILE - LOGO URL
   // ═══════════════════════════════════════════════════════════════════════════
 
-  describe('updateProfile - LOGO URL', () => {
+  describe('updateProfile - THEME', () => {
     let tenant: Tenant;
 
     beforeEach(() => {
@@ -760,71 +754,108 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
       tenant = Tenant.create(TENANT_NAME, email, plan);
     });
 
-    it('TT-059: should update logo URL', () => {
-      tenant.updateProfile(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        'https://example.com/logo.png',
-      );
+    it('TT-059: should update theme', () => {
+      tenant.updateProfile(undefined, undefined, undefined, undefined, {
+        primary: '#1A73E8',
+        text: '#202124',
+      });
 
-      expect(tenant.getLogoUrl()).toBe('https://example.com/logo.png');
+      expect(tenant.getTheme()).toEqual({
+        primary: '#1A73E8',
+        text: '#202124',
+      });
     });
 
-    it('TT-060: should allow setting logo URL to null', () => {
-      tenant.updateProfile(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        'https://example.com/logo.png',
-      );
-      expect(tenant.getLogoUrl()).toBe('https://example.com/logo.png');
+    it('TT-060: should allow setting theme to null', () => {
+      tenant.updateProfile(undefined, undefined, undefined, undefined, {
+        primary: '#1A73E8',
+      });
+      expect(tenant.getTheme()).toEqual({ primary: '#1A73E8' });
 
       tenant.updateProfile(undefined, undefined, undefined, undefined, null);
 
-      expect(tenant.getLogoUrl()).toBeNull();
+      expect(tenant.getTheme()).toBeNull();
     });
 
-    it('TT-061: should allow empty string for logo URL', () => {
-      tenant.updateProfile(undefined, undefined, undefined, undefined, '');
+    it('TT-061: should allow empty theme object', () => {
+      tenant.updateProfile(undefined, undefined, undefined, undefined, {});
 
-      expect(tenant.getLogoUrl()).toBe('');
+      expect(tenant.getTheme()).toEqual({});
     });
 
-    it('TT-062: should not update logo URL if undefined', () => {
+    it('TT-062: should not update theme if undefined', () => {
+      tenant.updateProfile(undefined, undefined, undefined, undefined, {
+        primary: '#1A73E8',
+      });
+      const originalTheme = tenant.getTheme();
+
       tenant.updateProfile(
         undefined,
         undefined,
         undefined,
         undefined,
-        'https://example.com/logo.png',
-      );
-      const originalLogo = tenant.getLogoUrl();
-
-      tenant.updateProfile(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         undefined,
       );
 
-      expect(tenant.getLogoUrl()).toBe(originalLogo);
+      expect(tenant.getTheme()).toBe(originalTheme);
+    });
+  });
+
+  describe('updateProfile - logo key', () => {
+    let tenant: Tenant;
+
+    beforeEach(() => {
+      const email = createValidEmail();
+      const plan = createValidPlan();
+      tenant = Tenant.create(TENANT_NAME, email, plan);
     });
 
-    it('TT-063: should accept various image URL formats', () => {
+    it('TT-063: should set the logo key', () => {
       tenant.updateProfile(
         undefined,
         undefined,
         undefined,
         undefined,
-        'https://cdn.example.com/images/logo-v2.jpg',
+        undefined,
+        'abc/logos/1.png',
       );
-      expect(tenant.getLogoUrl()).toBe(
-        'https://cdn.example.com/images/logo-v2.jpg',
+
+      expect(tenant.getLogoKey()).toBe('abc/logos/1.png');
+    });
+
+    it('TT-063b: should allow clearing the logo key', () => {
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'abc/logos/1.png',
       );
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        null,
+      );
+
+      expect(tenant.getLogoKey()).toBeNull();
+    });
+
+    it('TT-063c: should leave the logo key untouched when omitted', () => {
+      tenant.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'abc/logos/1.png',
+      );
+      tenant.updateProfile('Renamed Only');
+
+      expect(tenant.getLogoKey()).toBe('abc/logos/1.png');
     });
   });
 
@@ -842,19 +873,15 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
     });
 
     it('TT-064: should update all fields at once', () => {
-      tenant.updateProfile(
-        'New Company',
-        '+1111111111',
-        '456 Oak Ave',
-        'https://newsite.com',
-        'https://newsite.com/logo.svg',
-      );
+      tenant.updateProfile('New Company', '+1111111111', '456 Oak Ave', 'A new company', {
+        primary: '#123456',
+      });
 
       expect(tenant.getName()).toBe('New Company');
       expect(tenant.getContactPhone()).toBe('+1111111111');
       expect(tenant.getAddress()).toBe('456 Oak Ave');
-      expect(tenant.getWebsite()).toBe('https://newsite.com');
-      expect(tenant.getLogoUrl()).toBe('https://newsite.com/logo.svg');
+      expect(tenant.getDescription()).toBe('A new company');
+      expect(tenant.getTheme()).toEqual({ primary: '#123456' });
     });
 
     it('TT-065: should update subset of fields', () => {
@@ -865,30 +892,26 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
         'Updated Name',
         undefined,
         undefined,
-        'https://new.com',
+        'New description',
       );
 
       expect(tenant.getName()).toBe('Updated Name');
       expect(tenant.getContactPhone()).toBe(originalPhone);
       expect(tenant.getAddress()).toBe(originalAddress);
-      expect(tenant.getWebsite()).toBe('https://new.com');
+      expect(tenant.getDescription()).toBe('New description');
     });
 
     it('TT-066: should clear optional fields', () => {
-      tenant.updateProfile(
-        undefined,
-        '+1234567890',
-        '123 Main',
-        'https://example.com',
-        'https://example.com/logo.png',
-      );
+      tenant.updateProfile(undefined, '+1234567890', '123 Main', 'A description', {
+        primary: '#123456',
+      });
 
       tenant.updateProfile(undefined, null, null, null, null);
 
       expect(tenant.getContactPhone()).toBeNull();
       expect(tenant.getAddress()).toBeNull();
-      expect(tenant.getWebsite()).toBeNull();
-      expect(tenant.getLogoUrl()).toBeNull();
+      expect(tenant.getDescription()).toBeNull();
+      expect(tenant.getTheme()).toBeNull();
     });
 
     it('TT-067: should update updatedAt timestamp', () => {
@@ -932,8 +955,8 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
         'My Company Renamed',
         '+1234567890',
         '123 Business Rd',
-        'https://mycompany.com',
-        'https://mycompany.com/logo.png',
+        'Renamed company',
+        { primary: '#1A73E8' },
       );
 
       expect(tenant.getName()).toBe('My Company Renamed');
@@ -1031,15 +1054,15 @@ describe('Tenant Entity - COMPREHENSIVE COVERAGE', () => {
         undefined,
         '+1-555-0100',
         undefined,
-        'https://example.com',
+        'A description',
         undefined,
       );
 
       expect(tenant.getName()).toBe('Company');
       expect(tenant.getContactPhone()).toBe('+1-555-0100');
       expect(tenant.getAddress()).toBeNull();
-      expect(tenant.getWebsite()).toBe('https://example.com');
-      expect(tenant.getLogoUrl()).toBeNull();
+      expect(tenant.getDescription()).toBe('A description');
+      expect(tenant.getTheme()).toBeNull();
     });
   });
 });

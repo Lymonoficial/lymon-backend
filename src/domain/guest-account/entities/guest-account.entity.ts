@@ -22,7 +22,7 @@ export class GuestAccount {
     private passwordChangedAt: Date | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
-    private profilePhotoUrl: string | null,
+    private profilePhotoKey: string | null,
     private pendingEmail: Email | null,
     private emailChangeToken: string | null,
     private emailChangeExpiry: Date | null,
@@ -76,7 +76,7 @@ export class GuestAccount {
       data.passwordChangedAt,
       data.createdAt,
       data.updatedAt,
-      data.profilePhotoUrl,
+      data.profilePhotoKey,
       data.pendingEmail,
       data.emailChangeToken,
       data.emailChangeExpiry,
@@ -207,13 +207,13 @@ export class GuestAccount {
     this.touch();
   }
 
-  setProfilePhotoUrl(url: string | null): void {
-    this.profilePhotoUrl = url;
+  setProfilePhotoKey(key: string | null): void {
+    this.profilePhotoKey = key;
     this.touch();
   }
 
-  getProfilePhotoUrl(): string | null {
-    return this.profilePhotoUrl;
+  getProfilePhotoKey(): string | null {
+    return this.profilePhotoKey;
   }
 
   getId(): GuestAccountId | null {

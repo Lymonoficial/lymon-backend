@@ -15,7 +15,7 @@ export const GUEST_ACCOUNT_FIXTURE_DEFAULTS = {
   emailVerified: false,
   emailVerificationToken: null as string | null,
   emailVerificationExpiry: null as Date | null,
-  profilePhotoUrl: null as string | null,
+  profilePhotoKey: null as string | null,
   pendingEmail: null as string | null,
   emailChangeToken: null as string | null,
   emailChangeExpiry: null as Date | null,
@@ -34,7 +34,7 @@ export function makeGuestAccount(
     emailVerified: boolean;
     emailVerificationToken: string | null;
     emailVerificationExpiry: Date | null;
-    profilePhotoUrl: string | null;
+    profilePhotoKey: string | null;
     pendingEmail: string | null;
     emailChangeToken: string | null;
     emailChangeExpiry: Date | null;
@@ -58,7 +58,7 @@ export function makeGuestAccount(
     passwordChangedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    profilePhotoUrl: merged.profilePhotoUrl,
+    profilePhotoKey: merged.profilePhotoKey,
     pendingEmail: merged.pendingEmail
       ? Email.create(merged.pendingEmail)
       : null,

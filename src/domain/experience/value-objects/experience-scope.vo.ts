@@ -1,6 +1,6 @@
 export enum ExperienceScopeEnum {
-  GLOBAL = 'global',
-  PROPERTY = 'property',
+  GLOBAL = 'GLOBAL',
+  PROPERTY = 'PROPERTY',
 }
 
 export class ExperienceScope {

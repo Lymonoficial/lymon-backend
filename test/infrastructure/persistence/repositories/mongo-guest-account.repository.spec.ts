@@ -29,7 +29,7 @@ describe('MongoGuestAccountRepository', () => {
       passwordChangedAt: null,
       createdAt: new Date('2030-01-01T00:00:00Z'),
       updatedAt: new Date('2030-01-02T00:00:00Z'),
-      profilePhotoUrl: null,
+      profilePhotoKey: null,
       pendingEmail: null,
       emailChangeToken: null,
       emailChangeExpiry: null,

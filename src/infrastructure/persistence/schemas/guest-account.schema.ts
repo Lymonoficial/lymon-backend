@@ -48,7 +48,7 @@ export class GuestAccountDocument extends Document {
   passwordChangedAt: Date | null;
 
   @Prop({ type: String, default: null })
-  profilePhotoUrl: string | null;
+  profilePhotoKey: string | null;
 
   @Prop({ type: String, default: null })
   pendingEmail: string | null;

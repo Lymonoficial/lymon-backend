@@ -207,7 +207,10 @@ export class MongoExperienceRepository implements ExperienceRepository {
         ? PropertyId.create(document.propertyId.toString())
         : undefined,
       scope: ExperienceScope.create(
-        document.scope ?? (document.propertyId ? 'property' : 'global'),
+        document.scope ??
+          (document.propertyId
+            ? ExperienceScopeEnum.PROPERTY
+            : ExperienceScopeEnum.GLOBAL),
       ),
       name: document.name,
       description: document.description,

@@ -61,7 +61,7 @@ describe('UpdateGuestProfilePhotoHandler', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('saves the public URL derived from the key', async () => {
+  it('persists the key and returns the URL built from it', async () => {
     guestAccountRepository.findById.mockResolvedValue(makeGuestAccount());
 
     const result = await handler.execute(
@@ -70,14 +70,14 @@ describe('UpdateGuestProfilePhotoHandler', () => {
 
     expect(result).toBeInstanceOf(UpdateGuestProfilePhotoResult);
     const saved = guestAccountRepository.save.mock.calls[0][0];
-    expect(saved.getProfilePhotoUrl()).toBe(`${PUBLIC_BASE}/${KEY}`);
+    expect(saved.getProfilePhotoKey()).toBe(KEY);
     expect(result.profilePhotoUrl).toBe(`${PUBLIC_BASE}/${KEY}`);
   });
 
   it('deletes the previous photo after committing the new one', async () => {
     const oldKey = `guests/${ACCOUNT_ID}/profile/111.jpg`;
     guestAccountRepository.findById.mockResolvedValue(
-      makeGuestAccount({ profilePhotoUrl: `${PUBLIC_BASE}/${oldKey}` }),
+      makeGuestAccount({ profilePhotoKey: oldKey }),
     );
 
     await handler.execute(new UpdateGuestProfilePhotoCommand(ACCOUNT_ID, KEY));
