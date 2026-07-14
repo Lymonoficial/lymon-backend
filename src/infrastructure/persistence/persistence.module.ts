@@ -265,7 +265,6 @@ import { ConversationBackfillMigration } from '@/infrastructure/migrations/conve
     },
     { provide: EXPERIENCE_REPOSITORY, useClass: MongoExperienceRepository },
     { provide: METRICS_READ_REPOSITORY, useClass: MongoMetricsReadRepository },
-    { provide: PAYMENT_SESSION_REPOSITORY, useClass: MongoPaymentSessionRepository },
     { provide: GUEST_TAG_REPOSITORY, useClass: MongoGuestTagRepository },
     { provide: UNIT_RATING_REPOSITORY, useClass: MongoUnitRatingRepository },
     {

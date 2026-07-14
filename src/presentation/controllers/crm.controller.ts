@@ -75,8 +75,6 @@ import { MarkConversationReadCommand } from '@/application/conversation/commands
 import { ArchiveConversationCommand } from '@/application/conversation/commands/archive-conversation/archive-conversation.command';
 import { GetGuestRatingsQuery } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.query';
 import { GetGuestRatingsResult } from '@/application/unit-rating/queries/get-guest-ratings/get-guest-ratings.result';
-import { GetGuestMetricsQuery } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.query';
-import { GetGuestMetricsResult } from '@/application/guest/queries/get-guest-metrics/get-guest-metrics.result';
 import { GetGuestLifecycleStatusQuery } from '@/application/guest/queries/get-guest-lifecycle-status/get-guest-lifecycle-status.query';
 import { GuestLifecycleStatus } from '@/domain/guest/value-objects/guest-lifecycle-status.vo';
 import { SaveGuestPreferencesDto } from '@/presentation/dtos/guest/save-guest-preferences.dto';
@@ -361,7 +359,6 @@ export class CrmController {
       GetGuestMonthlySpendingQuery,
       GetGuestMonthlySpendingResult
     >(new GetGuestMonthlySpendingQuery(user.tenantId, guestId));
-
     return {
       message: 'Guest monthly spending retrieved successfully',
       data: result.items,
@@ -813,31 +810,6 @@ export class CrmController {
     );
 
     return { message: 'Catalog item deleted successfully' };
-  }
-
-  @Get('guests/:guestId/metrics')
-  @UseGuards(PermissionGuard)
-  @RequirePermission(Permission.CRM_VIEW)
-  @ApiOperation({ summary: 'Get CRM metrics for a specific guest' })
-  @ApiQuery({ name: 'type', required: false, type: String, description: 'Specific stat type to retrieve (e.g., averageBookingValue). Returns all by default.' })
-  @ApiResponse({
-    status: 200,
-    description: 'Guest metrics retrieved successfully',
-  })
-  async getGuestMetrics(
-    @Param('guestId') guestId: string,
-    @Query('type') type: string, 
-    @CurrentUser() user: JwtPayload,
-  ) {
-    const result = await this.queryBus.execute<
-      GetGuestMetricsQuery,
-      GetGuestMetricsResult
-    >(new GetGuestMetricsQuery(user.tenantId, guestId, type)); 
-
-    return {
-      message: 'Guest metrics retrieved successfully',
-      data: result,
-    };
   }
 
   @Get('conversations')

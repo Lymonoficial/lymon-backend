@@ -7,6 +7,7 @@ import {
 import { GetGuestStatsHandler } from '@/application/guest/queries/get-guest-stats/get-guest-stats.handler';
 import { GetGuestMonthlySpendingHandler } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.handler';
 import { GetGuestBookingOriginsHandler } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.handler';
+import { GetGuestAverageBookingValueHandler } from '@/application/guest/queries/get-guest-average-booking-value/get-guest-average-booking-value.handler';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
 import { createReservationRepositoryMock } from '@test/shared/mocks/repositories/reservation-repository.mock';
 
@@ -20,6 +21,10 @@ describe('GetGuestStatsHandler — stat catalog wiring', () => {
     const reservationRepository = createReservationRepositoryMock();
     reservationRepository.getMonthlySpendingByGuestId.mockResolvedValue([]);
     reservationRepository.countByGuestIdGroupedBySource.mockResolvedValue([]);
+    reservationRepository.getBookingValueStats.mockResolvedValue({
+      totalRevenue: 0,
+      bookingCount: 0,
+    });
 
     const moduleRef = await Test.createTestingModule({
       imports: [CqrsModule],
@@ -27,6 +32,7 @@ describe('GetGuestStatsHandler — stat catalog wiring', () => {
         GetGuestStatsHandler,
         GetGuestMonthlySpendingHandler,
         GetGuestBookingOriginsHandler,
+        GetGuestAverageBookingValueHandler,
         { provide: RESERVATION_REPOSITORY, useValue: reservationRepository },
       ],
     }).compile();

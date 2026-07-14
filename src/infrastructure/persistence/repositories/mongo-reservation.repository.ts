@@ -499,33 +499,39 @@ export class MongoReservationRepository
     });
   }
 
-  async getBookingValueStats(tenantId: string, guestId: string): Promise<{ totalRevenue: number; bookingCount: number }> {
-    const matchStatus = ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'];
-
-    const result = await this.reservationModel.aggregate([
+  async getBookingValueStats(
+    tenantId: string,
+    guestId: string,
+  ): Promise<{ totalRevenue: number; bookingCount: number }> {
+    const result = await this.reservationModel.aggregate<{
+      totalRevenue: number;
+      bookingCount: number;
+    }>([
       {
         $match: {
-          tenantId: new Types.ObjectId(tenantId), 
-          guestId: new Types.ObjectId(guestId),   
-          status: { $in: matchStatus }
-        }
+          tenantId: new Types.ObjectId(tenantId),
+          guestId: new Types.ObjectId(guestId),
+          status: {
+            $in: [
+              ReservationStatusEnum.CONFIRMED,
+              ReservationStatusEnum.CHECKED_IN,
+              ReservationStatusEnum.CHECKED_OUT,
+            ],
+          },
+        },
       },
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: '$totalPrice' }, 
-          bookingCount: { $sum: 1 }           
-        }
-      }
+          totalRevenue: { $sum: '$totalPrice' },
+          bookingCount: { $sum: 1 },
+        },
+      },
     ]);
 
-    if (result.length === 0) {
-      return { totalRevenue: 0, bookingCount: 0 };
-    }
-
     return {
-      totalRevenue: result[0].totalRevenue ?? 0,
-      bookingCount: result[0].bookingCount ?? 0
+      totalRevenue: result[0]?.totalRevenue ?? 0,
+      bookingCount: result[0]?.bookingCount ?? 0,
     };
   }
 }

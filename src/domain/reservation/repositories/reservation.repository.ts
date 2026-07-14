@@ -69,7 +69,7 @@ export interface ReservationRepository {
     toDate: Date,
   ): Promise<{ year: number; month: number; totalSpend: number }[]>;
   getBookingValueStats(
-    tenantId: string, 
-    guestId: string
+    tenantId: string,
+    guestId: string,
   ): Promise<{ totalRevenue: number; bookingCount: number }>;
 }

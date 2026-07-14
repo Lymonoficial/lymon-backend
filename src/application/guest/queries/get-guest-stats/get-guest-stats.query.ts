@@ -1,6 +1,6 @@
 import { GetGuestMonthlySpendingQuery } from '../get-guest-monthly-spending/get-guest-monthly-spending.query';
 import { GetGuestBookingOriginsQuery } from '../get-guest-booking-origins/get-guest-booking-origins.query';
-import { GetGuestAverageBookingValueQuery } from '../get-guest-average-booking-value/get-guest-average-booking-value.query'; 
+import { GetGuestAverageBookingValueQuery } from '../get-guest-average-booking-value/get-guest-average-booking-value.query';
 
 // Guest stat catalog — single source of truth. Every stat takes (tenantId, guestId).
 // Add a stat here and it is instantly selectable via the /stats endpoint. No presentation change.
