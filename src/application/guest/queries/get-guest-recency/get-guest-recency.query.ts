@@ -1,6 +1,4 @@
-import { IQuery } from '@nestjs/cqrs';
-
-export class GetGuestMetricsQuery implements IQuery {
+export class GetGuestRecencyQuery {
   constructor(
     public readonly tenantId: string,
     public readonly guestId: string,

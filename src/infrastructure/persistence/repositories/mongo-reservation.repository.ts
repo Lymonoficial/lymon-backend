@@ -499,65 +499,26 @@ export class MongoReservationRepository
     });
   }
 
-  async getBookingValueStats(tenantId: string, guestId: string): Promise<{ totalRevenue: number; bookingCount: number }> {
-  const matchStatus = ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'];
+  async getLastStayAt(tenantId: string, guestId: string): Promise<Date | null> {
+    const result = await this.reservationModel.aggregate<{
+      lastStayAt: Date | null;
+    }>([
+      {
+        $match: {
+          tenantId: new Types.ObjectId(tenantId),
+          guestId: new Types.ObjectId(guestId),
+          status: ReservationStatusEnum.CHECKED_OUT,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          // Actual checkout when recorded, otherwise the scheduled one.
+          lastStayAt: { $max: { $ifNull: ['$checkOutActualAt', '$checkOut'] } },
+        },
+      },
+    ]);
 
-  const result = await this.reservationModel.aggregate([
-    {
-      $match: {
-        tenantId,
-        guestId,
-        status: { $in: matchStatus }
-      }
-    },
-    {
-      $group: {
-        _id: null,
-        totalRevenue: { $sum: '$totalPrice' }, 
-        bookingCount: { $sum: 1 }           
-      }
-    }
-  ]);
-
-  if (result.length === 0) {
-    return { totalRevenue: 0, bookingCount: 0 };
+    return result[0]?.lastStayAt ?? null;
   }
-
-  return {
-    totalRevenue: result[0].totalRevenue ?? 0,
-    bookingCount: result[0].bookingCount ?? 0
-  };
-}
-
-async getLastStayAt(tenantId: string, guestId: string): Promise<Date | null> {
-  const result = await this.reservationModel.aggregate([
-    {
-      $match: {
-        tenantId,
-        guestId,
-        status: 'CHECKED_OUT'
-      }
-    },
-    {
-      $sort: {
-        'checkOutActualAt': -1,
-        'dateRange.checkOut': -1
-      }
-    },
-    { 
-      $limit: 1 
-    }
-  ]);
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  const latestReservation = result[0];
-  
-  const lastStayDate = latestReservation.checkOutActualAt ?? latestReservation.dateRange?.checkOut;
-  
-  return lastStayDate ? new Date(lastStayDate) : null;
-}
-
 }

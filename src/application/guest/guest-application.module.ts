@@ -15,7 +15,7 @@ import { SaveGuestPreferencesHandler } from './commands/preferences/save-guest-p
 import { GetGuestLifecycleStatusHandler } from './queries/get-guest-lifecycle-status/get-guest-lifecycle-status.handler';
 import { UpdateGuestProfileHandler } from './commands/update-guest-profile/update-guest-profile.handler';
 import { ConfirmGuestEmailChangeHandler } from './commands/confirm-email-change/confirm-guest-email-change.handler';
-import { GetGuestMetricsHandler } from './queries/get-guest-metrics/get-guest-metrics.handler';
+import { GetGuestRecencyHandler } from './queries/get-guest-recency/get-guest-recency.handler';
 
 const CommandHandlers = [
   CreateGuestHandler,
@@ -33,6 +33,7 @@ const QueryHandlers = [
   GetGuestBookingOriginsHandler,
   GetGuestLifecycleStatusHandler,
   GetGuestStatsHandler,
+  GetGuestRecencyHandler,
 ];
 
 @Module({
@@ -42,7 +43,7 @@ const QueryHandlers = [
     GuestPreferenceApplicationModule,
     EmailModule,
   ],
-  providers: [...CommandHandlers, ...QueryHandlers, GetGuestMetricsHandler,], 
+  providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers],
 })
 export class GuestApplicationModule {}
