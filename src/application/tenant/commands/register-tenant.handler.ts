@@ -97,6 +97,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
       isOwner: savedUser.isOwner(),
       emailVerified: savedUser.isEmailVerified(),
       roleAssignments: [],
+      trialEndsAt: savedTenant.getTrialEndsAt()?.toISOString() ?? null,
     };
 
     const accessToken = this.tokenService.generateAccesToken(payload);
@@ -110,6 +111,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
       isOwner: savedUser.isOwner(),
       emailVerified: false,
       roleAssignments: [],
+      trialEndsAt: savedTenant.getTrialEndsAt()?.toISOString() ?? null,
     };
 
     const verificationToken =

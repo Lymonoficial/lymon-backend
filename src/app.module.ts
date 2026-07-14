@@ -9,6 +9,7 @@ import { AppService } from '@/app.service';
 import { AuthModule } from '@/infrastructure/auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from '@/infrastructure/auth/guards/jwt-auth.guard';
+import { TrialExpiredGuard } from '@/infrastructure/auth/guards/trial-expired.guard';
 import { AuditInfrastructureModule } from '@/infrastructure/audit/audit-infrastructure.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ReservationInfrastructureModule } from '@/infrastructure/reservation/reservation-infrastructure.module';
@@ -45,6 +46,10 @@ import { PaymentModule } from '@/infrastructure/payment/payment.module';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: TrialExpiredGuard,
     },
   ],
 })

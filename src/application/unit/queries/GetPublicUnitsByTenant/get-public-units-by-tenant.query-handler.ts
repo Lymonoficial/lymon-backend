@@ -38,9 +38,10 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
   async execute(
     query: GetPublicUnitsByTenantQuery,
   ): Promise<GetPublicUnitsByTenantResult> {
-    const tenantId = TenantId.createFromString(String(query.tenantId));
-    const tenant = await this.tenantRepository.findById(tenantId);
+    const tenant = await this.tenantRepository.findBySlug(query.tenantSlug);
     if (!tenant) throw new NotFoundException('Tenant not found');
+
+    const tenantId = TenantId.createFromString(tenant.getId()!.toString());
 
     // Si hay fechas, necesitamos filtrar por disponibilidad
     if (query.startDate && query.endDate) {
@@ -76,7 +77,9 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
       const total = availableUnits.length;
       const skip = (query.page - 1) * query.limit;
       const paginatedUnits = availableUnits.slice(skip, skip + query.limit);
-      const dtos = paginatedUnits.map((u) => mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)));
+      const dtos = paginatedUnits.map((u) =>
+        mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)),
+      );
 
       return new GetPublicUnitsByTenantResult(
         dtos,
@@ -92,7 +95,9 @@ export class GetPublicUnitsByTenantQueryHandler implements IQueryHandler<
       query.limit,
       query.minGuests,
     );
-    const dtos = units.map((u) => mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)));
+    const dtos = units.map((u) =>
+      mapUnitToPublicDto(u, (k) => this.storage.getPublicUrl(k)),
+    );
 
     return new GetPublicUnitsByTenantResult(
       dtos,
