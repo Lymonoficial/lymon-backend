@@ -18,5 +18,5 @@ export interface IGuestAccount {
   passwordChangedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  profilePhotoUrl: string | null;
+  profilePhotoKey: string | null;
 }

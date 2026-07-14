@@ -13,6 +13,9 @@ export class GetPropertyByIdResponseDto {
   id: string;
 
   @ApiProperty()
+  slug: string;
+
+  @ApiProperty()
   name: string;
 
   @ApiProperty()

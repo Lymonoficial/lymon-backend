@@ -1,3 +1,4 @@
+import { TenantTheme } from '@/domain/tenant/value-objects/tenant-theme';
 import { PlanTypeEnum } from '@/domain/tenant/value-objects/plan-type.vo';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
@@ -6,6 +7,9 @@ import { Document } from 'mongoose';
 export class TenantDocument extends Document {
   @Prop({ required: true })
   name: string;
+
+  @Prop({ required: true, unique: true, lowercase: true })
+  slug: string;
 
   @Prop({ required: true, unique: true, lowercase: true })
   ownerEmail: string;
@@ -23,10 +27,13 @@ export class TenantDocument extends Document {
   address: string | null;
 
   @Prop({ type: String, default: null })
-  website: string | null;
+  description: string | null;
 
   @Prop({ type: String, default: null })
-  logoUrl: string | null;
+  logoKey: string | null;
+
+  @Prop({ type: Object, default: null })
+  theme: TenantTheme | null;
 
   @Prop()
   createdAt: Date;
@@ -36,8 +43,12 @@ export class TenantDocument extends Document {
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
+
+  @Prop({ type: Date, default: null })
+  trialEndsAt: Date | null;
 }
 
 export const TenantSchema = SchemaFactory.createForClass(TenantDocument);
 
 TenantSchema.index({ ownerEmail: 1, deletedAt: 1 }, { unique: true });
+TenantSchema.index({ slug: 1, deletedAt: 1 }, { unique: true });

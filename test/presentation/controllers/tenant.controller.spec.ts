@@ -50,8 +50,9 @@ describe('TenantController', () => {
       name: 'Tenant Renamed',
       contactPhone: '12345',
       address: 'Address',
-      website: 'https://test.com',
-      logoUrl: 'https://test.com/logo.png',
+      description: 'A description',
+      theme: { primary: '#1A73E8' },
+      logoKey: `${user.tenantId}/logos/1.png`,
     });
 
     expect(commandBus.execute).toHaveBeenCalledTimes(1);

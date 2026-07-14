@@ -7,6 +7,7 @@ import {
 } from '@/domain/experience/repositories/experience.repository';
 import { ExperienceAvailabilityType } from '@/domain/experience/value-objects/experience-availability-type.vo';
 import { ExperienceCategory } from '@/domain/experience/value-objects/experience-category.vo';
+import { ExperienceScope } from '@/domain/experience/value-objects/experience-scope.vo';
 import {
   AuditAction,
   AuditEntityType,
@@ -17,11 +18,6 @@ import {
 } from '@/domain/property/repositories/property.repository';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import {
-  UNIT_REPOSITORY,
-  type UnitRepository,
-} from '@/domain/unit/repositories/unit.repository';
-import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
 import {
   AUDIT_LOG_EVENT,
   AuditLoggedEvent,
@@ -43,16 +39,13 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
     private readonly experienceRepository: ExperienceRepository,
     @Inject(PROPERTY_REPOSITORY)
     private readonly propertyRepository: PropertyRepository,
-    @Inject(UNIT_REPOSITORY)
-    private readonly unitRepository: UnitRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(
     command: CreateExperienceCommand,
   ): Promise<CreateExperienceResult> {
-    const { tenantId, propertyId, unitIds, experience } =
-      this.buildDomainObjects(command);
+    const { tenantId, propertyId, experience } = this.buildDomainObjects(command);
 
     const property = propertyId
       ? await this.propertyRepository.findById(propertyId)
@@ -80,18 +73,6 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
       }
     }
 
-    if (unitIds.length > 0) {
-      if (!propertyId) {
-        throw new BadRequestException('unitIds require propertyId');
-      }
-
-      await this.validateUnitsBelongToPropertyAndTenant(
-        unitIds,
-        propertyId,
-        tenantId,
-      );
-    }
-
     const experienceId = await this.experienceRepository.save(experience);
 
     this.eventEmitter.emit(
@@ -109,70 +90,33 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
     return new CreateExperienceResult(experienceId);
   }
 
-  private async validateUnitsBelongToPropertyAndTenant(
-    unitIds: UnitId[],
-    propertyId: PropertyId,
-    tenantId: TenantId,
-  ): Promise<void> {
-    for (const unitId of unitIds) {
-      const unit = await this.unitRepository.findById(unitId);
-
-      if (!unit) {
-        throw new NotFoundException(`Unit not found: ${unitId.toString()}`);
-      }
-
-      if (!unit.getTenantId().equals(tenantId)) {
-        throw new BadRequestException(
-          `Unit does not belong to current tenant: ${unitId.toString()}`,
-        );
-      }
-
-      if (!unit.getPropertyId().equals(propertyId)) {
-        throw new BadRequestException(
-          `Unit does not belong to selected property: ${unitId.toString()}`,
-        );
-      }
-    }
-  }
-
   private buildDomainObjects(command: CreateExperienceCommand): {
     tenantId: TenantId;
     propertyId?: PropertyId;
-    unitIds: UnitId[];
     experience: Experience;
   } {
     try {
       const tenantId = TenantId.createFromString(command.tenantId);
+      const scope = ExperienceScope.create(command.scope);
       const propertyId = command.propertyId
         ? PropertyId.create(command.propertyId)
         : undefined;
-      const unitIds = (command.unitIds ?? []).map((unitId) =>
-        UnitId.create(unitId),
-      );
 
       const experience = Experience.create({
         tenantId,
+        scope,
         propertyId,
-        unitIds,
         name: command.name,
         description: command.description,
         city: command.city,
         category: ExperienceCategory.create(command.category),
         priceCop: command.priceCop,
-        durationHours: command.durationHours,
         minimumParticipants: command.minimumParticipants,
         capacity: command.capacity,
-        location: command.location,
         availabilityType: ExperienceAvailabilityType.create(
           command.availabilityType,
         ),
-        startAt: command.startAt ? new Date(command.startAt) : undefined,
-        endAt: command.endAt ? new Date(command.endAt) : undefined,
         recurrence: command.recurrence,
-        blackoutRanges: command.blackoutRanges?.map((range) => ({
-          startAt: new Date(range.startAt),
-          endAt: new Date(range.endAt),
-        })),
         allowStandalonePurchase: command.allowStandalonePurchase,
         allowReservationPurchase: command.allowReservationPurchase,
         mediaKeys: command.mediaKeys,
@@ -181,7 +125,6 @@ export class CreateExperienceHandler implements ICommandHandler<CreateExperience
       return {
         tenantId,
         propertyId,
-        unitIds,
         experience,
       };
     } catch (error) {

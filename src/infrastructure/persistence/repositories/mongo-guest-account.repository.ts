@@ -30,7 +30,7 @@ export class MongoGuestAccountRepository implements GuestAccountRepository {
       passwordResetToken: account.getPasswordResetToken(),
       passwordResetExpiry: account.getPasswordResetExpiry(),
       passwordChangedAt: account.getPasswordChangedAt(),
-      profilePhotoUrl: account.getProfilePhotoUrl(),
+      profilePhotoKey: account.getProfilePhotoKey(),
       updatedAt: account.getUpdatedAt(),
     };
 
@@ -89,7 +89,7 @@ export class MongoGuestAccountRepository implements GuestAccountRepository {
       passwordChangedAt: doc.passwordChangedAt,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
-      profilePhotoUrl: doc.profilePhotoUrl ?? null,
+      profilePhotoKey: doc.profilePhotoKey ?? null,
     });
   }
 }

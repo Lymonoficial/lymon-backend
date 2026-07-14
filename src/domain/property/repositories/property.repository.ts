@@ -11,6 +11,10 @@ export interface PropertyRepository {
     transactionContext?: TransactionContextData,
   ): Promise<string>;
   findById(id: PropertyId): Promise<Property | null>;
+  findByTenantIdAndSlug(
+    tenantId: TenantId,
+    slug: string,
+  ): Promise<Property | null>;
   findByTenantId(tenantId: TenantId): Promise<Property[]>;
   countByTenantId(tenantId: TenantId): Promise<number>;
   delete(id: PropertyId): Promise<void>;

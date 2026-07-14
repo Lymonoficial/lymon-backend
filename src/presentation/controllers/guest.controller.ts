@@ -4,6 +4,8 @@ import { ChangeGuestPasswordResult } from '@/application/guest-auth/commands/cha
 import { UpdateGuestProfilePhotoCommand } from '@/application/guest-auth/commands/update-guest-profile-photo/update-guest-profile-photo.command';
 import { UpdateGuestProfilePhotoResult } from '@/application/guest-auth/commands/update-guest-profile-photo/update-guest-profile-photo.handler';
 import { GenerateGuestProfilePhotoUrlQuery } from '@/application/guest-auth/queries/generate-guest-profile-photo-url/generate-guest-profile-photo-url.query';
+import { GetGuestAccountProfileQuery } from '@/application/guest-auth/queries/get-guest-account-profile/get-guest-account-profile.query';
+import { GetGuestAccountProfileResult } from '@/application/guest-auth/queries/get-guest-account-profile/get-guest-account-profile.result';
 import { GenerateGuestProfilePhotoUrlResult } from '@/application/guest-auth/queries/generate-guest-profile-photo-url/generate-guest-profile-photo-url.result';
 import { type GuestJwtPayload } from '@/application/guest-auth/services/guest-jwt.service';
 import { CreateGuestCommand } from '@/application/guest/commands/create-guest.command';
@@ -156,6 +158,32 @@ export class GuestController {
     );
 
     return { message: result.message };
+  }
+
+  @Public()
+  @UseGuards(GuestJwtAuthGuard)
+  @Get('profile')
+  @ApiBearerAuth('GuestJWT-auth')
+  @ApiOperation({ summary: 'Get the authenticated guest account profile' })
+  @ApiResponse({ status: 200, description: 'Guest profile returned' })
+  async getProfile(@CurrentGuest() guest: GuestJwtPayload) {
+    const result = await this.queryBus.execute<
+      GetGuestAccountProfileQuery,
+      GetGuestAccountProfileResult
+    >(new GetGuestAccountProfileQuery(guest.guestAccountId));
+
+    return {
+      message: 'Guest profile returned',
+      data: {
+        guestAccountId: result.guestAccountId,
+        email: result.email,
+        fullName: result.fullName,
+        firstName: result.firstName,
+        lastName: result.lastName,
+        emailVerified: result.emailVerified,
+        profilePhotoUrl: result.profilePhotoUrl,
+      },
+    };
   }
 
   @Public()

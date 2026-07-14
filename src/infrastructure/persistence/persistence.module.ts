@@ -174,7 +174,6 @@ import { CONVERSATION_REPOSITORY } from '@/domain/conversation/repositories/conv
 import { MongoConversationRepository } from '@/infrastructure/persistence/repositories/mongo-conversation.repository';
 import { ConversationBackfillMigration } from '@/infrastructure/migrations/conversation-backfill.migration';
 
-
 @Module({
   imports: [
     MongooseModule.forFeature([
