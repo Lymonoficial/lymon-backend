@@ -43,7 +43,7 @@ const QueryHandlers = [
     GuestPreferenceApplicationModule,
     EmailModule,
   ],
-  providers: [...CommandHandlers, ...QueryHandlers], 
+  providers: [...CommandHandlers, ...QueryHandlers],
   exports: [...CommandHandlers, ...QueryHandlers],
 })
 export class GuestApplicationModule {}

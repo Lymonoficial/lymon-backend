@@ -9,7 +9,7 @@ export const GUEST_STAT_QUERIES = {
     new GetGuestMonthlySpendingQuery(tenantId, guestId),
   bookingOrigins: (tenantId: string, guestId: string) =>
     new GetGuestBookingOriginsQuery(tenantId, guestId),
-  averageStayDuration: (tenantId: string, guestId: string) =>
+  avgNightsPerStay: (tenantId: string, guestId: string) =>
     new GetGuestAverageStayDurationQuery(tenantId, guestId),
 } as const;
 

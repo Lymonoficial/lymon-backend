@@ -35,6 +35,7 @@ function createGuestReservationsReadRepositoryMock(): jest.Mocked<GuestReservati
   };
 }
 
+
 function makeGuest(guestId: string, tenantId: string): Guest {
   const identity: GuestIdentity = {};
   const summary: GuestSummary = {
