@@ -3,10 +3,12 @@ import { CancellationPolicy } from '@/domain/property/value-objects/cancellation
 import { Location } from '@/domain/property/value-objects/location.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { PropertyType } from '@/domain/property/value-objects/property-type.vo';
+import { createSlug } from '@/domain/shared/utils/slug.util';
 
 export interface PropertyProps {
   tenantId: TenantId;
   name: string;
+  slug?: string;
   description: string;
   propertyType: PropertyType;
   address: string;
@@ -20,6 +22,7 @@ export interface PropertyProps {
   cancellationPolicy: CancellationPolicy;
   hostPhone: string;
   hostEmail: string;
+  imageKey?: string;
 }
 
 export interface PropertyUpdateData {
@@ -37,6 +40,7 @@ export interface PropertyReconstituteData {
   id: PropertyId;
   tenantId: TenantId;
   name: string;
+  slug?: string;
   description: string;
   propertyType: PropertyType;
   address: string;
@@ -50,6 +54,7 @@ export interface PropertyReconstituteData {
   cancellationPolicy: CancellationPolicy;
   hostPhone: string;
   hostEmail: string;
+  imageKey?: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
@@ -60,6 +65,7 @@ export class Property {
     private readonly id: PropertyId | null,
     private readonly tenantId: TenantId,
     private name: string,
+    private slug: string,
     private description: string,
     private readonly propertyType: PropertyType,
     private address: string,
@@ -73,6 +79,7 @@ export class Property {
     private cancellationPolicy: CancellationPolicy,
     private hostPhone: string,
     private hostEmail: string,
+    private imageKey: string | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
     private deletedAt: Date | null,
@@ -91,6 +98,7 @@ export class Property {
       null,
       props.tenantId,
       props.name.trim(),
+      props.slug ?? createSlug(props.name),
       props.description.trim(),
       props.propertyType,
       props.address.trim(),
@@ -104,6 +112,7 @@ export class Property {
       props.cancellationPolicy,
       props.hostPhone,
       props.hostEmail,
+      props.imageKey ?? null,
       new Date(),
       new Date(),
       null,
@@ -115,6 +124,7 @@ export class Property {
       data.id,
       data.tenantId,
       data.name,
+      data.slug ?? createSlug(data.name),
       data.description,
       data.propertyType,
       data.address,
@@ -128,6 +138,7 @@ export class Property {
       data.cancellationPolicy,
       data.hostPhone,
       data.hostEmail,
+      data.imageKey ?? null,
       data.createdAt,
       data.updatedAt,
       data.deletedAt ?? null,
@@ -144,6 +155,10 @@ export class Property {
 
   getName(): string {
     return this.name;
+  }
+
+  getSlug(): string {
+    return this.slug;
   }
 
   getDescription(): string {
@@ -198,6 +213,15 @@ export class Property {
     return this.hostEmail;
   }
 
+  getImageKey(): string | null {
+    return this.imageKey;
+  }
+
+  updateImageKey(imageKey: string | null): void {
+    this.imageKey = imageKey;
+    this.updatedAt = new Date();
+  }
+
   getCreatedAt(): Date {
     return this.createdAt;
   }
@@ -213,6 +237,7 @@ export class Property {
   updateDetails(data: PropertyUpdateData): void {
     if (data.name && data.name.trim() !== '') {
       this.name = data.name.trim();
+      this.slug = createSlug(this.name);
     }
     if (data.description !== undefined) {
       this.description = data.description.trim();

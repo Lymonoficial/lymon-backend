@@ -17,6 +17,9 @@ export class PropertyDocument extends Document {
   name: string;
 
   @Prop({ required: true })
+  slug: string;
+
+  @Prop({ required: true })
   description: string;
 
   @Prop({ required: true, enum: PropertyTypeEnum })
@@ -65,6 +68,9 @@ export class PropertyDocument extends Document {
   hostEmail: string;
 
   @Prop()
+  imageKey?: string;
+
+  @Prop()
   createdAt: Date;
 
   @Prop()
@@ -72,9 +78,9 @@ export class PropertyDocument extends Document {
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
-
 }
 
 export const PropertySchema = SchemaFactory.createForClass(PropertyDocument);
 
 PropertySchema.index({ tenantId: 1, deletedAt: 1, createdAt: -1 });
+PropertySchema.index({ tenantId: 1, slug: 1, deletedAt: 1 }, { unique: true });

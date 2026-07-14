@@ -3,6 +3,7 @@ import { GuestReservationController } from '@/presentation/controllers/guest-res
 import { GetGuestReservationsQuery } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.query';
 import { GetGuestReservationQuery } from '@/application/reservation/queries/get-guest-reservation/get-guest-reservation.query';
 import { GetGuestReservationsResult } from '@/application/reservation/queries/get-guest-reservations/get-guest-reservations.result';
+import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
 
 describe('GuestReservationController', () => {
   let controller: GuestReservationController;
@@ -15,9 +16,11 @@ describe('GuestReservationController', () => {
   } as any;
 
   beforeEach(() => {
+    commandBus = { execute: jest.fn() };
     queryBus = { execute: jest.fn() };
     controller = new GuestReservationController(
       queryBus as unknown as QueryBus,
+      commandBus as unknown as CommandBus,
     );
   });
 
@@ -29,7 +32,7 @@ describe('GuestReservationController', () => {
     const queryParams = {
       page: '2',
       limit: '15',
-      status: 'completed',
+      status: 'checked_in',
       fromDate: '2026-01-01',
       toDate: '2026-02-01',
       sortBy: 'createdAt' as const,
@@ -48,6 +51,7 @@ describe('GuestReservationController', () => {
       guestAccountId: '65f1a1a2b3c4d5e6f7a8b9c5',
       page: 2,
       limit: 15,
+      statuses: [ReservationStatusEnum.CHECKED_IN],
       sortBy: 'createdAt',
       sortOrder: 'desc',
     });

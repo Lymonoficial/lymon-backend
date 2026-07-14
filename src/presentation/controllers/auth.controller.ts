@@ -87,6 +87,7 @@ export class AuthController {
         emailVerified: result.emailVerified,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
+        tutorialCompleted: result.tutorialCompleted,
       },
     };
   }

@@ -14,6 +14,7 @@ export const GUEST_ACCOUNT_FIXTURE_DEFAULTS = {
   emailVerified: false,
   emailVerificationToken: null as string | null,
   emailVerificationExpiry: null as Date | null,
+  profilePhotoKey: null as string | null,
 };
 
 export function makeGuestAccount(
@@ -28,6 +29,7 @@ export function makeGuestAccount(
     emailVerified: boolean;
     emailVerificationToken: string | null;
     emailVerificationExpiry: Date | null;
+    profilePhotoKey: string | null;
   }>,
 ): GuestAccount {
   const merged = { ...GUEST_ACCOUNT_FIXTURE_DEFAULTS, ...overrides };
@@ -47,5 +49,6 @@ export function makeGuestAccount(
     passwordChangedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    profilePhotoKey: merged.profilePhotoKey,
   });
 }

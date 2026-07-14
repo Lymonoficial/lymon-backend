@@ -21,6 +21,7 @@ export class GuestAccount {
     private passwordChangedAt: Date | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
+    private profilePhotoKey: string | null,
   ) {}
 
   static create(params: CreateGuestAccountParams): GuestAccount {
@@ -45,6 +46,7 @@ export class GuestAccount {
       null,
       new Date(),
       new Date(),
+      null,
     );
   }
 
@@ -65,6 +67,7 @@ export class GuestAccount {
       data.passwordChangedAt,
       data.createdAt,
       data.updatedAt,
+      data.profilePhotoKey,
     );
   }
 
@@ -132,6 +135,15 @@ export class GuestAccount {
   suspend(): void {
     this.status = GuestAccountStatusEnum.SUSPENDED;
     this.touch();
+  }
+
+  setProfilePhotoKey(key: string | null): void {
+    this.profilePhotoKey = key;
+    this.touch();
+  }
+
+  getProfilePhotoKey(): string | null {
+    return this.profilePhotoKey;
   }
 
   getId(): GuestAccountId | null {

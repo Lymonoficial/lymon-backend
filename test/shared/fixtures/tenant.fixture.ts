@@ -2,6 +2,7 @@ import {
   Tenant,
   TenantReconstitutionProps,
 } from '@/domain/tenant/entities/tenant.entity';
+import { TenantTheme } from '@/domain/tenant/value-objects/tenant-theme';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import {
   PlanType,
@@ -17,8 +18,12 @@ export const TENANT_FIXTURE_DEFAULTS = {
   emailVerified: true,
   contactPhone: null as string | null,
   address: null as string | null,
+  description: null as string | null,
+  logoKey: null as string | null,
+  theme: null as TenantTheme | null,
   website: null as string | null,
   logoUrl: null as string | null,
+  trialEndsAt: null as Date | null,
 };
 
 export function makeTenant(
@@ -30,8 +35,12 @@ export function makeTenant(
     emailVerified: boolean;
     contactPhone: string | null;
     address: string | null;
+    description: string | null;
+    logoKey: string | null;
+    theme: TenantTheme | null;
     website: string | null;
     logoUrl: string | null;
+    trialEndsAt: Date | null;
   }>,
 ): Tenant {
   const merged = { ...TENANT_FIXTURE_DEFAULTS, ...overrides };
@@ -43,10 +52,12 @@ export function makeTenant(
     emailVerified: merged.emailVerified,
     contactPhone: merged.contactPhone,
     address: merged.address,
-    website: merged.website,
-    logoUrl: merged.logoUrl,
+    description: merged.description,
+    logoKey: merged.logoKey,
+    theme: merged.theme,
     createdAt: new Date(),
     updatedAt: new Date(),
+    trialEndsAt: merged.trialEndsAt,
   };
   return Tenant.reconstitute(props);
 }

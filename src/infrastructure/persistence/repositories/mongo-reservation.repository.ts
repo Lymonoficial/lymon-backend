@@ -20,6 +20,7 @@ import {
   ReservationStatusEnum,
 } from '@/domain/reservation/value-objects/reservation-status.vo';
 import { ReservationDocument } from '../schemas/reservation.schema';
+import { CounterDocument } from '../schemas/counter.schema';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
 import { UnitId } from '@/domain/unit/value-objects/unit-id.vo';
@@ -40,6 +41,8 @@ export class MongoReservationRepository
   constructor(
     @InjectModel(ReservationDocument.name)
     private readonly reservationModel: Model<ReservationDocument>,
+    @InjectModel(CounterDocument.name)
+    private readonly counterModel: Model<CounterDocument>,
   ) {}
 
   async save(
@@ -49,8 +52,10 @@ export class MongoReservationRepository
     const session = ctx as ClientSession | undefined;
     const id = reservation.getId()?.toString();
 
+    const tenantIdStr = reservation.getTenantId().toString();
+
     const document = {
-      tenantId: new Types.ObjectId(reservation.getTenantId().toString()),
+      tenantId: new Types.ObjectId(tenantIdStr),
       propertyId: new Types.ObjectId(reservation.getPropertyId().toString()),
       unitId: new Types.ObjectId(reservation.getUnitId().toString()),
       guestId: new Types.ObjectId(reservation.getGuestId().toString()),
@@ -69,6 +74,7 @@ export class MongoReservationRepository
       cancellationReason: reservation.getCancellationReason(),
       checkInActualAt: reservation.getCheckInActualAt(),
       checkOutActualAt: reservation.getCheckOutActualAt(),
+      checkInInfo: reservation.getCheckInInfo(),
       updatedAt: reservation.getUpdatedAt(),
     };
 
@@ -80,14 +86,29 @@ export class MongoReservationRepository
       return id;
     }
 
+    const reservationNumber = await this.getNextReservationNumber(tenantIdStr);
+
     const newDoc = new this.reservationModel({
       ...document,
+      reservationNumber,
       createdAt: reservation.getCreatedAt(),
     });
     const saved = session
       ? await newDoc.save({ session })
       : await newDoc.save();
+
+    reservation.setReservationNumber(reservationNumber);
+
     return saved._id.toHexString();
+  }
+
+  private async getNextReservationNumber(tenantId: string): Promise<number> {
+    const counter = await this.counterModel.findOneAndUpdate(
+      { _id: `reservation:${tenantId}` },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: 'after' },
+    );
+    return counter!.seq;
   }
 
   async findById(id: ReservationId): Promise<Reservation | null> {
@@ -262,7 +283,11 @@ export class MongoReservationRepository
     const docs = await this.reservationModel.find({
       unitId: new Types.ObjectId(unitId.toString()),
       status: {
-        $nin: [ReservationStatusEnum.CANCELLED, ReservationStatusEnum.NO_SHOW],
+        $nin: [
+          ReservationStatusEnum.CANCELLED,
+          ReservationStatusEnum.NO_SHOW,
+          ReservationStatusEnum.CHECKED_OUT,
+        ],
       },
       checkOut: { $gt: fromDate },
     });
@@ -460,6 +485,15 @@ export class MongoReservationRepository
       cancellationReason: doc.cancellationReason,
       checkInActualAt: doc.checkInActualAt,
       checkOutActualAt: doc.checkOutActualAt,
+      reservationNumber: doc.reservationNumber ?? 0,
+      checkInInfo: (doc.checkInInfo ?? []).map((t) => ({
+        fullName: t.fullName,
+        documentType: t.documentType,
+        documentNumber: t.documentNumber,
+        nationality: t.nationality,
+        dateOfBirth: t.dateOfBirth ?? null,
+        phone: t.phone ?? null,
+      })),
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });

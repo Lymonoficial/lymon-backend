@@ -68,6 +68,8 @@ export function makeReservation(
     cancellationReason: null,
     checkInActualAt: null,
     checkOutActualAt: null,
+    reservationNumber: 1,
+    checkInInfo: [],
     createdAt: merged.createdAt,
     updatedAt: merged.updatedAt,
   });

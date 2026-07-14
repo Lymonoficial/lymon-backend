@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
-  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -26,23 +25,6 @@ class GuestIdentityDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
-}
-
-class GuestPhoneDto {
-  @ApiProperty({ example: '+12025550123' })
-  @IsString()
-  @IsNotEmpty()
-  number: string;
-
-  @ApiPropertyOptional({ example: 'mobile' })
-  @IsOptional()
-  @IsString()
-  type?: string;
-
-  @ApiPropertyOptional({ example: true })
-  @IsOptional()
-  @IsBoolean()
-  isPrimary?: boolean;
 }
 
 export class CreateGuestDto {
@@ -72,21 +54,10 @@ export class CreateGuestDto {
   @IsString()
   lastName?: string;
 
-  @ApiPropertyOptional({
-    type: [String],
-    example: ['john.alt@example.com'],
-  })
+  @ApiPropertyOptional({ example: '+12025550123' })
   @IsOptional()
-  @IsArray()
-  @IsEmail({}, { each: true })
-  emails?: string[];
-
-  @ApiPropertyOptional({ type: [GuestPhoneDto] })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => GuestPhoneDto)
-  phones?: GuestPhoneDto[];
+  @IsString()
+  phone?: string;
 
   @ApiPropertyOptional({ type: [String], example: ['vip'] })
   @IsOptional()

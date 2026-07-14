@@ -26,6 +26,7 @@ export class UnitWithExternalIdsDto extends PublicUnitDto {
     tenantId: string,
     propertyId: string,
     rating: number | null,
+    mediaUrls: string[],
     public readonly externalIds: ExternalIdsDto,
   ) {
     super(
@@ -42,6 +43,7 @@ export class UnitWithExternalIdsDto extends PublicUnitDto {
       tenantId,
       propertyId,
       rating,
+      mediaUrls,
     );
   }
 }

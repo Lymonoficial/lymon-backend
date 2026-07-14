@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Patch,
   Post,
@@ -12,6 +13,7 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
@@ -46,14 +48,19 @@ import { GetInventoryItemsByPropertyQuery } from '@/application/inventory/querie
 import { GetInventoryItemsByPropertyResult } from '@/application/inventory/queries/get-inventory-items-by-property/get-inventory-items-by-property.result';
 import { GetLowStockItemsByPropertyQuery } from '@/application/inventory/queries/get-low-stock-items-by-property/get-low-stock-items-by-property.query';
 import { GetLowStockItemsByPropertyResult } from '@/application/inventory/queries/get-low-stock-items-by-property/get-low-stock-items-by-property.result';
+import { PROPERTY_REPOSITORY } from '@/domain/property/repositories/property.repository';
+import type { PropertyRepository } from '@/domain/property/repositories/property.repository';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 
 @ApiTags('inventory')
 @ApiBearerAuth('JWT-auth')
-@Controller('properties/:propertyId/inventory')
+@Controller('properties/:propertySlug/inventory')
 export class InventoryController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    @Inject(PROPERTY_REPOSITORY)
+    private readonly propertyRepository: PropertyRepository,
   ) {}
 
   @Post('items')
@@ -66,9 +73,13 @@ export class InventoryController {
   })
   async createItem(
     @CurrentUser() user: JwtPayload,
-    @Param('propertyId') propertyId: string,
+    @Param('propertySlug') propertySlug: string,
     @Body() dto: CreateInventoryItemDto,
   ) {
+    const propertyId = await this.resolvePropertyId(
+      user.tenantId,
+      propertySlug,
+    );
     const result = await this.commandBus.execute<
       CreateInventoryItemCommand,
       CreateInventoryItemResult
@@ -103,10 +114,14 @@ export class InventoryController {
   })
   async updateItem(
     @CurrentUser() user: JwtPayload,
-    @Param('propertyId') propertyId: string,
+    @Param('propertySlug') propertySlug: string,
     @Param('itemId') itemId: string,
     @Body() dto: UpdateInventoryItemDto,
   ) {
+    const propertyId = await this.resolvePropertyId(
+      user.tenantId,
+      propertySlug,
+    );
     const result = await this.commandBus.execute<
       UpdateInventoryItemCommand,
       UpdateInventoryItemResult
@@ -141,9 +156,13 @@ export class InventoryController {
   })
   async recordMovement(
     @CurrentUser() user: JwtPayload,
-    @Param('propertyId') propertyId: string,
+    @Param('propertySlug') propertySlug: string,
     @Body() dto: RecordInventoryMovementDto,
   ) {
+    const propertyId = await this.resolvePropertyId(
+      user.tenantId,
+      propertySlug,
+    );
     const result = await this.commandBus.execute<
       RecordInventoryMovementCommand,
       RecordInventoryMovementResult
@@ -195,11 +214,15 @@ export class InventoryController {
   })
   async getItems(
     @CurrentUser() user: JwtPayload,
-    @Param('propertyId') propertyId: string,
+    @Param('propertySlug') propertySlug: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @Query('supplierId') supplierId?: string,
   ) {
+    const propertyId = await this.resolvePropertyId(
+      user.tenantId,
+      propertySlug,
+    );
     const result: GetInventoryItemsByPropertyResult =
       await this.queryBus.execute<
         GetInventoryItemsByPropertyQuery,
@@ -236,8 +259,12 @@ export class InventoryController {
   })
   async getLowStock(
     @CurrentUser() user: JwtPayload,
-    @Param('propertyId') propertyId: string,
+    @Param('propertySlug') propertySlug: string,
   ) {
+    const propertyId = await this.resolvePropertyId(
+      user.tenantId,
+      propertySlug,
+    );
     const result = await this.queryBus.execute<
       GetLowStockItemsByPropertyQuery,
       GetLowStockItemsByPropertyResult
@@ -260,9 +287,13 @@ export class InventoryController {
   })
   async deleteItem(
     @CurrentUser() user: JwtPayload,
-    @Param('propertyId') propertyId: string,
+    @Param('propertySlug') propertySlug: string,
     @Param('itemId') itemId: string,
   ) {
+    const propertyId = await this.resolvePropertyId(
+      user.tenantId,
+      propertySlug,
+    );
     await this.commandBus.execute<DeleteInventoryItemCommand, void>(
       new DeleteInventoryItemCommand(user.tenantId, propertyId, itemId),
     );
@@ -280,10 +311,14 @@ export class InventoryController {
   })
   async updateItemSupplier(
     @CurrentUser() user: JwtPayload,
-    @Param('propertyId') propertyId: string,
+    @Param('propertySlug') propertySlug: string,
     @Param('itemId') itemId: string,
     @Body() dto: UpdateInventoryItemSupplierDto,
   ) {
+    const propertyId = await this.resolvePropertyId(
+      user.tenantId,
+      propertySlug,
+    );
     if (dto.supplierId === null) {
       const result = await this.commandBus.execute<
         RemoveSupplierFromItemCommand,
@@ -322,5 +357,21 @@ export class InventoryController {
       message: 'Inventory item supplier updated successfully',
       data: result,
     };
+  }
+
+  private async resolvePropertyId(
+    tenantId: string,
+    propertySlug: string,
+  ): Promise<string> {
+    const property = await this.propertyRepository.findByTenantIdAndSlug(
+      TenantId.createFromString(tenantId),
+      propertySlug,
+    );
+
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    return property.getId()!.toString();
   }
 }

@@ -30,6 +30,7 @@ export class GuestMessage {
     private readonly createdAt: Date,
     private updatedAt: Date,
     private readonly deletedAt: Date | null,
+    private conversationId: string | null,
   ) {}
 
   static create(params: CreateGuestMessageParams): GuestMessage {
@@ -56,6 +57,7 @@ export class GuestMessage {
       now,
       now,
       null,
+      params.conversationId ?? null,
     );
   }
 
@@ -82,6 +84,7 @@ export class GuestMessage {
       data.createdAt,
       data.updatedAt,
       data.deletedAt,
+      data.conversationId,
     );
   }
 
@@ -106,6 +109,12 @@ export class GuestMessage {
   getCreatedAt(): Date { return this.createdAt; }
   getUpdatedAt(): Date { return this.updatedAt; }
   getDeletedAt(): Date | null { return this.deletedAt; }
+  getConversationId(): string | null { return this.conversationId; }
+
+  assignConversation(id: string): void {
+    this.conversationId = id;
+    this.updatedAt = new Date();
+  }
 
   updateStatus(status: GuestMessageStatus): void {
     this.status = status;

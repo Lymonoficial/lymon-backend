@@ -9,7 +9,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -19,36 +18,6 @@ import { ExperienceAvailabilityTypeEnum } from '@/domain/experience/value-object
 import { ExperienceCategoryEnum } from '@/domain/experience/value-objects/experience-category.vo';
 import { ExperienceScopeEnum } from '@/domain/experience/value-objects/experience-scope.vo';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-
-class ExperienceLocationDto {
-  @ApiProperty({
-    example: 'Main lobby pickup point',
-    description: 'Short place label shown to guests',
-  })
-  @IsString()
-  @IsNotEmpty()
-  label!: string;
-
-  @ApiPropertyOptional({
-    example: 'Cra 10 #20-30, Bogota',
-    description: 'Optional detailed address',
-  })
-  @IsString()
-  @IsOptional()
-  address?: string;
-
-  @ApiProperty({ example: 4.6097, minimum: -90, maximum: 90 })
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
-  lat!: number;
-
-  @ApiProperty({ example: -74.0817, minimum: -180, maximum: 180 })
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
-  lng!: number;
-}
 
 class ExperienceRecurrenceDto {
   @ApiProperty({
@@ -79,30 +48,10 @@ class ExperienceRecurrenceDto {
   endTime!: string;
 }
 
-class ExperienceBlackoutRangeDto {
-  @ApiProperty({
-    example: '2026-05-15T00:00:00.000Z',
-    format: 'date-time',
-  })
-  @IsString()
-  @IsNotEmpty()
-  startAt!: string;
-
-  @ApiProperty({
-    example: '2026-05-16T23:59:59.000Z',
-    format: 'date-time',
-  })
-  @IsString()
-  @IsNotEmpty()
-  endAt!: string;
-}
-
 export class CreateExperienceDto {
   @ApiProperty({
     enum: ExperienceScopeEnum,
     example: ExperienceScopeEnum.PROPERTY,
-    description:
-      'Scope behavior: PROPERTY allows optional propertyId and optional unitIds filtering. TENANT is tenant-wide and must not include unitIds.',
   })
   @IsEnum(ExperienceScopeEnum)
   scope!: ExperienceScopeEnum;
@@ -111,21 +60,6 @@ export class CreateExperienceDto {
   @IsString()
   @IsOptional()
   propertyId?: string;
-
-  @ApiPropertyOptional({
-    description: [
-      '**Rules for Scope:**',
-      '* **PROPERTY scope + empty unitIds:** All units in property.',
-      '* **PROPERTY scope + unitIds list:** Only listed units.',
-      '* **TENANT scope + unitIds:** Forbidden.',
-    ].join('\n'),
-    type: [String],
-    example: ['6650d0ef3f3d2d2d2d2d2d33'],
-  })
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  unitIds?: string[];
 
   @ApiProperty({ example: 'Airport transfer' })
   @IsString()
@@ -141,6 +75,11 @@ export class CreateExperienceDto {
   @MaxLength(5000)
   description!: string;
 
+  @ApiProperty({ example: 'Medellín' })
+  @IsString()
+  @IsNotEmpty()
+  city!: string;
+
   @ApiProperty({
     enum: ExperienceCategoryEnum,
     example: ExperienceCategoryEnum.TRANSPORTATION,
@@ -153,68 +92,35 @@ export class CreateExperienceDto {
   @Min(0.01)
   priceCop!: number;
 
-  @ApiProperty({ example: 2, minimum: 0.1 })
-  @IsNumber()
-  @Min(0.1)
-  durationHours!: number;
+  @ApiPropertyOptional({
+    example: 2,
+    minimum: 1,
+    default: 1,
+    description:
+      'Minimum participants required for the experience to take place',
+  })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  minimumParticipants?: number;
 
   @ApiProperty({ example: 8, minimum: 1 })
   @IsInt()
   @Min(1)
   capacity!: number;
 
-  @ApiProperty({ example: 'https://image.com/experience-cover.jpg' })
-  @IsUrl()
-  coverImageUrl!: string;
-
-  @ApiProperty({ type: () => ExperienceLocationDto })
-  @ValidateNested()
-  @Type(() => ExperienceLocationDto)
-  location!: ExperienceLocationDto;
-
   @ApiProperty({
     enum: ExperienceAvailabilityTypeEnum,
-    example: ExperienceAvailabilityTypeEnum.DATE_RANGE,
+    example: ExperienceAvailabilityTypeEnum.RECURRING,
   })
   @IsEnum(ExperienceAvailabilityTypeEnum)
   availabilityType!: ExperienceAvailabilityTypeEnum;
-
-  @ApiPropertyOptional({
-    example: '2026-05-10T10:00:00.000Z',
-    format: 'date-time',
-  })
-  @IsString()
-  @IsOptional()
-  startAt?: string;
-
-  @ApiPropertyOptional({
-    example: '2026-05-20T10:00:00.000Z',
-    format: 'date-time',
-  })
-  @IsString()
-  @IsOptional()
-  endAt?: string;
 
   @ApiPropertyOptional({ type: () => ExperienceRecurrenceDto })
   @ValidateNested()
   @Type(() => ExperienceRecurrenceDto)
   @IsOptional()
   recurrence?: ExperienceRecurrenceDto;
-
-  @ApiPropertyOptional({
-    type: () => [ExperienceBlackoutRangeDto],
-    example: [
-      {
-        startAt: '2026-05-15T00:00:00.000Z',
-        endAt: '2026-05-16T23:59:59.000Z',
-      },
-    ],
-  })
-  @ValidateNested({ each: true })
-  @Type(() => ExperienceBlackoutRangeDto)
-  @IsArray()
-  @IsOptional()
-  blackoutRanges?: ExperienceBlackoutRangeDto[];
 
   @ApiProperty({ example: true })
   @IsBoolean()
@@ -223,4 +129,14 @@ export class CreateExperienceDto {
   @ApiProperty({ example: true })
   @IsBoolean()
   allowReservationPurchase!: boolean;
+
+  @ApiPropertyOptional({
+    example: ['tenantId/experiences/1234-photo.jpg'],
+    description: 'R2 object keys for uploaded media files',
+    type: [String],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  mediaKeys?: string[];
 }

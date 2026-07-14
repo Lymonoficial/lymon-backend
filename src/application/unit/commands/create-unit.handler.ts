@@ -96,6 +96,7 @@ export class CreateUnitHandler implements ICommandHandler<CreateUnitCommand> {
         command.externalIds?.bookingId,
         command.externalIds?.vrboId,
       ),
+      mediaKeys: command.mediaKeys,
     });
 
     const unitId = await this.unitRepository.save(unit);

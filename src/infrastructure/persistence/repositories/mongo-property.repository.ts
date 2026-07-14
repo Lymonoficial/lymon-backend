@@ -6,6 +6,7 @@ import { CancellationPolicy } from '@/domain/property/value-objects/cancellation
 import { Location } from '@/domain/property/value-objects/location.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
 import { TransactionContextData } from '@/domain/shared/transaction-manager.interface';
+import { createSlug } from '@/domain/shared/utils/slug.util';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ClientSession, Types } from 'mongoose';
@@ -28,6 +29,7 @@ export class MongoPropertyRepository implements PropertyRepository {
     const document = {
       tenantId: new Types.ObjectId(property.getTenantId().toString()),
       name: property.getName(),
+      slug: property.getSlug(),
       description: property.getDescription(),
       propertyType: property.getPropertyType().toString(),
       address: property.getAddress(),
@@ -41,6 +43,7 @@ export class MongoPropertyRepository implements PropertyRepository {
       cancellationPolicy: property.getCancellationPolicy().toString(),
       hostPhone: property.getHostPhone(),
       hostEmail: property.getHostEmail(),
+      imageKey: property.getImageKey() ?? undefined,
       updatedAt: property.getUpdatedAt(),
     };
 
@@ -85,6 +88,22 @@ export class MongoPropertyRepository implements PropertyRepository {
     return documents.map((doc) => this.toDomain(doc));
   }
 
+  async findByTenantIdAndSlug(
+    tenantId: TenantId,
+    slug: string,
+  ): Promise<Property | null> {
+    const documents = await this.propertyModel.find({
+      tenantId: new Types.ObjectId(tenantId.toString()),
+      deletedAt: null,
+    });
+
+    const document = documents.find(
+      (item) => item.slug === slug || createSlug(item.name) === slug,
+    );
+
+    return document ? this.toDomain(document) : null;
+  }
+
   async countByTenantId(tenantId: TenantId): Promise<number> {
     return this.propertyModel.countDocuments({
       tenantId: new Types.ObjectId(tenantId.toString()),
@@ -104,6 +123,7 @@ export class MongoPropertyRepository implements PropertyRepository {
       id: PropertyId.create(document._id.toString()),
       tenantId: TenantId.createFromString(document.tenantId.toString()),
       name: document.name,
+      slug: document.slug,
       description: document.description,
       propertyType: PropertyType.create(document.propertyType),
       address: document.address,
@@ -119,6 +139,7 @@ export class MongoPropertyRepository implements PropertyRepository {
       ),
       hostPhone: document.hostPhone,
       hostEmail: document.hostEmail,
+      imageKey: document.imageKey ?? null,
       createdAt: document.createdAt,
       updatedAt: document.updatedAt,
       deletedAt: document.deletedAt ?? null,

@@ -1,3 +1,7 @@
+import { ReservationStatusEnum } from '@/domain/reservation/value-objects/reservation-status.vo';
+
+export type GuestReservationStatus = ReservationStatusEnum;
+
 export interface GuestReservationListItemDto {
   id: string;
   bookingReference: string;
@@ -8,7 +12,7 @@ export interface GuestReservationListItemDto {
   serviceName: string;
   checkIn: Date;
   checkOut: Date;
-  status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
+  status: GuestReservationStatus;
 }
 
 export class GetGuestReservationsResult {

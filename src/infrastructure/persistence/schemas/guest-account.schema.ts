@@ -44,6 +44,9 @@ export class GuestAccountDocument extends Document {
   @Prop({ type: Date, default: null })
   passwordChangedAt: Date | null;
 
+  @Prop({ type: String, default: null })
+  profilePhotoKey: string | null;
+
   @Prop()
   createdAt: Date;
 

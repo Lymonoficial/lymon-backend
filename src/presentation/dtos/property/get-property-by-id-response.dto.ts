@@ -13,6 +13,9 @@ export class GetPropertyByIdResponseDto {
   id: string;
 
   @ApiProperty()
+  slug: string;
+
+  @ApiProperty()
   name: string;
 
   @ApiProperty()
@@ -59,6 +62,9 @@ export class GetPropertyByIdResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
+
+  @ApiProperty({ nullable: true })
+  imageUrl: string | null;
 }
 
 export class GetPropertyByIdSuccessResponseDto {

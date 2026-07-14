@@ -18,6 +18,7 @@ export class ReservationDto {
   cancellationReason: string | null;
   checkInActualAt: Date | null;
   checkOutActualAt: Date | null;
+  reservationNumber: number;
   createdAt: Date;
   updatedAt: Date;
 }

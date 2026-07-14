@@ -2,8 +2,33 @@ import { ForbiddenException } from '@nestjs/common';
 import { GetShiftsHandler } from '@/application/shift/queries/get-shifts/get-shifts.handler';
 import { GetShiftsQuery } from '@/application/shift/queries/get-shifts/get-shifts.query';
 import { ShiftRepository } from '@/domain/shift/repositories/shift.repository';
-import { PropertyRepository } from '@/domain/property/repositories/property.repository';
-import { UnitRepository } from '@/domain/unit/repositories/unit.repository';
+import { Shift } from '@/domain/shift/entities/shift.entity';
+import { ShiftId } from '@/domain/shift/value-objects/shift-id.vo';
+import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
+import { UserId } from '@/domain/user/entities/user.entity';
+import { PropertyId } from '@/domain/property/value-objects/property-id.vo';
+
+function makeShift(overrides?: { weekdays?: number[] | null }): Shift {
+  return Shift.reconstitute({
+    id: ShiftId.createFromString('65f1a1a2b3c4d5e6f7a8b9d0'),
+    tenantId: TenantId.createFromString('65f1a1a2b3c4d5e6f7a8b9c0'),
+    staffMemberIds: [UserId.createFromString('65f1a1a2b3c4d5e6f7a8b9c1')],
+    propertyId: PropertyId.create('65f1a1a2b3c4d5e6f7a8b9c3'),
+    name: 'Morning Cleaning',
+    startDate: new Date('2026-03-01T00:00:00.000Z'),
+    endDate: new Date('2026-03-31T00:00:00.000Z'),
+    startHour: '07:00',
+    endHour: '12:00',
+    startMinutes: 420,
+    endMinutes: 720,
+    weekdays: overrides?.weekdays ?? null,
+    notes: null,
+    createdBy: null,
+    createdByEmail: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+}
 
 describe('GetShiftsHandler', () => {
   const tenantId = '65f1a1a2b3c4d5e6f7a8b9c0';
@@ -11,8 +36,6 @@ describe('GetShiftsHandler', () => {
   const otherUserId = '65f1a1a2b3c4d5e6f7a8b9c2';
 
   let shiftRepository: jest.Mocked<ShiftRepository>;
-  let propertyRepository: jest.Mocked<PropertyRepository>;
-  let unitRepository: jest.Mocked<UnitRepository>;
   let handler: GetShiftsHandler;
 
   beforeEach(() => {
@@ -25,31 +48,8 @@ describe('GetShiftsHandler', () => {
       findOverlappingByStaff: jest.fn(),
     };
 
-    propertyRepository = {
-      save: jest.fn(),
-      findById: jest.fn(),
-      findByTenantId: jest.fn().mockResolvedValue([]),
-      countByTenantId: jest.fn(),
-      delete: jest.fn(),
-    } as unknown as jest.Mocked<PropertyRepository>;
-
-    unitRepository = {
-      save: jest.fn(),
-      findById: jest.fn(),
-      findByPropertyId: jest.fn(),
-      findByTenantId: jest.fn().mockResolvedValue([]),
-      countByTenantId: jest.fn(),
-      delete: jest.fn(),
-      findByTenantIdPaginated: jest.fn(),
-      findAllPaginated: jest.fn(),
-    } as unknown as jest.Mocked<UnitRepository>;
-
     shiftRepository.findByFilters.mockResolvedValue([]);
-    handler = new GetShiftsHandler(
-      shiftRepository,
-      propertyRepository,
-      unitRepository,
-    );
+    handler = new GetShiftsHandler(shiftRepository);
   });
 
   it('throws when staff user asks shifts for another user', async () => {
@@ -89,5 +89,27 @@ describe('GetShiftsHandler', () => {
     const [, , visibleStaffMemberId] =
       shiftRepository.findByFilters.mock.calls[0];
     expect(visibleStaffMemberId?.toString()).toBe(actorUserId);
+  });
+
+  it('maps weekdays to result when shift has weekdays', async () => {
+    shiftRepository.findByFilters.mockResolvedValue([
+      makeShift({ weekdays: [1, 3] }),
+    ]);
+
+    const query = new GetShiftsQuery(tenantId, {}, actorUserId, true);
+    const result = await handler.execute(query);
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].weekdays).toEqual([1, 3]);
+  });
+
+  it('maps weekdays as null when shift has no weekdays', async () => {
+    shiftRepository.findByFilters.mockResolvedValue([makeShift()]);
+
+    const query = new GetShiftsQuery(tenantId, {}, actorUserId, true);
+    const result = await handler.execute(query);
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].weekdays).toBeNull();
   });
 });

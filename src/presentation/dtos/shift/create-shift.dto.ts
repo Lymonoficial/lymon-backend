@@ -4,6 +4,9 @@ import {
   IsOptional,
   IsArray,
   IsString,
+  IsInt,
+  Min,
+  Max,
   Matches,
   MaxLength,
 } from 'class-validator';
@@ -68,6 +71,18 @@ export class CreateShiftDto {
   @IsString()
   @Matches(/^([01]\d|2[0-3]):[0-5]\d$/)
   endHour!: string;
+
+  @ApiPropertyOptional({
+    example: [1, 3],
+    description:
+      'Optional weekdays the shift repeats on (0=Sunday, 1=Monday, ..., 6=Saturday). If omitted, shift applies every day.',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Min(0, { each: true })
+  @Max(6, { each: true })
+  weekdays?: number[];
 
   @ApiPropertyOptional({
     example: 'Staff requested an earlier finish for personal reasons.',

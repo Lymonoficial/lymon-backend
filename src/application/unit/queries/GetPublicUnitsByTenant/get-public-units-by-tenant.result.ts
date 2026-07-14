@@ -27,6 +27,7 @@ export class PublicUnitDto {
     public readonly tenantId: string,
     public readonly propertyId: string,
     public readonly rating: number | null,
+    public readonly mediaUrls: string[],
   ) {}
 }
 

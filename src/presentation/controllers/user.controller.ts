@@ -27,6 +27,7 @@ import { CurrentUser } from '@/infrastructure/auth/decorators/current-user.decor
 import { type JwtPayload } from '@/application/auth/services/jwt.service';
 import { ChangePasswordCommand } from '@/application/user/commands/change-password/change-password.command';
 import { ChangePasswordResult } from '@/application/user/commands/change-password/change-password.handler';
+import { CompleteTutorialCommand } from '@/application/user/commands/complete-tutorial/complete-tutorial.command';
 import { ChangePasswordDto } from '@/presentation/dtos/auth/change-password.dto';
 import { InviteStaffDto } from '@/presentation/dtos/tenant/invite-staff.dto';
 import { InviteStaffCommand } from '@/application/user/commands/invite-staff/invite-staff.command';
@@ -79,6 +80,24 @@ export class UserController {
 
     return {
       message: result.message,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('complete-tutorial')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Mark tutorial as completed for current user' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Tutorial marked as completed',
+  })
+  async completeTutorial(@CurrentUser() jwtPayload: JwtPayload) {
+    await this.commandBus.execute(
+      new CompleteTutorialCommand(jwtPayload.userId),
+    );
+
+    return {
+      message: 'Tutorial completed successfully',
     };
   }
 
