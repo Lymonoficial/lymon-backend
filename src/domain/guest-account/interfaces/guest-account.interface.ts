@@ -10,6 +10,7 @@ export interface IGuestAccount {
   fullName: string;
   firstName: string | null;
   lastName: string | null;
+  phone: string | null;
   status: GuestAccountStatusEnum;
   emailVerificationToken: string | null;
   emailVerificationExpiry: Date | null;
@@ -19,4 +20,7 @@ export interface IGuestAccount {
   createdAt: Date;
   updatedAt: Date;
   profilePhotoKey: string | null;
+  pendingEmail: Email | null;
+  emailChangeToken: string | null;
+  emailChangeExpiry: Date | null;
 }

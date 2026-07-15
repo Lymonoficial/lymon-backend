@@ -13,6 +13,8 @@ import { ChangeGuestPasswordHandler } from '@/application/guest-auth/commands/ch
 import { RefreshGuestTokenHandler } from '@/application/guest-auth/commands/refresh-guest-token/refresh-guest-token.handler';
 import { LogoutGuestHandler } from '@/application/guest-auth/commands/logout-guest/logout-guest.handler';
 import { UpdateGuestProfilePhotoHandler } from '@/application/guest-auth/commands/update-guest-profile-photo/update-guest-profile-photo.handler';
+import { UpdateGuestAccountProfileHandler } from '@/application/guest-auth/commands/update-guest-account-profile/update-guest-account-profile.handler';
+import { ConfirmGuestAccountEmailChangeHandler } from '@/application/guest-auth/commands/confirm-guest-account-email-change/confirm-guest-account-email-change.handler';
 import { GenerateGuestProfilePhotoUrlQueryHandler } from '@/application/guest-auth/queries/generate-guest-profile-photo-url/generate-guest-profile-photo-url.query-handler';
 import { GetGuestAccountProfileQueryHandler } from '@/application/guest-auth/queries/get-guest-account-profile/get-guest-account-profile.query-handler';
 
@@ -26,6 +28,8 @@ const CommandHandlers = [
   RefreshGuestTokenHandler,
   LogoutGuestHandler,
   UpdateGuestProfilePhotoHandler,
+  UpdateGuestAccountProfileHandler,
+  ConfirmGuestAccountEmailChangeHandler,
 ];
 
 const QueryHandlers = [

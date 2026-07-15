@@ -19,6 +19,7 @@ describe('MongoGuestAccountRepository', () => {
       fullName: 'John Doe',
       firstName: 'John',
       lastName: 'Doe',
+      phone: null,
       status: GuestAccountStatusEnum.ACTIVE,
       emailVerified: true,
       emailVerificationToken: null,
@@ -28,6 +29,10 @@ describe('MongoGuestAccountRepository', () => {
       passwordChangedAt: null,
       createdAt: new Date('2030-01-01T00:00:00Z'),
       updatedAt: new Date('2030-01-02T00:00:00Z'),
+      profilePhotoKey: null,
+      pendingEmail: null,
+      emailChangeToken: null,
+      emailChangeExpiry: null,
     });
 
   it('updates existing account and returns id', async () => {
