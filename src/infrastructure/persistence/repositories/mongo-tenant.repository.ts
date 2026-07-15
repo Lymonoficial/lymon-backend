@@ -5,7 +5,10 @@ import {
 import { TenantRepository } from '@/domain/tenant/repositories/tenant.repository';
 import { Email } from '@/domain/shared/value-objects/email.vo';
 import { TenantId } from '@/domain/tenant/value-objects/tenant-id.vo';
-import { createSlug } from '@/domain/shared/utils/slug.util';
+import {
+  createSlug,
+  generateUniqueSlug,
+} from '@/domain/shared/utils/slug.util';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { TenantDocument } from '../schemas/tenant.schema';
@@ -24,7 +27,6 @@ export class MongoTenantRepository implements TenantRepository {
 
     const document = {
       name: tenant.getName(),
-      slug: tenant.getSlug(),
       ownerEmail: tenant.getOwnerEmail().toString(),
       plan: tenant.getPlan().toString(),
       emailVerified: tenant.isEmailVerified(),
@@ -39,15 +41,39 @@ export class MongoTenantRepository implements TenantRepository {
     };
 
     if (id) {
-      await this.tenantModel.findByIdAndUpdate(id, document, {
-        new: true,
-      });
+      const existing = await this.tenantModel
+        .findById(id)
+        .select('name slug')
+        .lean();
+      const slug =
+        existing && existing.name !== tenant.getName()
+          ? await this.generateSlugForId(tenant.getName(), id)
+          : existing?.slug;
+
+      await this.tenantModel.findByIdAndUpdate(
+        id,
+        { ...document, slug },
+        { new: true },
+      );
     } else {
-      await this.tenantModel.create({
+      const created = await this.tenantModel.create({
         ...document,
         createdAt: tenant.getCreatedAt(),
       });
+      const newId = created._id.toString();
+      const slug = await this.generateSlugForId(tenant.getName(), newId);
+      await this.tenantModel.updateOne({ _id: newId }, { slug });
     }
+  }
+
+  private async generateSlugForId(name: string, id: string): Promise<string> {
+    return generateUniqueSlug(name, id, async (candidate) => {
+      const taken = await this.tenantModel.exists({
+        slug: candidate,
+        _id: { $ne: id },
+      });
+      return taken !== null;
+    });
   }
 
   async findById(id: TenantId): Promise<Tenant | null> {
