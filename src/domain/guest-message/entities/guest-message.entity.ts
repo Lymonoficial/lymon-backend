@@ -131,4 +131,19 @@ export class GuestMessage {
     this.failureReason = reason;
     this.updatedAt = new Date();
   }
+
+  markDelivered(): void {
+    this.status = GuestMessageStatus.DELIVERED;
+    this.updatedAt = new Date();
+  }
+
+  markBounced(): void {
+    this.status = GuestMessageStatus.BOUNCED;
+    this.updatedAt = new Date();
+  }
+
+  markRead(): void {
+    this.status = GuestMessageStatus.READ;
+    this.updatedAt = new Date();
+  }
 }

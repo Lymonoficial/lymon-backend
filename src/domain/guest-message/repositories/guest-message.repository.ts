@@ -13,6 +13,7 @@ export interface GuestMessageRepository {
     page: number,
     limit: number,
   ): Promise<{ messages: GuestMessage[]; total: number }>;
+  findByProviderMessageId(providerMessageId: string): Promise<GuestMessage | null>;
   findByConversationId(tenantId: string, conversationId: string): Promise<GuestMessage[]>;
 }
 

@@ -287,4 +287,82 @@ describe('GuestMessage', () => {
       expect(message.getAttachments()).toHaveLength(1);
     });
   });
+
+  describe('markDelivered()', () => {
+    it('sets status to DELIVERED and refreshes updatedAt', () => {
+      // Arrange
+      const message = makeGuestMessage({ status: GuestMessageStatus.SENT });
+      const beforeUpdate = new Date();
+
+      // Act
+      message.markDelivered();
+
+      // Assert
+      expect(message.getStatus()).toBe(GuestMessageStatus.DELIVERED);
+      expect(message.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+    });
+
+    it('sets status to DELIVERED even when already in a different terminal-adjacent state', () => {
+      // Arrange
+      const message = makeGuestMessage({ status: GuestMessageStatus.PENDING });
+
+      // Act
+      message.markDelivered();
+
+      // Assert
+      expect(message.getStatus()).toBe(GuestMessageStatus.DELIVERED);
+    });
+  });
+
+  describe('markBounced()', () => {
+    it('sets status to BOUNCED and refreshes updatedAt', () => {
+      // Arrange
+      const message = makeGuestMessage({ status: GuestMessageStatus.SENT });
+      const beforeUpdate = new Date();
+
+      // Act
+      message.markBounced();
+
+      // Assert
+      expect(message.getStatus()).toBe(GuestMessageStatus.BOUNCED);
+      expect(message.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+    });
+
+    it('sets status to BOUNCED from PENDING state', () => {
+      // Arrange
+      const message = makeGuestMessage({ status: GuestMessageStatus.PENDING });
+
+      // Act
+      message.markBounced();
+
+      // Assert
+      expect(message.getStatus()).toBe(GuestMessageStatus.BOUNCED);
+    });
+  });
+
+  describe('markRead()', () => {
+    it('sets status to READ and refreshes updatedAt', () => {
+      // Arrange
+      const message = makeGuestMessage({ status: GuestMessageStatus.DELIVERED });
+      const beforeUpdate = new Date();
+
+      // Act
+      message.markRead();
+
+      // Assert
+      expect(message.getStatus()).toBe(GuestMessageStatus.READ);
+      expect(message.getUpdatedAt().getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+    });
+
+    it('sets status to READ even when called from SENT state', () => {
+      // Arrange
+      const message = makeGuestMessage({ status: GuestMessageStatus.SENT });
+
+      // Act
+      message.markRead();
+
+      // Assert
+      expect(message.getStatus()).toBe(GuestMessageStatus.READ);
+    });
+  });
 });

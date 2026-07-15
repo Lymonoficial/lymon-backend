@@ -71,6 +71,14 @@ export class MongoGuestMessageRepository implements GuestMessageRepository {
     return docs.map((doc) => this.toDomainEntity(doc));
   }
 
+  async findByProviderMessageId(
+    providerMessageId: string,
+  ): Promise<GuestMessage | null> {
+    const doc = await this.messageModel.findOne({ providerMessageId });
+    if (!doc) return null;
+    return this.toDomainEntity(doc);
+  }
+
   async findByGuestIdPaginated(
     tenantId: TenantId,
     guestId: GuestId,
