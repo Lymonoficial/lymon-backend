@@ -41,6 +41,10 @@ import {
   GuestNoteSchema,
 } from '@/infrastructure/persistence/schemas/guest-note.schema';
 import {
+  GuestDocumentFileDocument,
+  GuestDocumentFileSchema,
+} from '@/infrastructure/persistence/schemas/guest-document.schema';
+import {
   ReservationDocument,
   ReservationSchema,
 } from '@/infrastructure/persistence/schemas/reservation.schema';
@@ -139,6 +143,8 @@ import { INVENTORY_ITEM_CATEGORY_REPOSITORY } from '@/domain/inventory/repositor
 import { MongoInventoryItemCategoryRepository } from '@/infrastructure/persistence/repositories/mongo-inventory-item-category.repository';
 import { GUEST_NOTE_REPOSITORY } from '@/domain/guest-note/repositories/guest-note.repository';
 import { MongoGuestNoteRepository } from '@/infrastructure/persistence/repositories/mongo-guest-note.repository';
+import { GUEST_DOCUMENT_REPOSITORY } from '@/domain/guest-document/repositories/guest-document.repository';
+import { MongoGuestDocumentRepository } from '@/infrastructure/persistence/repositories/mongo-guest-document.repository';
 import { GUEST_EMAIL_REPOSITORY } from '@/domain/guest-email/repositories/guest-email.repository';
 import { MongoGuestEmailRepository } from '@/infrastructure/persistence/repositories/mongo-guest-email.repository';
 import { SHIFT_REPOSITORY } from '@/domain/shift/repositories/shift.repository';
@@ -200,6 +206,10 @@ import { ConversationBackfillMigration } from '@/infrastructure/migrations/conve
         schema: InventoryItemCategorySchema,
       },
       { name: GuestNoteDocument.name, schema: GuestNoteSchema },
+      {
+        name: GuestDocumentFileDocument.name,
+        schema: GuestDocumentFileSchema,
+      },
       { name: GuestEmailDocument.name, schema: GuestEmailSchema },
       { name: ShiftDocument.name, schema: ShiftSchema },
       {
@@ -257,6 +267,10 @@ import { ConversationBackfillMigration } from '@/infrastructure/migrations/conve
       useClass: MongoInventoryItemCategoryRepository,
     },
     { provide: GUEST_NOTE_REPOSITORY, useClass: MongoGuestNoteRepository },
+    {
+      provide: GUEST_DOCUMENT_REPOSITORY,
+      useClass: MongoGuestDocumentRepository,
+    },
     { provide: GUEST_EMAIL_REPOSITORY, useClass: MongoGuestEmailRepository },
     { provide: SHIFT_REPOSITORY, useClass: MongoShiftRepository },
     {
@@ -316,6 +330,7 @@ import { ConversationBackfillMigration } from '@/infrastructure/migrations/conve
     SUPPLIER_REPOSITORY,
     INVENTORY_ITEM_CATEGORY_REPOSITORY,
     GUEST_NOTE_REPOSITORY,
+    GUEST_DOCUMENT_REPOSITORY,
     GUEST_EMAIL_REPOSITORY,
     SHIFT_REPOSITORY,
     GUEST_PREFERENCE_CATALOG_REPOSITORY,
