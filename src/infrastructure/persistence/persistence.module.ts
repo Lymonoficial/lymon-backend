@@ -118,6 +118,8 @@ import { ROLE_REPOSITORY } from '@/domain/role/repositories/role.repository';
 import { MongoRoleRepository } from '@/infrastructure/persistence/repositories/mongo-role.repository';
 import { AUDIT_LOG_REPOSITORY } from '@/domain/audit/repositories/audit-log.repository';
 import { MongoAuditLogRepository } from '@/infrastructure/persistence/repositories/mongo-audit-log.repository';
+import { TenantSeedService } from '@/infrastructure/persistence/seeds/tenant-seed.service';
+import { GuestAccountSeedService } from '@/infrastructure/persistence/seeds/guest-account-seed.service';
 import { TRANSACTION_MANAGER } from '@/domain/shared/transaction-manager.interface';
 import { MongoTransactionManager } from '@/infrastructure/persistence/transaction/mongo-transaction-manager';
 import { INCIDENT_REPORT_REPOSITORY } from '@/domain/incident-report/repositories/incident-report.repository';
@@ -295,6 +297,8 @@ import { ConversationBackfillMigration } from '@/infrastructure/migrations/conve
       useClass: MongoConversationRepository,
     },
     ConversationBackfillMigration,
+    TenantSeedService,
+    GuestAccountSeedService,
   ],
   exports: [
     TENANT_REPOSITORY,
