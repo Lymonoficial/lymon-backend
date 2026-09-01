@@ -1,5 +1,6 @@
 import { GetGuestMonthlySpendingQuery } from '../get-guest-monthly-spending/get-guest-monthly-spending.query';
 import { GetGuestBookingOriginsQuery } from '../get-guest-booking-origins/get-guest-booking-origins.query';
+import { GetGuestAverageStayDurationQuery } from '../get-guest-average-stay-duration/get-guest-average-stay-duration.query';
 
 // Guest stat catalog — single source of truth. Every stat takes (tenantId, guestId).
 // Add a stat here and it is instantly selectable via the /stats endpoint. No presentation change.
@@ -8,6 +9,8 @@ export const GUEST_STAT_QUERIES = {
     new GetGuestMonthlySpendingQuery(tenantId, guestId),
   bookingOrigins: (tenantId: string, guestId: string) =>
     new GetGuestBookingOriginsQuery(tenantId, guestId),
+  avgNightsPerStay: (tenantId: string, guestId: string) =>
+    new GetGuestAverageStayDurationQuery(tenantId, guestId),
 } as const;
 
 export type GuestStatKey = keyof typeof GUEST_STAT_QUERIES;

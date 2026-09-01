@@ -7,8 +7,11 @@ import {
 import { GetGuestStatsHandler } from '@/application/guest/queries/get-guest-stats/get-guest-stats.handler';
 import { GetGuestMonthlySpendingHandler } from '@/application/guest/queries/get-guest-monthly-spending/get-guest-monthly-spending.handler';
 import { GetGuestBookingOriginsHandler } from '@/application/guest/queries/get-guest-booking-origins/get-guest-booking-origins.handler';
+import { GetGuestAverageStayDurationHandler } from '@/application/guest/queries/get-guest-average-stay-duration/get-guest-average-stay-duration.handler';
 import { RESERVATION_REPOSITORY } from '@/domain/reservation/repositories/reservation.repository';
+import { GUEST_REPOSITORY } from '@/domain/guest/repositories/guest.repository';
 import { createReservationRepositoryMock } from '@test/shared/mocks/repositories/reservation-repository.mock';
+import { createGuestRepositoryMock } from '@test/shared/mocks/repositories/guest-repository.mock';
 
 // Guards the catalog↔handler wiring: every key in GUEST_STAT_KEYS must dispatch to a
 // resolvable handler through the real bus. Add a stat to the catalog without registering
@@ -20,6 +23,8 @@ describe('GetGuestStatsHandler — stat catalog wiring', () => {
     const reservationRepository = createReservationRepositoryMock();
     reservationRepository.getMonthlySpendingByGuestId.mockResolvedValue([]);
     reservationRepository.countByGuestIdGroupedBySource.mockResolvedValue([]);
+    const guestRepository = createGuestRepositoryMock();
+    guestRepository.findById.mockResolvedValue(null);
 
     const moduleRef = await Test.createTestingModule({
       imports: [CqrsModule],
@@ -27,7 +32,9 @@ describe('GetGuestStatsHandler — stat catalog wiring', () => {
         GetGuestStatsHandler,
         GetGuestMonthlySpendingHandler,
         GetGuestBookingOriginsHandler,
+        GetGuestAverageStayDurationHandler,
         { provide: RESERVATION_REPOSITORY, useValue: reservationRepository },
+        { provide: GUEST_REPOSITORY, useValue: guestRepository },
       ],
     }).compile();
 
